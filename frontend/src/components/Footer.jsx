@@ -30,9 +30,19 @@ function Footer() {
   return (
     <footer className="py-12 mt-20 transition-colors duration-300 footer-bg footer-border">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        {/* FIX-LAYOUT-FOOTER (6 mai 2026) : passage de grid 4-col fixe a flex-wrap
+            adaptatif. Ancien layout (grid-cols-1 md:grid-cols-2 lg:grid-cols-4)
+            forcait le bloc logo a cote de la colonne Navigation des md (768px),
+            ce qui faisait deborder le tagline sur la nav quand la viewport
+            etait juste sous lg (~1024px). Nouveau layout :
+              - basis-full sur le logo jusqu'a lg -> il prend toute la ligne
+              - basis-full sur les 3 autres colonnes jusqu'a sm -> stack en mobile
+              - sm:flex-1 + min-w garanti sur les 3 colonnes -> 3 cols cote a cote
+                sur tablette, sous le logo qui passe au-dessus
+              - lg:max-w-xs sur le logo -> ne pousse plus les 3 autres en desktop */}
+        <div className="flex flex-wrap gap-8 md:gap-10 lg:gap-12 mb-12">
           {/* Colonne 1 - Logo + tagline */}
-          <div>
+          <div className="basis-full lg:basis-0 lg:flex-1 lg:max-w-xs">
             <MassiveLogo className="h-12 w-auto mb-4 transition-colors duration-300" />
             <p className="text-accent font-semibold mb-2">
               {(content && bl(content, 'footerTagline', lang)) || t('footer.tagline')}
@@ -44,7 +54,7 @@ function Footer() {
           </div>
 
           {/* Colonne 2 - Navigation */}
-          <div>
+          <div className="basis-full sm:basis-0 sm:flex-1 sm:min-w-[140px]">
             <h4 className="font-heading font-bold mb-4 footer-heading">{t('footer.navTitle')}</h4>
             <ul className="space-y-2 footer-links">
               <li>
@@ -71,7 +81,7 @@ function Footer() {
           </div>
 
           {/* Colonne 3 - Services */}
-          <div>
+          <div className="basis-full sm:basis-0 sm:flex-1 sm:min-w-[140px]">
             <h4 className="font-heading font-bold mb-4 footer-heading">{t('footer.servicesTitle')}</h4>
             <ul className="space-y-2 footer-links">
               {services.map((service) => (
@@ -85,7 +95,7 @@ function Footer() {
           </div>
 
           {/* Colonne 4 - Contact */}
-          <div>
+          <div className="basis-full sm:basis-0 sm:flex-1 sm:min-w-[180px]">
             <h4 className="font-heading font-bold mb-4 footer-heading">{t('footer.contactTitle')}</h4>
             <ul className="space-y-3 footer-links">
               <li>{t('footer.mileEnd')}</li>
