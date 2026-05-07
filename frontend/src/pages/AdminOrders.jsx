@@ -340,6 +340,66 @@ function AdminOrders() {
     }
   };
 
+  // SOUMISSIONS CLIENTS (Quotes, 7 mai 2026) : envoi par courriel d'une
+  // soumission. Reutilise le meme endpoint /orders/:id/send-invoice que les
+  // commandes (le backend ne distingue pas - il envoie le PDF en attachment
+  // via Resend), avec la difference qu'on genere le PDF en mode 'quote' pour
+  // que le titre soit "SOUMISSION" plutot que "FACTURE".
+  //
+  // Garde-fou : on bloque l'envoi si l'email client est le placeholder
+  // (@quote.placeholder) qu'on a utilise lors de la creation initiale Waterfront.
+  // L'admin doit alors editer la commande pour mettre un vrai email avant.
+  const handleSendQuote = async (quote) => {
+    if (!quote?.customerEmail || /@quote\.placeholder$/i.test(quote.customerEmail)) {
+      setInvoiceToast({
+        type: 'error',
+        message: tx({
+          fr: 'Mets un vrai courriel client avant d\'envoyer (icone Modifier sur la commande convertie ou direct via la BDD).',
+          en: 'Set a real client email before sending.',
+          es: 'Define un correo real del cliente.',
+        }),
+      });
+      return;
+    }
+    setSendingInvoiceId(quote.documentId);
+    setInvoiceToast(null);
+    try {
+      let pdfBase64, pdfFilename;
+      try {
+        const result = generateInvoicePDF(quote, 'quote', { returnBase64: true, settings: billingSettings || {} });
+        if (result && typeof result === 'object' && result.base64) {
+          pdfBase64 = result.base64;
+          pdfFilename = result.fileName;
+        }
+      } catch (pdfErr) {
+        console.warn('PDF generation failed for quote:', pdfErr);
+      }
+      await sendOrderInvoice(quote.documentId, { pdfBase64, pdfFilename });
+      setInvoiceToast({
+        type: 'success',
+        title: tx({ fr: 'Soumission envoyee', en: 'Quote sent', es: 'Cotizacion enviada' }),
+        message: tx({
+          fr: `Envoyee avec succes a ${quote.customerEmail}`,
+          en: `Successfully sent to ${quote.customerEmail}`,
+          es: `Enviada con exito a ${quote.customerEmail}`,
+        }),
+      });
+    } catch (err) {
+      console.error('sendQuote failed:', err);
+      const backendMsg = err?.response?.data?.error?.message || err?.message || 'Erreur';
+      setInvoiceToast({
+        type: 'error',
+        message: tx({
+          fr: `Echec envoi : ${backendMsg}`,
+          en: `Send failed: ${backendMsg}`,
+          es: `Error envio: ${backendMsg}`,
+        }),
+      });
+    } finally {
+      setSendingInvoiceId(null);
+    }
+  };
+
   // FIX-RECOVERY (27 avril 2026) : regeneration manuelle d'un lien Stripe pour
   // les commandes pending/draft sans paymentLink. Cas d'usage : commande Don
   // Mescal - Cosmovision (195,46$) restee bloquee suite a une violation unique
@@ -1670,6 +1730,34 @@ function AdminOrders() {
                             {q.customerPhone}
                           </div>
                         )}
+
+                        {/* Actions : telecharger PDF / envoyer par courriel.
+                            Reutilise generateInvoicePDF (type='quote' -> titre
+                            SOUMISSION) et sendOrderInvoice (meme endpoint que
+                            les commandes, le backend attache le PDF via Resend). */}
+                        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-white/5">
+                          <button
+                            type="button"
+                            onClick={() => generateInvoicePDF(q, 'quote', { settings: billingSettings || {} })}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-glass text-heading hover:bg-white/10 transition-colors text-xs font-semibold"
+                            title={tx({ fr: 'Telecharger la soumission en PDF', en: 'Download quote as PDF', es: 'Descargar cotizacion en PDF' })}
+                          >
+                            <Download size={13} />
+                            {tx({ fr: 'Telecharger PDF', en: 'Download PDF', es: 'Descargar PDF' })}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSendQuote(q)}
+                            disabled={sendingInvoiceId === q.documentId}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors text-xs font-semibold disabled:opacity-40"
+                            title={tx({ fr: 'Envoyer la soumission au client', en: 'Send quote to client', es: 'Enviar cotizacion al cliente' })}
+                          >
+                            {sendingInvoiceId === q.documentId
+                              ? <Loader2 size={13} className="animate-spin" />
+                              : <Send size={13} />}
+                            {tx({ fr: 'Envoyer par courriel', en: 'Send by email', es: 'Enviar por correo' })}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

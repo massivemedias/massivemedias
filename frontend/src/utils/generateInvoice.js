@@ -86,7 +86,11 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   let y = margin;
 
   const isReceipt = type === 'receipt';
-  const title = isReceipt ? 'RECU' : 'FACTURE';
+  // Quote (soumission) : meme template que la facture mais titre adapte.
+  // Le RIB et les mentions de paiement sont volontairement conserves : l'admin
+  // les retire manuellement plus tard si le client demande un devis "sec".
+  const isQuote = type === 'quote';
+  const title = isReceipt ? 'RECU' : isQuote ? 'SOUMISSION' : 'FACTURE';
   const invoiceNum = generateInvoiceNumber(order);
 
   // Couleurs
