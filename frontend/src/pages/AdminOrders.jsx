@@ -645,11 +645,6 @@ function AdminOrders() {
 
   useEffect(() => { fetchMoneyBoard(); }, [fetchMoneyBoard, filterStatus, searchDebounce]);
 
-  // Fetch quotes uniquement quand le tab Soumissions est actif (lazy)
-  useEffect(() => {
-    if (activeTab === 'quotes') fetchQuotes();
-  }, [activeTab, fetchQuotes]);
-
   // Ventes privees en attente (prints artistes avec private: true && !paid)
   useEffect(() => {
     setPrivateSalesLoading(true);
@@ -662,6 +657,13 @@ function AdminOrders() {
   // Soumissions clients (Quotes) : fetch ON DEMAND quand le tab est ouvert.
   // Pas de polling, pas de fetch a l'init pour eviter une requete inutile si
   // l'admin n'ouvre jamais le tab.
+  //
+  // FIX-TDZ (7 mai 2026) : la definition de fetchQuotes DOIT preceder le
+  // useEffect qui le reference dans son tableau de dependances. En JS, les
+  // `const` declarees plus bas dans le scope sont en Temporal Dead Zone -
+  // crash "ReferenceError: Cannot access 'Ct' before initialization" quand
+  // React evalue les deps a chaque render. L'ordre DEFINITION -> USAGE est
+  // mandatoire pour les useCallback/useEffect dans le meme composant.
   const fetchQuotes = useCallback(async () => {
     setQuotesLoading(true);
     try {
@@ -674,6 +676,12 @@ function AdminOrders() {
       setQuotesLoading(false);
     }
   }, []);
+
+  // Fetch quotes uniquement quand le tab Soumissions est actif (lazy).
+  // Doit etre AFTER la definition de fetchQuotes (cf. commentaire FIX-TDZ ci-dessus).
+  useEffect(() => {
+    if (activeTab === 'quotes') fetchQuotes();
+  }, [activeTab, fetchQuotes]);
 
   // Handlers
   // FIX-EMAIL-CONTROL (avril 2026) : le dropdown n'ecrit plus directement en
