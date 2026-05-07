@@ -18,9 +18,13 @@
  * Payment Link + Invoice + email) pour des commandes deja confirmees.
  */
 import { useState, useRef, useEffect } from 'react';
-import { X, Plus, Trash2, Loader2, FileText, Save } from 'lucide-react';
+import { X, Plus, Trash2, Loader2, FileText, Save, Calculator } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { createQuote, updateQuote } from '../services/adminService';
+import {
+  getStickerPrice, stickerFinishes, stickerShapes, stickerSizes,
+  getFineArtPrice, fineArtPrinterTiers, fineArtFormats, fineArtFramePriceByFormat,
+} from '../data/products';
 
 /**
  * Presets de prix par categorie pour accelerer la saisie de devis recurrents.
@@ -87,6 +91,24 @@ const QUOTE_PRESETS = [
   },
 ];
 
+// Item vide initial. Tous les champs des modes 'sticker' et 'fineart' sont
+// pre-remplis avec des valeurs par defaut sensees pour eviter les undefined
+// lors du switch de mode (ex: passer en sticker -> finish='matte', size='2in').
+function makeBlankItem() {
+  return {
+    kind: 'free',
+    description: '',
+    quantity: 1,
+    unitPrice: '',
+    finish: 'matte',
+    shape: 'round',
+    size: '2in',
+    tier: 'studio',
+    format: '',
+    withFrame: false,
+  };
+}
+
 /**
  * @param {object} props
  * @param {() => void} props.onClose
@@ -108,13 +130,23 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
     return { delay: '', rest: String(raw).trim() };
   };
   const initialNotes = splitDelayFromNotes(existingQuote?.notes);
+  // kind: 'free' (saisie libre) | 'sticker' (auto via getStickerPrice)
+  //       | 'fineart' (auto via getFineArtPrice). Default 'free' pour compat
+  //       avec les items deja en BDD qui n'ont pas de discriminant.
   const initialItems = Array.isArray(existingQuote?.items) && existingQuote.items.length > 0
     ? existingQuote.items.map(it => ({
+        kind: it.kind || 'free',
         description: it.description || it.name || '',
         quantity: Number(it.quantity) || 1,
         unitPrice: it.unitPrice != null ? String(it.unitPrice) : '',
+        finish: it.finish || 'matte',
+        shape: it.shape || 'round',
+        size: it.size || '2in',
+        tier: it.tier || 'studio',
+        format: it.format || '',
+        withFrame: !!it.withFrame,
       }))
-    : [{ description: '', quantity: 1, unitPrice: '' }];
+    : [makeBlankItem()];
 
   const [customerName, setCustomerName] = useState(existingQuote?.customerName || '');
   const [customerEmail, setCustomerEmail] = useState(
@@ -145,19 +177,57 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, submitting]);
 
-  const updateItem = (idx, patch) => {
-    setItems(prev => prev.map((it, i) => i === idx ? { ...it, ...patch } : it));
+  // recomputeItem (7 mai 2026) : si l'item est en mode calcule (sticker / fineart),
+  // on regenere description + unitPrice depuis les selections + qty via les helpers
+  // de products.js. En mode 'free', ne touche a rien (saisie manuelle preservee).
+  // Les libelles sont en FR (les soumissions sont generees pour les clients de
+  // Massive Medias - tous francophones aujourd'hui).
+  const recomputeItem = (item) => {
+    if (item.kind === 'sticker' && item.finish && item.size) {
+      const qty = Number(item.quantity) || 1;
+      const shape = item.shape || 'round';
+      const p = getStickerPrice(item.finish, shape, qty, item.size);
+      if (p && p.unitPrice != null) {
+        const finishLabel = stickerFinishes.find(f => f.id === item.finish)?.labelFr || item.finish;
+        const sizeLabel = stickerSizes.find(s => s.id === item.size)?.label || item.size;
+        const shapeLabel = stickerShapes.find(s => s.id === shape)?.labelFr || shape;
+        return {
+          ...item,
+          description: `Stickers ${finishLabel} ${shapeLabel} ${sizeLabel}`,
+          unitPrice: String(p.unitPrice),
+        };
+      }
+    }
+    if (item.kind === 'fineart' && item.tier && item.format) {
+      const p = getFineArtPrice(item.tier, item.format, !!item.withFrame);
+      if (p && p.price != null) {
+        const tierLabel = fineArtPrinterTiers.find(t => t.id === item.tier)?.labelFr || item.tier;
+        const formatLabel = fineArtFormats.find(f => f.id === item.format)?.label || item.format;
+        return {
+          ...item,
+          description: `Impression Fine Art ${formatLabel} (${tierLabel})${item.withFrame ? ' avec cadre' : ''}`,
+          unitPrice: String(p.price),
+        };
+      }
+    }
+    return item;
   };
-  const addItem = () => setItems(prev => [...prev, { description: '', quantity: 1, unitPrice: '' }]);
+
+  const updateItem = (idx, patch) => {
+    setItems(prev => prev.map((it, i) => i === idx ? recomputeItem({ ...it, ...patch }) : it));
+  };
+  const addItem = () => setItems(prev => [...prev, makeBlankItem()]);
   const removeItem = (idx) => setItems(prev => prev.filter((_, i) => i !== idx));
 
-  // Preset selection : "category::index" -> auto-fill description + price
+  // Preset selection : "category::index" -> auto-fill description + price.
+  // Force kind='free' au cas ou l'item etait en mode calcule (le preset ecrase
+  // les selections sticker/fineart sans confusion).
   const applyPreset = (idx, presetKey) => {
     if (!presetKey) return;
     const [catIdx, optIdx] = presetKey.split('::').map(n => parseInt(n, 10));
     const opt = QUOTE_PRESETS[catIdx]?.options?.[optIdx];
     if (!opt) return;
-    updateItem(idx, { description: opt.description, unitPrice: String(opt.price) });
+    updateItem(idx, { kind: 'free', description: opt.description, unitPrice: String(opt.price) });
   };
 
   const subtotal = items.reduce((acc, it) => {
@@ -343,42 +413,156 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
                 {tx({ fr: 'Ajouter une ligne', en: 'Add line', es: 'Anadir linea' })}
               </button>
             </div>
-            <div className="space-y-3">
-              {items.map((it, idx) => (
-                <div key={idx} className="space-y-1.5">
-                  {/* Ligne 1 : preset selector (auto-fill description + prix) */}
-                  <select
-                    value=""
-                    onChange={(e) => { applyPreset(idx, e.target.value); e.target.value = ''; }}
-                    disabled={submitting}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg px-2 py-1.5 text-grey-muted text-xs focus:outline-none focus:border-accent disabled:opacity-50"
-                  >
-                    <option value="">
-                      {tx({
-                        fr: '+ Preset (auto-remplit description + prix)',
-                        en: '+ Preset (auto-fills description + price)',
-                        es: '+ Preset (auto-rellena)',
-                      })}
-                    </option>
-                    {QUOTE_PRESETS.map((cat, cIdx) => (
-                      <optgroup key={cIdx} label={cat.category.fr}>
-                        {cat.options.map((opt, oIdx) => (
-                          <option key={oIdx} value={`${cIdx}::${oIdx}`}>
-                            {opt.description} — {opt.price}$
-                          </option>
+            <div className="space-y-4">
+              {items.map((it, idx) => {
+                const isCalculated = it.kind === 'sticker' || it.kind === 'fineart';
+                return (
+                <div key={idx} className="rounded-lg bg-black/20 border border-white/5 p-2.5 space-y-2">
+                  {/* Ligne 0 : selecteur de mode (Libre / Sticker / Fine Art) */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {[
+                      { id: 'free',     label: tx({ fr: 'Libre',    en: 'Free',     es: 'Libre' }),     icon: Plus },
+                      { id: 'sticker',  label: tx({ fr: 'Sticker',  en: 'Sticker',  es: 'Sticker' }),   icon: Calculator },
+                      { id: 'fineart',  label: tx({ fr: 'Fine Art', en: 'Fine Art', es: 'Fine Art' }),  icon: Calculator },
+                    ].map(m => {
+                      const Ic = m.icon;
+                      const active = it.kind === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => updateItem(idx, { kind: m.id })}
+                          disabled={submitting}
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors disabled:opacity-40 ${
+                            active
+                              ? 'bg-accent text-white'
+                              : 'bg-glass text-grey-muted hover:text-heading'
+                          }`}
+                        >
+                          <Ic size={11} />
+                          {m.label}
+                        </button>
+                      );
+                    })}
+                    {it.kind === 'free' && (
+                      <select
+                        value=""
+                        onChange={(e) => { applyPreset(idx, e.target.value); e.target.value = ''; }}
+                        disabled={submitting}
+                        className="ml-auto bg-black/40 border border-white/10 rounded-md px-2 py-1 text-grey-muted text-[11px] focus:outline-none focus:border-accent disabled:opacity-50"
+                      >
+                        <option value="">
+                          {tx({ fr: '+ Preset', en: '+ Preset', es: '+ Preset' })}
+                        </option>
+                        {QUOTE_PRESETS.map((cat, cIdx) => (
+                          <optgroup key={cIdx} label={cat.category.fr}>
+                            {cat.options.map((opt, oIdx) => (
+                              <option key={oIdx} value={`${cIdx}::${oIdx}`}>
+                                {opt.description} — {opt.price}$
+                              </option>
+                            ))}
+                          </optgroup>
                         ))}
-                      </optgroup>
-                    ))}
-                  </select>
-                  {/* Ligne 2 : description + qty + prix + remove */}
+                      </select>
+                    )}
+                  </div>
+
+                  {/* Mode Sticker : finition + forme + taille selects, auto-calcul du prix par palier */}
+                  {it.kind === 'sticker' && (
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <select
+                        value={it.finish}
+                        onChange={(e) => updateItem(idx, { finish: e.target.value })}
+                        disabled={submitting}
+                        className="bg-black/30 border border-white/10 rounded-md px-2 py-1.5 text-heading text-xs focus:outline-none focus:border-accent disabled:opacity-50"
+                      >
+                        {stickerFinishes.map(f => (
+                          <option key={f.id} value={f.id}>{f.labelFr}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={it.shape}
+                        onChange={(e) => updateItem(idx, { shape: e.target.value })}
+                        disabled={submitting}
+                        className="bg-black/30 border border-white/10 rounded-md px-2 py-1.5 text-heading text-xs focus:outline-none focus:border-accent disabled:opacity-50"
+                      >
+                        {stickerShapes.map(s => (
+                          <option key={s.id} value={s.id}>{s.labelFr}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={it.size}
+                        onChange={(e) => updateItem(idx, { size: e.target.value })}
+                        disabled={submitting}
+                        className="bg-black/30 border border-white/10 rounded-md px-2 py-1.5 text-heading text-xs focus:outline-none focus:border-accent disabled:opacity-50"
+                      >
+                        {stickerSizes.map(s => (
+                          <option key={s.id} value={s.id}>{s.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Mode Fine Art : tier (studio/musee) + format + checkbox cadre */}
+                  {it.kind === 'fineart' && (
+                    <div className="space-y-1.5">
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <select
+                          value={it.tier}
+                          onChange={(e) => updateItem(idx, { tier: e.target.value })}
+                          disabled={submitting}
+                          className="bg-black/30 border border-white/10 rounded-md px-2 py-1.5 text-heading text-xs focus:outline-none focus:border-accent disabled:opacity-50"
+                        >
+                          {fineArtPrinterTiers.map(t => (
+                            <option key={t.id} value={t.id}>{t.labelFr}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={it.format}
+                          onChange={(e) => updateItem(idx, { format: e.target.value })}
+                          disabled={submitting}
+                          className="bg-black/30 border border-white/10 rounded-md px-2 py-1.5 text-heading text-xs focus:outline-none focus:border-accent disabled:opacity-50"
+                        >
+                          <option value="">
+                            {tx({ fr: 'Choisir un format...', en: 'Pick format...', es: 'Elegir formato...' })}
+                          </option>
+                          {fineArtFormats.map(f => (
+                            <option key={f.id} value={f.id}>
+                              {f.label} — {f.studioPrice}$/Studio · {f.museumPrice}$/Musee
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <label className="flex items-center gap-2 text-xs text-grey-muted cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={!!it.withFrame}
+                          onChange={(e) => updateItem(idx, { withFrame: e.target.checked })}
+                          disabled={submitting}
+                          className="rounded border-white/10 bg-black/30 text-accent focus:ring-accent disabled:opacity-50"
+                        />
+                        {tx({ fr: 'Avec cadre', en: 'With frame', es: 'Con marco' })}
+                        {it.format && fineArtFramePriceByFormat[it.format] != null && (
+                          <span className="text-[10px] opacity-70">
+                            (+{fineArtFramePriceByFormat[it.format]}$)
+                          </span>
+                        )}
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Ligne finale : description + qty + prix + remove.
+                      En mode calcule, description et unitPrice sont read-only
+                      (mis a jour automatiquement par recomputeItem). */}
                   <div className="grid grid-cols-[1fr_60px_100px_auto] gap-2 items-center">
                     <input
                       type="text"
                       value={it.description}
                       onChange={(e) => updateItem(idx, { description: e.target.value })}
-                      disabled={submitting}
-                      placeholder={tx({ fr: 'Description (ou choisir un preset)', en: 'Description (or pick a preset)', es: 'Descripcion (o preset)' })}
-                      className="bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-heading text-sm focus:outline-none focus:border-accent disabled:opacity-50"
+                      disabled={submitting || isCalculated}
+                      readOnly={isCalculated}
+                      placeholder={tx({ fr: 'Description', en: 'Description', es: 'Descripcion' })}
+                      className={`bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-heading text-sm focus:outline-none focus:border-accent disabled:opacity-50 ${isCalculated ? 'cursor-not-allowed opacity-80' : ''}`}
                     />
                     <input
                       type="number"
@@ -394,9 +578,12 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
                       inputMode="decimal"
                       value={it.unitPrice}
                       onChange={(e) => updateItem(idx, { unitPrice: e.target.value })}
-                      disabled={submitting}
+                      disabled={submitting || isCalculated}
+                      readOnly={isCalculated}
                       placeholder="$"
-                      title={tx({ fr: 'Prix unitaire', en: 'Unit price', es: 'Precio unitario' })}
+                      title={isCalculated
+                        ? tx({ fr: 'Prix unitaire calcule auto', en: 'Auto unit price', es: 'Precio auto' })
+                        : tx({ fr: 'Prix unitaire', en: 'Unit price', es: 'Precio unitario' })}
                       className="bg-black/30 border border-white/10 rounded-lg px-2 py-2 text-heading text-sm focus:outline-none focus:border-accent disabled:opacity-50 text-right"
                     />
                     {items.length > 1 ? (
@@ -412,8 +599,22 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
                       <div className="w-[30px]" />
                     )}
                   </div>
+
+                  {/* Aide contextuelle en mode calcule : affiche le total ligne
+                      pour que l'admin verifie d'un coup d'oeil avant submit. */}
+                  {isCalculated && it.unitPrice && (
+                    <div className="flex items-center justify-between text-[11px] pt-1 border-t border-white/5">
+                      <span className="text-grey-muted">
+                        {tx({ fr: 'Total ligne', en: 'Line total', es: 'Total linea' })}
+                      </span>
+                      <span className="text-accent font-semibold">
+                        {((Number(it.quantity) || 1) * (parseFloat(String(it.unitPrice).replace(',', '.')) || 0)).toFixed(2)} $
+                      </span>
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
               <span className="text-xs text-grey-muted uppercase tracking-wider">
