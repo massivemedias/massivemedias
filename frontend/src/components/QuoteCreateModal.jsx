@@ -22,9 +22,17 @@ import { X, Plus, Trash2, Loader2, FileText, Save, Calculator } from 'lucide-rea
 import { useLang } from '../i18n/LanguageContext';
 import { createQuote, updateQuote } from '../services/adminService';
 import {
-  getStickerPrice, stickerFinishes, stickerShapes, stickerSizes,
+  stickerFinishes, stickerShapes, stickerSizes,
   getFineArtPrice, fineArtPrinterTiers, fineArtFormats, fineArtFramePriceByFormat,
 } from '../data/products';
+// FIX-VOLUME-DISCOUNT (7 mai 2026) : on utilise lookupStickerPriceCustomQty
+// (le MEME helper que le configurateur public ConfiguratorStickers.jsx) pour
+// avoir l'INTERPOLATION LINEAIRE entre paliers. L'ancien import getStickerPrice
+// ne marchait que pour les paliers EXACTS (25/50/100/200/500) et retournait
+// null sinon -> le prix unite restait bloque sur le 1er palier visible et ne
+// baissait jamais avec la quantite. Cf. lookupStickerPriceCustomQty pour le
+// detail du calcul (interpolation entre les 2 paliers qui encadrent qty).
+import { lookupStickerPriceCustomQty } from '../utils/pricingData';
 
 /**
  * Presets de prix par categorie pour accelerer la saisie de devis recurrents.
@@ -186,7 +194,13 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
     if (item.kind === 'sticker' && item.finish && item.size) {
       const qty = Number(item.quantity) || 1;
       const shape = item.shape || 'round';
-      const p = getStickerPrice(item.finish, shape, qty, item.size);
+      // lookupStickerPriceCustomQty fait :
+      //   - palier exact (25/50/100/200/500) -> prix tabule direct
+      //   - qty intermediaire -> interpolation lineaire entre les 2 paliers
+      //     qui encadrent (ex: 255 -> entre 200 et 500 -> ~1.50$/u sur matte 4")
+      //   - qty > max palier -> rate du dernier palier (cap, pas d'extrapolation)
+      //   - qty < 25 -> null (minimum production), on garde l'item en l'etat
+      const p = lookupStickerPriceCustomQty(item.finish, qty, item.size);
       if (p && p.unitPrice != null) {
         const finishLabel = stickerFinishes.find(f => f.id === item.finish)?.labelFr || item.finish;
         const sizeLabel = stickerSizes.find(s => s.id === item.size)?.label || item.size;
