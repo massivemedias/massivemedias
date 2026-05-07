@@ -137,6 +137,13 @@ export const activatePrivateSale = (slug, itemId, payload) => {
 // --- Commandes ---
 export const getOrders = (params) => api.get('/orders/admin', { params });
 export const getOrderStats = () => api.get('/orders/stats');
+
+// --- Soumissions clients (Quotes) ---
+// Devis pre-commande : Order avec status='draft' AND isManual=true.
+// Pas de Stripe link ni Invoice tant que pas converti en commande ferme.
+// Conversion : updateOrderStatus(id, 'pending') puis regenerateStripeLink(id) si besoin.
+export const getQuotes = (params) => api.get('/orders/quotes', { params });
+export const createQuote = (payload) => api.post('/orders/quote-create', payload);
 // MONEY-BOARD (Phase 5) : KPIs financiers + leads pour le tableau de bord
 // admin. Optionnel : { month: 'YYYY-MM' } pour piloter le mois courant
 // (ex: navigation historique). Defaut backend = mois courant America/Toronto.

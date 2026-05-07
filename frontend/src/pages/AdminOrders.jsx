@@ -9,12 +9,13 @@ import {
   TrendingUp, TrendingDown, Inbox, Sparkles, List, LayoutDashboard,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink } from '../services/adminService';
+import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink, getQuotes, createQuote } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
 import EditOrderBillingModal from '../components/EditOrderBillingModal';
 import CreateManualOrderModal from '../components/CreateManualOrderModal';
+import QuoteCreateModal from '../components/QuoteCreateModal';
 import StatusChangeModal from '../components/StatusChangeModal';
 import PortfolioWizardModal from '../components/PortfolioWizardModal';
 import ProductionBoard from '../components/ProductionBoard';
@@ -170,6 +171,16 @@ function AdminOrders() {
 
   // Modal creation commande manuelle + facture + lien Stripe
   const [showManualModal, setShowManualModal] = useState(false);
+
+  // SOUMISSIONS CLIENTS (Quotes, 6 mai 2026) : tab dedie aux devis pre-commande.
+  // Une "quote" = Order avec status='draft' AND isManual=true (cf. backend
+  // controllers/order.ts > quoteList / quoteCreate). Conversion = passage du
+  // status a 'pending' via updateOrderStatus.
+  const [quotes, setQuotes] = useState([]);
+  const [quotesLoading, setQuotesLoading] = useState(false);
+  const [showQuoteCreateModal, setShowQuoteCreateModal] = useState(false);
+  const [convertingQuoteId, setConvertingQuoteId] = useState(null);
+  const [quoteFeedback, setQuoteFeedback] = useState('');
 
   // FIX-EMAIL-CONTROL (avril 2026) : interception du changement de statut via
   // une modale de confirmation avec apercu du courriel. Structure :
@@ -634,6 +645,11 @@ function AdminOrders() {
 
   useEffect(() => { fetchMoneyBoard(); }, [fetchMoneyBoard, filterStatus, searchDebounce]);
 
+  // Fetch quotes uniquement quand le tab Soumissions est actif (lazy)
+  useEffect(() => {
+    if (activeTab === 'quotes') fetchQuotes();
+  }, [activeTab, fetchQuotes]);
+
   // Ventes privees en attente (prints artistes avec private: true && !paid)
   useEffect(() => {
     setPrivateSalesLoading(true);
@@ -641,6 +657,22 @@ function AdminOrders() {
       .then(({ data }) => setPrivateSales(Array.isArray(data?.data) ? data.data : []))
       .catch(() => setPrivateSales([]))
       .finally(() => setPrivateSalesLoading(false));
+  }, []);
+
+  // Soumissions clients (Quotes) : fetch ON DEMAND quand le tab est ouvert.
+  // Pas de polling, pas de fetch a l'init pour eviter une requete inutile si
+  // l'admin n'ouvre jamais le tab.
+  const fetchQuotes = useCallback(async () => {
+    setQuotesLoading(true);
+    try {
+      const { data } = await getQuotes({ pageSize: 200 });
+      setQuotes(Array.isArray(data?.data) ? data.data : []);
+    } catch (err) {
+      console.error('[AdminOrders] fetchQuotes failed:', err?.message || err);
+      setQuotes([]);
+    } finally {
+      setQuotesLoading(false);
+    }
   }, []);
 
   // Handlers
@@ -1087,16 +1119,20 @@ function AdminOrders() {
         )}
       </AnimatePresence>
 
-      {/* Barre de tabs minimaliste (2 onglets) : commandes + reglages integres */}
+      {/* Barre de tabs (3 onglets) : commandes + soumissions + reglages.
+          Tab "Soumissions" ajoute le 6 mai 2026 - voir state quotes/quotesLoading. */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-1 card-bg rounded-xl p-1 shadow-sm">
           {[
             { id: 'all',      label: tx({ fr: 'Toutes les commandes', en: 'All orders', es: 'Todos los pedidos' }),    icon: ShoppingBag },
+            { id: 'quotes',   label: tx({ fr: 'Soumissions',          en: 'Quotes',     es: 'Cotizaciones' }),          icon: FileText },
             { id: 'settings', label: tx({ fr: 'Reglages Facturation', en: 'Billing Settings', es: 'Ajustes' }),        icon: Settings },
           ].map(t => {
             const Ic = t.icon;
             const isActive = activeTab === t.id;
-            const count = t.id === 'all' ? orders.length : null;
+            let count = null;
+            if (t.id === 'all') count = orders.length;
+            else if (t.id === 'quotes') count = quotes.length;
             return (
               <button
                 key={t.id}
@@ -1117,8 +1153,11 @@ function AdminOrders() {
           })}
         </div>
 
-        {/* CTA: creer une commande manuelle + facture + lien Stripe (masque en Reglages) */}
-        {activeTab !== 'settings' && (
+        {/* CTA contextuel : varie selon le tab actif.
+            - 'all'      : Creer commande/facture manuelle (modal complete avec Stripe)
+            - 'quotes'   : Creer soumission (modal simplifiee, pas de Stripe)
+            - 'settings' : pas de CTA */}
+        {activeTab === 'all' && (
           <button
             type="button"
             onClick={() => setShowManualModal(true)}
@@ -1132,6 +1171,20 @@ function AdminOrders() {
             })}
           </button>
         )}
+        {activeTab === 'quotes' && (
+          <button
+            type="button"
+            onClick={() => setShowQuoteCreateModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all shadow-lg shadow-accent/20"
+          >
+            <Plus size={16} />
+            {tx({
+              fr: 'Creer une soumission',
+              en: 'Create quote',
+              es: 'Crear cotizacion',
+            })}
+          </button>
+        )}
       </div>
 
       {showManualModal && (
@@ -1141,6 +1194,23 @@ function AdminOrders() {
             fetchOrders();
             getOrderStats().then(({ data }) => setStats(data)).catch(() => {});
             fetchMoneyBoard();
+          }}
+        />
+      )}
+
+      {/* Modal de creation de soumission (Quote, 6 mai 2026). Form simplifie :
+          Nom, Email, Description du service, Prix estime. Pas de Stripe, pas
+          d'invoice, pas de calcul de taxes. L'admin pourra raffiner plus tard
+          en convertissant la soumission en commande, qui suivra alors le flow
+          standard (TPS/TVQ auto, generation lien Stripe via "Regenerer"). */}
+      {showQuoteCreateModal && (
+        <QuoteCreateModal
+          onClose={() => setShowQuoteCreateModal(false)}
+          onCreated={() => {
+            setShowQuoteCreateModal(false);
+            setQuoteFeedback(tx({ fr: 'Soumission creee', en: 'Quote created', es: 'Cotizacion creada' }));
+            setTimeout(() => setQuoteFeedback(''), 4000);
+            fetchQuotes();
           }}
         />
       )}
@@ -1352,10 +1422,150 @@ function AdminOrders() {
         </div>
       </div>
 
-      {/* SETTINGS TAB : on escamote le tableau et on affiche le form de
-          Reglages Facturation integre. Aucun fetch additionel necessaire,
-          le composant gere son propre load state. */}
-      {activeTab === 'settings' ? (
+      {/* QUOTES TAB (Soumissions clients, 6 mai 2026) : devis pre-commande.
+          Liste les Orders avec status='draft' AND isManual=true, plus un CTA
+          pour creer une nouvelle soumission. La conversion en commande passe
+          le status a 'pending' (qui peut ensuite recevoir un Stripe link via
+          le bouton "Regenerer Stripe link" du tab All). */}
+      {activeTab === 'quotes' ? (
+        <div className="space-y-4">
+          {quoteFeedback && (
+            <div className="px-3 py-2 rounded-lg text-sm bg-green-500/10 text-green-400 border border-green-500/20">
+              {quoteFeedback}
+            </div>
+          )}
+          {quotesLoading && quotes.length === 0 ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 size={24} className="animate-spin text-accent" />
+            </div>
+          ) : quotes.length === 0 ? (
+            <div className="rounded-xl bg-glass border border-white/5 p-12 text-center">
+              <FileText size={36} className="mx-auto mb-3 text-grey-muted/40" />
+              <p className="text-heading font-semibold mb-1">
+                {tx({
+                  fr: 'Aucune soumission pour le moment',
+                  en: 'No quotes yet',
+                  es: 'Sin cotizaciones aun',
+                })}
+              </p>
+              <p className="text-sm text-grey-muted">
+                {tx({
+                  fr: 'Clique sur "Creer une soumission" pour proposer un devis a un client.',
+                  en: 'Click "Create quote" to propose an estimate to a client.',
+                  es: 'Click en "Crear cotizacion" para proponer un presupuesto.',
+                })}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-xl card-bg border border-white/5 overflow-hidden">
+              <div className="hidden md:grid grid-cols-[1.5fr_1.2fr_auto_auto_auto] gap-3 px-4 py-3 bg-black/30 text-[11px] uppercase tracking-wider font-semibold text-grey-muted border-b border-white/5">
+                <div>{tx({ fr: 'Client', en: 'Client', es: 'Cliente' })}</div>
+                <div>{tx({ fr: 'Items', en: 'Items', es: 'Items' })}</div>
+                <div>{tx({ fr: 'Total', en: 'Total', es: 'Total' })}</div>
+                <div>{tx({ fr: 'Date', en: 'Date', es: 'Fecha' })}</div>
+                <div className="text-right">{tx({ fr: 'Actions', en: 'Actions', es: 'Acciones' })}</div>
+              </div>
+              {quotes.map((q) => {
+                const itemsCount = Array.isArray(q.items) ? q.items.length : 0;
+                const firstItem = itemsCount > 0 ? q.items[0] : null;
+                const isBusy = convertingQuoteId === q.documentId;
+                return (
+                  <div
+                    key={q.documentId}
+                    className="grid grid-cols-1 md:grid-cols-[1.5fr_1.2fr_auto_auto_auto] gap-3 px-4 py-3 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors items-center"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-heading truncate">{q.customerName}</p>
+                      {q.customerEmail && (
+                        <p className="text-xs text-grey-muted truncate flex items-center gap-1">
+                          <Mail size={11} className="flex-shrink-0" />
+                          <a href={`mailto:${q.customerEmail}`} className="hover:text-accent transition-colors truncate">
+                            {q.customerEmail}
+                          </a>
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-xs text-grey-muted truncate">
+                      {firstItem ? (firstItem.description || firstItem.name || '-') : '-'}
+                      {itemsCount > 1 && <span className="ml-1 opacity-70">+{itemsCount - 1}</span>}
+                    </div>
+                    <div className="text-sm font-bold text-heading whitespace-nowrap">
+                      {formatPrice(q.total || 0)}
+                    </div>
+                    <div className="text-xs text-grey-muted whitespace-nowrap">
+                      {q.createdAt ? new Date(q.createdAt).toLocaleDateString('fr-CA', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0 justify-end">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-400">
+                        <Clock size={10} />
+                        {tx({ fr: 'En attente de validation', en: 'Awaiting validation', es: 'Esperando validacion' })}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setConvertingQuoteId(q.documentId);
+                          try {
+                            await updateOrderStatus(q.documentId, 'pending', { sendEmail: false });
+                            setQuotes(prev => prev.filter(x => x.documentId !== q.documentId));
+                            setQuoteFeedback(tx({
+                              fr: `Soumission convertie en commande - cherche la dans l'onglet "Toutes les commandes" (statut Pending) pour generer le lien Stripe.`,
+                              en: `Quote converted to order - find it in "All orders" tab (Pending status) to generate the Stripe link.`,
+                              es: `Cotizacion convertida en pedido - buscala en "Todos los pedidos" (estado Pending).`,
+                            }));
+                            setTimeout(() => setQuoteFeedback(''), 6000);
+                            // Refresh la liste principale en background pour qu'elle apparaisse au switch de tab
+                            fetchOrders().catch(() => {});
+                          } catch (err) {
+                            setOpError(tx({
+                              fr: 'Erreur de conversion',
+                              en: 'Conversion error',
+                              es: 'Error al convertir',
+                            }));
+                            setTimeout(() => setOpError(''), 4000);
+                          } finally {
+                            setConvertingQuoteId(null);
+                          }
+                        }}
+                        disabled={isBusy}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-40 text-[11px] font-semibold"
+                        title={tx({ fr: 'Convertir en commande', en: 'Convert to order', es: 'Convertir en pedido' })}
+                      >
+                        {isBusy ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle size={11} />}
+                        {tx({ fr: 'Convertir', en: 'Convert', es: 'Convertir' })}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!window.confirm(tx({
+                            fr: 'Supprimer cette soumission ? Action irreversible.',
+                            en: 'Delete this quote? Irreversible.',
+                            es: 'Eliminar esta cotizacion? Irreversible.',
+                          }))) return;
+                          setConvertingQuoteId(q.documentId);
+                          try {
+                            await deleteOrder(q.documentId);
+                            setQuotes(prev => prev.filter(x => x.documentId !== q.documentId));
+                          } catch {
+                            setOpError(tx({ fr: 'Erreur de suppression', en: 'Delete error', es: 'Error al eliminar' }));
+                            setTimeout(() => setOpError(''), 4000);
+                          } finally {
+                            setConvertingQuoteId(null);
+                          }
+                        }}
+                        disabled={isBusy}
+                        className="p-1.5 rounded-lg bg-red-500/10 text-red-400/70 hover:bg-red-500/20 hover:text-red-400 transition-colors disabled:opacity-40"
+                        title={tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : activeTab === 'settings' ? (
         <div className="rounded-xl card-bg shadow-lg shadow-black/20 p-5">
           <AdminReglagesFacturation />
         </div>

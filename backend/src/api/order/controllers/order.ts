@@ -1586,6 +1586,129 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
   },
 
+  // ============================================================
+  // SOUMISSIONS CLIENTS (Quotes) - Phase initiale, 6 mai 2026
+  // ============================================================
+  // Une "soumission" est un Order minimal cree par l'admin pour proposer un
+  // devis a un client SANS generer de lien Stripe ni d'invoice immediatement.
+  // On reutilise le content-type Order avec :
+  //   - status = 'draft'
+  //   - isManual = true
+  //   - subtotal/total pre-remplis (estimation, modifiable plus tard)
+  //   - PAS de Stripe Payment Link (genere lors de la conversion)
+  //   - PAS d'Invoice (cree lors de la conversion)
+  //
+  // Discriminant cote frontend pour separer "draft Stripe en attente" vs
+  // "soumission admin" : le couple (status='draft' AND isManual=true).
+  // Les drafts Stripe en cours de paiement ont isManual=false par defaut.
+  //
+  // Convertir en commande = PUT /orders/:id/status avec newStatus='pending'
+  // suivi de POST /orders/:id/regenerate-stripe-link pour generer le lien.
+
+  // GET /orders/quotes - Liste des soumissions (drafts isManual)
+  async quoteList(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    try {
+      const page = parseInt(ctx.query.page as string) || 1;
+      const pageSize = parseInt(ctx.query.pageSize as string) || 200;
+      const search = ctx.query.search as string;
+
+      const filters: any = {
+        status: 'draft',
+        isManual: true,
+      };
+      if (search) {
+        filters.$or = [
+          { customerName: { $containsi: search } },
+          { customerEmail: { $containsi: search } },
+        ];
+      }
+
+      const [items, total] = await Promise.all([
+        strapi.documents('api::order.order').findMany({
+          filters,
+          sort: 'createdAt:desc',
+          limit: pageSize,
+          start: (page - 1) * pageSize,
+        }),
+        strapi.db.query('api::order.order').count({ where: filters }),
+      ]);
+
+      ctx.body = {
+        data: items,
+        meta: { page, pageSize, total, pageCount: Math.ceil(total / pageSize) },
+      };
+    } catch (err: any) {
+      strapi.log.error('[quoteList] CRITICAL crash:', err?.message || err);
+      ctx.body = { data: [], meta: { page: 1, pageSize: 200, total: 0, pageCount: 0 } };
+    }
+  },
+
+  // POST /orders/quote-create - Creer une soumission minimale
+  // Body: { customerName, customerEmail?, customerPhone?, items, subtotal?, total?, notes? }
+  // items: [{ description, quantity?, unitPrice? }]
+  // Pas de Stripe, pas d'Invoice, pas d'email. Juste un Order draft.
+  async quoteCreate(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const body = ctx.request.body as any;
+    const {
+      customerName,
+      customerEmail,
+      customerPhone,
+      companyName,
+      items,
+      notes,
+    } = body || {};
+    let { subtotal, total } = body || {};
+
+    if (!customerName || !Array.isArray(items) || items.length === 0) {
+      return ctx.badRequest('customerName et items[] requis');
+    }
+
+    const toNum = (v: any) => {
+      const n = typeof v === 'string' ? parseFloat(v.replace(',', '.')) : Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+    subtotal = toNum(subtotal);
+    total = toNum(total);
+
+    // Si subtotal pas fourni, on l'estime depuis les items
+    if (subtotal === 0) {
+      subtotal = items.reduce((acc: number, it: any) => {
+        const q = toNum(it.quantity) || 1;
+        const u = toNum(it.unitPrice) || 0;
+        return acc + q * u;
+      }, 0);
+      subtotal = Math.round(subtotal * 100) / 100;
+    }
+    if (total === 0) total = subtotal;
+
+    try {
+      const order = await strapi.documents('api::order.order').create({
+        data: {
+          customerName: String(customerName).trim(),
+          customerEmail: customerEmail ? String(customerEmail).trim().toLowerCase() : undefined,
+          customerPhone: customerPhone ? String(customerPhone).trim() : undefined,
+          companyName: companyName ? String(companyName).trim() : undefined,
+          items,
+          subtotal,
+          total,
+          currency: 'cad',
+          status: 'draft',
+          isManual: true,
+          notes: notes ? String(notes) : undefined,
+          designReady: true,
+        } as any,
+      });
+
+      strapi.log.info(`[quoteCreate] Soumission creee : ${order.documentId} pour ${customerName}`);
+      ctx.body = { success: true, data: order };
+    } catch (err: any) {
+      strapi.log.error('[quoteCreate] error:', err?.message || err);
+      return ctx.badRequest(err?.message || 'Quote creation failed');
+    }
+  },
+
   // POST /orders/manual - Creer une Order manuelle + Invoice + Stripe Payment Link
   // Body: { customerName, customerEmail?, customerPhone?, items, subtotal, total?,
   //         shipping?, tps?, tvq?, notes?, lang?: 'fr'|'en' }

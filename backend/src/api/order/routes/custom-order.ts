@@ -192,6 +192,26 @@ export default {
         auth: false,
       },
     },
+    // SOUMISSIONS CLIENTS (Quotes, 6 mai 2026) : devis pre-commande sans Stripe.
+    // Voir bloc commentaire dans controllers/order.ts > quoteList / quoteCreate.
+    // requireAdminAuth applique dans le controller (routes en auth: false comme
+    // tout le reste du file pour bypass le guard Strapi v5).
+    {
+      method: 'GET',
+      path: '/orders/quotes',
+      handler: 'order.quoteList',
+      config: {
+        auth: false,
+      },
+    },
+    {
+      method: 'POST',
+      path: '/orders/quote-create',
+      handler: 'order.quoteCreate',
+      config: {
+        auth: false,
+      },
+    },
     // One-shot endpoint : reinjection des 3 factures B2B perdues (avril 2026).
     // Protege par requireAdminAuth dans le controller. Idempotent (skip si deja cree).
     {

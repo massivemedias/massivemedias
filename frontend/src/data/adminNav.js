@@ -20,7 +20,6 @@
 import {
   LayoutDashboard, Bot, StickyNote, ShoppingBag, Banknote, Package,
   MessageSquare, Users, FileText, Star, DollarSign, Tag, Palette, Receipt,
-  UserPlus,
 } from 'lucide-react';
 
 const ADMIN_NAV_ITEMS = [
@@ -30,7 +29,10 @@ const ADMIN_NAV_ITEMS = [
   { to: '/admin/artists', icon: Palette, fr: 'Artistes (God)', en: 'Artists (God)', es: 'Artistas (God)', tooltip: { fr: 'God Mode: mutations directes sur les profils, oeuvres et commissions artistes', en: 'God Mode: direct mutations on artist profiles, artworks and commissions', es: 'God Mode: mutaciones directas en perfiles y obras' } },
   // Commissions fusionnees (avril 2026) : integrees directement dans l'onglet
   // "Artistes (God)" -> tab Finances & Payouts.
-  { to: '/admin/soumissions', icon: UserPlus, fr: 'Soumissions', en: 'Submissions', es: 'Postulaciones', tooltip: { fr: 'Candidatures artistes (partenariat) en attente de revue', en: 'Artist partnership applications awaiting review', es: 'Postulaciones de artistas en revision' } },
+  // Soumissions Artistes : retire de la nav (6 mai 2026). La route et la
+  // page AdminSubmissions.jsx sont conservees pour usage futur, mais l'admin
+  // n'a plus besoin d'un onglet dedie cote artistes (les soumissions clients
+  // ont ete deplacees comme tab dans /admin/commandes).
   { to: '/admin/utilisateurs', icon: Users, fr: 'Utilisateurs', en: 'Users', es: 'Usuarios', tooltip: { fr: 'Gestion des comptes (admin, artistes, clients)', en: 'Account management (admin, artists, clients)', es: 'Gestion de cuentas' } },
   { to: '/admin/massive-ai', icon: Bot, fr: 'ai.massive', en: 'ai.massive', es: 'ai.massive', tooltip: { fr: 'Outils IA: chat, stickers, mockups', en: 'AI tools: chat, stickers, mockups', es: 'Herramientas IA: chat, stickers, mockups' } },
   { to: '/admin/notes', icon: StickyNote, fr: 'Notes', en: 'Notes', es: 'Notas', tooltip: { fr: 'Notes internes et rappels', en: 'Internal notes and reminders', es: 'Notas internas y recordatorios' } },
