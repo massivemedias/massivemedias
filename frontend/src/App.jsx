@@ -134,6 +134,39 @@ function App() {
     }
   }, []);
 
+  // FIX-OAUTH-LOOP (5 mai 2026, post-rollback) : safety net minimaliste pour
+  // les retours OAuth Supabase qui atterrissent au root avec error_code dans
+  // les query params (au lieu du hash que Login.jsx peut lire).
+  // Pattern URL : /?error=invalid_request&error_code=bad_oauth_state&...
+  // Sans ce handler le user reste BLOQUE sur la homepage avec l'URL polluee
+  // et aucun feedback. Avec : on transfere l'erreur vers /login (qui a deja
+  // un handler hash) pour affichage propre + on nettoie les cles Supabase
+  // orphelines (code_verifier d'un flow precedent foire) qui empecheraient
+  // un nouveau login de marcher.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const errorCode = params.get('error_code');
+    if (!errorCode) return;
+    // Cibler uniquement les erreurs OAuth Supabase connues
+    if (errorCode !== 'bad_oauth_state' && errorCode !== 'invalid_request') return;
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key.includes('supabase'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch (_) { /* localStorage indispo - ignore */ }
+    const errorDesc = params.get('error_description') || 'Erreur d\'authentification';
+    const cleanMsg = errorDesc.replace(/\+/g, ' ');
+    // Redirect vers /login avec l'erreur en hash (handler existant Login.jsx)
+    window.location.replace(
+      `/login#error_code=${encodeURIComponent(errorCode)}&error_description=${encodeURIComponent(cleanMsg)}`
+    );
+  }, []);
+
   return (
     <BrowserRouter basename={basename}>
       <BackendHealthBanner />
