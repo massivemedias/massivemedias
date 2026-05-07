@@ -18,9 +18,9 @@
  * Payment Link + Invoice + email) pour des commandes deja confirmees.
  */
 import { useState, useRef, useEffect } from 'react';
-import { X, Plus, Trash2, Loader2, FileText } from 'lucide-react';
+import { X, Plus, Trash2, Loader2, FileText, Save } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { createQuote } from '../services/adminService';
+import { createQuote, updateQuote } from '../services/adminService';
 
 /**
  * Presets de prix par categorie pour accelerer la saisie de devis recurrents.
@@ -87,16 +87,47 @@ const QUOTE_PRESETS = [
   },
 ];
 
-function QuoteCreateModal({ onClose, onCreated }) {
+/**
+ * @param {object} props
+ * @param {() => void} props.onClose
+ * @param {() => void} props.onCreated - callback apres creation/mise a jour reussie
+ * @param {object} [props.existingQuote] - si fourni, mode edition : pre-remplit
+ *   les champs et le submit fait PUT au lieu de POST. Place le titre + libelle
+ *   du bouton submit en mode "Enregistrer" plutot que "Creer".
+ */
+function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
   const { tx } = useLang();
-  const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [items, setItems] = useState([{ description: '', quantity: 1, unitPrice: '' }]);
-  const [notes, setNotes] = useState('');
+  const isEdit = !!existingQuote;
+
+  // Helper : extraire le "Delai : ..." du debut des notes pour le placer dans
+  // un champ dedie en mode edition. Le reste des notes va dans le champ notes.
+  const splitDelayFromNotes = (raw) => {
+    if (!raw) return { delay: '', rest: '' };
+    const m = String(raw).match(/^Delai\s*:\s*([^\n]+)\n*\n*([\s\S]*)$/i);
+    if (m) return { delay: m[1].trim(), rest: m[2].trim() };
+    return { delay: '', rest: String(raw).trim() };
+  };
+  const initialNotes = splitDelayFromNotes(existingQuote?.notes);
+  const initialItems = Array.isArray(existingQuote?.items) && existingQuote.items.length > 0
+    ? existingQuote.items.map(it => ({
+        description: it.description || it.name || '',
+        quantity: Number(it.quantity) || 1,
+        unitPrice: it.unitPrice != null ? String(it.unitPrice) : '',
+      }))
+    : [{ description: '', quantity: 1, unitPrice: '' }];
+
+  const [customerName, setCustomerName] = useState(existingQuote?.customerName || '');
+  const [customerEmail, setCustomerEmail] = useState(
+    existingQuote?.customerEmail && !/@quote\.placeholder$/i.test(existingQuote.customerEmail)
+      ? existingQuote.customerEmail
+      : ''
+  );
+  const [customerPhone, setCustomerPhone] = useState(existingQuote?.customerPhone || '');
+  const [items, setItems] = useState(initialItems);
+  const [notes, setNotes] = useState(initialNotes.rest);
   // Delai de production communique au client. Stocke en debut de notes pour
   // qu'il soit visible sur la PDF facture lors de la conversion en commande.
-  const [delay, setDelay] = useState('');
+  const [delay, setDelay] = useState(initialNotes.delay);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const firstInputRef = useRef(null);
@@ -174,7 +205,7 @@ function QuoteCreateModal({ onClose, onCreated }) {
         delay.trim() && `Delai : ${delay.trim()}`,
         notes.trim(),
       ].filter(Boolean).join('\n\n');
-      await createQuote({
+      const payload = {
         customerName: trimmedName,
         customerEmail: customerEmail.trim().toLowerCase() || undefined,
         customerPhone: customerPhone.trim() || undefined,
@@ -182,7 +213,12 @@ function QuoteCreateModal({ onClose, onCreated }) {
         subtotal,
         total: subtotal,
         notes: finalNotes || undefined,
-      });
+      };
+      if (isEdit) {
+        await updateQuote(existingQuote.documentId, payload);
+      } else {
+        await createQuote(payload);
+      }
       onCreated?.();
     } catch (err) {
       const status = err?.response?.status;
@@ -221,14 +257,22 @@ function QuoteCreateModal({ onClose, onCreated }) {
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-lg font-heading font-bold text-heading">
-              {tx({ fr: 'Creer une soumission', en: 'Create quote', es: 'Crear cotizacion' })}
+              {isEdit
+                ? tx({ fr: 'Modifier la soumission', en: 'Edit quote', es: 'Editar cotizacion' })
+                : tx({ fr: 'Creer une soumission', en: 'Create quote', es: 'Crear cotizacion' })}
             </h2>
             <p className="text-xs text-grey-muted">
-              {tx({
-                fr: 'Devis pre-commande - aucun paiement ni email automatique.',
-                en: 'Pre-order quote - no payment or automatic email.',
-                es: 'Cotizacion previa - sin pago ni email automatico.',
-              })}
+              {isEdit
+                ? tx({
+                    fr: 'Modifie les lignes ou le total. Les notes/delai sont prefixees automatiquement.',
+                    en: 'Update lines or total. Notes/delay are prefixed automatically.',
+                    es: 'Edita las lineas o el total.',
+                  })
+                : tx({
+                    fr: 'Devis pre-commande - aucun paiement ni email automatique.',
+                    en: 'Pre-order quote - no payment or automatic email.',
+                    es: 'Cotizacion previa - sin pago ni email automatico.',
+                  })}
             </p>
           </div>
           <button
@@ -444,9 +488,18 @@ function QuoteCreateModal({ onClose, onCreated }) {
               disabled={submitting}
               className="flex-[2] py-2.5 rounded-lg bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {submitting
-                ? <><Loader2 size={14} className="animate-spin" /> {tx({ fr: 'Creation...', en: 'Creating...', es: 'Creando...' })}</>
-                : <><Plus size={14} /> {tx({ fr: 'Creer la soumission', en: 'Create quote', es: 'Crear cotizacion' })}</>}
+              {submitting ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  {isEdit
+                    ? tx({ fr: 'Mise a jour...', en: 'Updating...', es: 'Actualizando...' })
+                    : tx({ fr: 'Creation...', en: 'Creating...', es: 'Creando...' })}
+                </>
+              ) : isEdit ? (
+                <><Save size={14} /> {tx({ fr: 'Enregistrer les modifications', en: 'Save changes', es: 'Guardar cambios' })}</>
+              ) : (
+                <><Plus size={14} /> {tx({ fr: 'Creer la soumission', en: 'Create quote', es: 'Crear cotizacion' })}</>
+              )}
             </button>
           </div>
         </form>

@@ -1644,6 +1644,79 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
   },
 
+  // PUT /orders/:documentId/quote-update - Modifier une soumission existante
+  // Body identique a quoteCreate. Le status doit rester 'draft' AND isManual=true
+  // (pas de mutation de status ici, utiliser updateOrderStatus pour conversion).
+  async quoteUpdate(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const { documentId } = ctx.params;
+    if (!documentId) return ctx.badRequest('documentId requis');
+
+    const body = ctx.request.body as any;
+    const {
+      customerName,
+      customerEmail,
+      customerPhone,
+      companyName,
+      items,
+      notes,
+    } = body || {};
+    let { subtotal, total } = body || {};
+
+    if (!customerName || !Array.isArray(items) || items.length === 0) {
+      return ctx.badRequest('customerName et items[] requis');
+    }
+
+    const toNum = (v: any) => {
+      const n = typeof v === 'string' ? parseFloat(v.replace(',', '.')) : Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+    subtotal = toNum(subtotal);
+    total = toNum(total);
+    if (subtotal === 0) {
+      subtotal = items.reduce((acc: number, it: any) => {
+        const q = toNum(it.quantity) || 1;
+        const u = toNum(it.unitPrice) || 0;
+        return acc + q * u;
+      }, 0);
+      subtotal = Math.round(subtotal * 100) / 100;
+    }
+    if (total === 0) total = subtotal;
+
+    try {
+      const existing = await strapi.documents('api::order.order').findFirst({
+        filters: { documentId },
+      } as any);
+      if (!existing) return ctx.notFound('Soumission introuvable');
+      // Garde-fou : on ne laisse modifier via cet endpoint QUE les drafts
+      // manuels (= soumissions). Refuse de toucher a une commande payee
+      // ou a un draft Stripe en cours.
+      if ((existing as any).status !== 'draft' || !(existing as any).isManual) {
+        return ctx.badRequest('Cet endpoint n\'edite que les soumissions (status=draft + isManual=true)');
+      }
+
+      const updated = await strapi.documents('api::order.order').update({
+        documentId,
+        data: {
+          customerName: String(customerName).trim(),
+          customerEmail: customerEmail ? String(customerEmail).trim().toLowerCase() : undefined,
+          customerPhone: customerPhone ? String(customerPhone).trim() : undefined,
+          companyName: companyName ? String(companyName).trim() : undefined,
+          items,
+          subtotal,
+          total,
+          notes: notes ? String(notes) : undefined,
+        } as any,
+      });
+
+      strapi.log.info(`[quoteUpdate] Soumission mise a jour : ${documentId}`);
+      ctx.body = { success: true, data: updated };
+    } catch (err: any) {
+      strapi.log.error('[quoteUpdate] error:', err?.message || err);
+      return ctx.badRequest(err?.message || 'Quote update failed');
+    }
+  },
+
   // POST /orders/quote-create - Creer une soumission minimale
   // Body: { customerName, customerEmail?, customerPhone?, items, subtotal?, total?, notes? }
   // items: [{ description, quantity?, unitPrice? }]

@@ -6,7 +6,7 @@ import {
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark, Copy,
-  TrendingUp, TrendingDown, Inbox, Sparkles, List, LayoutDashboard,
+  TrendingUp, TrendingDown, Inbox, Sparkles, List, LayoutDashboard, Zap,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink, getQuotes, createQuote } from '../services/adminService';
@@ -182,6 +182,8 @@ function AdminOrders() {
   const [convertingQuoteId, setConvertingQuoteId] = useState(null);
   const [quoteFeedback, setQuoteFeedback] = useState('');
   const [expandedQuoteId, setExpandedQuoteId] = useState(null);
+  // editingQuote : si non-null, ouvre QuoteCreateModal en mode edition pre-rempli
+  const [editingQuote, setEditingQuote] = useState(null);
 
   // FIX-EMAIL-CONTROL (avril 2026) : interception du changement de statut via
   // une modale de confirmation avec apercu du courriel. Structure :
@@ -738,11 +740,13 @@ function AdminOrders() {
     }
   }, []);
 
-  // Fetch quotes uniquement quand le tab Soumissions est actif (lazy).
-  // Doit etre AFTER la definition de fetchQuotes (cf. commentaire FIX-TDZ ci-dessus).
+  // FIX-COUNTER (7 mai 2026) : on fetch les soumissions des le mount pour
+  // que le badge "Soumissions (N)" reflete la realite de la BDD avant meme
+  // que l'admin clique sur l'onglet. Refetch aussi a chaque changement de
+  // tab pour rester live (catch les soumissions creees entre-temps).
   useEffect(() => {
-    if (activeTab === 'quotes') fetchQuotes();
-  }, [activeTab, fetchQuotes]);
+    fetchQuotes();
+  }, [fetchQuotes, activeTab]);
 
   // Handlers
   // FIX-EMAIL-CONTROL (avril 2026) : le dropdown n'ecrit plus directement en
@@ -1284,6 +1288,24 @@ function AdminOrders() {
         />
       )}
 
+      {/* Modal d'edition (meme composant, prop existingQuote -> mode PUT) */}
+      {editingQuote && (
+        <QuoteCreateModal
+          existingQuote={editingQuote}
+          onClose={() => setEditingQuote(null)}
+          onCreated={() => {
+            setEditingQuote(null);
+            setQuoteFeedback(tx({
+              fr: 'Soumission mise a jour',
+              en: 'Quote updated',
+              es: 'Cotizacion actualizada',
+            }));
+            setTimeout(() => setQuoteFeedback(''), 4000);
+            fetchQuotes();
+          }}
+        />
+      )}
+
       {/* Modale d'interception changement de statut (apercu courriel + choix
           sendEmail true/false). Declencheur : onChange du <select> de statut. */}
       {statusChangeTarget && (
@@ -1602,6 +1624,15 @@ function AdminOrders() {
                         </span>
                         <button
                           type="button"
+                          onClick={(e) => { stop(e); setEditingQuote(q); }}
+                          disabled={isBusy}
+                          className="p-1.5 rounded-lg bg-glass text-grey-muted hover:text-heading hover:bg-white/10 transition-colors disabled:opacity-40"
+                          title={tx({ fr: 'Modifier la soumission', en: 'Edit quote', es: 'Editar cotizacion' })}
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          type="button"
                           onClick={async (e) => {
                             stop(e);
                             setConvertingQuoteId(q.documentId);
@@ -1631,7 +1662,7 @@ function AdminOrders() {
                           className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-40 text-[11px] font-semibold"
                           title={tx({ fr: 'Convertir en commande', en: 'Convert to order', es: 'Convertir en pedido' })}
                         >
-                          {isBusy ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle size={11} />}
+                          {isBusy ? <Loader2 size={11} className="animate-spin" /> : <Zap size={11} />}
                           {tx({ fr: 'Convertir', en: 'Convert', es: 'Convertir' })}
                         </button>
                         <button

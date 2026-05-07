@@ -212,6 +212,14 @@ export default {
         auth: false,
       },
     },
+    {
+      method: 'PUT',
+      path: '/orders/:documentId/quote-update',
+      handler: 'order.quoteUpdate',
+      config: {
+        auth: false,
+      },
+    },
     // One-shot endpoint : reinjection des 3 factures B2B perdues (avril 2026).
     // Protege par requireAdminAuth dans le controller. Idempotent (skip si deja cree).
     {

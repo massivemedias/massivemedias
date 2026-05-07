@@ -144,6 +144,7 @@ export const getOrderStats = () => api.get('/orders/stats');
 // Conversion : updateOrderStatus(id, 'pending') puis regenerateStripeLink(id) si besoin.
 export const getQuotes = (params) => api.get('/orders/quotes', { params });
 export const createQuote = (payload) => api.post('/orders/quote-create', payload);
+export const updateQuote = (documentId, payload) => api.put(`/orders/${documentId}/quote-update`, payload);
 // MONEY-BOARD (Phase 5) : KPIs financiers + leads pour le tableau de bord
 // admin. Optionnel : { month: 'YYYY-MM' } pour piloter le mois courant
 // (ex: navigation historique). Defaut backend = mois courant America/Toronto.
