@@ -8,9 +8,20 @@ import { supabase } from '../lib/supabase';
 // pipeline env CF Pages sera fiabilise.
 const API_URL = 'https://massivemedias-api.onrender.com/api';
 
+// FIX-XHR-BLOCKED (5 mai 2026 v3) : on FORCE axios a utiliser le `fetch`
+// adapter au lieu de XMLHttpRequest. Diagnostic Chrome DevTools du user
+// montre que TOUTES les requetes en `xhr` (axios default) echouent avec
+// ERR_CONNECTION_RESET, alors que les requetes en `fetch` (autres libs)
+// passent en 200. Cause typique : extension Chrome (Datadog injecte par
+// un Chrome plugin), antivirus avec inspection HTTPS, ou cache HTTP/2
+// corrompu specifique au transport XHR.
+// L'adapter fetch contourne ces bloqueurs et utilise la meme stack reseau
+// que les autres libs natives (Supabase SDK, Stripe.js, etc) qui marchent.
+// Axios v1+ supporte 'fetch' comme valeur d'adapter.
 const api = axios.create({
   baseURL: API_URL,
   timeout: 30000,
+  adapter: 'fetch',
   headers: {
     'Content-Type': 'application/json',
   },
