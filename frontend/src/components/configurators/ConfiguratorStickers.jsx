@@ -263,22 +263,23 @@ function ConfiguratorStickers({ onFinishChange }) {
             </p>
           </div>
 
-          {/* Quantite - grille 5 paliers + input custom */}
+          {/* QTY-GRID-V2 (7 mai 2026) : grille unifiee 6 cellules = 5 paliers
+              presets + 1 cellule "Quantite personnalisee". L'ancien input
+              full-width sous la grille a ete fusionne dans la 6e case pour
+              gagner de l'espace vertical et garder le meme design carre. */}
           <div>
             <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
               {tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })}
             </label>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {tiers.map((tier, i) => {
                 const p = getStickerPrice(finish, shape, tier.qty, size);
-                // Bouton actif si on est en mode palier (pas de customQty) ET qtyIndex matche
                 const isActive = !customPriceInfo && qtyIndex === i;
                 return (
                   <button
                     key={tier.qty}
                     onClick={() => {
                       setQtyIndex(i);
-                      // Sortir du mode custom quand on clique un palier preset
                       setCustomQty('');
                     }}
                     className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg transition-all border-2 ${isActive
@@ -291,59 +292,59 @@ function ConfiguratorStickers({ onFinishChange }) {
                   </button>
                 );
               })}
-            </div>
 
-            {/* CUSTOM-QTY-INPUT (5 mai 2026) : input numerique pour quantite
-                exacte. Le prix unitaire est calcule par interpolation lineaire
-                entre paliers (lookupStickerPriceCustomQty). Mise a jour temps
-                reel a chaque keystroke (controlled input -> useMemo). */}
-            <div className="mt-3 p-3 rounded-lg bg-glass border border-white/5">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                {/* FIX-LISIBILITE (5 mai 2026) : label en text-sm font-bold pour
-                    lisibilite + placeholder/heading plus contraste, helper
-                    text bumpe a text-xs (12px) au lieu de text-[10px]. */}
-                <label className="text-heading text-sm font-bold uppercase tracking-wider sm:flex-shrink-0">
-                  {tx({ fr: 'Quantité personnalisée', en: 'Custom quantity', es: 'Cantidad personalizada' })}
-                </label>
-                <div className="flex items-center gap-2 flex-1">
-                  <input
-                    type="number"
-                    min="25"
-                    step="1"
-                    inputMode="numeric"
-                    value={customQty}
-                    onChange={(e) => {
-                      // Strip non-numeric pour eviter les saisies louches type "1e10"
-                      const cleaned = e.target.value.replace(/[^0-9]/g, '');
-                      setCustomQty(cleaned);
-                    }}
-                    placeholder={tx({ fr: 'Ex: 150', en: 'Ex: 150', es: 'Ej: 150' })}
-                    className="flex-1 sm:max-w-[120px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2 text-sm text-heading placeholder:text-grey-muted/80 focus:border-accent focus:outline-none transition-colors"
-                  />
-                  {customQty && customPriceInfo && (
-                    <span className="text-accent text-sm font-semibold whitespace-nowrap">
-                      {money(customPriceInfo.unitPrice)}$/u
-                    </span>
-                  )}
-                  {customQty && !customPriceInfo && (
-                    <span className="text-yellow-400 text-xs">
-                      {tx({ fr: 'Min. 25', en: 'Min. 25', es: 'Mín. 25' })}
-                    </span>
-                  )}
-                </div>
+              {/* 6e cellule : Quantite personnalisee (memo design carre).
+                  Active visuellement quand customPriceInfo existe, prix par
+                  interpolation lineaire entre paliers (lookupStickerPriceCustomQty). */}
+              <div
+                className={`flex flex-col items-center justify-center py-2 px-1.5 rounded-lg transition-all border-2 ${customPriceInfo
+                  ? 'border-accent option-selected'
+                  : 'border-transparent option-default'
+                }`}
+              >
+                <input
+                  type="number"
+                  min="25"
+                  step="1"
+                  inputMode="numeric"
+                  value={customQty}
+                  onChange={(e) => {
+                    const cleaned = e.target.value.replace(/[^0-9]/g, '');
+                    setCustomQty(cleaned);
+                  }}
+                  placeholder={tx({ fr: 'Custom', en: 'Custom', es: 'Custom' })}
+                  aria-label={tx({ fr: 'Quantite personnalisee (min 25)', en: 'Custom quantity (min 25)', es: 'Cantidad personalizada' })}
+                  className="w-full text-center text-heading font-bold text-sm bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-grey-muted/80 placeholder:font-normal"
+                />
+                {customQty && customPriceInfo ? (
+                  <span className="text-accent mt-0.5 text-sm font-semibold">
+                    {money(customPriceInfo.unitPrice)}$/u
+                  </span>
+                ) : customQty ? (
+                  <span className="text-yellow-400 mt-0.5 text-[11px]">
+                    {tx({ fr: 'Min. 25', en: 'Min. 25', es: 'Mín. 25' })}
+                  </span>
+                ) : (
+                  <span className="text-grey-muted mt-0.5 text-[11px]">
+                    {tx({ fr: 'Personnalisé', en: 'Custom', es: 'Personal.' })}
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-grey-muted mt-2 leading-relaxed">
-                {tx({
-                  fr: 'Tarif calculé entre les paliers ci-dessus (interpolation linéaire).',
-                  en: 'Price calculated between the tiers above (linear interpolation).',
-                  es: 'Precio calculado entre los niveles arriba (interpolación lineal).',
-                })}
-              </p>
             </div>
+            <p className="text-xs text-grey-muted mt-2 leading-relaxed">
+              {tx({
+                fr: 'Cellule "Custom" : tarif calculé entre les paliers (interpolation linéaire, min. 25).',
+                en: '"Custom" cell: price calculated between tiers (linear interpolation, min. 25).',
+                es: 'Celda "Custom": precio interpolado entre niveles (mín. 25).',
+              })}
+            </p>
           </div>
 
-          {/* Notes + Prix cote a cote */}
-          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-3 md:gap-4 items-start">
+          {/* LAYOUT-V2 (7 mai 2026) : 3 colonnes sur lg+ (Notes / Prix / Actions),
+              stack vertical sur mobile/tablette. Les actions (Ajouter / Voir
+              panier) restent w-full sur mobile pour le tap au pouce mais
+              passent en colonne compacte a droite du Prix sur desktop. */}
+          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] lg:grid-cols-[3fr_2fr_auto] gap-3 md:gap-4 items-start">
             <div>
               <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
                 {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
@@ -375,10 +376,6 @@ function ConfiguratorStickers({ onFinishChange }) {
                     {tx({ fr: 'Proof avant impression', en: 'Digital proof included', es: 'Prueba antes de imprimir' })}
                   </span>
                 </div>
-                {/* PREMIUM-VALUE-PROP (29 avril 2026) : justification du
-                    positionnement tarifaire haut de gamme. Typographie
-                    discrete (text-[11px] grey-muted/80) + separateur
-                    subtil pour rester aere avec le thème sombre. */}
                 <p className="mt-3 pt-2.5 border-t border-white/5 text-[11px] text-grey-muted/80 leading-relaxed">
                   {tx({
                     fr: 'Inclus : Vérification manuelle des fichiers, épreuve numérique et contrôle qualité studio.',
@@ -388,27 +385,58 @@ function ConfiguratorStickers({ onFinishChange }) {
                 </p>
               </div>
             )}
+
+            {/* Colonne actions desktop only (lg+). En dessous de lg, masquee :
+                les boutons full-width sont rendus plus bas pour l'UX mobile. */}
+            <div className="hidden lg:flex lg:flex-col lg:gap-2 lg:min-w-[180px]">
+              <button
+                onClick={handleAddToCart}
+                disabled={!canAddToCart}
+                className={`btn-primary justify-center text-sm py-2.5 px-4 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}
+              >
+                {added ? (
+                  <><Check size={16} className="mr-1.5" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
+                ) : (
+                  <><ShoppingCart size={16} className="mr-1.5" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar' })}</>
+                )}
+              </button>
+              <Link to="/panier" className="btn-outline justify-center text-sm py-2 px-4">
+                {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
+              </Link>
+              {!canAddToCart && (
+                <p className="text-yellow-400 text-[11px] text-center leading-relaxed mt-1">
+                  {tx({
+                    fr: 'Ajoute un design ou décris ton projet dans les notes.',
+                    en: 'Upload a design or describe your project in the notes.',
+                    es: 'Sube un diseño o describe tu proyecto en las notas.',
+                  })}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Add to cart */}
-      <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
-        {added ? (
-          <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
-        ) : (
-          <><ShoppingCart size={18} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
+      {/* Actions mobile / tablette only (jusqu'a md inclus). Boutons pleine
+          largeur pour le tap au pouce, comme avant le redesign desktop. */}
+      <div className="lg:hidden">
+        <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
+          {added ? (
+            <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
+          ) : (
+            <><ShoppingCart size={18} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
+          )}
+        </button>
+        {!canAddToCart && (
+          <p className="text-yellow-400 text-sm text-center">
+            {tx({ fr: 'Ajoutez votre design ou decrivez votre projet dans les notes', en: 'Upload your design or describe your project in the notes', es: 'Suba su diseno o describa su proyecto en las notas' })}
+          </p>
         )}
-      </button>
-      {!canAddToCart && (
-        <p className="text-yellow-400 text-sm text-center">
-          {tx({ fr: 'Ajoutez votre design ou decrivez votre projet dans les notes', en: 'Upload your design or describe your project in the notes', es: 'Suba su diseno o describa su proyecto en las notas' })}
-        </p>
-      )}
 
-      <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2 md:py-2.5">
-        {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
-      </Link>
+        <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2 md:py-2.5">
+          {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
+        </Link>
+      </div>
 
       <p className="text-grey-muted text-sm mt-2 md:mt-3 text-center">
         {tx({
