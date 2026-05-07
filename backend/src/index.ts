@@ -5,6 +5,33 @@ export default {
   register(/* { strapi }: { strapi: Core.Strapi } */) {},
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    // FIX-HTTP2-PROTOCOL (re-applied 5 mai 2026 v2) : configurer
+    // keepAliveTimeout et headersTimeout du serveur HTTP Node.js pour
+    // qu'ils soient SUPERIEURS a ceux du proxy Render (~60s par defaut).
+    //
+    // Si Node ferme la connexion AVANT le proxy, le proxy se retrouve a
+    // ecrire sur un socket ferme -> RST_STREAM HTTP/2 -> ERR_HTTP2_PROTOCOL_ERROR
+    // cote client. Reference Node.js : keepAliveTimeout > LB timeout +
+    // headersTimeout > keepAliveTimeout (sinon Node ferme les connexions
+    // en attente de headers prematurement).
+    //
+    // Valeurs : 65000ms (65s) > 60s Render, et 66000ms (66s) > 65s.
+    // Marge de 5s pour absorber les latences reseau.
+    try {
+      const httpServer: any = (strapi as any).server?.httpServer;
+      if (httpServer) {
+        httpServer.keepAliveTimeout = 65000;
+        httpServer.headersTimeout = 66000;
+        console.log(
+          `[bootstrap] HTTP server timeouts set: keepAlive=${httpServer.keepAliveTimeout}ms, headers=${httpServer.headersTimeout}ms`
+        );
+      } else {
+        console.warn('[bootstrap] strapi.server.httpServer unavailable - HTTP timeouts not configured');
+      }
+    } catch (err: any) {
+      console.error('[bootstrap] HTTP timeout config error:', err?.message || err);
+    }
+
     // ── Auto-create admin super user ──
     try {
       const existingAdmins = await strapi.db.query('admin::user').findMany({ limit: 1 });

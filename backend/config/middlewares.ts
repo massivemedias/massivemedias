@@ -55,6 +55,24 @@ const config: Core.Config.Middlewares = [
     config: {
       includeUnparsed: true, // Required for Stripe webhook signature verification
       jsonLimit: '10mb', // Pour les mockups AI (images base64 dans le body)
+      // FIX-MOBILE-UPLOAD (re-applied 5 mai 2026 v2) : sans ces options,
+      // les uploads multipart de photos mobile (5-15MB depuis iPhone/Android)
+      // hitaient les defaults silencieusement et le client voyait
+      // "Server unreachable" sans cause claire.
+      //   - formLimit : taille max des form fields URL-encoded (defaut koa
+      //     ~56kb -> on monte a 10mb pour couvrir les futurs cas obscurs)
+      //   - textLimit : idem pour text/plain
+      //   - multipart : explicite a true (defaut Strapi v5 mais pas de
+      //     regression future avec ce flag explicite)
+      //   - formidable.maxFileSize : 60MB (au-dessus de la limite metier
+      //     50MB du handler uploadDirect, qui retourne un 400 propre si
+      //     depassee). Photos iPhone HEIC peuvent atteindre 25-40MB.
+      formLimit: '10mb',
+      textLimit: '10mb',
+      multipart: true,
+      formidable: {
+        maxFileSize: 60 * 1024 * 1024,
+      },
     },
   },
   'strapi::session',
