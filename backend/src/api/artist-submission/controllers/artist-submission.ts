@@ -1,9 +1,14 @@
 import { factories } from '@strapi/strapi';
 import { sendContractSignedEmail } from '../../../utils/email';
+import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::artist-submission.artist-submission', ({ strapi }) => ({
 
   async adminList(ctx) {
+    // SEC (6 mai 2026) : adminList est admin-only. La route declare auth: false
+    // pour bypasser le guard utilisateur Strapi v5, mais on protege ici via
+    // requireAdminAuth (ADMIN_API_TOKEN ou Supabase JWT + ADMIN_EMAILS whitelist).
+    if (!(await requireAdminAuth(ctx))) return;
     const page = parseInt(ctx.query.page as string) || 1;
     const pageSize = parseInt(ctx.query.pageSize as string) || 25;
     const status = ctx.query.status as string;
@@ -37,6 +42,7 @@ export default factories.createCoreController('api::artist-submission.artist-sub
   },
 
   async updateStatus(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { status: newStatus, notes } = ctx.request.body as any;
 
@@ -63,6 +69,7 @@ export default factories.createCoreController('api::artist-submission.artist-sub
   },
 
   async deleteSubmission(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const item = await strapi.documents('api::artist-submission.artist-submission').findFirst({
       filters: { documentId },

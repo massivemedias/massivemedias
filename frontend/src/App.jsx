@@ -74,6 +74,7 @@ const AdminSystemStatus = lazyWithRetry(() => import('./pages/AdminSystemStatus'
 const AdminMassiveIA = lazyWithRetry(() => import('./pages/AdminMassiveIA'));
 const AdminPromos = lazyWithRetry(() => import('./pages/AdminPromos'));
 const AdminArtistManager = lazyWithRetry(() => import('./pages/AdminArtistManager'));
+const AdminSubmissions = lazyWithRetry(() => import('./pages/AdminSubmissions'));
 // AdminReglagesFacturation n'a plus sa propre route (avril 2026) : integre
 // comme onglet dans AdminOrders pour centraliser le workflow facturation.
 // Les deep-links /admin/reglages-facturation redirigent vers /admin/commandes.
@@ -252,6 +253,7 @@ function App() {
               {/* /admin/artistes historique : redirige vers le nouveau hub artist-manager */}
               <Route path="clients" element={<Navigate to="/admin/utilisateurs" replace />} />
               <Route path="utilisateurs" element={<AdminUtilisateurs />} />
+              <Route path="soumissions" element={<AdminSubmissions />} />
               {/* Depenses redirige vers sa propre page dediee (ancien flow passait par Factures) */}
               <Route path="depenses" element={<AdminDepenses />} />
               <Route path="temoignages" element={<AdminTemoignages />} />
