@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { trackAddToCart, trackRemoveFromCart } from '../utils/analytics';
-import { useAuth } from './AuthContext';
 import { getStickerPrice } from '../data/products';
 
 const CartContext = createContext();
@@ -65,53 +64,36 @@ function savePromoLocal(promo) {
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(loadCart);
-  const { user, updateProfile } = useAuth();
-  const syncedRef = useRef(false);
-  const savingRef = useRef(false);
 
   // Promo code state (initialise une seule fois depuis localStorage)
   const [promoCode, setPromoCode] = useState(() => loadPromo()?.code || '');
   const [discountPercent, setDiscountPercent] = useState(() => loadPromo()?.percent || 0);
   const [promoLabel, setPromoLabel] = useState(() => loadPromo()?.label || '');
 
-  // A la connexion : restaurer le panier depuis Supabase SEULEMENT si pas de panier local
-  useEffect(() => {
-    if (!user || syncedRef.current) return;
-    syncedRef.current = true;
-    const localCart = loadCart();
-    if (localCart.length > 0) {
-      // Le panier local a priorite - sync vers Supabase
-      saveToSupabase(localCart);
-      return;
-    }
-    const meta = user.user_metadata || {};
-    const savedCart = meta.cart_items || [];
-    if (savedCart.length > 0) {
-      setItems(savedCart);
-      saveCartLocal(savedCart);
-    }
-  }, [user]);
+  // BUG-CRITICAL-FIX (6 mai 2026) : la sauvegarde du panier dans
+  // supabase.user_metadata.cart_items a ete ENTIEREMENT SUPPRIMEE.
+  //
+  // Pourquoi : un sticker custom contient une preview base64 (`image`) qui peut
+  // peser 100KB+. Ce blob etait persiste dans user_metadata, donc serialise
+  // dans le payload du JWT a chaque refresh (c'est la nature des JWT
+  // Supabase : tout user_metadata y est inclus). Resultat : JWT > 144KB,
+  // header Authorization rejete par Cloudflare/Render -> "Failed to fetch"
+  // sur TOUS les calls API authentifies (dashboard admin vide, panier vide,
+  // etc.). Diagnostic confirme par dump live : payload JWT 108KB dont
+  // user_metadata.cart_items[0].image = 106KB de data:image/png;base64,...
+  //
+  // Decision : panier en localStorage UNIQUEMENT. Le multi-appareil n'est
+  // pas critique pour un panier - la conversion a lieu sur le meme appareil
+  // que le browse. Si on veut le multi-appareil un jour, il faudra une
+  // table Strapi `cart` cote backend (jamais du JWT).
+  //
+  // Cleanup deja effectue cote BDD : UPDATE auth.users SET raw_user_meta_data
+  // = raw_user_meta_data - 'cart_items' WHERE raw_user_meta_data ? 'cart_items'
+  // (7 users impactes nettoyes).
 
-  // Sauvegarder le panier dans Supabase a chaque changement (si connecte)
-  const saveToSupabase = useCallback(async (cartItems) => {
-    if (!user || savingRef.current) return;
-    savingRef.current = true;
-    try {
-      await updateProfile({ cart_items: cartItems });
-    } catch {} finally {
-      savingRef.current = false;
-    }
-  }, [user, updateProfile]);
-
-  // Debounce la sauvegarde Supabase (pas a chaque clic)
-  const debounceRef = useRef(null);
   const saveCart = useCallback((cartItems) => {
     saveCartLocal(cartItems);
-    if (user) {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => saveToSupabase(cartItems), 2000);
-    }
-  }, [user, saveToSupabase]);
+  }, []);
 
   const addToCart = useCallback((item) => {
     setItems(prev => {
@@ -150,11 +132,9 @@ export function CartProvider({ children }) {
       if (removed) trackRemoveFromCart(removed);
       const updated = prev.filter((_, i) => i !== index);
       saveCartLocal(updated);
-      // Sauvegarde immediate dans Supabase (pas debounce) pour eviter la restauration fantome
-      if (user) saveToSupabase(updated);
       return updated;
     });
-  }, [user, saveToSupabase]);
+  }, []);
 
   const updateQuantity = useCallback((index, quantity, unitPrice) => {
     setItems(prev => {
