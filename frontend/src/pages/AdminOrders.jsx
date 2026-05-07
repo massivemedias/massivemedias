@@ -181,6 +181,7 @@ function AdminOrders() {
   const [showQuoteCreateModal, setShowQuoteCreateModal] = useState(false);
   const [convertingQuoteId, setConvertingQuoteId] = useState(null);
   const [quoteFeedback, setQuoteFeedback] = useState('');
+  const [expandedQuoteId, setExpandedQuoteId] = useState(null);
 
   // FIX-EMAIL-CONTROL (avril 2026) : interception du changement de statut via
   // une modale de confirmation avec apercu du courriel. Structure :
@@ -1474,99 +1475,203 @@ function AdminOrders() {
                 <div className="text-right">{tx({ fr: 'Actions', en: 'Actions', es: 'Acciones' })}</div>
               </div>
               {quotes.map((q) => {
-                const itemsCount = Array.isArray(q.items) ? q.items.length : 0;
-                const firstItem = itemsCount > 0 ? q.items[0] : null;
+                const itemsList = Array.isArray(q.items) ? q.items : [];
                 const isBusy = convertingQuoteId === q.documentId;
+                const isExpanded = expandedQuoteId === q.documentId;
+                // Stop propagation helper : evite que le clic sur un bouton
+                // d'action declenche aussi le toggle expand de la row.
+                const stop = (e) => e.stopPropagation();
                 return (
-                  <div
-                    key={q.documentId}
-                    className="grid grid-cols-1 md:grid-cols-[1.5fr_1.2fr_auto_auto_auto] gap-3 px-4 py-3 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors items-center"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-heading truncate">{q.customerName}</p>
-                      {q.customerEmail && (
-                        <p className="text-xs text-grey-muted truncate flex items-center gap-1">
-                          <Mail size={11} className="flex-shrink-0" />
-                          <a href={`mailto:${q.customerEmail}`} className="hover:text-accent transition-colors truncate">
-                            {q.customerEmail}
-                          </a>
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-xs text-grey-muted truncate">
-                      {firstItem ? (firstItem.description || firstItem.name || '-') : '-'}
-                      {itemsCount > 1 && <span className="ml-1 opacity-70">+{itemsCount - 1}</span>}
-                    </div>
-                    <div className="text-sm font-bold text-heading whitespace-nowrap">
-                      {formatPrice(q.total || 0)}
-                    </div>
-                    <div className="text-xs text-grey-muted whitespace-nowrap">
-                      {q.createdAt ? new Date(q.createdAt).toLocaleDateString('fr-CA', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0 justify-end">
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-400">
-                        <Clock size={10} />
-                        {tx({ fr: 'En attente de validation', en: 'Awaiting validation', es: 'Esperando validacion' })}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setConvertingQuoteId(q.documentId);
-                          try {
-                            await updateOrderStatus(q.documentId, 'pending', { sendEmail: false });
-                            setQuotes(prev => prev.filter(x => x.documentId !== q.documentId));
-                            setQuoteFeedback(tx({
-                              fr: `Soumission convertie en commande - cherche la dans l'onglet "Toutes les commandes" (statut Pending) pour generer le lien Stripe.`,
-                              en: `Quote converted to order - find it in "All orders" tab (Pending status) to generate the Stripe link.`,
-                              es: `Cotizacion convertida en pedido - buscala en "Todos los pedidos" (estado Pending).`,
-                            }));
-                            setTimeout(() => setQuoteFeedback(''), 6000);
-                            // Refresh la liste principale en background pour qu'elle apparaisse au switch de tab
-                            fetchOrders().catch(() => {});
-                          } catch (err) {
-                            setOpError(tx({
-                              fr: 'Erreur de conversion',
-                              en: 'Conversion error',
-                              es: 'Error al convertir',
-                            }));
-                            setTimeout(() => setOpError(''), 4000);
-                          } finally {
-                            setConvertingQuoteId(null);
-                          }
-                        }}
-                        disabled={isBusy}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-40 text-[11px] font-semibold"
-                        title={tx({ fr: 'Convertir en commande', en: 'Convert to order', es: 'Convertir en pedido' })}
+                  <div key={q.documentId} className="border-b border-white/5 last:border-b-0">
+                    {/* Row principale - cliquable pour expand */}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setExpandedQuoteId(isExpanded ? null : q.documentId)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setExpandedQuoteId(isExpanded ? null : q.documentId);
+                        }
+                      }}
+                      className="grid grid-cols-1 md:grid-cols-[1.5fr_1.2fr_auto_auto_auto] gap-3 px-4 py-3 hover:bg-white/5 transition-colors items-center cursor-pointer"
+                    >
+                      <div className="min-w-0 flex items-center gap-2">
+                        <ChevronDown
+                          size={14}
+                          className={`text-grey-muted flex-shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-heading truncate">{q.customerName}</p>
+                          {q.customerEmail && (
+                            <p className="text-xs text-grey-muted truncate flex items-center gap-1">
+                              <Mail size={11} className="flex-shrink-0" />
+                              <a
+                                href={`mailto:${q.customerEmail}`}
+                                onClick={stop}
+                                className="hover:text-accent transition-colors truncate"
+                              >
+                                {q.customerEmail}
+                              </a>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-xs text-grey-muted truncate">
+                        {itemsList.length > 0
+                          ? (itemsList[0].description || itemsList[0].name || '-')
+                          : '-'}
+                        {itemsList.length > 1 && (
+                          <span className="ml-1 opacity-70">+{itemsList.length - 1}</span>
+                        )}
+                      </div>
+                      <div className="text-sm font-bold text-heading whitespace-nowrap">
+                        {formatPrice(q.total || 0)}
+                      </div>
+                      <div className="text-xs text-grey-muted whitespace-nowrap">
+                        {q.createdAt ? new Date(q.createdAt).toLocaleDateString('fr-CA', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+                      </div>
+                      <div
+                        className="flex items-center gap-1.5 flex-shrink-0 justify-end"
+                        onClick={stop}
+                        onKeyDown={stop}
                       >
-                        {isBusy ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle size={11} />}
-                        {tx({ fr: 'Convertir', en: 'Convert', es: 'Convertir' })}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (!window.confirm(tx({
-                            fr: 'Supprimer cette soumission ? Action irreversible.',
-                            en: 'Delete this quote? Irreversible.',
-                            es: 'Eliminar esta cotizacion? Irreversible.',
-                          }))) return;
-                          setConvertingQuoteId(q.documentId);
-                          try {
-                            await deleteOrder(q.documentId);
-                            setQuotes(prev => prev.filter(x => x.documentId !== q.documentId));
-                          } catch {
-                            setOpError(tx({ fr: 'Erreur de suppression', en: 'Delete error', es: 'Error al eliminar' }));
-                            setTimeout(() => setOpError(''), 4000);
-                          } finally {
-                            setConvertingQuoteId(null);
-                          }
-                        }}
-                        disabled={isBusy}
-                        className="p-1.5 rounded-lg bg-red-500/10 text-red-400/70 hover:bg-red-500/20 hover:text-red-400 transition-colors disabled:opacity-40"
-                        title={tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-400">
+                          <Clock size={10} />
+                          {tx({ fr: 'Soumission', en: 'Quote', es: 'Cotizacion' })}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={async (e) => {
+                            stop(e);
+                            setConvertingQuoteId(q.documentId);
+                            try {
+                              await updateOrderStatus(q.documentId, 'pending', { sendEmail: false });
+                              setQuotes(prev => prev.filter(x => x.documentId !== q.documentId));
+                              setQuoteFeedback(tx({
+                                fr: `Soumission convertie en commande - cherche la dans l'onglet "Toutes les commandes" (statut Pending) pour generer le lien Stripe.`,
+                                en: `Quote converted to order - find it in "All orders" tab (Pending status) to generate the Stripe link.`,
+                                es: `Cotizacion convertida en pedido - buscala en "Todos los pedidos" (estado Pending).`,
+                              }));
+                              setTimeout(() => setQuoteFeedback(''), 6000);
+                              // Refresh la liste principale en background pour qu'elle apparaisse au switch de tab
+                              fetchOrders().catch(() => {});
+                            } catch (err) {
+                              setOpError(tx({
+                                fr: 'Erreur de conversion',
+                                en: 'Conversion error',
+                                es: 'Error al convertir',
+                              }));
+                              setTimeout(() => setOpError(''), 4000);
+                            } finally {
+                              setConvertingQuoteId(null);
+                            }
+                          }}
+                          disabled={isBusy}
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-accent/20 text-accent hover:bg-accent/30 transition-colors disabled:opacity-40 text-[11px] font-semibold"
+                          title={tx({ fr: 'Convertir en commande', en: 'Convert to order', es: 'Convertir en pedido' })}
+                        >
+                          {isBusy ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle size={11} />}
+                          {tx({ fr: 'Convertir', en: 'Convert', es: 'Convertir' })}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async (e) => {
+                            stop(e);
+                            if (!window.confirm(tx({
+                              fr: 'Supprimer cette soumission ? Action irreversible.',
+                              en: 'Delete this quote? Irreversible.',
+                              es: 'Eliminar esta cotizacion? Irreversible.',
+                            }))) return;
+                            setConvertingQuoteId(q.documentId);
+                            try {
+                              await deleteOrder(q.documentId);
+                              setQuotes(prev => prev.filter(x => x.documentId !== q.documentId));
+                            } catch {
+                              setOpError(tx({ fr: 'Erreur de suppression', en: 'Delete error', es: 'Error al eliminar' }));
+                              setTimeout(() => setOpError(''), 4000);
+                            } finally {
+                              setConvertingQuoteId(null);
+                            }
+                          }}
+                          disabled={isBusy}
+                          className="p-1.5 rounded-lg bg-red-500/10 text-red-400/70 hover:bg-red-500/20 hover:text-red-400 transition-colors disabled:opacity-40"
+                          title={tx({ fr: 'Supprimer', en: 'Delete', es: 'Eliminar' })}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Panneau expand : detail des items + notes/delai */}
+                    {isExpanded && (
+                      <div className="bg-black/20 px-4 py-4 space-y-3">
+                        <div>
+                          <h4 className="text-[11px] uppercase tracking-wider font-semibold text-grey-muted mb-2">
+                            {tx({ fr: 'Items detailles', en: 'Items', es: 'Items' })}
+                            <span className="ml-2 normal-case opacity-60">({itemsList.length})</span>
+                          </h4>
+                          {itemsList.length === 0 ? (
+                            <p className="text-xs text-grey-muted italic">
+                              {tx({ fr: 'Aucun item.', en: 'No items.', es: 'Sin items.' })}
+                            </p>
+                          ) : (
+                            <ul className="space-y-1.5">
+                              {itemsList.map((item, idx) => {
+                                const desc = item.description || item.name || '-';
+                                const qty = Number(item.quantity) || 1;
+                                const price = Number(item.unitPrice) || 0;
+                                const lineTotal = qty * price;
+                                return (
+                                  <li
+                                    key={idx}
+                                    className="flex items-start gap-3 text-sm text-heading bg-glass rounded-lg px-3 py-2"
+                                  >
+                                    <span className="text-grey-muted text-xs w-6 flex-shrink-0">
+                                      {qty}x
+                                    </span>
+                                    <span className="flex-1 min-w-0">{desc}</span>
+                                    <span className="text-xs text-grey-muted whitespace-nowrap">
+                                      {formatPrice(price)} / unite
+                                    </span>
+                                    <span className="font-semibold whitespace-nowrap">
+                                      {formatPrice(lineTotal)}
+                                    </span>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                          <span className="text-xs text-grey-muted uppercase tracking-wider">
+                            {tx({ fr: 'Total estime', en: 'Estimated total', es: 'Total estimado' })}
+                          </span>
+                          <span className="text-base font-bold text-heading">
+                            {formatPrice(q.total || 0)}
+                          </span>
+                        </div>
+
+                        {q.notes && (
+                          <div>
+                            <h4 className="text-[11px] uppercase tracking-wider font-semibold text-grey-muted mb-1.5">
+                              {tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })}
+                            </h4>
+                            <p className="text-xs text-heading whitespace-pre-line bg-glass rounded-lg px-3 py-2">
+                              {q.notes}
+                            </p>
+                          </div>
+                        )}
+
+                        {q.customerPhone && (
+                          <div className="text-xs text-grey-muted flex items-center gap-1.5">
+                            <Phone size={11} />
+                            {q.customerPhone}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
