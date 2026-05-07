@@ -99,23 +99,62 @@ const QUOTE_PRESETS = [
   },
 ];
 
-// Item vide initial. Tous les champs des modes 'sticker' et 'fineart' sont
-// pre-remplis avec des valeurs par defaut sensees pour eviter les undefined
-// lors du switch de mode (ex: passer en sticker -> finish='matte', size='2in').
+// Item vide initial. Tous les champs des modes typed sont pre-remplis avec
+// des valeurs par defaut sensees pour eviter les undefined lors du switch
+// de mode (ex: passer en sticker -> finish='matte', size='2in').
 function makeBlankItem() {
   return {
     kind: 'free',
     description: '',
     quantity: 1,
     unitPrice: '',
+    // sticker
     finish: 'matte',
     shape: 'round',
     size: '2in',
+    // fine art
     tier: 'studio',
     format: '',
     withFrame: false,
+    // web / design / affiches : presetKey = id du preset selectionne
+    // (les valeurs sont resolues via PRESET_DEFINITIONS)
+    presetKey: '',
   };
 }
+
+// Presets fixes (grille tarifaire 2026 Massive Medias). Distinct des modes
+// calcules (sticker/fineart) qui utilisent une formule. Ces presets sont
+// "a partir de" : l'admin garde la liberte d'ajuster description et prix
+// dans la ligne apres selection.
+//
+// Flag isHourly : pour les banques d'heures, la qty est le nombre d'heures
+// que l'admin saisit. Le selecteur de preset n'ecrase pas la qty existante
+// (sinon on perdrait la saisie en cours), il fixe juste description et prix.
+const PRESET_DEFINITIONS = {
+  affiches: [
+    { id: 'aff-20-12x16',  description: '20 affiches 12x16 (Lustre)',          price: 80 },
+    { id: 'aff-60-12x16',  description: '60 affiches 12x16 (Lustre/Exterieur)', price: 160 },
+    { id: 'aff-100-12x16', description: '100 affiches 12x16 (Lustre/Exterieur)', price: 220 },
+    { id: 'aff-20-18x24',  description: '20 affiches 18x24',                    price: 120 },
+    { id: 'aff-50-18x24',  description: '50 affiches 18x24',                    price: 240 },
+  ],
+  web: [
+    { id: 'web-landing',     description: 'Landing page',                  price: 900 },
+    { id: 'web-vitrine',     description: 'Site vitrine (5-10 pages)',     price: 1000 },
+    { id: 'web-ecommerce',   description: 'Site e-commerce',               price: 1500 },
+    { id: 'web-maintenance', description: 'Maintenance mensuelle',         price: 100 },
+    { id: 'web-hours',       description: 'Banque d\'heures Web (Sur mesure)', price: 85, isHourly: true },
+  ],
+  design: [
+    { id: 'design-logo',         description: 'Creation logo',                  price: 300 },
+    { id: 'design-identite',     description: 'Identite visuelle complete',     price: 800 },
+    { id: 'design-affiche',      description: 'Affiche / flyer evenement',      price: 150 },
+    { id: 'design-pochette',     description: 'Pochette album/single',          price: 200 },
+    { id: 'design-icones',       description: 'Design d\'icones (set)',         price: 200 },
+    { id: 'design-retouche',     description: 'Retouche photo (par image)',     price: 15 },
+    { id: 'design-hours',        description: 'Banque d\'heures Design',        price: 85, isHourly: true },
+  ],
+};
 
 /**
  * @param {object} props
@@ -224,7 +263,35 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
         };
       }
     }
+    // Modes "preset list" (affiches/web/design) : resolution via PRESET_DEFINITIONS.
+    // Contrairement a sticker/fineart, on N'ECRASE PAS description / unitPrice
+    // si l'admin les a deja modifies manuellement apres la selection (la grille
+    // 2026 est "a partir de", l'admin doit pouvoir ajuster). On ne synchronise
+    // que lors d'un CHANGEMENT de preset (ce qui se fait via applyTypedPreset
+    // ci-dessous, pas via recomputeItem). Du coup recomputeItem est no-op ici.
     return item;
+  };
+
+  // Selectionne un preset typed (affiches/web/design) : remplit description
+  // + unitPrice + qty (1 par defaut, sauf banque d'heures qui garde la qty
+  // courante pour permettre a l'admin de taper le nombre d'heures avant ou
+  // apres la selection).
+  const applyTypedPreset = (idx, kind, presetId) => {
+    const list = PRESET_DEFINITIONS[kind] || [];
+    const preset = list.find(p => p.id === presetId);
+    if (!preset) return;
+    setItems(prev => prev.map((it, i) => {
+      if (i !== idx) return it;
+      const next = {
+        ...it,
+        kind,
+        presetKey: preset.id,
+        description: preset.description,
+        unitPrice: String(preset.price),
+      };
+      if (!preset.isHourly) next.quantity = 1;
+      return next;
+    }));
   };
 
   const updateItem = (idx, patch) => {
@@ -429,15 +496,23 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
             </div>
             <div className="space-y-4">
               {items.map((it, idx) => {
+                // isCalculated : modes a formule (description + unitPrice
+                // verrouilles, recalcules a chaque change). NE PAS inclure
+                // affiches/web/design qui ont des prix "a partir de" libres.
                 const isCalculated = it.kind === 'sticker' || it.kind === 'fineart';
+                const presetList = PRESET_DEFINITIONS[it.kind];
                 return (
                 <div key={idx} className="rounded-lg bg-black/20 border border-white/5 p-2.5 space-y-2">
-                  {/* Ligne 0 : selecteur de mode (Libre / Sticker / Fine Art) */}
+                  {/* Ligne 0 : selecteur de mode (6 pills + preset libre dropdown).
+                      Affiches/Web/Design : prix base de la grille 2026, modifiable. */}
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {[
                       { id: 'free',     label: tx({ fr: 'Libre',    en: 'Free',     es: 'Libre' }),     icon: Plus },
                       { id: 'sticker',  label: tx({ fr: 'Sticker',  en: 'Sticker',  es: 'Sticker' }),   icon: Calculator },
                       { id: 'fineart',  label: tx({ fr: 'Fine Art', en: 'Fine Art', es: 'Fine Art' }),  icon: Calculator },
+                      { id: 'affiches', label: tx({ fr: 'Affiches', en: 'Posters',  es: 'Carteles' }),  icon: FileText },
+                      { id: 'web',      label: tx({ fr: 'Site Web', en: 'Web',      es: 'Web' }),       icon: FileText },
+                      { id: 'design',   label: tx({ fr: 'Design',   en: 'Design',   es: 'Diseno' }),    icon: FileText },
                     ].map(m => {
                       const Ic = m.icon;
                       const active = it.kind === m.id;
@@ -563,6 +638,33 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
                         )}
                       </label>
                     </div>
+                  )}
+
+                  {/* Modes preset list : Affiches / Web / Design.
+                      Dropdown unique avec les options de la grille 2026. La
+                      selection auto-fill description + unitPrice + qty=1
+                      (sauf banque d'heures qui garde la qty saisie). Ensuite
+                      l'admin peut ajuster description et prix manuellement. */}
+                  {presetList && (
+                    <select
+                      value={it.presetKey || ''}
+                      onChange={(e) => applyTypedPreset(idx, it.kind, e.target.value)}
+                      disabled={submitting}
+                      className="w-full bg-black/30 border border-white/10 rounded-md px-2 py-1.5 text-heading text-xs focus:outline-none focus:border-accent disabled:opacity-50"
+                    >
+                      <option value="">
+                        {tx({
+                          fr: 'Choisir un preset...',
+                          en: 'Pick a preset...',
+                          es: 'Elegir un preset...',
+                        })}
+                      </option>
+                      {presetList.map(p => (
+                        <option key={p.id} value={p.id}>
+                          {p.description} {p.isHourly ? `— ${p.price}$/h` : `— ${p.price}$`}
+                        </option>
+                      ))}
+                    </select>
                   )}
 
                   {/* Ligne finale : description + qty + prix + remove.
