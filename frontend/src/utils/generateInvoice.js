@@ -93,6 +93,20 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   const title = isReceipt ? 'RECU' : isQuote ? 'SOUMISSION' : 'FACTURE';
   const invoiceNum = generateInvoiceNumber(order);
 
+  // FIX-PDF-QUOTE-TOTAL (7 mai 2026) : helper local qui formate un montant
+  // selon la convention de stockage du document.
+  // - Commandes Stripe : subtotal/total stockes en CENTS (heritage Stripe API)
+  //                      -> on divise par 100
+  // - Soumissions (quotes) : stockees en DOLLARS directement par quoteCreate
+  //                          -> pas de division
+  // L'helper module-level `dollars(cents)` (ligne ~33) reste utilise par
+  // generateManualInvoicePDF qui a sa propre convention. Ne pas tout fusionner
+  // pour eviter une regression sur les vraies factures.
+  const fmtTotal = (val) => {
+    const num = isQuote ? (val || 0) : (val || 0) / 100;
+    return num.toFixed(2) + ' $';
+  };
+
   // Couleurs
   const darkText = [30, 30, 30];
   const greyText = [120, 120, 120];
@@ -329,20 +343,20 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
     y += bold ? 7 : 5;
   };
 
-  drawTotalLine('Sous-total', dollars(order.subtotal));
+  drawTotalLine('Sous-total', fmtTotal(order.subtotal));
 
   if (order.shipping > 0) {
-    drawTotalLine('Livraison', dollars(order.shipping));
+    drawTotalLine('Livraison', fmtTotal(order.shipping));
   } else {
     drawTotalLine('Livraison', 'Gratuit');
   }
 
   if (order.tps > 0) {
-    drawTotalLine(`TPS (5%) - ${company.tps}`, dollars(order.tps));
+    drawTotalLine(`TPS (5%) - ${company.tps}`, fmtTotal(order.tps));
   }
 
   if (order.tvq > 0) {
-    drawTotalLine(`TVQ (9.975%) - ${company.tvq}`, dollars(order.tvq));
+    drawTotalLine(`TVQ (9.975%) - ${company.tvq}`, fmtTotal(order.tvq));
   }
 
   // Separator
@@ -353,7 +367,7 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
   y += 5;
 
   // Total final
-  drawTotalLine('TOTAL', dollars(order.total), true);
+  drawTotalLine('TOTAL', fmtTotal(order.total), true);
 
   // ==================== LIEN DE PAIEMENT STRIPE (si facture non payee) ====================
   // FIX-PDF : injection du lien de paiement Stripe directement dans le PDF pour que
