@@ -1,191 +1,73 @@
+// PURGE NUCLEAIRE (5 mai 2026) : reduction au strict minimum suite a une
+// cascade d'erreurs reseau en production qui faisaient suspecter une
+// corruption de l'instance axios par les couches d'intercepteurs accumulees.
+//
+// Ce qui A ETE SUPPRIME :
+//   - Intercepteur response (retry sur 5xx, markServerDown, log 401, etc)
+//   - Logique de retry MAX_RETRIES + RETRY_DELAYS + shouldRetry + wait
+//   - Tracking serverDown (markServerDown / markServerUp / SERVER_DOWN_COOLDOWN)
+//   - Helper isExpected401 et tout le matching d'URL pattern
+//   - Headers exotiques (Cache-Control, Pragma) qui declenchaient des
+//     preflights CORS supplementaires
+//   - Nettoyage agressif de localStorage (qui detruisait code_verifier OAuth)
+//   - Compteur _retryCount dans la config
+//
+// Ce qui RESTE :
+//   - axios.create avec baseURL + timeout + adapter fetch
+//     (adapter fetch est la SEULE config exotique, justifiee par
+//      diagnostic Chrome DevTools live qui montrait que toutes les
+//      requetes XHR etaient ERR_CONNECTION_RESET alors que les requetes
+//      fetch passaient en 200. Sans cette ligne, le user actuel ne peut
+//      plus rien charger - ce n'est pas un intercepteur, c'est le
+//      transport sous-jacent)
+//   - 1 SEUL intercepteur request, ultra simple : pull token Supabase
+//     et injecte Authorization Bearer. C'est tout.
+//   - isServerDown() stub qui retourne false (compat avec callers externes
+//     dans NotificationContext + Account qui s'en servent pour skip leur
+//     polling - sans ce stub, ces fichiers crashent a l'import)
+//   - uploadArtistFile / uploadFile : helpers Supabase Storage qui ne
+//     touchent PAS l'instance axios - n'ont rien a voir avec ce purge
+//     mais doivent rester exportes (utilises par d'autres composants)
+
 import axios from 'axios';
 import { supabase } from '../lib/supabase';
 
-// HARDCODE-PROD (3 mai 2026) : URL prod en dur, bypass complet de la
-// resolution via env var ou utility. Decision temporaire pour eliminer
-// toute possibilite que VITE_API_URL non-injectee, MODE mal detecte ou
-// import.meta.env manquant casse l'app en prod. A revisiter quand le
-// pipeline env CF Pages sera fiabilise.
 const API_URL = 'https://massivemedias-api.onrender.com/api';
 
-// FIX-XHR-BLOCKED (5 mai 2026 v3) : on FORCE axios a utiliser le `fetch`
-// adapter au lieu de XMLHttpRequest. Diagnostic Chrome DevTools du user
-// montre que TOUTES les requetes en `xhr` (axios default) echouent avec
-// ERR_CONNECTION_RESET, alors que les requetes en `fetch` (autres libs)
-// passent en 200. Cause typique : extension Chrome (Datadog injecte par
-// un Chrome plugin), antivirus avec inspection HTTPS, ou cache HTTP/2
-// corrompu specifique au transport XHR.
-// L'adapter fetch contourne ces bloqueurs et utilise la meme stack reseau
-// que les autres libs natives (Supabase SDK, Stripe.js, etc) qui marchent.
-// Axios v1+ supporte 'fetch' comme valeur d'adapter.
 const api = axios.create({
   baseURL: API_URL,
   timeout: 30000,
   adapter: 'fetch',
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
-// Helper : recupere le token d'auth le plus frais possible.
-// Priorite a supabase.auth.getSession() (source de verite, auto-refresh si expire)
-// avec fallback localStorage pour les cas edge (supabase pas dispo, offline).
-async function getFreshToken() {
+// Intercepteur request UNIQUE et MINIMAL : injection Bearer token. Rien d'autre.
+api.interceptors.request.use(async (config) => {
   if (supabase) {
     try {
       const { data } = await supabase.auth.getSession();
-      const supabaseToken = data?.session?.access_token;
-      if (supabaseToken) return supabaseToken;
-    } catch { /* fall through to localStorage */ }
-  }
-  try {
-    return localStorage.getItem('token') || null;
-  } catch {
-    return null;
-  }
-}
-
-// Intercepteur REQUETE : async, pull le token frais de Supabase a chaque call.
-// Elimine la race post-signIn ou le navigate vers /admin se declenchait AVANT
-// que onAuthStateChange ait sync le token dans localStorage -> 1ere requete
-// partait sans Authorization -> 401 -> logout instantane.
-api.interceptors.request.use(
-  async (config) => {
-    const token = await getFreshToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      const token = data?.session?.access_token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      // Silent : si Supabase fail, la requete part sans Authorization
+      // et le backend retournera 401 que le caller pourra gerer.
     }
-    // Compteur de retry interne
-    if (!config._retryCount) config._retryCount = 0;
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
   }
-);
+  return config;
+});
 
-// Retry automatique sur erreurs transitoires (503 backend restart, erreurs reseau).
-// Le backend Render est sur plan "Always On" (pas de sleep), mais on garde un retry
-// court pour les redemarrages post-deploy et coupures reseau client.
-const MAX_RETRIES = 3;
-const RETRY_DELAYS = [4000, 8000, 15000]; // 4s, 8s, 15s - total ~27s de patience
-
-// Track si le serveur est down pour eviter le spam de retry
-let serverDown = false;
-let serverDownSince = 0;
-const SERVER_DOWN_COOLDOWN = 60000; // 1 min avant de re-essayer
-
-function shouldRetry(error) {
-  if (error.config?._retryCount >= MAX_RETRIES) return false;
-  // Si serveur deja marque down, pas de retry du tout
-  if (serverDown && Date.now() - serverDownSince < SERVER_DOWN_COOLDOWN) return false;
-
-  // FRONT-01: retry sur toute la fenetre 500-504 (pas seulement 503).
-  //   500 = crash transitoire (OOM en cours, exception non gere)
-  //   502 = Bad Gateway (conteneur Render en train de redemarrer)
-  //   503 = Service Unavailable (maintenance / load)
-  //   504 = Gateway Timeout (DB slow / API externe lente)
-  // Tous ces statuts sont des "rests quelques secondes et re-essaye" legitimes
-  // pour un SPA qui enchaine checkout/upload/admin. Avant ce fix, seul 503
-  // re-essayait - un 502 pendant un deploy Render plantait le checkout.
-  const status = error.response?.status;
-  if (status >= 500 && status <= 504) return true;
-
-  // Erreur reseau (pas de reponse = serveur down) - 1 seul retry puis on arrete
-  if (!error.response && error.code !== 'ERR_CANCELED') {
-    if (error.config?._retryCount >= 1) {
-      markServerDown(); // Marquer down des le 1er echec de retry
-      return false;
-    }
-    return true;
-  }
-  return false;
-}
-
-function markServerDown() {
-  serverDown = true;
-  serverDownSince = Date.now();
-}
-
-function markServerUp() {
-  serverDown = false;
-}
-
-function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// Intercepteur pour gerer les erreurs + retry
-api.interceptors.response.use(
-  (response) => {
-    markServerUp();
-    return response;
-  },
-  async (error) => {
-    // Retry sur erreurs transitoires (503, network/CORS)
-    if (shouldRetry(error)) {
-      error.config._retryCount += 1;
-      const attempt = error.config._retryCount;
-      const delay = RETRY_DELAYS[attempt - 1] || 15000;
-      console.warn(
-        `API retry ${attempt}/${MAX_RETRIES} dans ${delay / 1000}s:`,
-        error.config.url
-      );
-      await wait(delay);
-      return api.request(error.config);
-    }
-
-    // Marquer le serveur down si erreur reseau apres tous les retries
-    if (!error.response && error.code !== 'ERR_CANCELED') {
-      markServerDown();
-    }
-
-    // OPTION NUCLEAIRE : l'auto-logout sur 401 etait trop agressif et causait
-    // des faux-positifs qui deconnectaient l'admin au changement de route.
-    // On rejette simplement la promesse. La gestion du 401 remonte au composant
-    // qui peut afficher une erreur UX sans detruire la session. Pas de redirect,
-    // pas de signOut, pas d'event auth:expired.
-    // FIX-DIAG (3 mai 2026) : log explicite des 401 pour aider l'admin a
-    // comprendre pourquoi sa session est rejetee (token expire, role
-    // insuffisant, endpoint mal protege). Visible dans la console browser.
-    // FIX-CORS (3 mai 2026 v2) : le header custom X-Suppress-401-Log
-    // declenche un preflight OPTIONS rejete par le serveur Strapi (header
-    // pas dans Access-Control-Allow-Headers). Switch vers un check URL
-    // pattern pour suppress le log sur les endpoints publics best-effort
-    // (ex: /artists protege par defaut, fallback hardcoded). Aucun header
-    // custom ajoute -> aucun preflight CORS additionnel.
-    if (error?.response?.status === 401 && !isExpected401(error?.config?.url)) {
-      console.warn(
-        '[api] 401 sur',
-        error?.config?.method?.toUpperCase() || 'GET',
-        error?.config?.url,
-        '- token:', !!error?.config?.headers?.Authorization,
-        '- detail:', error?.response?.data?.error?.message || error?.response?.data?.message || '(no detail)'
-      );
-    }
-    return Promise.reject(error);
-  }
-);
-
-/**
- * URLs ou un 401 est attendu par design (collections Strapi protegees
- * mais on essaie quand meme avec un fallback hardcoded). Ne pas polluer
- * la console pour ces cas.
- */
-function isExpected401(url) {
-  if (!url || typeof url !== 'string') return false;
-  const path = url.split('?')[0];
-  // /artists (sans /admin) : collection CMS publique mais protegee par
-  // defaut Strapi. Le hook useArtists fallback sur src/data/artists.js.
-  if (path === '/artists') return true;
-  if (path.startsWith('/artists/') && !path.includes('admin')) return true;
-  return false;
-}
-
-// Expose pour que le polling puisse verifier avant de spammer
+// Stub no-op pour compat avec NotificationContext.jsx + Account.jsx qui
+// importent isServerDown de ce module. Avant le purge, cette fonction
+// retournait true pendant 60s apres une serie d'erreurs reseau pour eviter
+// le spam de retry. Maintenant : pas de retry, pas de tracking, on retourne
+// toujours false (= serveur considere comme up). Les callers continuent de
+// faire leurs polling normalement.
 export function isServerDown() {
-  return serverDown && Date.now() - serverDownSince < SERVER_DOWN_COOLDOWN;
+  return false;
 }
+
+// === Upload Supabase Storage helpers (non lies a l'instance axios) ===
 
 export async function uploadArtistFile(file) {
   const { supabase } = await import('../lib/supabase');
@@ -242,4 +124,3 @@ export async function uploadFile(file) {
 }
 
 export default api;
-// 1778117358
