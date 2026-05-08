@@ -48,8 +48,15 @@ function ArtistPartnershipForm() {
     setError('');
 
     try {
+      // FIX-NULL-PAYLOAD (8 mai 2026) : cleanForApi trim + retire les keys
+      // vides (nomArtiste, tpsTvq, etc. sont optionnels - les envoyer en ''
+      // ou null avec le schema email-validation Strapi peut planter).
+      // supabaseUserId garde sa valeur null si user invite (le backend
+      // accepte null pour cette colonne).
+      const { cleanForApi } = await import('../utils/sanitizePayload');
+      const cleaned = cleanForApi(formData);
       await api.post('/artist-submissions/submit', {
-        ...formData,
+        ...cleaned,
         supabaseUserId: user?.id || null,
         contractAccepted: true,
         contractVersion: ARTIST_CONTRACT_VERSION,

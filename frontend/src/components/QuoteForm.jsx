@@ -61,14 +61,13 @@ function QuoteForm({
     submittingRef.current = true;
     setSubmitting(true);
     try {
-      await api.post('/contact-submissions/submit', {
-        name: trimmedName,
-        email: trimmedEmail.toLowerCase(),
-        phone: phone.trim() || null,
-        message: trimmedMessage,
-        service,
-        source: `quote-form-${service}`,
-      });
+      // FIX-NULL-PAYLOAD (8 mai 2026) : on omet phone si vide au lieu d'envoyer
+      // null. Strapi v5 rejette null sur tout champ string non explicitement
+      // marque required:false-nullable-true (cf. utils/sanitizePayload.js).
+      const payload = { name: trimmedName, email: trimmedEmail.toLowerCase(), message: trimmedMessage, service, source: `quote-form-${service}` };
+      const trimmedPhone = phone.trim();
+      if (trimmedPhone) payload.phone = trimmedPhone;
+      await api.post('/contact-submissions/submit', payload);
       setStatus('success');
       setName(''); setEmail(''); setPhone(''); setMessage('');
     } catch (err) {
