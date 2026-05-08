@@ -282,3 +282,93 @@ export function lookupSublimationPrice(productId, qty, { withDesign = false, byo
     byotEligible: SUBLIMATION_BYOT_ALLOWED.includes(productId),
   };
 }
+
+// ============================================================================
+// MERCH (Sublimation) - grille tarifaire 2026 unite-par-palier (8 mai 2026)
+// ============================================================================
+// Format : { qtyPalier: prixUnitaire, ... }. Cle = quantite minimum du palier,
+// valeur = prix unitaire applique au-dessus (jusqu'au palier suivant).
+//
+// Strategie de calcul : interpolation lineaire du UNIT PRICE entre 2 paliers
+// (meme principe que lookupStickerPriceCustomQty). Au-dessus du dernier palier
+// le prix unitaire est cappe (pas d'extrapolation, evite les pricing absurdes
+// pour des grosses commandes type 500 t-shirts qu'on negocie au cas par cas).
+//
+// Le frais de design "design-fee" (125$ flat, qty=1 force) est traite a part
+// dans QuoteCreateModal car il n'a pas de degression - voir bloc dedie la-bas.
+
+const MERCH_UNIT_GRID = {
+  tshirt:     { 1: 30, 5: 27, 10: 25, 25: 23 },
+  longsleeve: { 1: 40, 5: 37, 10: 35, 25: 33 },
+  hoodie:     { 1: 50, 5: 45, 10: 42, 25: 40 },
+  totebag:    { 1: 15, 10: 13, 25: 12, 50: 10 },
+  sacbanane:  { 1: 80, 5: 75, 10: 70 },
+  mug:        { 1: 15, 5: 13, 10: 12, 25: 10 },
+};
+
+export const MERCH_PRODUCTS = [
+  { id: 'tshirt',     label: 'T-shirt' },
+  { id: 'longsleeve', label: 'Long Sleeve' },
+  { id: 'hoodie',     label: 'Hoodie' },
+  { id: 'totebag',    label: 'Tote Bag' },
+  { id: 'sacbanane',  label: 'Sac banane' },
+  { id: 'mug',        label: 'Mug' },
+  { id: 'design-fee', label: 'Frais de design Merch (One-time)', isFixed: true, fixedPrice: 125 },
+];
+
+/**
+ * Calcule le prix d'un produit merch pour une quantite donnee.
+ * Retourne { qty, unitPrice, price } ou null si le produit n'existe pas
+ * ou si qty < 1.
+ *
+ * Cas couverts :
+ *   - palier exact (qty = 1, 5, 10, 25, 50) -> unitPrice direct depuis la grille
+ *   - qty intermediaire -> interpolation lineaire entre les 2 paliers qui encadrent
+ *   - qty au-dessus du dernier palier -> rate du dernier palier (capped)
+ *   - qty < 1 -> null
+ *
+ * Tous les prix sont arrondis a 2 decimales (anti FP IEEE 754).
+ */
+export function getMerchPrice(productId, qty) {
+  const grid = MERCH_UNIT_GRID[productId];
+  if (!grid) return null;
+  const q = parseInt(String(qty == null ? '' : qty).replace(/[^0-9]/g, ''), 10);
+  if (!Number.isFinite(q) || q < 1) return null;
+
+  const tierQtys = Object.keys(grid).map(Number).sort((a, b) => a - b);
+
+  // Cas 1 : palier exact -> retour direct
+  if (grid[q] != null) {
+    const unitPrice = grid[q];
+    return { qty: q, unitPrice, price: Math.round(q * unitPrice * 100) / 100, exact: true };
+  }
+
+  // Cas 2 : au-dessus du dernier palier -> rate du dernier palier (cap)
+  const maxQty = tierQtys[tierQtys.length - 1];
+  if (q > maxQty) {
+    const unitPrice = grid[maxQty];
+    return { qty: q, unitPrice, price: Math.round(q * unitPrice * 100) / 100, capped: true };
+  }
+
+  // Cas 3 : interpolation lineaire entre les 2 paliers qui encadrent q
+  let lowQty = tierQtys[0];
+  let highQty = tierQtys[1];
+  for (let i = 0; i < tierQtys.length - 1; i++) {
+    if (q >= tierQtys[i] && q < tierQtys[i + 1]) {
+      lowQty = tierQtys[i];
+      highQty = tierQtys[i + 1];
+      break;
+    }
+  }
+  const factor = (q - lowQty) / (highQty - lowQty);
+  const interpolatedUnit = grid[lowQty] + factor * (grid[highQty] - grid[lowQty]);
+  const unitPrice = Math.round(interpolatedUnit * 100) / 100;
+  return {
+    qty: q,
+    unitPrice,
+    price: Math.round(q * unitPrice * 100) / 100,
+    interpolated: true,
+    lowQty,
+    highQty,
+  };
+}

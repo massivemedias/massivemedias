@@ -32,7 +32,7 @@ import {
 // null sinon -> le prix unite restait bloque sur le 1er palier visible et ne
 // baissait jamais avec la quantite. Cf. lookupStickerPriceCustomQty pour le
 // detail du calcul (interpolation entre les 2 paliers qui encadrent qty).
-import { lookupStickerPriceCustomQty } from '../utils/pricingData';
+import { lookupStickerPriceCustomQty, getMerchPrice, MERCH_PRODUCTS } from '../utils/pricingData';
 
 /**
  * Presets de prix par categorie pour accelerer la saisie de devis recurrents.
@@ -119,6 +119,8 @@ function makeBlankItem() {
     // web / design / affiches : presetKey = id du preset selectionne
     // (les valeurs sont resolues via PRESET_DEFINITIONS)
     presetKey: '',
+    // merch : produit selectionne dans MERCH_PRODUCTS (tshirt par defaut)
+    merchProduct: 'tshirt',
   };
 }
 
@@ -260,6 +262,31 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
           ...item,
           description: `Impression Fine Art ${formatLabel} (${tierLabel})${item.withFrame ? ' avec cadre' : ''}`,
           unitPrice: String(p.price),
+        };
+      }
+    }
+    if (item.kind === 'merch' && item.merchProduct) {
+      const product = MERCH_PRODUCTS.find(p => p.id === item.merchProduct);
+      // Cas 1 : produit "fixe" (frais de design merch one-time = 125$ flat).
+      // On force qty=1 et unitPrice=fixedPrice. Pas de degression.
+      if (product?.isFixed) {
+        return {
+          ...item,
+          description: `Merch - ${product.label}`,
+          quantity: 1,
+          unitPrice: String(product.fixedPrice),
+        };
+      }
+      // Cas 2 : produit a degression (tshirt/longsleeve/hoodie/totebag/sacbanane/mug).
+      // getMerchPrice retourne le unit price interpole pour la qty saisie.
+      const qty = Number(item.quantity) || 1;
+      const p = getMerchPrice(item.merchProduct, qty);
+      if (p && p.unitPrice != null) {
+        const productLabel = product?.label || item.merchProduct;
+        return {
+          ...item,
+          description: `Merch - ${productLabel}`,
+          unitPrice: String(p.unitPrice),
         };
       }
     }
@@ -499,7 +526,9 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
                 // isCalculated : modes a formule (description + unitPrice
                 // verrouilles, recalcules a chaque change). NE PAS inclure
                 // affiches/web/design qui ont des prix "a partir de" libres.
-                const isCalculated = it.kind === 'sticker' || it.kind === 'fineart';
+                // Merch est calcule (degression auto) MAIS le produit "design-fee"
+                // a un prix fixe : on traite ces 2 sous-cas dans recomputeItem.
+                const isCalculated = it.kind === 'sticker' || it.kind === 'fineart' || it.kind === 'merch';
                 const presetList = PRESET_DEFINITIONS[it.kind];
                 return (
                 <div key={idx} className="rounded-lg bg-black/20 border border-white/5 p-2.5 space-y-2">
@@ -513,6 +542,7 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
                       { id: 'affiches', label: tx({ fr: 'Affiches', en: 'Posters',  es: 'Carteles' }),  icon: FileText },
                       { id: 'web',      label: tx({ fr: 'Site Web', en: 'Web',      es: 'Web' }),       icon: FileText },
                       { id: 'design',   label: tx({ fr: 'Design',   en: 'Design',   es: 'Diseno' }),    icon: FileText },
+                      { id: 'merch',    label: tx({ fr: 'Merch',    en: 'Merch',    es: 'Merch' }),     icon: Calculator },
                     ].map(m => {
                       const Ic = m.icon;
                       const active = it.kind === m.id;
@@ -637,6 +667,38 @@ function QuoteCreateModal({ onClose, onCreated, existingQuote }) {
                           </span>
                         )}
                       </label>
+                    </div>
+                  )}
+
+                  {/* Mode Merch : selecteur de produit. La degression de prix
+                      est automatique (cf. getMerchPrice + recomputeItem). Le
+                      produit special "design-fee" force qty=1 et 125$ flat.
+                      Description et unitPrice sont en read-only puisque
+                      isCalculated=true englobe aussi merch. */}
+                  {it.kind === 'merch' && (
+                    <div className="grid grid-cols-1 gap-1.5">
+                      <label className="text-[10px] uppercase tracking-wider text-grey-muted">
+                        {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
+                      </label>
+                      <select
+                        value={it.merchProduct || 'tshirt'}
+                        onChange={(e) => updateItem(idx, { merchProduct: e.target.value })}
+                        disabled={submitting}
+                        className="bg-black/30 border border-white/10 rounded-md px-2 py-1.5 text-heading text-xs focus:outline-none focus:border-accent disabled:opacity-50"
+                      >
+                        {MERCH_PRODUCTS.map(p => (
+                          <option key={p.id} value={p.id}>
+                            {p.label}{p.isFixed ? ` — ${p.fixedPrice}$ flat` : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-[10px] text-grey-muted leading-relaxed">
+                        {tx({
+                          fr: 'Prix unitaire degressif selon la quantite (sauf frais de design = 125$ flat).',
+                          en: 'Unit price decreases with quantity (except design fee = 125$ flat).',
+                          es: 'Precio unitario decreciente segun cantidad.',
+                        })}
+                      </p>
                     </div>
                   )}
 
