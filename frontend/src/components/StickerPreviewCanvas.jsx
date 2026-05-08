@@ -12,7 +12,10 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { drawSticker, loadImage, canvasToBlobUrl } from '../utils/stickerFx';
 
-// Dimensions du canvas selon la forme (garde un ratio coherent)
+// Dimensions du canvas PREVIEW (visible a l'ecran). Limite pour garder le tilt
+// 3D fluide (60fps) meme avec une grande image source. Le rendu HD pour le
+// telechargement est fait separement dans un canvas off-screen aux dimensions
+// natives de l'image (cf. redraw() plus bas).
 function getCanvasSize(shape) {
   switch (shape) {
     case 'rectangle':
@@ -23,6 +26,25 @@ function getCanvasSize(shape) {
     default:
       return { w: 800, h: 800 };
   }
+}
+
+// Dimensions du canvas HD pour l'EXPORT/TELECHARGEMENT. Utilise les dimensions
+// natives de l'image source (img.naturalWidth/naturalHeight) pour preserver
+// la resolution. Pour les shapes carrees (round/square/diecut), on prend
+// max(w,h) au carre. Pour rectangle, on impose 3:2 a partir de la grande
+// dimension. Cap a 4096 pour eviter les canvas geants qui plantent certains
+// browsers (limite typique iOS Safari = 4096x4096).
+function getHdSize(img, shape) {
+  const HD_CAP = 4096;
+  const nW = img.naturalWidth || 800;
+  const nH = img.naturalHeight || 800;
+  if (shape === 'rectangle') {
+    const longSide = Math.min(Math.max(nW, nH), HD_CAP);
+    return { w: longSide, h: Math.round(longSide * 2 / 3) };
+  }
+  // round/square/diecut : carre (max des 2 dimensions natives)
+  const size = Math.min(Math.max(nW, nH), HD_CAP);
+  return { w: size, h: size };
 }
 
 // Border-radius CSS pour que la forme visible corresponde au sticker
@@ -194,22 +216,25 @@ function StickerPreviewCanvas({
     return () => { cancelled = true; };
   }, [imageUrl]);
 
+  // Ref pour debounce le rendu HD (evite de regenerer un canvas 4096x4096 a
+  // chaque changement de slider stroke pendant que l'utilisateur drag).
+  const hdDebounceRef = useRef(null);
+
   // Redessiner quand un parametre change
   const redraw = useCallback(async () => {
     const canvas = canvasRef.current;
     const img = imgRef.current;
     if (!canvas || !img) return;
 
+    // 1. PREVIEW : canvas affiche a l'ecran (800x800 max). Limite volontaire
+    //    pour garder le tilt 3D fluide a 60fps meme avec une image 4K source.
     const { w, h } = getCanvasSize(shape);
     canvas.width = w;
     canvas.height = h;
-
     drawSticker(canvas, img, { shape, shader: finish, strokeColor, strokeWidth });
 
-    // FIX-SHADER-MASK : capture le canvas en dataURL apres chaque redraw
-    // pour servir de mask CSS a l'overlay shader. Try/catch car le canvas
-    // peut etre tainted si l'image source vient d'une origine sans CORS
-    // (rare car loadImage pose crossOrigin='anonymous', mais defensif).
+    // FIX-SHADER-MASK : capture le canvas preview en dataURL pour servir
+    // de mask CSS a l'overlay shader (suit le curseur).
     try {
       setMaskDataUrl(canvas.toDataURL('image/png'));
       setCanvasAspect(canvas.width / canvas.height);
@@ -217,19 +242,49 @@ function StickerPreviewCanvas({
       setMaskDataUrl('');
     }
 
-    // Generer le thumb blob pour le panier
+    // 2. HD EXPORT : canvas off-screen aux dimensions natives de l'image
+    //    pour preserver la resolution lors du telechargement. Genere un
+    //    blob URL separe transmis via onThumbChange. Debounce 350ms pour
+    //    ne pas ralentir le preview pendant que l'utilisateur drag le
+    //    slider stroke - seul le DERNIER state est exporte.
+    //
+    //    FIX-RESOLUTION (8 mai 2026) : avant ce fix, le blob exporte etait
+    //    le canvas preview (800x800), donc une image source 4000x4000 etait
+    //    sevement compressee au telechargement. Maintenant on genere un
+    //    canvas dedie aux dimensions natives (cap 4096 pour compat Safari iOS).
     if (onThumbChange) {
-      try {
-        // Revoquer l'ancien blob
-        if (lastThumbRef.current) URL.revokeObjectURL(lastThumbRef.current);
-        const blobUrl = await canvasToBlobUrl(canvas);
-        lastThumbRef.current = blobUrl;
-        onThumbChange(blobUrl);
-      } catch (_) {
-        // ignore
-      }
+      if (hdDebounceRef.current) clearTimeout(hdDebounceRef.current);
+      hdDebounceRef.current = setTimeout(async () => {
+        try {
+          const hd = getHdSize(img, shape);
+          const hdCanvas = document.createElement('canvas');
+          hdCanvas.width = hd.w;
+          hdCanvas.height = hd.h;
+          drawSticker(hdCanvas, img, { shape, shader: finish, strokeColor, strokeWidth });
+          if (lastThumbRef.current) URL.revokeObjectURL(lastThumbRef.current);
+          const blobUrl = await canvasToBlobUrl(hdCanvas);
+          lastThumbRef.current = blobUrl;
+          onThumbChange(blobUrl);
+        } catch (_) {
+          // Si le canvas HD plante (memoire, taille), fallback sur le canvas
+          // preview pour ne pas casser le bouton telecharger.
+          try {
+            const blobUrl = await canvasToBlobUrl(canvas);
+            if (lastThumbRef.current) URL.revokeObjectURL(lastThumbRef.current);
+            lastThumbRef.current = blobUrl;
+            onThumbChange(blobUrl);
+          } catch (_) { /* ignore */ }
+        }
+      }, 350);
     }
   }, [shape, finish, strokeColor, strokeWidth, onThumbChange]);
+
+  // Cleanup du debounce HD a l'unmount
+  useEffect(() => {
+    return () => {
+      if (hdDebounceRef.current) clearTimeout(hdDebounceRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!loaded) return;
