@@ -304,6 +304,7 @@ const MERCH_UNIT_GRID = {
   totebag:    { 1: 15, 10: 13, 25: 12, 50: 10 },
   sacbanane:  { 1: 80, 5: 75, 10: 70 },
   mug:        { 1: 15, 5: 13, 10: 12, 25: 10 },
+  tumbler:    { 1: 25, 5: 22, 10: 20, 25: 18 },
 };
 
 export const MERCH_PRODUCTS = [
@@ -313,6 +314,7 @@ export const MERCH_PRODUCTS = [
   { id: 'totebag',    label: 'Tote Bag' },
   { id: 'sacbanane',  label: 'Sac banane' },
   { id: 'mug',        label: 'Mug' },
+  { id: 'tumbler',    label: 'Tumbler' },
   { id: 'design-fee', label: 'Frais de design Merch (One-time)', isFixed: true, fixedPrice: 125 },
 ];
 
