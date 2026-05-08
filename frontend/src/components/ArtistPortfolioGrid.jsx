@@ -1,26 +1,50 @@
 /**
- * ArtistPortfolioGrid (8 mai 2026)
- * ----------------------------------------------------------------
+ * ArtistPortfolioGrid (8 mai 2026, v2 vrais mockups)
+ * ------------------------------------------------------------------------
  * Grille de 8 (par defaut) prints aleatoires des artistes Massive Medias,
- * avec rendu "Fine Art encadre" (cadre noir / blanc alterne, mat blanc casse,
- * shadow). A chaque rechargement de page, les images sont re-piochees au
- * hasard pour dynamiser visuellement la section "Realisations" de la page
- * /services/prints. Les prints prives (private:true) sont exclus.
+ * affiches DANS les vrais mockups environnementaux du dossier
+ * /public/images/mockups/ (bedroom, dining, living_room, office, studio,
+ * zen, en versions black et white). Le rendu utilise <InstantMockup> qui
+ * fait du chroma-key sur la zone verte (#00FF00) de chaque mockup pour
+ * clipper l'oeuvre pile dans le cadre, perspective comprise.
  *
- * Principe : on collecte TOUS les prints publics de TOUS les artistes (CMS
- * via useArtists + fallback local artistsData), shuffle, slice. Si la pool
- * a moins de N items disponibles on remplit avec des placeholders Fine Art
- * elegants pour garder la grille symetrique.
+ * v2 (8 mai 2026) : remplace les fausses bordures CSS noir/blanc de v1
+ * (refusees par le client) par les VRAIS mockups deja presents dans le
+ * projet. La logique de randomisation et le filtre prive sont conserves.
  *
- * Click sur un cadre = redirige vers la fiche artiste avec ?print=id pour
- * pre-selectionner l'oeuvre - bonus discoverabilite (l'utilisateur arrive
- * direct sur la page d'achat).
+ * Click sur un mockup = navigation vers la fiche artiste avec ?print=id
+ * pre-selectionne pour conversion directe.
  */
 import { useMemo } from 'react';
 import { Frame } from 'lucide-react';
 import { useArtists } from '../hooks/useArtists';
 import artistsDataLocal from '../data/artists';
 import { useLang } from '../i18n/LanguageContext';
+import InstantMockup from './InstantMockup';
+
+// Cycle deterministe de 8 combinaisons mockup (sceneId + frameColor) - alterne
+// les 6 scenes disponibles + les 2 couleurs de cadre pour un mix visuel varie
+// (pas 2 fois la meme piece cote a cote dans la grille 4x2 desktop).
+//
+// Disponibles dans /public/images/mockups/ :
+//   bedroom_black, bedroom_white, dining_black, dining_white,
+//   living_room_black, living_room_white, office_black, office_white,
+//   studio_black, studio_white, zen_black, zen_white
+const SCENE_CYCLE = [
+  { sceneId: 'living_room', frameColor: 'black' },
+  { sceneId: 'bedroom',     frameColor: 'white' },
+  { sceneId: 'studio',      frameColor: 'black' },
+  { sceneId: 'dining',      frameColor: 'white' },
+  { sceneId: 'zen',         frameColor: 'black' },
+  { sceneId: 'office',      frameColor: 'white' },
+  { sceneId: 'living_room', frameColor: 'white' },
+  { sceneId: 'bedroom',     frameColor: 'black' },
+];
+
+// Image fallback pour les slots sans œuvre disponible. Existe dans le
+// projet (/public/images/mockup-massive-print.webp) - asset Massive Medias
+// generique qui s'integre proprement dans le chroma-key vert des mockups.
+const FALLBACK_IMAGE = '/images/mockup-massive-print.webp';
 
 function shuffle(array) {
   const copy = [...array];
@@ -36,9 +60,7 @@ function ArtistPortfolioGrid({ count = 8 }) {
   const { tx } = useLang();
 
   // Pool d'images pickable : merge CMS + local, dedupe par id, exclut prives
-  // et items sans image utilisable. La pool est calculee au mount uniquement
-  // (deps minimales) - le random ne se relance pas a chaque re-render, mais
-  // l'utilisateur voit du nouveau a chaque rechargement de page (F5).
+  // et items sans image utilisable.
   const samples = useMemo(() => {
     const all = [];
     const seen = new Set();
@@ -66,8 +88,7 @@ function ArtistPortfolioGrid({ count = 8 }) {
       }
     }
 
-    // Source 2 : local artistsData (fallback si CMS down ou anciennes oeuvres
-    // qui ne sont pas dans le CMS pour une raison quelconque)
+    // Source 2 : local artistsData (fallback offline / oeuvres pre-CMS)
     for (const slug of Object.keys(artistsDataLocal || {})) {
       const a = artistsDataLocal[slug];
       if (!a?.prints) continue;
@@ -88,20 +109,21 @@ function ArtistPortfolioGrid({ count = 8 }) {
 
     if (all.length === 0) return [];
     return shuffle(all).slice(0, count);
-    // Note : `Math.random()` n'est pas dans les deps mais c'est intentionnel.
-    // Le useMemo recompute QUAND cmsArtists/count change (load CMS) - chaque
-    // mount/reload trigger un nouveau pick. Pas besoin de re-shuffle a chaque
-    // render (lourd visuellement et inutile UX).
+  // Math.random sciemment hors deps : on veut un re-shuffle au reload de la
+  // page (cmsArtists change apres le fetch initial -> deuxieme shuffle apres
+  // l'arrivee du CMS), pas un re-shuffle a chaque re-render parent.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cmsArtists, count]);
 
-  // Padder avec des placeholders si pool < count, pour garder la symetrie de
-  // la grille (4x2 sur desktop, 2x4 sur mobile). Plus elegant qu'une grille
-  // tronquee qui laisse des trous visuels.
+  // Padder avec des placeholders si pool < count (pour preserver la symetrie)
   const slots = useMemo(() => {
     const result = [...samples];
     while (result.length < count) {
-      result.push({ id: `placeholder-${result.length}`, placeholder: true });
+      result.push({
+        id: `placeholder-${result.length}`,
+        placeholder: true,
+        image: FALLBACK_IMAGE,
+      });
     }
     return result;
   }, [samples, count]);
@@ -109,56 +131,52 @@ function ArtistPortfolioGrid({ count = 8 }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
       {slots.map((s, idx) => {
-        // Alternance de cadre : indices pairs = noir, impairs = blanc.
-        // Patron 4x2 sur desktop : la rangee 1 alterne N/B/N/B et la rangee
-        // 2 inverse en B/N/B/N -> motif damier visuellement satisfaisant.
-        const isBlackFrame = (idx + Math.floor(idx / 4)) % 2 === 0;
-        const frameClasses = isBlackFrame
-          ? 'bg-[#0a0a0a] border-[#0a0a0a]'
-          : 'bg-[#f5f5f0] border-[#f5f5f0]';
-
-        return (
-          <div
-            key={s.id}
-            className={`group relative aspect-square border-[10px] ${frameClasses} shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.5)]`}
-          >
-            {/* Mat board (passe-partout) blanc casse autour de l'image. */}
-            <div className="w-full h-full bg-[#faf8f3] p-2 md:p-3 overflow-hidden">
-              {s.placeholder ? (
-                <div className="w-full h-full flex flex-col items-center justify-center text-grey-muted/50 gap-2">
-                  <Frame size={28} strokeWidth={1.2} />
-                  <span className="text-[10px] uppercase tracking-[0.2em]">
-                    {tx({ fr: 'Fine Art', en: 'Fine Art', es: 'Fine Art' })}
-                  </span>
-                </div>
-              ) : (
-                <a
-                  href={`/artistes/${s.artistSlug}?print=${encodeURIComponent(s.id)}`}
-                  className="block w-full h-full relative"
-                  title={`${s.title} — ${s.artistName}`}
-                >
-                  <img
-                    src={s.image}
-                    alt={s.title || `Print ${s.artistName}`}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Overlay au hover : nom oeuvre + artiste */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/70 via-black/0 to-transparent p-3">
-                    {s.title && (
-                      <p className="text-white text-xs font-semibold truncate w-full text-center">
-                        {s.title}
-                      </p>
-                    )}
-                    <p className="text-white/80 text-[10px] uppercase tracking-wider truncate w-full text-center">
-                      {s.artistName}
-                    </p>
-                  </div>
-                </a>
-              )}
-            </div>
+        const scene = SCENE_CYCLE[idx % SCENE_CYCLE.length];
+        const content = (
+          <div className="relative group block w-full overflow-hidden rounded-lg shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl">
+            {/* InstantMockup rend un canvas avec la photo de la piece +
+                l'oeuvre clippee dans la zone verte (chroma-key + perspective).
+                C'est le MEME composant que sur la fiche artiste, donc rendu
+                identique a celui que verrait le client en page de produit. */}
+            <InstantMockup
+              imageUrl={s.image}
+              sceneId={scene.sceneId}
+              frameColor={scene.frameColor}
+              className="block w-full h-auto"
+            />
+            {/* Overlay au hover : titre oeuvre + artiste (sauf placeholder). */}
+            {!s.placeholder && (
+              <div className="absolute inset-0 flex flex-col items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/80 via-black/0 to-transparent p-3 pointer-events-none">
+                {s.title && (
+                  <p className="text-white text-xs md:text-sm font-semibold truncate w-full text-center">
+                    {s.title}
+                  </p>
+                )}
+                <p className="text-white/80 text-[10px] uppercase tracking-wider truncate w-full text-center">
+                  {s.artistName}
+                </p>
+              </div>
+            )}
+            {s.placeholder && (
+              <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/40 backdrop-blur text-white text-[9px] uppercase tracking-widest flex items-center gap-1">
+                <Frame size={10} />
+                {tx({ fr: 'Fine Art', en: 'Fine Art', es: 'Fine Art' })}
+              </div>
+            )}
           </div>
+        );
+
+        return s.placeholder ? (
+          <div key={s.id}>{content}</div>
+        ) : (
+          <a
+            key={s.id}
+            href={`/artistes/${s.artistSlug}?print=${encodeURIComponent(s.id)}`}
+            title={`${s.title} — ${s.artistName}`}
+            className="block focus:outline-none focus:ring-2 focus:ring-accent rounded-lg"
+          >
+            {content}
+          </a>
         );
       })}
     </div>
