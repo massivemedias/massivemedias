@@ -158,6 +158,18 @@ function RecoveryRedirect() {
 function App() {
   const subdomainSlug = getSubdomainSlug();
 
+  // Debug : trace la detection en prod pour faciliter le diagnostic d'un
+  // bug "j'ai pointe artist.massivemedias.com mais ca affiche la home". Le
+  // log apparait dans la console DevTools, pas dans le DOM. Visible aussi
+  // dans les logs Cloudflare Pages si on push une instrumentation cote
+  // Worker plus tard.
+  useEffect(() => {
+    if (subdomainSlug) {
+      // eslint-disable-next-line no-console
+      console.log('[Massive] Subdomain detected:', subdomainSlug, '- rendering ArtisteDetail');
+    }
+  }, [subdomainSlug]);
+
   // Capture referral code from URL (?ref=XXXXXXXX)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn, Send, LogIn, MessageCircle, LayoutGrid, Grid3X3, List } from 'lucide-react';
+import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn, Send, LogIn, MessageCircle, LayoutGrid, Grid3X3, List, Loader2, Home } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getArtistSchema } from '../components/seo/schemas';
 import ArtistPrintCard from '../components/ArtistPrintCard';
@@ -134,7 +134,7 @@ function ArtisteDetail({ subdomainSlug }) {
   const slug = subdomainSlug || routeSlug;
   const { lang, tx } = useLang();
   const { theme } = useTheme();
-  const { artists: cmsArtists } = useArtists();
+  const { artists: cmsArtists, loading: cmsLoading } = useArtists();
   const { user } = useAuth();
 
   const artistRaw = useMemo(() => {
@@ -331,15 +331,76 @@ function ArtisteDetail({ subdomainSlug }) {
     return () => { cancelled = true; };
   }, [selectedPrint?.id]);
 
-  if (!artist) {
+  // FALLBACK SUBDOMAIN (8 mai 2026) : 3 cas a gerer pour eviter une page
+  // blanche si l'artiste n'est pas trouve dans le CMS / artistsData :
+  //
+  // 1. Chargement CMS en cours (cmsLoading=true ET aucune fallback locale) :
+  //    on attend le fetch /api/artists pour ne pas dire "introuvable" alors
+  //    qu'on est juste en cours de chargement initial.
+  //
+  // 2. Sous-domaine artiste detecte (ex: gallium.massivemedias.com) mais
+  //    artiste pas trouve : on affiche un message clair + bouton absolu
+  //    vers https://massivemedias.com/ pour SORTIR du sous-domaine
+  //    (sinon le visiteur reste coince sur l'URL artiste).
+  //
+  // 3. Route classique /artistes/:slug avec slug invalide : Link relatif
+  //    vers /artistes (la liste des artistes du site), comportement
+  //    historique inchange.
+  if (cmsLoading && !artist) {
     return (
-      <div className="section-container pt-32 text-center">
-        <h1 className="text-4xl font-heading font-bold text-heading mb-4">
-          {tx({ fr: 'Artiste introuvable', en: 'Artist not found', es: 'Artista no encontrado' })}
+      <div className="section-container pt-32 pb-20 flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 size={28} className="animate-spin text-accent" />
+        <p className="text-grey-muted text-sm">
+          {tx({ fr: 'Chargement du profil artiste...', en: 'Loading artist profile...', es: 'Cargando perfil...' })}
+        </p>
+      </div>
+    );
+  }
+  if (!artist) {
+    const isSubdomainContext = !!subdomainSlug;
+    return (
+      <div className="section-container pt-32 pb-20 text-center max-w-2xl mx-auto">
+        <h1 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
+          {tx({ fr: 'Profil artiste introuvable', en: 'Artist profile not found', es: 'Perfil de artista no encontrado' })}
         </h1>
-        <Link to="/artistes" className="text-accent hover:underline">
-          {tx({ fr: '← Retour aux artistes', en: '← Back to artists', es: '← Volver a artistas' })}
-        </Link>
+        <p className="text-grey-muted mb-2">
+          {tx({
+            fr: `L'artiste "${slug}" n'existe pas (ou plus) sur Massive Medias.`,
+            en: `Artist "${slug}" doesn't exist (or anymore) on Massive Medias.`,
+            es: `El artista "${slug}" no existe (o ya no) en Massive Medias.`,
+          })}
+        </p>
+        {isSubdomainContext && (
+          <p className="text-grey-muted/80 text-sm mb-8">
+            {tx({
+              fr: 'Cette URL personnalisee a peut-etre ete retiree ou mal configuree.',
+              en: 'This custom URL may have been removed or misconfigured.',
+              es: 'Esta URL personalizada puede haber sido retirada o mal configurada.',
+            })}
+          </p>
+        )}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+          {isSubdomainContext ? (
+            // Sortie du sous-domaine : href absolu force vers le domaine racine
+            <a
+              href="https://massivemedias.com/"
+              className="inline-flex items-center gap-2 btn-primary"
+            >
+              <Home size={16} />
+              {tx({ fr: 'Aller a Massive Medias', en: 'Go to Massive Medias', es: 'Ir a Massive Medias' })}
+            </a>
+          ) : (
+            <Link to="/artistes" className="inline-flex items-center gap-2 btn-primary">
+              {tx({ fr: '← Retour aux artistes', en: '← Back to artists', es: '← Volver a artistas' })}
+            </Link>
+          )}
+          <a
+            href={isSubdomainContext ? 'https://massivemedias.com/contact' : '/contact'}
+            className="inline-flex items-center gap-2 btn-outline"
+          >
+            {tx({ fr: 'Contacter Massive', en: 'Contact Massive', es: 'Contactar' })}
+          </a>
+        </div>
       </div>
     );
   }
