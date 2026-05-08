@@ -580,6 +580,26 @@ function roundedRectPath(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+// Exporte le canvas en BLOB URL PNG a la resolution NATIVE du canvas (sans
+// downscale). Utilise pour le telechargement HD dans ai.massive (l'admin veut
+// recuperer un PNG aux dimensions de l'image source, pas un thumb 256x256).
+//
+// Difference avec canvasToBlobUrl ci-dessous :
+//   - Pas de resize a 256px (resolution preservee)
+//   - Renvoie blob URL (object URL) plutot que data URL : pour les gros canvas
+//     4096x4096 le data URL base64 explose en RAM/string et plante certains
+//     browsers, alors que le blob URL est juste un pointeur vers le binaire.
+//     Le blob URL est valide pour la session courante - largement suffisant
+//     pour un download immediat.
+export function canvasToFullBlobUrl(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) return reject(new Error('toBlob returned null'));
+      resolve(URL.createObjectURL(blob));
+    }, 'image/png');
+  });
+}
+
 // Exporte le canvas en data URL PNG (pour panier/thumb/localStorage)
 // IMPORTANT: data URL au lieu de blob URL - les blob URLs meurent au changement
 // de page (session-scoped) ce qui cassait les images du panier quand le client

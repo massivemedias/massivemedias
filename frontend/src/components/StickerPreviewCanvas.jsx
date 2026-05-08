@@ -10,7 +10,7 @@
  * Shape-aware: le border-radius CSS masque les coins pour les formes rondes/carrees.
  */
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { drawSticker, loadImage, canvasToBlobUrl } from '../utils/stickerFx';
+import { drawSticker, loadImage, canvasToBlobUrl, canvasToFullBlobUrl } from '../utils/stickerFx';
 
 // Dimensions du canvas PREVIEW (visible a l'ecran). Limite pour garder le tilt
 // 3D fluide (60fps) meme avec une grande image source. Le rendu HD pour le
@@ -176,8 +176,13 @@ function StickerPreviewCanvas({
   strokeColor = '#ffffff',
   strokeWidth = 0,
   className = '',
-  onThumbChange,      // (blobUrl: string) => void - appele quand un nouveau thumb PNG est dispo
+  onThumbChange,      // (url: string) => void - appele quand un nouveau preview PNG est dispo
   enableTilt = true,
+  // FIX-RESOLUTION (8 mai 2026) : fullResolution=true => l'export utilise un
+  // canvas HD aux dimensions natives de l'image source + canvasToFullBlobUrl
+  // (pas de resize 256px). Sinon comportement legacy : data URL 256x256 thumb
+  // (utilise par ConfiguratorStickers pour stocker la preview dans le panier).
+  fullResolution = false,
 }) {
   const canvasRef = useRef(null);
   const imgRef = useRef(null);
@@ -242,42 +247,59 @@ function StickerPreviewCanvas({
       setMaskDataUrl('');
     }
 
-    // 2. HD EXPORT : canvas off-screen aux dimensions natives de l'image
-    //    pour preserver la resolution lors du telechargement. Genere un
-    //    blob URL separe transmis via onThumbChange. Debounce 350ms pour
-    //    ne pas ralentir le preview pendant que l'utilisateur drag le
-    //    slider stroke - seul le DERNIER state est exporte.
+    // 2. EXPORT pour onThumbChange. 2 modes selon `fullResolution` :
     //
-    //    FIX-RESOLUTION (8 mai 2026) : avant ce fix, le blob exporte etait
-    //    le canvas preview (800x800), donc une image source 4000x4000 etait
-    //    sevement compressee au telechargement. Maintenant on genere un
-    //    canvas dedie aux dimensions natives (cap 4096 pour compat Safari iOS).
+    //    - fullResolution=true (ai.massive admin) : canvas HD off-screen aux
+    //      dimensions natives de l'image, exporte via canvasToFullBlobUrl
+    //      (blob URL, PAS de resize 256). Cap a 4096px pour compat Safari iOS.
+    //      Debounce 350ms pour ne pas regenerer un canvas 4096x4096 a chaque
+    //      pixel du slider stroke pendant que l'utilisateur drag.
+    //
+    //    - fullResolution=false (panier ConfiguratorStickers, defaut) : canvas
+    //      preview 800x800 -> canvasToBlobUrl qui resize a 256x256 + data URL
+    //      (compact pour serialisation localStorage du panier).
+    //
+    //    Avant ce fix : meme code dans les 2 cas -> le bouton "Telecharger PNG"
+    //    de ai.massive recevait un thumb 256 a la place du HD attendu (1.7 MB
+    //    source -> 43 KB telecharge - rapport observe par l'admin).
     if (onThumbChange) {
-      if (hdDebounceRef.current) clearTimeout(hdDebounceRef.current);
-      hdDebounceRef.current = setTimeout(async () => {
-        try {
-          const hd = getHdSize(img, shape);
-          const hdCanvas = document.createElement('canvas');
-          hdCanvas.width = hd.w;
-          hdCanvas.height = hd.h;
-          drawSticker(hdCanvas, img, { shape, shader: finish, strokeColor, strokeWidth });
-          if (lastThumbRef.current) URL.revokeObjectURL(lastThumbRef.current);
-          const blobUrl = await canvasToBlobUrl(hdCanvas);
-          lastThumbRef.current = blobUrl;
-          onThumbChange(blobUrl);
-        } catch (_) {
-          // Si le canvas HD plante (memoire, taille), fallback sur le canvas
-          // preview pour ne pas casser le bouton telecharger.
+      if (fullResolution) {
+        if (hdDebounceRef.current) clearTimeout(hdDebounceRef.current);
+        hdDebounceRef.current = setTimeout(async () => {
           try {
-            const blobUrl = await canvasToBlobUrl(canvas);
+            const hd = getHdSize(img, shape);
+            const hdCanvas = document.createElement('canvas');
+            hdCanvas.width = hd.w;
+            hdCanvas.height = hd.h;
+            drawSticker(hdCanvas, img, { shape, shader: finish, strokeColor, strokeWidth });
             if (lastThumbRef.current) URL.revokeObjectURL(lastThumbRef.current);
+            const blobUrl = await canvasToFullBlobUrl(hdCanvas);
             lastThumbRef.current = blobUrl;
             onThumbChange(blobUrl);
-          } catch (_) { /* ignore */ }
-        }
-      }, 350);
+          } catch (_) {
+            // Fallback : si le canvas HD plante (memoire/taille), on exporte
+            // le preview en full blob plutot qu'un thumb 256 (mieux que rien).
+            try {
+              const blobUrl = await canvasToFullBlobUrl(canvas);
+              if (lastThumbRef.current) URL.revokeObjectURL(lastThumbRef.current);
+              lastThumbRef.current = blobUrl;
+              onThumbChange(blobUrl);
+            } catch (_) { /* ignore */ }
+          }
+        }, 350);
+      } else {
+        // Mode panier legacy : thumb 256 data URL
+        try {
+          if (lastThumbRef.current && lastThumbRef.current.startsWith('blob:')) {
+            URL.revokeObjectURL(lastThumbRef.current);
+          }
+          const dataUrl = await canvasToBlobUrl(canvas);
+          lastThumbRef.current = dataUrl;
+          onThumbChange(dataUrl);
+        } catch (_) { /* ignore */ }
+      }
     }
-  }, [shape, finish, strokeColor, strokeWidth, onThumbChange]);
+  }, [shape, finish, strokeColor, strokeWidth, onThumbChange, fullResolution]);
 
   // Cleanup du debounce HD a l'unmount
   useEffect(() => {

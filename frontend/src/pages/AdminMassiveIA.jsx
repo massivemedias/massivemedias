@@ -853,6 +853,11 @@ function StickersTab() {
             onThumbChange={handleLiveThumb}
             enableTilt={true}
             className="w-full"
+            // FIX-RESOLUTION (8 mai 2026) : fullResolution=true pour que le
+            // bouton "Telecharger PNG" recupere un blob aux dimensions natives
+            // de l'image source (cap 4096) au lieu d'un thumb 256x256 (qui
+            // produisait un PNG de ~43 KB pour une source 1.7 MB).
+            fullResolution={true}
           />
         ) : !error && (
           <p className="text-grey-muted text-sm">Le preview apparaitra ici une fois l'image deposee</p>
