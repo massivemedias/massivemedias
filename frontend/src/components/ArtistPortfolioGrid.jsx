@@ -1,49 +1,63 @@
 /**
- * ArtistPortfolioGrid (8 mai 2026, v2 vrais mockups)
+ * ArtistPortfolioGrid (8 mai 2026, v3 absolute positioning)
  * ------------------------------------------------------------------------
- * Grille de 8 (par defaut) prints aleatoires des artistes Massive Medias,
- * affiches DANS les vrais mockups environnementaux du dossier
- * /public/images/mockups/ (bedroom, dining, living_room, office, studio,
- * zen, en versions black et white). Le rendu utilise <InstantMockup> qui
- * fait du chroma-key sur la zone verte (#00FF00) de chaque mockup pour
- * clipper l'oeuvre pile dans le cadre, perspective comprise.
+ * Grille de 8 prints aleatoires des artistes Massive Medias affiches DANS
+ * les vrais mockups environnementaux (bedroom, dining, living_room, office,
+ * studio, zen) en versions black et white.
  *
- * v2 (8 mai 2026) : remplace les fausses bordures CSS noir/blanc de v1
- * (refusees par le client) par les VRAIS mockups deja presents dans le
- * projet. La logique de randomisation et le filtre prive sont conserves.
+ * Architecture v3 (8 mai 2026) : on REMPLACE le canvas chroma-key d'InstantMockup
+ * (v2) par un simple positioning absolu sur l'œuvre, avec coords pre-mesurees
+ * pour chaque mockup. Plus simple, plus rapide (pas de getImageData/drawImage),
+ * affichage immediat sans delai de chargement async.
  *
- * Click sur un mockup = navigation vers la fiche artiste avec ?print=id
- * pre-selectionne pour conversion directe.
+ * Les coords MOCKUP_FRAMES ont ete extraites en parsant la zone verte (#00FF00)
+ * de chaque mockup via canvas - cf. script de calibration. Elles sont en %
+ * du conteneur carre (875x875 sur les sources).
+ *
+ * Click sur un mockup = navigation /artistes/:slug?print=:id pour pre-selection
+ * de l'œuvre.
  */
 import { useMemo } from 'react';
 import { Frame } from 'lucide-react';
 import { useArtists } from '../hooks/useArtists';
 import artistsDataLocal from '../data/artists';
 import { useLang } from '../i18n/LanguageContext';
-import InstantMockup from './InstantMockup';
 
-// Cycle deterministe de 8 combinaisons mockup (sceneId + frameColor) - alterne
-// les 6 scenes disponibles + les 2 couleurs de cadre pour un mix visuel varie
-// (pas 2 fois la meme piece cote a cote dans la grille 4x2 desktop).
-//
-// Disponibles dans /public/images/mockups/ :
-//   bedroom_black, bedroom_white, dining_black, dining_white,
-//   living_room_black, living_room_white, office_black, office_white,
-//   studio_black, studio_white, zen_black, zen_white
+// Coords du cadre dans chaque mockup, en % (top, left, width, height) du
+// conteneur carre. Mesures par scan de la zone verte (#00FF00) de chaque
+// fichier source dans /public/images/mockups/. Si on ajoute un nouveau
+// mockup, refaire le scan via l'outil de calibration.
+const MOCKUP_FRAMES = {
+  bedroom_black:     { top: 21.6,  left: 41.49, width: 16.8,  height: 25.6 },
+  bedroom_white:     { top: 19.89, left: 41.26, width: 18.51, height: 25.03 },
+  dining_black:      { top: 24.69, left: 38.74, width: 22.51, height: 30.4 },
+  dining_white:      { top: 24.23, left: 41.14, width: 17.94, height: 24.57 },
+  living_room_black: { top: 19.09, left: 40.91, width: 19.66, height: 28.23 },
+  living_room_white: { top: 26.29, left: 38.86, width: 20.69, height: 26.97 },
+  office_black:      { top: 22.17, left: 38.63, width: 22.74, height: 31.66 },
+  office_white:      { top: 30.74, left: 33.94, width: 33.49, height: 23.54 },
+  studio_black:      { top: 32,    left: 40,    width: 19.77, height: 27.77 },
+  studio_white:      { top: 28.46, left: 38.51, width: 22.86, height: 31.66 },
+  zen_black:         { top: 23.54, left: 38.17, width: 25.94, height: 35.77 },
+  zen_white:         { top: 21.49, left: 38.4,  width: 23.2,  height: 33.49 },
+};
+
+// Cycle deterministe : 8 combinaisons mockup (sceneId + frameColor) qui
+// melange les 6 scenes et les 2 couleurs de cadre - varietes visuelles
+// cote a cote dans la grille 4x2 desktop.
 const SCENE_CYCLE = [
-  { sceneId: 'living_room', frameColor: 'black' },
-  { sceneId: 'bedroom',     frameColor: 'white' },
-  { sceneId: 'studio',      frameColor: 'black' },
-  { sceneId: 'dining',      frameColor: 'white' },
-  { sceneId: 'zen',         frameColor: 'black' },
-  { sceneId: 'office',      frameColor: 'white' },
-  { sceneId: 'living_room', frameColor: 'white' },
-  { sceneId: 'bedroom',     frameColor: 'black' },
+  'living_room_black',
+  'bedroom_white',
+  'studio_black',
+  'dining_white',
+  'zen_black',
+  'office_white',
+  'living_room_white',
+  'bedroom_black',
 ];
 
-// Image fallback pour les slots sans œuvre disponible. Existe dans le
-// projet (/public/images/mockup-massive-print.webp) - asset Massive Medias
-// generique qui s'integre proprement dans le chroma-key vert des mockups.
+// Image fallback pour les slots sans œuvre. Le print Massive Medias generique
+// existe deja dans le projet et s'integre proprement dans n'importe quel cadre.
 const FALLBACK_IMAGE = '/images/mockup-massive-print.webp';
 
 function shuffle(array) {
@@ -59,8 +73,7 @@ function ArtistPortfolioGrid({ count = 8 }) {
   const { artists: cmsArtists } = useArtists();
   const { tx } = useLang();
 
-  // Pool d'images pickable : merge CMS + local, dedupe par id, exclut prives
-  // et items sans image utilisable.
+  // Pool d'images : merge CMS + local, dedupe par id, exclut prives
   const samples = useMemo(() => {
     const all = [];
     const seen = new Set();
@@ -71,7 +84,6 @@ function ArtistPortfolioGrid({ count = 8 }) {
         ? cmsArtists
         : Object.values(cmsArtists);
 
-    // Source 1 : CMS (priorite, contient les nouvelles oeuvres approuvees)
     for (const a of cmsArr) {
       for (const p of (a.prints || [])) {
         if (!p?.id || seen.has(p.id)) continue;
@@ -87,8 +99,6 @@ function ArtistPortfolioGrid({ count = 8 }) {
         });
       }
     }
-
-    // Source 2 : local artistsData (fallback offline / oeuvres pre-CMS)
     for (const slug of Object.keys(artistsDataLocal || {})) {
       const a = artistsDataLocal[slug];
       if (!a?.prints) continue;
@@ -109,13 +119,9 @@ function ArtistPortfolioGrid({ count = 8 }) {
 
     if (all.length === 0) return [];
     return shuffle(all).slice(0, count);
-  // Math.random sciemment hors deps : on veut un re-shuffle au reload de la
-  // page (cmsArtists change apres le fetch initial -> deuxieme shuffle apres
-  // l'arrivee du CMS), pas un re-shuffle a chaque re-render parent.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cmsArtists, count]);
 
-  // Padder avec des placeholders si pool < count (pour preserver la symetrie)
   const slots = useMemo(() => {
     const result = [...samples];
     while (result.length < count) {
@@ -131,20 +137,38 @@ function ArtistPortfolioGrid({ count = 8 }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
       {slots.map((s, idx) => {
-        const scene = SCENE_CYCLE[idx % SCENE_CYCLE.length];
-        const content = (
-          <div className="relative group block w-full overflow-hidden rounded-lg shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl">
-            {/* InstantMockup rend un canvas avec la photo de la piece +
-                l'oeuvre clippee dans la zone verte (chroma-key + perspective).
-                C'est le MEME composant que sur la fiche artiste, donc rendu
-                identique a celui que verrait le client en page de produit. */}
-            <InstantMockup
-              imageUrl={s.image}
-              sceneId={scene.sceneId}
-              frameColor={scene.frameColor}
-              className="block w-full h-auto"
+        const mockupKey = SCENE_CYCLE[idx % SCENE_CYCLE.length];
+        const frame = MOCKUP_FRAMES[mockupKey];
+        const mockupUrl = `/images/mockups/${mockupKey}.webp`;
+
+        const inner = (
+          <div className="relative w-full aspect-square overflow-hidden rounded-lg shadow-lg transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl">
+            {/* Mockup en background : photo de la piece avec son cadre vide */}
+            <img
+              src={mockupUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 w-full h-full object-cover"
+              aria-hidden="true"
             />
-            {/* Overlay au hover : titre oeuvre + artiste (sauf placeholder). */}
+            {/* Œuvre injectee dans le cadre du mockup. Coords en % du
+                conteneur, pre-mesurees depuis la zone verte source. */}
+            <img
+              src={s.image}
+              alt={s.placeholder ? '' : (s.title || `Print ${s.artistName}`)}
+              loading="lazy"
+              decoding="async"
+              style={{
+                position: 'absolute',
+                top: `${frame.top}%`,
+                left: `${frame.left}%`,
+                width: `${frame.width}%`,
+                height: `${frame.height}%`,
+                objectFit: 'cover',
+              }}
+            />
+            {/* Overlay au hover : titre + artiste */}
             {!s.placeholder && (
               <div className="absolute inset-0 flex flex-col items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/80 via-black/0 to-transparent p-3 pointer-events-none">
                 {s.title && (
@@ -158,7 +182,7 @@ function ArtistPortfolioGrid({ count = 8 }) {
               </div>
             )}
             {s.placeholder && (
-              <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/40 backdrop-blur text-white text-[9px] uppercase tracking-widest flex items-center gap-1">
+              <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/50 backdrop-blur text-white text-[9px] uppercase tracking-widest flex items-center gap-1">
                 <Frame size={10} />
                 {tx({ fr: 'Fine Art', en: 'Fine Art', es: 'Fine Art' })}
               </div>
@@ -167,15 +191,15 @@ function ArtistPortfolioGrid({ count = 8 }) {
         );
 
         return s.placeholder ? (
-          <div key={s.id}>{content}</div>
+          <div key={s.id} className="group">{inner}</div>
         ) : (
           <a
             key={s.id}
             href={`/artistes/${s.artistSlug}?print=${encodeURIComponent(s.id)}`}
             title={`${s.title} — ${s.artistName}`}
-            className="block focus:outline-none focus:ring-2 focus:ring-accent rounded-lg"
+            className="group block focus:outline-none focus:ring-2 focus:ring-accent rounded-lg"
           >
-            {content}
+            {inner}
           </a>
         );
       })}
