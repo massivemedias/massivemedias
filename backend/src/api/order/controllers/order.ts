@@ -1,5 +1,36 @@
 import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
+
+// FIX-EMAIL-OPTIONAL (8 mai 2026) : le schema api::order.order declare
+// customerEmail comme `type: email` + `required: true`. Strapi v5 utilise
+// Yup en interne et rejette toute valeur non-string sur ce champ avec :
+//   "customerEmail must be a string type, but the final value was: null"
+//
+// On NE PEUT PAS envoyer chaine vide '' (Yup type:email valide le format),
+// ni null/undefined (rejete par required:true). Or l'UI marque l'email comme
+// optionnel pour les commandes manuelles ET les soumissions. Solution :
+// generer un placeholder unique base sur le slug du nom client + timestamp,
+// au format `<slug>@quote.placeholder` (domaine reserve, jamais delivere par
+// un MTA). Cas legitime : Waterfront a `waterfront@quote.placeholder`.
+//
+// Le frontend a un garde-fou (cf. handleSendQuote dans AdminOrders) qui
+// bloque l'envoi par email tant que le client a un email @quote.placeholder
+// pour eviter les bounces. L'admin doit l'editer (Pencil) avant l'envoi.
+const slugifyName = (n: any) => String(n || '')
+  .toLowerCase()
+  .normalize('NFD').replace(/[̀-ͯ]/g, '') // diacritiques
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '')
+  .slice(0, 30) || 'noname';
+
+function ensureCustomerEmail(rawEmail: any, customerName?: any): string {
+  if (rawEmail) {
+    const trimmed = String(rawEmail).trim().toLowerCase();
+    if (trimmed) return trimmed;
+  }
+  return `${slugifyName(customerName)}-${Date.now()}@quote.placeholder`;
+}
+
 import { calculateShipping } from '../../../utils/shipping';
 import { sendOrderConfirmationEmail, sendTestimonialRequestEmail, sendArtistSaleNotificationEmail, sendNewOrderNotificationEmail, sendTrackingEmail, sendInvoiceEmail, sendOrderReadyEmail, sendOrderDeliveredEmail } from '../../../utils/email';
 import { getTrackingStatus } from '../../../utils/tracking-provider';
@@ -484,7 +515,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       dispatchWebhook('order.created', {
         orderRef: orderRefIntent,
         documentId: order.documentId,
-        customerEmail: customerEmail || null,
+        customerEmail: ensureCustomerEmail(customerEmail, customerName),
         customerName: customerName || null,
         total: orderData.total || 0,
         currency: orderData.currency || 'cad',
@@ -813,7 +844,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       dispatchWebhook('order.created', {
         orderRef: orderRefCheckout,
         documentId: newOrder.documentId,
-        customerEmail: customerEmail || null,
+        customerEmail: ensureCustomerEmail(customerEmail, customerName),
         customerName: customerName || null,
         total: orderData.total || 0,
         currency: orderData.currency || 'cad',
@@ -1570,7 +1601,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       dispatchWebhook('order.created', {
         orderRef: orderRefAdmin,
         documentId: order.documentId,
-        customerEmail: data.customerEmail || null,
+        customerEmail: ensureCustomerEmail(data.customerEmail, data.customerName),
         customerName: data.customerName || null,
         companyName: data.companyName || null,
         total: data.total || 0,
@@ -1699,7 +1730,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         documentId,
         data: {
           customerName: String(customerName).trim(),
-          customerEmail: customerEmail ? String(customerEmail).trim().toLowerCase() : undefined,
+          customerEmail: ensureCustomerEmail(customerEmail, customerName),
           customerPhone: customerPhone ? String(customerPhone).trim() : undefined,
           companyName: companyName ? String(companyName).trim() : undefined,
           items,
@@ -1760,7 +1791,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       const order = await strapi.documents('api::order.order').create({
         data: {
           customerName: String(customerName).trim(),
-          customerEmail: customerEmail ? String(customerEmail).trim().toLowerCase() : undefined,
+          customerEmail: ensureCustomerEmail(customerEmail, customerName),
           customerPhone: customerPhone ? String(customerPhone).trim() : undefined,
           companyName: companyName ? String(companyName).trim() : undefined,
           items,
@@ -1969,7 +2000,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           status: prepaid ? 'paid' : 'pending',
           customerName,
           companyName: cleanCompanyName || null,
-          customerEmail: customerEmail || null,
+          customerEmail: ensureCustomerEmail(customerEmail, customerName),
           customerPhone: customerPhone || null,
           items,
           subtotal: Math.round(subtotal * 100),
@@ -2043,7 +2074,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
               date: resolvedInvoiceDate,
               customerName,
               companyName: cleanCompanyName || null,
-              customerEmail: customerEmail || null,
+              customerEmail: ensureCustomerEmail(customerEmail, customerName),
               customerPhone: customerPhone || null,
               items,
               subtotal,
@@ -2215,7 +2246,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       dispatchWebhook('order.created', {
         orderRef: orderRefManual,
         documentId: order.documentId,
-        customerEmail: customerEmail || null,
+        customerEmail: ensureCustomerEmail(customerEmail, customerName),
         customerName: customerName || null,
         companyName: cleanCompanyName || null,
         total: Math.round(total * 100),
