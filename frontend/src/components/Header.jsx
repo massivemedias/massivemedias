@@ -1,5 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { getSubdomainSlug } from '../App';
+
+// SmartLink : si l'utilisateur est sur un sous-domaine artiste (ex: gallium
+// .massivemedias.com), on emet un <a href> ABSOLU vers massivemedias.com pour
+// que les clics "Accueil/Services/Contact" sortent bien du sous-domaine et
+// ramenent vers le site principal. Sur le domaine racine, comportement
+// identique a <SmartLink> de react-router (navigation SPA rapide).
+function SmartLink({ to, children, ...rest }) {
+  const slug = getSubdomainSlug();
+  if (slug && typeof to === 'string' && to.startsWith('/')) {
+    return <a href={`https://massivemedias.com${to}`} {...rest}>{children}</a>;
+  }
+  return <Link to={to} {...rest}>{children}</Link>;
+}
 import { Menu, X, ShoppingCart, LogIn, User, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, ChevronDown, Bell, PenTool, Camera, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
@@ -71,9 +85,9 @@ function Header() {
         <nav className="mx-4 lg:mx-6 py-2">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link to="/" onClick={navClick('/')} className="flex items-center gap-3 flex-shrink-0">
+            <SmartLink to="/" onClick={navClick('/')} className="flex items-center gap-3 flex-shrink-0">
               <MassiveLogo className="transition-colors duration-300 logo-header" />
-            </Link>
+            </SmartLink>
 
             {/* Navigation Desktop */}
             <div className="hidden lg:flex items-center gap-5 xl:gap-7">
@@ -107,7 +121,7 @@ function Header() {
                         const Icon = SERVICE_ICONS[i];
                         const active = isActive(`/services/${service.slug}`);
                         return (
-                          <Link
+                          <SmartLink
                             key={service.slug}
                             to={`/services/${service.slug}`}
                             onClick={navClick(`/services/${service.slug}`, () => setServicesOpen(false))}
@@ -119,7 +133,7 @@ function Header() {
                               </span>
                             )}
                             <span className="font-semibold text-sm">{service.name}</span>
-                          </Link>
+                          </SmartLink>
                         );
                       })}
                     </motion.div>
@@ -130,21 +144,21 @@ function Header() {
               {/* Separateur visuel entre Services et Artistes (audit: "double identite") */}
               <span aria-hidden="true" className="text-grey-muted/40 select-none">|</span>
 
-              <Link
+              <SmartLink
                 to="/artistes"
                 onClick={navClick('/artistes')}
                 className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/artistes') || isActive('/boutique') ? 'text-accent' : 'nav-link'}`}
               >
                 {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
-              </Link>
+              </SmartLink>
 
-              <Link to="/a-propos" onClick={navClick('/a-propos')} className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/a-propos') ? 'text-accent' : 'nav-link'}`}>
+              <SmartLink to="/a-propos" onClick={navClick('/a-propos')} className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/a-propos') ? 'text-accent' : 'nav-link'}`}>
                 {t('nav.aPropos')}
-              </Link>
+              </SmartLink>
 
-              <Link to="/contact" onClick={navClick('/contact')} className="btn-primary text-sm !py-1 !px-3.5 whitespace-nowrap">
+              <SmartLink to="/contact" onClick={navClick('/contact')} className="btn-primary text-sm !py-1 !px-3.5 whitespace-nowrap">
                 {t('nav.contact')}
-              </Link>
+              </SmartLink>
 
               <BrightnessFader />
 
@@ -157,7 +171,7 @@ function Header() {
               </button>
 
               {user ? (
-                <Link
+                <SmartLink
                   // FIX-ROUTING (23 avril 2026) : l'admin qui clique sur son
                   // icone engrenage dans le header public atterrit maintenant
                   // sur /admin/dashboard (vrai porte d'entree back-office) au
@@ -188,7 +202,7 @@ function Header() {
                       {adminMsgCount}
                     </span>
                   )}
-                </Link>
+                </SmartLink>
               ) : (
                 <button onClick={() => setShowLoginModal(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white text-sm font-bold transition-all duration-200 hover:brightness-110 hover:scale-105 whitespace-nowrap shadow-[0_0_20px_rgba(var(--accent-rgb,255,200,0),0.35)] animate-subtle-glow">
                   <LogIn size={16} />
@@ -196,7 +210,7 @@ function Header() {
                 </button>
               )}
 
-              <Link to="/panier" onClick={navClick('/panier')} className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
+              <SmartLink to="/panier" onClick={navClick('/panier')} className="relative p-2 transition-colors duration-200 nav-link" aria-label={t('nav.panier')}>
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
                   <motion.span
@@ -208,7 +222,7 @@ function Header() {
                     {cartCount}
                   </motion.span>
                 )}
-              </Link>
+              </SmartLink>
             </div>
 
             {/* Mobile Controls - minimal: theme, lang, hamburger */}
@@ -273,9 +287,9 @@ function Header() {
             >
               {/* Drawer header row */}
               <div className="flex items-center justify-between px-4 py-3 border-b mobile-drawer-border flex-shrink-0">
-                <Link to="/" onClick={navClick('/', close)} className="flex items-center">
+                <SmartLink to="/" onClick={navClick('/', close)} className="flex items-center">
                   <MassiveLogo className="logo-header" />
-                </Link>
+                </SmartLink>
                 <button
                   onClick={close}
                   className="p-2 rounded-lg nav-link transition-colors hover:bg-black/5"
@@ -296,7 +310,7 @@ function Header() {
                   const Icon = SERVICE_ICONS[i];
                   const active = isActive(`/services/${service.slug}`);
                   return (
-                    <Link
+                    <SmartLink
                       key={service.slug}
                       to={`/services/${service.slug}`}
                       className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link'}`}
@@ -309,14 +323,14 @@ function Header() {
                       )}
                       <span className="font-semibold text-[14px]">{service.name}</span>
                       <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                    </Link>
+                    </SmartLink>
                   );
                 })}
 
                 <div className="h-px mobile-drawer-sep mx-2 my-1.5" />
 
                 {/* Artistes - single link */}
-                <Link
+                <SmartLink
                   to="/artistes"
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                   onClick={navClick('/artistes', close)}
@@ -326,9 +340,9 @@ function Header() {
                   </span>
                   <span className="font-semibold text-[14px]">{tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                </Link>
+                </SmartLink>
 
-                <Link
+                <SmartLink
                   to="/a-propos"
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/a-propos') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                   onClick={navClick('/a-propos', close)}
@@ -338,9 +352,9 @@ function Header() {
                   </span>
                   <span className="font-semibold text-[14px]">{t('nav.aPropos')}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                </Link>
+                </SmartLink>
 
-                <Link
+                <SmartLink
                   to="/panier"
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/panier') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
                   onClick={navClick('/panier', close)}
@@ -355,10 +369,10 @@ function Header() {
                   </span>
                   <span className="font-semibold text-[14px]">{tx({ fr: 'Panier', en: 'Cart', es: 'Carrito' })}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                </Link>
+                </SmartLink>
 
                 {isAdmin && adminMsgCount > 0 && (
-                  <Link
+                  <SmartLink
                     to="/account?tab=messages"
                     className="flex items-center gap-3 px-3 py-2 rounded-xl nav-link mobile-drawer-item group transition-colors"
                     onClick={close}
@@ -371,14 +385,14 @@ function Header() {
                     </span>
                     <span className="font-semibold text-[14px]">{tx({ fr: 'Messages', en: 'Messages', es: 'Mensajes' })}</span>
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                  </Link>
+                  </SmartLink>
                 )}
 
                 <div className="h-px mobile-drawer-sep mx-2 my-1.5" />
 
                 {/* Account / Login */}
                 {user ? (
-                  <Link
+                  <SmartLink
                     // FIX-ROUTING (23 avril 2026) : symetrie avec l'icone desktop -
                     // admin atterrit sur /admin/dashboard plutot que sur le tab
                     // Profil. Fallback /account pour les utilisateurs non-admin.
@@ -409,9 +423,9 @@ function Header() {
                       {t('nav.account')}
                     </span>
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                  </Link>
+                  </SmartLink>
                 ) : (
-                  <Link
+                  <SmartLink
                     to="/login"
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-accent text-white group transition-all hover:brightness-110 mt-1 shadow-[0_0_15px_rgba(var(--accent-rgb,255,200,0),0.3)]"
                     onClick={close}
@@ -421,19 +435,19 @@ function Header() {
                     </span>
                     <span className="font-bold text-[14px]">{tx({ fr: 'Connexion / Inscription', en: 'Sign in / Register', es: 'Conectarse / Registro' })}</span>
                     <ChevronRight size={14} className="ml-auto text-white/60 group-hover:text-white transition-opacity" />
-                  </Link>
+                  </SmartLink>
                 )}
 
                 {/* Contact CTA */}
                 <div className="mt-2 pt-2 border-t mobile-drawer-border">
-                  <Link
+                  <SmartLink
                     to="/contact"
                     className="btn-primary w-full text-center py-2.5 font-bold flex items-center justify-center gap-2 text-[14px]"
                     onClick={navClick('/contact', close)}
                   >
                     <Phone size={15} />
                     {t('nav.contact')}
-                  </Link>
+                  </SmartLink>
                 </div>
 
                 {/* Espace en bas pour safe area iOS */}
@@ -509,14 +523,14 @@ function Header() {
               </div>
 
               {/* Email */}
-              <Link
+              <SmartLink
                 to="/login"
                 onClick={() => setShowLoginModal(false)}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-accent/10 text-accent font-semibold text-sm hover:bg-accent/20 transition-colors"
               >
                 <LogIn size={16} />
                 {tx({ fr: 'Connexion par email', en: 'Sign in with email', es: 'Conectarse con email' })}
-              </Link>
+              </SmartLink>
 
               <p className="text-grey-muted text-[10px] text-center">
                 {tx({ fr: 'En continuant, vous acceptez nos conditions d\'utilisation', en: 'By continuing, you agree to our terms of service', es: 'Al continuar, acepta nuestros terminos de servicio' })}

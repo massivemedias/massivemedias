@@ -94,11 +94,49 @@ function ComingSoon({ section }) {
   );
 }
 
+// Liste des sous-domaines REZERVES (jamais traites comme un slug d'artiste).
+// Si tu en ajoutes un (ex: 'blog'), pense aussi a configurer Cloudflare DNS
+// pour qu'il ne tape pas la SPA (sinon `https://blog.massivemedias.com/` va
+// quand meme atterrir sur le frontend et le filtre ci-dessous l'ignorera =>
+// page d'accueil par defaut, pas une 404 - probablement OK comme fallback).
+const RESERVED_SUBDOMAINS = new Set([
+  'www',
+  'admin',
+  'api',
+  'staging',
+  'preview',
+  'mail',
+  'm', // mobile redirect (cas usuel)
+]);
+
 function getSubdomainSlug() {
   const host = window.location.hostname;
+  // Localhost / 127.* / *.local : pas de wildcard SaaS (dev mode)
+  if (/^(localhost|127\.|192\.168\.|10\.)/.test(host) || host.endsWith('.local')) {
+    return null;
+  }
   const match = host.match(/^([^.]+)\.massivemedias\.com$/);
-  if (match && match[1] !== 'www') return match[1];
-  return null;
+  if (!match) return null;
+  const slug = match[1].toLowerCase();
+  if (RESERVED_SUBDOMAINS.has(slug)) return null;
+  return slug;
+}
+
+// Exporte le check pour les composants qui doivent forcer une URL absolue
+// vers le domaine racine (ex: nav globale -> sortir du sous-domaine artiste).
+export { getSubdomainSlug };
+
+// Helper : retourne une URL absolue vers la racine massivemedias.com si on est
+// sur un sous-domaine d'artiste, sinon le path relatif tel quel. Utilise par
+// le Header pour que les liens "Accueil"/"Services"/"Contact" sortent bien
+// du sous-domaine artiste (l'artiste qui clique "Accueil" doit voir
+// massivemedias.com/, pas gallium.massivemedias.com/).
+export function rootUrl(path = '/') {
+  if (typeof window === 'undefined') return path;
+  if (getSubdomainSlug()) {
+    return `https://massivemedias.com${path.startsWith('/') ? path : '/' + path}`;
+  }
+  return path;
 }
 
 // Redirect to /login if recovery hash is detected on any page
