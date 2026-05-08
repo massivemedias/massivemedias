@@ -1,4 +1,7 @@
-import api from './api';
+// FIX-PUBLIC-401 (8 mai 2026) : apiPublic (sans Bearer) pour /products. Cf.
+// services/api.js pour le contexte. Sans ca, les admins loggues recevaient 401
+// et le cache servait null silencieusement -> grilles de prix CMS invisibles.
+import { apiPublic } from './api';
 
 // Cache pour éviter les requêtes répétées pendant la même session
 const cache = new Map();
@@ -17,7 +20,7 @@ export async function getProducts(category = null) {
       params['filters[category][$eq]'] = category;
     }
 
-    const { data } = await api.get('/products', { params });
+    const { data } = await apiPublic.get('/products', { params });
     const products = data.data || [];
     cache.set(cacheKey, products);
     return products;
@@ -32,7 +35,7 @@ export async function getProduct(slug) {
   if (cache.has(cacheKey)) return cache.get(cacheKey);
 
   try {
-    const { data } = await api.get('/products', {
+    const { data } = await apiPublic.get('/products', {
       params: {
         'filters[slug][$eq]': slug,
         'populate': 'images',

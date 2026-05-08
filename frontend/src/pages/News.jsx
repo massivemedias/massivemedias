@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react';
 import { Calendar, Tag } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
-import api from '../services/api';
+// FIX-PUBLIC-401 (8 mai 2026) : apiPublic (sans Bearer) pour /news-articles.
+// Cf. services/api.js pour le contexte global du fix.
+import { apiPublic } from '../services/api';
 
 // HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
 const API_URL = 'https://massivemedias-api.onrender.com/api';
@@ -19,7 +21,7 @@ function News() {
   useEffect(() => {
     async function fetchArticles() {
       try {
-        const { data } = await api.get('/news-articles', {
+        const { data } = await apiPublic.get('/news-articles', {
           params: {
             'sort': 'createdAt:desc',
             'populate': 'coverImage',

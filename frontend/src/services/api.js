@@ -67,6 +67,32 @@ export function isServerDown() {
   return false;
 }
 
+// ============================================================================
+// API PUBLIC (8 mai 2026) - instance dediee aux endpoints non-authentifies.
+// ============================================================================
+// Probleme corrige : Strapi v5 rejette en 401 toute requete contenant un
+// Authorization Bearer qui n'est pas un JWT Strapi natif. Notre Bearer Supabase
+// JWT (injecte automatiquement par l'intercepteur de `api`) declenchait donc
+// 401 sur les routes publiques (/artists, /products, /site-content, /news-articles,
+// /testimonials, /pricing-config, etc.) DES QU'UN ADMIN ETAIT CONNECTE.
+//
+// Symptome difficile a debugger : les guests non-loggues voyaient bien le contenu
+// CMS, mais les admins (qui sont les seuls a tester) voyaient un fallback local
+// stale -> on croyait que les approves CMS ne marchaient pas.
+//
+// Cette instance NE FAIT PAS d'injection d'auth header, elle ne devrait JAMAIS
+// servir pour des endpoints proteges. Pattern : pour les endpoints qui doivent
+// fonctionner pour TOUT VISITEUR (loggue ou non), utiliser apiPublic. Pour les
+// endpoints admin / proteges, garder `api` (default export).
+const apiPublic = axios.create({
+  baseURL: API_URL,
+  timeout: 30000,
+  adapter: 'fetch',
+});
+// Aucun intercepteur. Aucune injection Authorization. Volontaire.
+
+export { apiPublic };
+
 // === Upload Supabase Storage helpers (non lies a l'instance axios) ===
 
 export async function uploadArtistFile(file) {
