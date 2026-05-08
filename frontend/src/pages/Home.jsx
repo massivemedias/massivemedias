@@ -19,6 +19,7 @@ import {
 import artistsData from '../data/artists';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
+import LeadMagnetCTA from '../components/LeadMagnetCTA';
 import SEO from '../components/SEO';
 import { getOrganizationSchema, getLocalBusinessSchema, getWebSiteSchema } from '../components/seo/schemas';
 import MassiveLogo from '../components/MassiveLogo';
@@ -228,6 +229,13 @@ function Home() {
 
         <div className="absolute bottom-0 left-0 right-0 h-40 hero-fade"></div>
       </section>
+
+      {/* ============ LEAD MAGNET / OFFRE D'INSCRIPTION ============
+          Insere directement apres le HERO pour capturer l'attention pendant
+          que le visiteur scroll. Si l'utilisateur est deja loggue, le
+          composant retourne null et la section disparait sans laisser de
+          trou (pas de spacing parasite). */}
+      <LeadMagnetCTA />
 
       {/* ============ SERVICES ============ */}
       <section id="services" className="section-container">

@@ -1,20 +1,38 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Eye, EyeOff, CheckCircle, Activity, RotateCcw, FileText, Tag } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, CheckCircle, Activity, RotateCcw, FileText, Tag, Sparkles, Shield } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
+
+// Code promo de bienvenue applique automatiquement au signup quand
+// ?welcome=1 est present dans l'URL. Le code DOIT exister dans la table
+// promo-codes du backend (10%, sans expiration, sans limite d'usage par
+// user, mais 1 seul usage par compte) pour que le checkout l'accepte.
+// Cf. mission lead magnet 8 mai 2026.
+const WELCOME_PROMO = { code: 'BIENVENUE10', percent: 10 };
 
 function Login() {
   const { t, lang, tx } = useLang();
   const { signIn, signUp, signInWithOAuth, resetPassword, updatePassword, verifyOtp, user, session, passwordRecovery } = useAuth();
+  const { applyPromoCode } = useCart();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionExpired = searchParams.get('expired') === '1';
   const redirectTo = searchParams.get('redirect') || '/';
+  // Pre-selection du formulaire register depuis Lead Magnet CTA
+  const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
+  // Bannire promo de bienvenue + auto-apply du code apres signup success.
+  // ?welcome=1 = visiteur arrive via le LeadMagnetCTA -> on lui doit le 10%.
+  const isWelcomeFlow = searchParams.get('welcome') === '1';
 
-  const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'update-password' | 'verify-otp'
+  const [mode, setMode] = useState(initialMode); // 'login' | 'register' | 'forgot' | 'update-password' | 'verify-otp'
+  // Etat UI : si on vient de creer un compte avec ?welcome=1, on affiche
+  // un toast de confirmation avec le code applique (avant que le useEffect
+  // [user] redirige vers redirectTo).
+  const [welcomeApplied, setWelcomeApplied] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -39,10 +57,17 @@ function Login() {
   // pour eviter le warning React "deps array size changed between renders" en dev HMR.
   useEffect(() => {
     if (user && !passwordRecovery && !passwordUpdated && !isRecoveryFlow) {
+      // Welcome flow : on differe la redirection de 2.5s pour laisser le
+      // temps a l'utilisateur de voir la confirmation que le code 10%
+      // a ete applique a son panier.
+      if (welcomeApplied) {
+        const timer = setTimeout(() => navigate(redirectTo), 2500);
+        return () => clearTimeout(timer);
+      }
       navigate(redirectTo);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, passwordRecovery, isRecoveryFlow]);
+  }, [user, passwordRecovery, isRecoveryFlow, welcomeApplied]);
 
   // Detect password recovery event from Supabase
   useEffect(() => {
@@ -165,6 +190,22 @@ function Login() {
         const { data, error: err } = await signUp(email, password, fullName, referralCode);
         if (err) { setError(translateSupabaseError(err)); return; }
         if (referralCode) localStorage.removeItem('referralCode');
+
+        // Lead Magnet (8 mai 2026) : si l'utilisateur vient du LeadMagnetCTA
+        // (?welcome=1), on injecte le code BIENVENUE10 dans le panier via
+        // CartContext.applyPromoCode. Le code est sauvegarde en localStorage
+        // par CartContext, donc il survit au reload qui suit le signup.
+        // Le checkout validera le code via /promo-codes (le code DOIT exister
+        // en BDD avec percent=10 sinon Strapi rejette au moment du paiement).
+        if (isWelcomeFlow) {
+          applyPromoCode(
+            WELCOME_PROMO.code,
+            WELCOME_PROMO.percent,
+            tx({ fr: 'Rabais de bienvenue', en: 'Welcome discount', es: 'Descuento de bienvenida' })
+          );
+          setWelcomeApplied(true);
+        }
+
         // Si l'email n'est pas encore confirme, montrer l'ecran OTP
         if (data?.user && !data.user.confirmed_at && !data.session) {
           setMode('verify-otp');
@@ -275,9 +316,60 @@ function Login() {
               <h1 className="text-3xl font-heading font-bold text-heading mb-2">
                 {getTitle()}
               </h1>
-              <p className="text-grey-muted mb-8">
+              <p className="text-grey-muted mb-6">
                 {getSubtitle()}
               </p>
+
+              {/* Bandeau "10% offerts" - visible quand le visiteur arrive du
+                  LeadMagnetCTA en mode register (?welcome=1). Disparait des
+                  que le code est applique pour laisser place au toast. */}
+              {isWelcomeFlow && mode === 'register' && !welcomeApplied && (
+                <div className="mb-6 p-4 rounded-xl border border-accent/40 bg-accent/10 flex items-start gap-3">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
+                    <Sparkles size={18} className="text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-heading text-sm font-bold mb-0.5">
+                      {tx({
+                        fr: '10% sur ta premiere commande',
+                        en: '10% off your first order',
+                        es: '10% de descuento en tu primer pedido',
+                      })}
+                    </p>
+                    <p className="text-grey-muted text-xs">
+                      {tx({
+                        fr: 'Le code sera applique automatiquement a ton panier des la creation du compte.',
+                        en: 'The code will be auto-applied to your cart upon account creation.',
+                        es: 'El codigo se aplicara automaticamente a tu carrito al crear la cuenta.',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Toast post-signup : code applique avec succes. Reste affiche
+                  2.5s avant la redirection (cf. useEffect [welcomeApplied]). */}
+              {welcomeApplied && (
+                <div className="mb-6 p-4 rounded-xl border border-green-500/40 bg-green-500/10 flex items-start gap-3">
+                  <CheckCircle size={20} className="text-green-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-heading text-sm font-bold mb-0.5">
+                      {tx({
+                        fr: 'Compte cree - 10% applique a ton panier !',
+                        en: 'Account created - 10% applied to your cart!',
+                        es: 'Cuenta creada - 10% aplicado a tu carrito!',
+                      })}
+                    </p>
+                    <p className="text-grey-muted text-xs">
+                      {tx({
+                        fr: `Code : ${WELCOME_PROMO.code} - actif jusqu'au paiement.`,
+                        en: `Code: ${WELCOME_PROMO.code} - active until checkout.`,
+                        es: `Codigo: ${WELCOME_PROMO.code} - activo hasta el pago.`,
+                      })}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Password updated success */}
               {passwordUpdated ? (
