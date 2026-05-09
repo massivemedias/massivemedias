@@ -13,7 +13,7 @@
  *
  * Le bouton CTA pointe vers /login?mode=register&welcome=1 :
  *   - mode=register : pre-selectionne le formulaire d'inscription
- *   - welcome=1     : declenche l'injection du code BIENVENUE10 dans le
+ *   - welcome=1     : declenche l'injection du code WELCOME10 dans le
  *                     panier au signup success (cf. Login.jsx).
  */
 import { motion } from 'framer-motion';
@@ -42,9 +42,9 @@ function LeadMagnetCTA() {
     {
       icon: Activity,
       label: tx({
-        fr: 'Suivi de production en temps reel',
+        fr: 'Suivi de production en temps réel',
         en: 'Real-time production tracking',
-        es: 'Seguimiento de produccion en tiempo real',
+        es: 'Seguimiento de producción en tiempo real',
       }),
     },
     {
@@ -95,7 +95,7 @@ function LeadMagnetCTA() {
             {/* Titre */}
             <h2 className="text-center text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-white mb-4 leading-tight">
               {tx({
-                fr: 'Debloque l\'experience Studio.',
+                fr: 'Débloque l\'expérience Studio.',
                 en: 'Unlock the Studio experience.',
                 es: 'Desbloquea la experiencia Studio.',
               })}
@@ -106,17 +106,17 @@ function LeadMagnetCTA() {
                 que des strings). */}
             <p className="text-center text-base sm:text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-8 sm:mb-10">
               {tx({
-                fr: 'Cree ton compte gratuit aujourd\'hui et obtiens ',
+                fr: 'Crée ton compte gratuit aujourd\'hui et obtiens ',
                 en: 'Create your free account today and get ',
-                es: 'Crea tu cuenta gratuita hoy y obten ',
+                es: 'Crea tu cuenta gratuita hoy y obtén ',
               })}
               <span className="text-accent font-bold">
                 {tx({ fr: '10% de rabais', en: '10% off', es: '10% de descuento' })}
               </span>
               {tx({
-                fr: ' sur ta premiere commande d\'impression.',
+                fr: ' sur ta première commande d\'impression.',
                 en: ' on your first printing order.',
-                es: ' en tu primer pedido de impresion.',
+                es: ' en tu primer pedido de impresión.',
               })}
             </p>
 
@@ -151,7 +151,7 @@ function LeadMagnetCTA() {
                 className="group inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-accent text-white text-sm sm:text-base font-bold uppercase tracking-wider shadow-lg shadow-accent/30 hover:shadow-accent/50 hover:scale-[1.02] active:scale-[0.99] transition-all"
               >
                 {tx({
-                  fr: 'Creer mon compte (10% offerts)',
+                  fr: 'Créer mon compte (10% offerts)',
                   en: 'Create my account (10% off)',
                   es: 'Crear mi cuenta (10% gratis)',
                 })}
@@ -159,9 +159,9 @@ function LeadMagnetCTA() {
               </Link>
               <p className="text-xs text-white/40">
                 {tx({
-                  fr: 'Aucune carte requise. Compte gratuit, code applique automatiquement.',
+                  fr: 'Aucune carte requise. Compte gratuit, code appliqué automatiquement.',
                   en: 'No card required. Free account, code auto-applied.',
-                  es: 'Sin tarjeta. Cuenta gratuita, codigo aplicado automaticamente.',
+                  es: 'Sin tarjeta. Cuenta gratuita, código aplicado automáticamente.',
                 })}
               </p>
             </div>

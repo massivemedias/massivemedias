@@ -9,10 +9,10 @@ import { useCart } from '../contexts/CartContext';
 
 // Code promo de bienvenue applique automatiquement au signup quand
 // ?welcome=1 est present dans l'URL. Le code DOIT exister dans la table
-// promo-codes du backend (10%, sans expiration, sans limite d'usage par
-// user, mais 1 seul usage par compte) pour que le checkout l'accepte.
+// promo-codes du backend Strapi (10%, sans expiration, 1 seul usage par
+// compte) pour que le checkout l'accepte.
 // Cf. mission lead magnet 8 mai 2026.
-const WELCOME_PROMO = { code: 'BIENVENUE10', percent: 10 };
+const WELCOME_PROMO = { code: 'WELCOME10', percent: 10 };
 
 function Login() {
   const { t, lang, tx } = useLang();
@@ -192,7 +192,7 @@ function Login() {
         if (referralCode) localStorage.removeItem('referralCode');
 
         // Lead Magnet (8 mai 2026) : si l'utilisateur vient du LeadMagnetCTA
-        // (?welcome=1), on injecte le code BIENVENUE10 dans le panier via
+        // (?welcome=1), on injecte le code WELCOME10 dans le panier via
         // CartContext.applyPromoCode. Le code est sauvegarde en localStorage
         // par CartContext, donc il survit au reload qui suit le signup.
         // Le checkout validera le code via /promo-codes (le code DOIT exister
