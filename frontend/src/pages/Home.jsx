@@ -169,6 +169,10 @@ function Home() {
             <motion.img
               src={`${import.meta.env.BASE_URL}images/cpr-tagline.png`}
               alt="Create. Print. Repeat."
+              width="240"
+              height="22"
+              loading="eager"
+              fetchpriority="high"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}

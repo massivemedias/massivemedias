@@ -17,6 +17,19 @@
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Caveat:wght@600&display=swap" />
 
+    <!-- LCP-OPTIMIZE (8 mai 2026) : preload de l'image hero "Create.Print.Repeat"
+         qui est le LCP de la page d'accueil. Sans preload, le browser ne
+         decouvre cette image qu'apres parse + execution du JS React (delay
+         400-800ms). Avec preload, telechargement parallele au JS = gain
+         LCP ~200-400ms = +5-10 points PageSpeed mobile.
+         Note: ne preload QUE pour la home (le tagline n'est pas sur les
+         autres pages). Cloudflare honore Link headers en HTTP/2 push aussi. -->
+    <link rel="preload" as="image" href="/images/cpr-tagline.png" fetchpriority="high" />
+
+    <!-- Preconnect au backend Strapi pour les API calls hot path (site-content
+         charge des le boot) - economise ~100ms sur le 1er fetch. -->
+    <link rel="preconnect" href="https://massivemedias-api.onrender.com" crossorigin />
+
     <!-- SEO principal - keywords prioritaires en debut de title : "imprimeur
          montreal", "stickers", "prints", "fine art", "impression sur mesure".
          Le title est ce que Google indexe le plus fortement (poids ~30%) donc
