@@ -104,7 +104,13 @@ function parseAdResponse(raw: string): AdVariant[] {
  * loggees explicitement avec console.error (visible dans Render logs).
  */
 async function callAIProvider(prompt: string): Promise<string> {
-  const TIMEOUT_MS = 30000;
+  // FIX-ADS-TIMEOUT (8 mai 2026) : passe de 30s a 60s. Frontend axios
+  // override son propre timeout a 75s pour ce call (cf. AdminMassiveIA.jsx
+  // handleGenerate), donc on garde une marge de 15s entre les deux. Avant :
+  // backend 30s = frontend 30s -> race condition, l'admin voyait souvent
+  // "ca tourne pendant 30s puis rien" car axios timeout AVANT que Gemini
+  // n'ait fini. Maintenant : backend AbortController 60s, frontend 75s.
+  const TIMEOUT_MS = 60000;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 

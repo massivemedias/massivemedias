@@ -2251,13 +2251,21 @@ function AdsTab() {
     setGenerating(true);
     setVariants([]);
     try {
+      // FIX-ADS-TIMEOUT (8 mai 2026) : le timeout par defaut d'axios est 30s
+      // (cf. services/api.js), MAIS le backend ads-generator a aussi 30s
+      // sur l'AbortController du fetch IA. Resultat : si Render est en
+      // cold start (~15s) + Gemini repond en 18s, total = 33s -> axios
+      // timeout AVANT que la reponse n'arrive, et l'admin voit "ca tourne
+      // pendant 30s puis rien". On override le timeout a 75s pour ce call
+      // specifique : 15s buffer cold start + 30s backend + 30s reseau.
+      // axios accepte un override `timeout` dans le 2e arg config.
       const { data } = await api.post('/ads-generator/generate', {
         productName: selectedProduct.name,
         productType: selectedProduct.type,
         artistName: selectedArtist?.name || '',
         description: selectedProduct.description || '',
         language: 'fr',
-      });
+      }, { timeout: 75000 });
       setVariants(data?.data?.variants || []);
     } catch (err) {
       // FIX-ADS-ERROR (5 mai 2026) : le backend ads-generator retourne
@@ -2269,6 +2277,24 @@ function AdsTab() {
       // de variantes parsables" + sample brut pour debug).
       const data = err?.response?.data || {};
       const status = err?.response?.status;
+
+      // FIX-ADS-TIMEOUT-MSG (8 mai 2026) : detection explicite du cas
+      // timeout reseau (axios ECONNABORTED ou message "timeout"). Sans ca,
+      // le user voyait "Erreur generation" tout court sans contexte. On
+      // remplace par un message actionnable qui suggere de reessayer
+      // (cold start Render se termine apres le 1er hit, le 2e tour
+      // sera rapide).
+      const isTimeout = err?.code === 'ECONNABORTED'
+        || /timeout|aborted|network error/i.test(err?.message || '');
+      if (isTimeout && !status) {
+        setError(tx({
+          fr: 'Le serveur met plus de 75 secondes a repondre - probablement un cold start Render. Reessaie dans 30 secondes, ce sera rapide.',
+          en: 'Server takes more than 75s to respond - likely a Render cold start. Retry in 30s, it will be fast.',
+          es: 'El servidor tarda mas de 75s - probablemente un cold start de Render. Reintenta en 30s.',
+        }));
+        return;
+      }
+
       // error peut etre soit string (notre backend) soit objet (Strapi standard)
       const errStr = typeof data.error === 'string'
         ? data.error
@@ -2505,11 +2531,29 @@ function AdsTab() {
               </div>
             )}
             {generating && variants.length === 0 && (
-              <div className="rounded-xl bg-glass border border-white/10 p-6 flex items-center justify-center gap-2">
-                <Loader2 size={20} className="text-accent animate-spin" />
-                <span className="text-grey-muted text-sm">
-                  {tx({ fr: 'Generation en cours...', en: 'Generating...', es: 'Generando...' })}
-                </span>
+              // FIX-ADS-LOADER (8 mai 2026) : ancien loader = juste un spinner
+              // + "Generation en cours..." -> impression que rien ne se passe
+              // pendant 30-45s. Nouveau : on liste les etapes (cold start +
+              // appel IA) avec un message d'attente honnete (jusqu'a 60s)
+              // pour que l'admin sache que c'est NORMAL d'attendre.
+              <div className="rounded-xl bg-glass border border-white/10 p-6 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Loader2 size={20} className="text-accent animate-spin flex-shrink-0" />
+                  <span className="text-heading text-sm font-semibold">
+                    {tx({
+                      fr: 'Generation en cours...',
+                      en: 'Generating...',
+                      es: 'Generando...',
+                    })}
+                  </span>
+                </div>
+                <p className="text-grey-muted text-xs leading-relaxed">
+                  {tx({
+                    fr: 'L\'appel IA peut prendre jusqu\'a 60 secondes (Render cold start + Gemini). Patiente, le bouton se debloquera automatiquement.',
+                    en: 'The AI call may take up to 60 seconds (Render cold start + Gemini). Wait, the button will unlock automatically.',
+                    es: 'La llamada IA puede tardar hasta 60 segundos. Espera, el boton se desbloqueara automaticamente.',
+                  })}
+                </p>
               </div>
             )}
             {variants.map((v, idx) => (
