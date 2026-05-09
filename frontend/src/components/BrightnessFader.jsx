@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Paintbrush } from 'lucide-react';
+import { Sun } from 'lucide-react';
 import { useTheme } from '../i18n/ThemeContext';
 import { THEME_NAMES, THEME_COLORS, THEME_ACCENTS } from '../utils/brightnessEngine';
 import { useLang } from '../i18n/LanguageContext';
@@ -55,14 +55,18 @@ function BrightnessFader() {
       onMouseEnter={() => setHoverTip(true)}
       onMouseLeave={() => setHoverTip(false)}
     >
-      {/* Icone palette */}
+      {/* Icone Sun (8 mai 2026) - remplace Paintbrush. Le toggle ouvre un
+          dropdown de 10 palettes (pas un dark/light classique), mais le
+          Sun est plus universel et minimaliste. La couleur reste dynamique
+          (suit l'accent de la palette active) pour donner un signal visuel
+          de l'etat selectionne. */}
       <button
         onClick={() => { setOpen(!open); setShowTip(false); setHoverTip(false); }}
         className="p-2 rounded-lg hover:bg-white/10 transition-colors"
         aria-label={tooltipLabel}
         title={tooltipLabel}
       >
-        <Paintbrush size={18} style={{ color: THEME_ACCENTS[step] }} />
+        <Sun className="w-5 h-5" style={{ color: THEME_ACCENTS[step] }} />
       </button>
 
       {/* Dropdown */}
