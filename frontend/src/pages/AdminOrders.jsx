@@ -6,7 +6,7 @@ import {
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
   Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark, Copy,
-  TrendingUp, TrendingDown, Inbox, Sparkles, List, LayoutDashboard, Zap,
+  TrendingUp, TrendingDown, Inbox, Sparkles, List, LayoutDashboard, Zap, User,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink, getQuotes, createQuote } from '../services/adminService';
@@ -2455,33 +2455,155 @@ function AdminOrders() {
                               })()}
                             </div>
 
-                            {/* Shipping address */}
-                            <div className="rounded-lg bg-glass p-4">
-                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                                <MapPin size={12} />
-                                {tx({ fr: 'Adresse de livraison', en: 'Shipping address', es: 'Direccion de envio' })}
-                              </h4>
-                              {order.shippingAddress ? (
-                                <div className="text-sm text-heading space-y-1">
-                                  <p className="font-medium">{order.customerName}</p>
-                                  <p>{order.shippingAddress.address}</p>
-                                  <p>{order.shippingAddress.city}, {order.shippingAddress.province} {order.shippingAddress.postalCode}</p>
-                                  {order.customerPhone && (
-                                    <p className="text-grey-muted text-xs mt-2 flex items-center gap-1.5">
-                                      <Phone size={11} /> {order.customerPhone}
-                                    </p>
+                            {/* Coordonnees & Livraison (refonte 8 mai 2026)
+                                ----------------------------------------------
+                                Ancienne version : un bloc minimaliste "Adresse
+                                de livraison" qui n'affichait QUE l'adresse +
+                                phone (l'admin devait re-fouiller dans le CRM
+                                pour trouver l'email et copier-coller un nom).
+                                Mission "afficher coordonnees client" : on
+                                regroupe les 4 infos critiques pour la logistique
+                                (nom / email / phone / adresse complete) dans
+                                une carte distincte avec liens d'action mailto:
+                                tel: et bouton copier l'adresse.
+
+                                Fallback : customerName/Email/Phone proviennent
+                                de l'order ; si absents, on retombe sur
+                                order.client.* (relation populee dans adminList
+                                cote backend). Aucun champ adresse cote Client,
+                                donc l'adresse n'a pas de fallback - en cas
+                                d'absence, alerte rouge bien visible. */}
+                            {(() => {
+                              const a = order.shippingAddress;
+                              // Detection pickup : 2 heuristiques cumulatives.
+                              // Le frontend Checkout met "Ramassage sur place..."
+                              // dans address ET prefixe les notes par [PICKUP]
+                              // (cf. Checkout.jsx ligne 386-391).
+                              const isPickup = (a?.address && /^ramassage/i.test(a.address))
+                                || (typeof order.notes === 'string' && order.notes.startsWith('[PICKUP]'));
+                              const hasAddress = !!(a && (a.address || a.city || a.postalCode));
+                              const customerName = order.customerName || order.client?.name || '';
+                              const customerEmail = order.customerEmail || order.client?.email || '';
+                              const customerPhone = order.customerPhone || order.client?.phone || '';
+                              // Pays : le checkout n'enregistre pas le pays
+                              // (Massive sert exclusivement le Canada). Affichage
+                              // par defaut "Canada" pour la lisibilite admin.
+                              const country = a?.country || 'Canada';
+                              const fullAddressText = hasAddress
+                                ? `${customerName ? customerName + '\n' : ''}${a.address || ''}\n${a.city || ''}, ${a.province || ''} ${a.postalCode || ''}\n${country}`.trim()
+                                : '';
+                              const copyAddress = (e) => {
+                                e.stopPropagation();
+                                if (!fullAddressText) return;
+                                navigator.clipboard?.writeText(fullAddressText);
+                              };
+                              return (
+                                <div className={`rounded-lg p-4 ${hasAddress || isPickup ? 'bg-glass' : 'bg-red-500/10 border border-red-500/30'}`}>
+                                  <h4 className="text-xs font-semibold uppercase tracking-wider mb-3 flex items-center justify-between gap-2">
+                                    <span className="flex items-center gap-1.5 text-grey-muted">
+                                      <Truck size={13} className={isPickup ? 'text-blue-400' : hasAddress ? 'text-accent' : 'text-red-400'} />
+                                      {tx({ fr: 'Coordonnees & livraison', en: 'Contact & shipping', es: 'Contacto y envio' })}
+                                    </span>
+                                    {isPickup && (
+                                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 text-[10px] font-semibold normal-case tracking-normal">
+                                        <Package size={10} />
+                                        {tx({ fr: 'Ramassage sur place', en: 'Pickup', es: 'Recogida' })}
+                                      </span>
+                                    )}
+                                  </h4>
+
+                                  {/* Bandeau alerte si pas d'adresse et pas pickup */}
+                                  {!hasAddress && !isPickup && (
+                                    <div className="flex items-start gap-2 p-2.5 rounded-md bg-red-500/15 border border-red-500/30 mb-3">
+                                      <AlertTriangle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-bold text-red-300 leading-tight">
+                                          {tx({ fr: 'Aucune adresse de livraison enregistree', en: 'No shipping address on file', es: 'Sin direccion de envio' })}
+                                        </p>
+                                        <p className="text-[11px] text-red-200/80 mt-0.5">
+                                          {tx({
+                                            fr: 'Contacte le client par courriel pour recuperer ses coordonnees.',
+                                            en: 'Contact the customer by email to collect shipping info.',
+                                            es: 'Contacta al cliente por correo para obtener la direccion.',
+                                          })}
+                                        </p>
+                                      </div>
+                                    </div>
                                   )}
+
+                                  {/* Bloc contact : nom + email + telephone */}
+                                  <div className="space-y-2 text-sm mb-3">
+                                    {customerName && (
+                                      <div className="flex items-center gap-2 text-heading">
+                                        <User size={12} className="text-grey-muted flex-shrink-0" />
+                                        <span className="font-medium truncate">{customerName}</span>
+                                      </div>
+                                    )}
+                                    {customerEmail && (
+                                      <a
+                                        href={`mailto:${customerEmail}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className={`flex items-center gap-2 hover:text-accent transition-colors group ${!hasAddress && !isPickup ? 'text-red-200 font-bold' : 'text-heading'}`}
+                                      >
+                                        <Mail size={12} className={`${!hasAddress && !isPickup ? 'text-red-400' : 'text-grey-muted'} flex-shrink-0 group-hover:text-accent transition-colors`} />
+                                        <span className="truncate">{customerEmail}</span>
+                                        <ExternalLink size={10} className="text-grey-muted opacity-0 group-hover:opacity-100 transition-opacity ml-auto flex-shrink-0" />
+                                      </a>
+                                    )}
+                                    {customerPhone && (
+                                      <a
+                                        href={`tel:${customerPhone.replace(/\s+/g, '')}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="flex items-center gap-2 text-heading hover:text-accent transition-colors group"
+                                      >
+                                        <Phone size={12} className="text-grey-muted flex-shrink-0 group-hover:text-accent transition-colors" />
+                                        <span>{customerPhone}</span>
+                                      </a>
+                                    )}
+                                  </div>
+
+                                  {/* Bloc adresse complete */}
+                                  {hasAddress && (
+                                    <div className="pt-3 border-t border-white/5">
+                                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                                        <span className="text-[10px] uppercase tracking-wider text-grey-muted font-semibold flex items-center gap-1">
+                                          <MapPin size={11} />
+                                          {tx({ fr: 'Adresse', en: 'Address', es: 'Direccion' })}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={copyAddress}
+                                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-grey-muted hover:text-accent transition-colors"
+                                          title={tx({ fr: 'Copier l\'adresse complete', en: 'Copy full address', es: 'Copiar direccion completa' })}
+                                        >
+                                          <Copy size={10} />
+                                          {tx({ fr: 'Copier', en: 'Copy', es: 'Copiar' })}
+                                        </button>
+                                      </div>
+                                      <div className="text-sm text-heading space-y-0.5 leading-relaxed">
+                                        {a.address && <p>{a.address}</p>}
+                                        {(a.city || a.province || a.postalCode) && (
+                                          <p>
+                                            {[a.city, a.province].filter(Boolean).join(', ')}
+                                            {a.postalCode ? ` ${a.postalCode}` : ''}
+                                          </p>
+                                        )}
+                                        <p className="text-grey-muted text-xs">{country}</p>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Design pret - garde l'info dans le meme
+                                      bloc mais visuellement separe */}
+                                  <div className="mt-3 pt-3 border-t border-white/5 flex items-center gap-2">
+                                    <span className="text-xs text-grey-muted">{tx({ fr: 'Design prêt', en: 'Design ready', es: 'Diseno listo' })}:</span>
+                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded ${order.designReady ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                                      {order.designReady ? tx({ fr: 'Oui', en: 'Yes', es: 'Si' }) : tx({ fr: 'Non', en: 'No', es: 'No' })}
+                                    </span>
+                                  </div>
                                 </div>
-                              ) : (
-                                <p className="text-sm text-grey-muted">{tx({ fr: 'Aucune adresse', en: 'No address', es: 'Sin direccion' })}</p>
-                              )}
-                              <div className="mt-3 flex items-center gap-2">
-                                <span className="text-xs text-grey-muted">{tx({ fr: 'Design prêt', en: 'Design ready', es: 'Diseno listo' })}:</span>
-                                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${order.designReady ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                                  {order.designReady ? tx({ fr: 'Oui', en: 'Yes', es: 'Si' }) : tx({ fr: 'Non', en: 'No', es: 'No' })}
-                                </span>
-                              </div>
-                            </div>
+                              );
+                            })()}
                           </div>
 
                           {/* Expedition & Suivi (tracking live via provider) */}
