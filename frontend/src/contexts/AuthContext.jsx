@@ -121,10 +121,83 @@ export function AuthProvider({ children }) {
     return { data, error };
   }, []);
 
-  const signOut = useCallback(async () => {
-    if (!supabase) return;
-    await supabase.auth.signOut();
-    setPasswordRecovery(false);
+  // FORCE-LOGOUT (8 mai 2026) : la deconnexion DOIT toujours aboutir au plan
+  // local meme si le call reseau vers Supabase echoue (ERR_CONNECTION_CLOSED,
+  // antivirus qui bloque, offline, etc.). Avant ce fix, un fetch crash laissait
+  // l'UI gelee : setPasswordRecovery(false) n'etait jamais atteint, setUser
+  // restait au user connecte, et le bouton "Deconnexion" donnait l'impression
+  // d'etre cassse. On wrap dans try/catch et on force-clear dans tous les cas.
+  //
+  // Param optionnel `redirectTo` pour piloter la cible de redirection (defaut
+  // homepage). On utilise window.location.href plutot que useNavigate() pour
+  // garantir un full reload qui reset TOUT le state React (caches React-Query,
+  // contexts, refs) - critique apres un logout pour eviter de laisser fuiter
+  // des donnees du compte precedent dans un autre onglet de meme origin.
+  const signOut = useCallback(async (redirectTo = '/') => {
+    // Robustesse : Account.jsx fait <button onClick={signOut}> ce qui passe le
+    // SyntheticEvent React en premier argument. Si redirectTo n'est pas une
+    // string, on retombe sur la homepage pour eviter window.location.replace(<event>)
+    // qui partirait dans le decor.
+    if (typeof redirectTo !== 'string' || !redirectTo.startsWith('/')) {
+      redirectTo = '/';
+    }
+
+    // Helper : balaye localStorage pour purger toute trace de session Supabase.
+    // Les SDK Supabase stockent le refresh token sous une cle dynamique du type
+    // `sb-<project-ref>-auth-token` qu'on ne peut pas hardcoder. On itere donc
+    // sur toutes les keys et on supprime ce qui matche le prefixe sb-.
+    const purgeLocalSession = () => {
+      try {
+        localStorage.removeItem('token');
+        // Snapshot des keys avant iteration : modifier localStorage pendant le
+        // for-loop decale les indices et fait sauter des entrees.
+        const keys = Object.keys(localStorage);
+        for (const k of keys) {
+          if (k.startsWith('sb-') || k === 'supabase.auth.token') {
+            localStorage.removeItem(k);
+          }
+        }
+        // sessionStorage par precaution (certaines integrations OAuth posent
+        // des handshake tokens ici)
+        const sKeys = Object.keys(sessionStorage);
+        for (const k of sKeys) {
+          if (k.startsWith('sb-')) sessionStorage.removeItem(k);
+        }
+      } catch (e) {
+        // localStorage indisponible (mode prive Safari) ou quota plein : on
+        // log et on continue. Le clear local du state React reste effectif.
+        console.warn('[auth] purgeLocalSession partial:', e?.message || e);
+      }
+    };
+
+    try {
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+    } catch (err) {
+      // ERR_CONNECTION_CLOSED, timeout, antivirus, etc. : on ignore, on continue
+      // vers le clear local. Le serveur Supabase aura un refresh_token "orphelin"
+      // qui expirera naturellement (24h) - pas un probleme de securite vu que
+      // le client local n'a plus le token.
+      console.warn('[auth] signOut reseau a echoue, on force le logout local:', err?.message || err);
+    } finally {
+      // CRITIQUE : ces 4 actions doivent s'executer meme si signOut throw,
+      // sinon l'UI reste gelee sur le compte de l'utilisateur.
+      setUser(null);
+      setSession(null);
+      setPasswordRecovery(false);
+      purgeLocalSession();
+      // Redirection full-reload pour reset definitivement tout le state React.
+      // window.location.replace evite de laisser /account dans l'historique
+      // (le bouton retour ramenerait l'utilisateur sur sa page de profil
+      // vide une fois deconnecte, UX confusante).
+      try {
+        window.location.replace(redirectTo);
+      } catch (e) {
+        // Navigation bloquee (extension, sandbox iframe) : fallback hard reload
+        window.location.href = redirectTo;
+      }
+    }
   }, []);
 
   const resetPassword = useCallback(async (email) => {
