@@ -44,8 +44,11 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive | Impression Fine Art, Stickers Personnalisés, Merch, Design Graphique & Web - Montréal',
-        description: 'Massive - Studio d\'impression fine art et stickers personnalisés à Montréal. T-shirts, hoodies, sublimation textile, design graphique et webdesign. Production locale Mile-End, livraison gratuite Montréal.',
+        // SEO-AGGRESSIVE (8 mai 2026) : keywords "imprimeur montreal" + "stickers"
+        // + "prints" + "fine art" en debut de title pour maximiser le poids des
+        // termes a haute intention d'achat locale.
+        title: 'Imprimeur Montréal | Stickers, Prints & Fine Art | Massive Medias',
+        description: 'Service d\'impression sur mesure à Montréal. Spécialiste en stickers personnalisés, fine art, merch et impressions grand format pour artistes et entreprises. Production locale Mile-End, livraison rapide.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -404,8 +407,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive | Fine Art Printing, Custom Stickers, Merch, Graphic Design & Web - Montreal',
-        description: 'Massive - Fine art printing and custom stickers studio in Montreal. T-shirts, hoodies, textile sublimation, graphic design and web development. Local production Mile-End, free Montreal delivery.',
+        title: 'Montreal Printer | Stickers, Prints & Fine Art | Massive Medias',
+        description: 'Custom printing service in Montreal. Specialists in custom stickers, fine art, merch and large format printing for artists and businesses. Local Mile-End production, fast delivery.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -764,8 +767,8 @@ const translations = {
     // ──────────── HOME ────────────
     home: {
       seo: {
-        title: 'Massive | Impresion Fine Art, Stickers Personalizados, Merch, Diseno Grafico & Web - Montreal',
-        description: 'Massive - Estudio de impresion fine art y stickers personalizados en Montreal. Camisetas, sudaderas, sublimacion textil, diseno grafico y desarrollo web. Produccion local Mile-End, entrega gratis Montreal.',
+        title: 'Imprenta Montreal | Stickers, Prints & Fine Art | Massive Medias',
+        description: 'Servicio de impresión personalizada en Montreal. Especialistas en stickers personalizados, fine art, merch e impresión gran formato para artistas y empresas. Producción local Mile-End, entrega rápida.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',

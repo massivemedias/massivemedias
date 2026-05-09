@@ -183,11 +183,16 @@ function Home() {
             >
               <MassiveLogo className="w-full h-full transition-colors duration-300" />
             </motion.div>
+            {/* h1 unique de la page (cache visuellement, expose aux crawlers).
+                Construit autour des keywords prioritaires SEO : "imprimeur
+                montreal", "stickers", "prints", "fine art", "impression sur
+                mesure". Garde une formulation naturelle pour eviter le
+                keyword-stuffing penalisable par Google. */}
             <h1 className="sr-only">
               {tx({
-                fr: 'Massive Medias - Impression Fine Art, Stickers personnalisés, Merch, Design graphique et Développement web à Montréal',
-                en: 'Massive Medias - Fine Art Printing, Custom Stickers, Merch, Graphic Design and Web Development in Montreal',
-                es: 'Massive Medias - Impresion Fine Art, Stickers personalizados, Merch, Diseno grafico y Desarrollo web en Montreal',
+                fr: 'Imprimeur à Montréal - Stickers personnalisés, prints fine art, merch et impression sur mesure | Massive Medias',
+                en: 'Printer in Montreal - Custom stickers, fine art prints, merch and on-demand printing | Massive Medias',
+                es: 'Imprenta en Montreal - Stickers personalizados, prints fine art, merch e impresión a medida | Massive Medias',
               })}
             </h1>
 
@@ -306,7 +311,7 @@ function Home() {
             >
               <Link to={`/artistes/${artist.slug}`} className="flex flex-col items-center gap-2 group">
                 <div className="w-20 h-20 rounded-full overflow-hidden">
-                  <img src={artist.avatar} alt={artist.name} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={artist.avatar} alt={`${artist.name} - Artiste partenaire Massive Medias, prints fine art disponibles`} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <span className="text-sm font-heading font-bold text-heading">{artist.name}</span>
                 <span className="text-xs text-grey-muted text-center max-w-[110px] leading-tight">
@@ -330,7 +335,7 @@ function Home() {
               <Link to={`/artistes/${work.artistSlug}`} className="group relative block rounded-lg overflow-hidden aspect-square">
                 <img
                   src={work.image}
-                  alt={work.titleFr || work.titleEn}
+                  alt={`${work.titleFr || work.titleEn} - Tirage fine art de ${work.artistName}, imprimé à Montréal sur papier Hahnemühle`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />

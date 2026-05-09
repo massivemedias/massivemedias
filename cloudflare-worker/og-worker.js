@@ -36,8 +36,11 @@ const RESERVED_SUBDOMAINS = new Set(['www', 'api', 'admin', 'mm-admin', 'cms', '
 
 const ROUTE_META = {
   '/': {
-    title: 'Massive Medias | Imprimeur Montreal - Stickers, Prints & Design',
-    description: 'Massive Medias - Imprimeur a Montreal. Impression fine art, stickers personnalises die-cut, sublimation textile, design graphique, developpement web et webmastering. Studio creatif au Mile-End. Print Montreal.',
+    // SEO-AGGRESSIVE (8 mai 2026) : aligne sur le title homepage de l'app -
+    // keywords prioritaires "imprimeur montreal", "stickers", "prints", "fine
+    // art" en debut de title pour maximiser le poids SEO local.
+    title: 'Imprimeur Montreal | Stickers, Prints & Fine Art | Massive Medias',
+    description: 'Service d\'impression sur mesure a Montreal. Specialiste en stickers personnalises, fine art, merch et impressions grand format pour artistes et entreprises. Production locale Mile-End, livraison rapide au Quebec.',
   },
   '/artistes': {
     title: 'Artistes | Massive Medias - Photographes, Peintres & Artistes Visuels',
