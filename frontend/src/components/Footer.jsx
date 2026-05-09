@@ -93,6 +93,21 @@ function Footer() {
                 </li>
               ))}
             </ul>
+
+            {/* SEO-LINKS (8 mai 2026) : liens vers les 5 landing pages SEO
+                local. Chaque lien distribue du PageRank vers ces pages cible
+                ce qui accelere leur indexation Google et leur classement.
+                Visible discret pour ne pas alourdir le footer. */}
+            <h5 className="font-heading font-bold mt-5 mb-3 footer-heading text-xs uppercase tracking-wider opacity-70">
+              {tx({ fr: 'Spécialités locales', en: 'Local specialties', es: 'Especialidades locales' })}
+            </h5>
+            <ul className="space-y-1.5 footer-links text-xs opacity-80">
+              <li><Link to="/imprimeur-mile-end" className="hover:text-accent transition-colors">Imprimeur Mile-End</Link></li>
+              <li><Link to="/stickers-personnalises-montreal" className="hover:text-accent transition-colors">Stickers Montréal</Link></li>
+              <li><Link to="/print-fine-art-quebec" className="hover:text-accent transition-colors">Print fine art Québec</Link></li>
+              <li><Link to="/sublimation-textile-montreal" className="hover:text-accent transition-colors">Sublimation textile MTL</Link></li>
+              <li><Link to="/impression-flyers-montreal" className="hover:text-accent transition-colors">Impression flyers MTL</Link></li>
+            </ul>
           </div>
 
           {/* Colonne 4 - Contact */}

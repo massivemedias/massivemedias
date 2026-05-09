@@ -48,6 +48,10 @@ const ArtisteDetail = lazyWithRetry(() => import('./pages/ArtisteDetail'));
 const Temoignage = lazyWithRetry(() => import('./pages/Temoignage'));
 const VentePrivee = lazyWithRetry(() => import('./pages/VentePrivee'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
+// SEO-LOCAL (8 mai 2026) : 5 landing pages dediees aux keywords longue-traine
+// geo + service. Chaque page resolue dynamiquement via le slug d'URL,
+// data centralisee dans src/data/landingPages.js.
+const LandingLocal = lazyWithRetry(() => import('./pages/LandingLocal'));
 const MmAdmin = lazyWithRetry(() => import('./pages/MmAdmin'));
 // AdminLayout est importe STATIQUEMENT (pas lazy) pour eviter les problemes
 // de cache Cloudflare ou le sidebar n'affiche pas les nouveaux onglets au premier chargement.
@@ -251,6 +255,18 @@ function App() {
             <Route path="/services/sublimation-merch" element={<Navigate to="/services/merch" replace />} />
             <Route path="/services/design-graphique" element={<Navigate to="/services/design" replace />} />
             <Route path="/services/developpement-web" element={<Navigate to="/services/web" replace />} />
+
+            {/* Landing pages SEO local (8 mai 2026) - 5 pages dediees a un
+                keyword precis chacune. Catch-all sur /:landingSlug pour
+                router automatiquement vers LandingLocal qui valide le slug
+                contre LANDING_PAGES (data/landingPages.js) et 404 sinon.
+                IMPORTANT : ces routes doivent etre declarees AVANT les
+                routes catch-all 404 (NotFound) pour matcher en priorite. */}
+            <Route path="/imprimeur-mile-end" element={<LandingLocal />} />
+            <Route path="/stickers-personnalises-montreal" element={<LandingLocal />} />
+            <Route path="/print-fine-art-quebec" element={<LandingLocal />} />
+            <Route path="/sublimation-textile-montreal" element={<LandingLocal />} />
+            <Route path="/impression-flyers-montreal" element={<LandingLocal />} />
 
             {/* Boutique */}
             <Route path="/boutique" element={<Shop />} />

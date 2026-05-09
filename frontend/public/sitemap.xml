@@ -10,6 +10,40 @@
     <priority>1.0</priority>
   </url>
 
+  <!-- Landing pages SEO local (8 mai 2026) - 5 pages dediees a 1 keyword
+       chacune. Priority 0.85 (juste sous l'accueil 1.0 et les services 0.9)
+       car ce sont des pages a haute intention d'achat locale. -->
+  <url>
+    <loc>https://massivemedias.com/imprimeur-mile-end</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://massivemedias.com/stickers-personnalises-montreal</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://massivemedias.com/print-fine-art-quebec</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://massivemedias.com/sublimation-textile-montreal</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://massivemedias.com/impression-flyers-montreal</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
   <!-- Pages principales -->
   <url>
     <loc>https://massivemedias.com/a-propos</loc>
