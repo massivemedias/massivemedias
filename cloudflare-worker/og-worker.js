@@ -538,9 +538,33 @@ export default {
     const originUrl = new URL(url.toString());
     originUrl.hostname = 'massivemedias.pages.dev';
 
-    const originResponse = await fetch(originUrl.toString(), {
+    let originResponse = await fetch(originUrl.toString(), {
       headers: request.headers,
     });
+
+    // SPA-FALLBACK (9 mai 2026) : Cloudflare Pages ignore les regles
+    // _redirects "/* /index.html 200" quand le request vient d'un Worker
+    // fetch interne. Resultat : tous les chemins type /boutique/web,
+    // /artistes/mok, etc. retournent 404 a Google et aux acces directs
+    // (5 pages 404 dans GSC, perte SEO massive).
+    // Fix : si la response originale est 404 ET que c'est une request
+    // HTML (pas un asset .js/.css/.png), on re-fetch /index.html depuis
+    // pages.dev et on serve avec status 200. Le SPA React Router prend
+    // le relais cote client et affiche la bonne page.
+    // Les vrais 404 (assets manquants) gardent leur 404 vu qu'ils ne
+    // matchent pas isHtmlRequest().
+    if (originResponse.status === 404 && isHtmlRequest(request, url)) {
+      const fallbackUrl = `https://massivemedias.pages.dev/index.html`;
+      const fallback = await fetch(fallbackUrl, { headers: request.headers });
+      if (fallback.ok) {
+        // Reconstruit une response avec status 200 au lieu de 404 - critique
+        // pour que Google ne marque pas la page comme erreur d'indexation.
+        originResponse = new Response(fallback.body, {
+          status: 200,
+          headers: fallback.headers,
+        });
+      }
+    }
 
     // Only inject meta on HTML pages
     if (isHtmlRequest(request, url)) {
