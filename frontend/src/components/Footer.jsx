@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, Mail } from 'lucide-react';
+import { Instagram, Facebook, Mail, Star } from 'lucide-react';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { bl } from '../utils/cms';
+import { GOOGLE_REVIEW_LINK } from '../utils/socialLinks';
 
 function Footer() {
   const { t, tx, lang } = useLang();
@@ -161,6 +162,37 @@ function Footer() {
                   </>
               }
             </div>
+
+            {/* Google Review CTA - SEO local strategy 8 mai 2026.
+                Discret mais visible : badge avec etoiles dorees, hover qui
+                fait briller. URL placeholder #GOOGLE_REVIEW_LINK a remplacer
+                par le vrai lien Google Business Profile une fois la fiche
+                validee. */}
+            <a
+              href={GOOGLE_REVIEW_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-400/60 hover:bg-yellow-500/10 transition-all group"
+              aria-label={tx({ fr: 'Evaluez-nous sur Google', en: 'Review us on Google', es: 'Evalúanos en Google' })}
+            >
+              <span className="flex gap-0.5">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Star
+                    key={i}
+                    size={12}
+                    className="text-yellow-400 fill-yellow-400 group-hover:scale-110 transition-transform"
+                    style={{ transitionDelay: `${i * 30}ms` }}
+                  />
+                ))}
+              </span>
+              <span className="text-xs font-semibold text-yellow-400/90 group-hover:text-yellow-300 transition-colors">
+                {tx({
+                  fr: 'Évaluez-nous sur Google',
+                  en: 'Review us on Google',
+                  es: 'Evalúanos en Google',
+                })}
+              </span>
+            </a>
           </div>
         </div>
 

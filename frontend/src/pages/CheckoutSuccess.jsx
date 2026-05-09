@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle, Loader2, Mail, Lock, LogIn } from 'lucide-react';
+import { CheckCircle, Loader2, Mail, Lock, LogIn, Star, ExternalLink } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { trackPurchase } from '../utils/analytics';
 import { getOrderByPaymentIntent } from '../services/orderService';
 import { getUserRoleByEmail } from '../services/userRoleService';
+import { GOOGLE_REVIEW_LINK } from '../utils/socialLinks';
 
 function CheckoutSuccess() {
   const { t, tx } = useLang();
@@ -113,6 +114,81 @@ function CheckoutSuccess() {
               {tx({ fr: 'Reference', en: 'Reference', es: 'Referencia' })}: <span className="font-mono text-heading">{paymentIntent.slice(-8)}</span>
             </p>
           )}
+
+          {/* === GOOGLE REVIEW CTA - SEO LOCAL STRATEGY (8 mai 2026) ===
+              Le moment psychologiquement le plus efficace pour demander un
+              avis : le client vient de payer, il est dans l'instant positif
+              de l'achat. Bordure doree + 5 etoiles animees + copy direct
+              ("15 secondes") pour minimiser la friction.
+              URL placeholder a remplacer par le vrai lien Google Business
+              une fois la fiche validee. */}
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="mb-8 relative overflow-hidden rounded-2xl"
+          >
+            {/* Halo dore en arriere-plan */}
+            <div
+              aria-hidden
+              className="absolute inset-0 opacity-40 blur-2xl pointer-events-none"
+              style={{
+                background:
+                  'radial-gradient(circle at 30% 20%, rgba(250, 204, 21, 0.4) 0%, transparent 60%), radial-gradient(circle at 70% 80%, rgba(245, 158, 11, 0.3) 0%, transparent 55%)',
+              }}
+            />
+            <div className="relative p-6 sm:p-8 rounded-2xl border-2 border-yellow-400/40 bg-gradient-to-br from-yellow-500/10 via-amber-500/5 to-yellow-500/10 backdrop-blur-sm">
+              {/* 5 etoiles dorees animees - effet "sparkle" sequentiel */}
+              <div className="flex justify-center gap-1 mb-4">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.6 + i * 0.1, type: 'spring', stiffness: 260, damping: 16 }}
+                  >
+                    <Star
+                      size={26}
+                      className="text-yellow-400 fill-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]"
+                    />
+                  </motion.div>
+                ))}
+              </div>
+
+              <h3 className="text-center text-xl sm:text-2xl font-heading font-bold text-heading mb-2">
+                {tx({
+                  fr: 'Merci pour votre confiance !',
+                  en: 'Thank you for your trust!',
+                  es: '¡Gracias por su confianza!',
+                })}
+              </h3>
+
+              <p className="text-center text-grey-light text-sm sm:text-base mb-6 max-w-md mx-auto leading-relaxed">
+                {tx({
+                  fr: 'Soutenez un studio de Montréal. Prenez 15 secondes pour nous laisser un avis Google, ça nous aide énormément !',
+                  en: 'Support a Montreal studio. Take 15 seconds to leave us a Google review, it helps us enormously!',
+                  es: 'Apoye un estudio de Montreal. Tome 15 segundos para dejarnos una reseña en Google, ¡nos ayuda enormemente!',
+                })}
+              </p>
+
+              <div className="flex justify-center">
+                <a
+                  href={GOOGLE_REVIEW_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 text-black text-sm font-bold shadow-lg shadow-yellow-500/30 hover:shadow-yellow-500/50 hover:scale-[1.03] active:scale-[0.98] transition-all"
+                >
+                  <Star size={16} className="fill-black" />
+                  {tx({
+                    fr: 'Laisser un avis 5 étoiles',
+                    en: 'Leave a 5-star review',
+                    es: 'Dejar una reseña de 5 estrellas',
+                  })}
+                  <ExternalLink size={14} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                </a>
+              </div>
+            </div>
+          </motion.div>
 
           {/* === SIGNUP / LOGIN PROMPT === */}
           {accountStatus === 'none' && orderInfo?.customerEmail && !signupSuccess && (
