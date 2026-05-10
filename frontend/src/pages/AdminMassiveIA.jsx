@@ -2427,29 +2427,47 @@ function AdsTab() {
         </div>
       </div>
 
-      {/* Bouton generer */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={handleGenerate}
-          disabled={!selectedProduct || generating}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-          {tx({ fr: 'Générer 3 variantes', en: 'Generate 3 variants', es: 'Generar 3 variantes' })}
-        </button>
-        {variants.length > 0 && (
+      {/* Bouton generer (10 mai 2026 - fix UI : ancien bouton apparaissait
+          comme une fine ligne rose sans texte. Causes : width/height non
+          contraints, pas de min-h/min-w, texte direct dans button (pas dans
+          span), pas de justify-center sur l'inline-flex.
+          Fix : conditional render plus strict (selectedArtist ET
+          selectedProduct), dimensions min explicites, span pour le texte
+          (rendu garanti meme si Tailwind purge), justify-center, padding
+          plus genereux. AUCUNE modification de handleGenerate, timeout
+          axios, try/catch, ou messages d'erreur. */}
+      {selectedArtist && selectedProduct && (
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={handleGenerate}
             disabled={generating}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 text-grey-muted text-xs hover:text-heading transition-colors"
+            className="inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[240px] px-5 py-3 rounded-lg bg-accent text-white text-sm font-semibold hover:bg-accent/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-md shadow-accent/20"
           >
-            <RefreshCw size={12} />
-            {tx({ fr: 'Régénérer', en: 'Regenerate', es: 'Regenerar' })}
+            {generating
+              ? <Loader2 size={16} className="animate-spin flex-shrink-0" />
+              : <Sparkles size={16} className="flex-shrink-0" />}
+            <span>
+              {tx({
+                fr: 'Générer les publicités Meta',
+                en: 'Generate Meta ads',
+                es: 'Generar anuncios Meta',
+              })}
+            </span>
           </button>
-        )}
-      </div>
+          {variants.length > 0 && (
+            <button
+              type="button"
+              onClick={handleGenerate}
+              disabled={generating}
+              className="inline-flex items-center justify-center gap-1.5 min-h-[36px] px-3 py-2 rounded-lg bg-white/5 text-grey-muted text-xs hover:text-heading hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw size={12} className="flex-shrink-0" />
+              <span>{tx({ fr: 'Régénérer', en: 'Regenerate', es: 'Regenerar' })}</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {error && (
         <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
