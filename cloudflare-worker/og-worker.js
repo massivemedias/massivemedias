@@ -295,17 +295,21 @@ function injectMeta(response, meta) {
 
 /**
  * Determine si la requete est pour une page HTML (pas un asset statique).
+ * FIX-GOOGLEBOT (10 mai 2026) : on ne se base PLUS sur Accept: text/html
+ * car certains bots (Googlebot mobile dans certains tests "URL inspection")
+ * envoient Accept: *\/* ou pas de header Accept du tout. Resultat : le SPA
+ * fallback ne se declenchait pas et Google recevait 404, refusait
+ * l'indexation. Maintenant : tout chemin sans extension de fichier statique
+ * est considere comme HTML (pattern SPA standard).
  */
 function isHtmlRequest(request, url) {
-  // Verifier le Accept header
-  const accept = request.headers.get('Accept') || '';
-  if (!accept.includes('text/html')) return false;
-
-  // Exclure les fichiers statiques par extension
+  // Exclure les fichiers statiques par extension - signal clair de "non-HTML"
   const path = url.pathname;
   const staticExtensions = /\.(js|css|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|eot|json|xml|txt|map|mp4|webm|pdf)$/i;
   if (staticExtensions.test(path)) return false;
 
+  // Tout le reste = HTML presume (pattern SPA, Accept header pas fiable
+  // selon les User-Agents).
   return true;
 }
 
