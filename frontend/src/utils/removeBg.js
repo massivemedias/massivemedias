@@ -83,8 +83,16 @@ export async function removeBackground(sourceUrl) {
     throw new Error('removeBackground: API @imgly/background-removal inattendue');
   }
 
-  // Run l'inference (peut prendre 1-15s selon hit cache CDN du model)
-  const blob = await removeBackgroundFn(sourceUrl);
+  // CF-PAGES-25MB-FIX (10 mai 2026) : Cloudflare Pages limite a 25 MiB par
+  // fichier. Le WASM ort-wasm-simd-threaded.jsep fait exactement 25 MiB,
+  // depasse la limite et fait echouer le build. Solution : on configure
+  // imgly pour charger les WASM depuis leur CDN officiel au lieu de les
+  // servir depuis notre dist. Le post-build supprime ces fichiers du dist
+  // (cf. package.json build script).
+  const blob = await removeBackgroundFn(sourceUrl, {
+    publicPath: 'https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/',
+    debug: false,
+  });
   const blobUrl = URL.createObjectURL(blob);
   setCached(sourceUrl, blobUrl);
   return blobUrl;
