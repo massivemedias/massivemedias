@@ -178,11 +178,10 @@ function Footer() {
               }
             </div>
 
-            {/* Google Review CTA - SEO local strategy 8 mai 2026.
+            {/* Google Review CTA - SEO local strategy (8 mai 2026, lien
+                officiel Google Business Profile injecte le 10 mai 2026).
                 Discret mais visible : badge avec etoiles dorees, hover qui
-                fait briller. URL placeholder #GOOGLE_REVIEW_LINK a remplacer
-                par le vrai lien Google Business Profile une fois la fiche
-                validee. */}
+                fait briller. URL centralisee dans utils/socialLinks.js. */}
             <a
               href={GOOGLE_REVIEW_LINK}
               target="_blank"

@@ -120,8 +120,8 @@ function CheckoutSuccess() {
               avis : le client vient de payer, il est dans l'instant positif
               de l'achat. Bordure doree + 5 etoiles animees + copy direct
               ("15 secondes") pour minimiser la friction.
-              URL placeholder a remplacer par le vrai lien Google Business
-              une fois la fiche validee. */}
+              URL officielle Google Business Profile (injectee 10 mai 2026,
+              centralisee dans utils/socialLinks.js). */}
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
