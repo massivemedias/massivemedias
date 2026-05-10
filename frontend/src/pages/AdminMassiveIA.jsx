@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   MessageSquare, Sparkles, Image, Camera, Send, Plus, Settings2,
   Upload, Download, Loader2, X, AlertCircle, ImageDown, QrCode, Shirt,
-  BarChart3, Trash2, ExternalLink, Copy, Check, Megaphone, RefreshCw,
+  BarChart3, Trash2, ExternalLink, Copy, Check, Megaphone, RefreshCw, Scissors,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { chatStream, generateMockup, checkHealth } from '../services/iaService';
@@ -12,6 +12,7 @@ import StickerPreviewCanvas from '../components/StickerPreviewCanvas';
 import api from '../services/api';
 import { getAdminArtistsList, getAdminArtistDetail } from '../services/adminService';
 import artistsHardcoded from '../data/artists';
+import { removeBackground } from '../utils/removeBg';
 // HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
 
 const TABS = [
@@ -716,20 +717,70 @@ function StickersTab() {
   const [livePngUrl, setLivePngUrl] = useState(null); // Blob URL exporte par le canvas live (pour telechargement)
   const [error, setError] = useState(null);
 
+  // REMOVE-BG (10 mai 2026) : meme logique que le configurateur public
+  // (ConfiguratorStickers.jsx). Le toggle remplace l'imageUrl source par
+  // une version detouree via @imgly/background-removal, ce qui fait que
+  // le canvas applique stroke + shader sur la silhouette du sujet.
+  const [activeRemoveBg, setActiveRemoveBg] = useState(false);
+  const [isRemovingBg, setIsRemovingBg] = useState(false);
+  const [bgRemovedUrl, setBgRemovedUrl] = useState(null);
+  const [bgRemoveError, setBgRemoveError] = useState(null);
+  const lastProcessedFileRef = useRef(null);
+
   // Converti le fichier File -> object URL stable pour StickerPreviewCanvas.
   // Revoque l'ancienne URL quand on change de fichier pour eviter les fuites.
-  const imageUrl = useMemo(() => {
+  const rawImageUrl = useMemo(() => {
     if (!file) return null;
     try { return URL.createObjectURL(file); } catch { return null; }
   }, [file]);
 
+  // imageUrl = ce qu'on passe au canvas. Si detourage actif et termine,
+  // on prend la version transparente. Sinon URL brute du file uploade.
+  const imageUrl = activeRemoveBg && bgRemovedUrl ? bgRemovedUrl : rawImageUrl;
+
   useEffect(() => {
     return () => {
-      if (imageUrl) {
-        try { URL.revokeObjectURL(imageUrl); } catch { /* ignore */ }
+      if (rawImageUrl) {
+        try { URL.revokeObjectURL(rawImageUrl); } catch { /* ignore */ }
       }
     };
-  }, [imageUrl]);
+  }, [rawImageUrl]);
+
+  // REMOVE-BG effect : declenche le detourage IA quand le toggle est active.
+  // Skip si pas d'upload, ou si on a deja traite cette URL (cache via ref).
+  useEffect(() => {
+    if (!activeRemoveBg) {
+      setIsRemovingBg(false);
+      return;
+    }
+    if (!rawImageUrl) {
+      setBgRemovedUrl(null);
+      setBgRemoveError(null);
+      return;
+    }
+    if (lastProcessedFileRef.current === rawImageUrl && bgRemovedUrl) return;
+
+    let cancelled = false;
+    setIsRemovingBg(true);
+    setBgRemoveError(null);
+    removeBackground(rawImageUrl)
+      .then((url) => {
+        if (cancelled) return;
+        lastProcessedFileRef.current = rawImageUrl;
+        setBgRemovedUrl(url);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('[AdminMassiveIA StickersTab] removeBackground failed:', err);
+        setBgRemoveError(err?.message || 'Detourage echoue');
+        setBgRemovedUrl(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsRemovingBg(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [activeRemoveBg, rawImageUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Le canvas live appelle ce callback a chaque redraw (a chaque changement de stroke/shader).
   // On stocke le blob URL pour que le bouton "Telecharger" soit toujours a jour sans click "Generer".
@@ -787,6 +838,43 @@ function StickersTab() {
               className="w-full accent-accent"
             />
           </div>
+
+          {/* REMOVE-BG toggle (10 mai 2026) - meme logique que le configurateur
+              public. Le detourage IA s'applique sur l'upload puis le canvas
+              applique stroke + shader sur la silhouette du sujet. */}
+          {file && (
+            <div className="rounded-lg bg-black/20 p-2.5">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={activeRemoveBg}
+                  onChange={(e) => setActiveRemoveBg(e.target.checked)}
+                  disabled={isRemovingBg}
+                  className="mt-0.5 w-4 h-4 rounded accent-accent cursor-pointer disabled:cursor-wait flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Scissors size={13} className="text-accent flex-shrink-0" />
+                    <span className="text-sm text-heading font-semibold leading-tight">
+                      Détourer l'image (Remove Background)
+                    </span>
+                    {isRemovingBg && (
+                      <span className="inline-flex items-center gap-1 text-xs text-accent">
+                        <Loader2 size={12} className="animate-spin" />
+                        Détourage en cours...
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-grey-muted mt-0.5 leading-snug">
+                    Le contour épousera la forme du sujet, pas le rectangle de l'image.
+                  </p>
+                  {bgRemoveError && (
+                    <p className="text-xs text-red-400 mt-1">Erreur : {bgRemoveError}</p>
+                  )}
+                </div>
+              </label>
+            </div>
+          )}
 
           <div>
             <label className="text-xs text-grey-muted block mb-2">Shader</label>

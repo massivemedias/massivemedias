@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { ShoppingCart, Check, Sparkles, Info } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { ShoppingCart, Check, Sparkles, Info, Scissors, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -12,6 +12,7 @@ import {
 } from '../../data/products';
 import { lookupStickerPriceCustomQty } from '../../utils/pricingData';
 import { formatPrice, money } from '../../utils/formatCurrency';
+import { removeBackground } from '../../utils/removeBg';
 
 // Image par defaut quand le client n'a rien upload (logo Massive Medias)
 const DEFAULT_STICKER_URL = '/images/graphism/massive_sticker.webp';
@@ -47,6 +48,19 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [localPreviewUrl, setLocalPreviewUrl] = useState(null); // preview derive des fichiers upload
   const [thumbUrl, setThumbUrl] = useState(null); // thumb PNG genere par le canvas
 
+  // REMOVE-BG (10 mai 2026) : detourage IA in-browser via @imgly/background-removal.
+  // Quand activeRemoveBg = true ET qu'on a une image source, on appelle la lib
+  // (lazy-loaded) qui charge un model WASM/ONNX et detoure le sujet. Le resultat
+  // est un PNG transparent stocke dans bgRemovedUrl. C'est CETTE URL qui est
+  // ensuite passee au StickerPreviewCanvas, donc le calcul du stroke s'applique
+  // sur le sujet detoure (le contour epouse la silhouette au lieu d'un rectangle).
+  const [activeRemoveBg, setActiveRemoveBg] = useState(false);
+  const [isRemovingBg, setIsRemovingBg] = useState(false);
+  const [bgRemovedUrl, setBgRemovedUrl] = useState(null);
+  const [bgRemoveError, setBgRemoveError] = useState(null);
+  // Track la derniere URL traitee pour eviter re-process si rien n'a change.
+  const lastProcessedRef = useRef(null);
+
   // PRIX-HARDCODE : on IGNORE pd?.tiers. La grille officielle vit uniquement dans
   // data/products.js. Aucun override CMS/API possible depuis avril 2026.
   // FIX-PRICING-TIERS (27 avril 2026) : on PASSE maintenant `size` a getStickerPrice
@@ -69,12 +83,55 @@ function ConfiguratorStickers({ onFinishChange }) {
   const shapeLabel = stickerShapes.find(s => s.id === shape);
   const sizeLabel = stickerSizes.find(s => s.id === size)?.label;
 
-  // Image source du preview:
-  // 1. Si le client a upload un fichier (localPreviewUrl), on l'utilise
-  // 2. Sinon, sticker Massive Medias par defaut
+  // Image source du preview, ordre de priorite :
+  // 1. bgRemovedUrl (detourage IA actif et termine) - le canvas applique le
+  //    stroke sur la silhouette du sujet, pas sur le rectangle de l'image
+  // 2. localPreviewUrl (upload client brut)
+  // 3. DEFAULT_STICKER_URL (logo Massive Medias par defaut)
   const previewSource = useMemo(() => {
+    if (activeRemoveBg && bgRemovedUrl) return bgRemovedUrl;
     return localPreviewUrl || DEFAULT_STICKER_URL;
-  }, [localPreviewUrl]);
+  }, [activeRemoveBg, bgRemovedUrl, localPreviewUrl]);
+
+  // REMOVE-BG effect : declenche le detourage IA quand le toggle est active.
+  // Skip si pas d'upload (pas de sens sur le sticker default), ou si on a
+  // deja traite cette URL (cache via lastProcessedRef).
+  useEffect(() => {
+    if (!activeRemoveBg) {
+      setIsRemovingBg(false);
+      return;
+    }
+    if (!localPreviewUrl) {
+      // Toggle active mais pas d'image -> on attend l'upload
+      setBgRemovedUrl(null);
+      setBgRemoveError(null);
+      return;
+    }
+    // Deja traite cette image en mode IA -> rien a faire
+    if (lastProcessedRef.current === localPreviewUrl && bgRemovedUrl) return;
+
+    let cancelled = false;
+    setIsRemovingBg(true);
+    setBgRemoveError(null);
+    removeBackground(localPreviewUrl)
+      .then((url) => {
+        if (cancelled) return;
+        lastProcessedRef.current = localPreviewUrl;
+        setBgRemovedUrl(url);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('[ConfiguratorStickers] removeBackground failed:', err);
+        setBgRemoveError(err?.message || 'Detourage echoue');
+        // Fallback : on garde l'image originale au lieu de bloquer le user
+        setBgRemovedUrl(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsRemovingBg(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [activeRemoveBg, localPreviewUrl]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
 
@@ -163,6 +220,55 @@ function ConfiguratorStickers({ onFinishChange }) {
                 <span className="text-sm font-mono text-grey-muted w-6 text-right">{strokeWidth}</span>
               </div>
             </div>
+
+            {/* REMOVE-BG (10 mai 2026) : toggle de detourage IA. La case
+                n'apparait que si un upload est dispo (pas de sens sur le
+                sticker default qui a deja un fond transparent). Quand
+                cochee, l'image est passee dans @imgly/background-removal
+                et le contour epouse la silhouette du sujet. */}
+            {localPreviewUrl && (
+              <div className="mt-2 p-2.5 rounded-lg bg-black/10">
+                <label className="flex items-start gap-2.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={activeRemoveBg}
+                    onChange={(e) => setActiveRemoveBg(e.target.checked)}
+                    disabled={isRemovingBg}
+                    className="mt-0.5 w-4 h-4 rounded accent-accent cursor-pointer disabled:cursor-wait flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Scissors size={13} className="text-accent flex-shrink-0" />
+                      <span className="text-sm text-heading font-semibold leading-tight">
+                        {tx({
+                          fr: 'Détourer l\'image (Remove Background)',
+                          en: 'Remove background (cut subject)',
+                          es: 'Recortar imagen (sin fondo)',
+                        })}
+                      </span>
+                      {isRemovingBg && (
+                        <span className="inline-flex items-center gap-1 text-xs text-accent">
+                          <Loader2 size={12} className="animate-spin" />
+                          {tx({ fr: 'Détourage...', en: 'Cutting...', es: 'Recortando...' })}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-grey-muted mt-0.5 leading-snug">
+                      {tx({
+                        fr: 'Le contour épousera la forme du sujet, pas le rectangle.',
+                        en: 'The outline will follow the subject shape, not the rectangle.',
+                        es: 'El contorno seguirá la forma del sujeto, no el rectángulo.',
+                      })}
+                    </p>
+                    {bgRemoveError && (
+                      <p className="text-xs text-red-400 mt-1">
+                        {tx({ fr: 'Erreur : ', en: 'Error: ', es: 'Error: ' })}{bgRemoveError}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              </div>
+            )}
           </div>
         </div>
 
