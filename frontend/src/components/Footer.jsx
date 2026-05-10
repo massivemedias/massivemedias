@@ -102,7 +102,7 @@ function Footer() {
               {tx({ fr: 'Spécialités locales', en: 'Local specialties', es: 'Especialidades locales' })}
             </h5>
             <ul className="space-y-1.5 footer-links text-xs opacity-80">
-              <li><Link to="/imprimeur-mile-end" className="hover:text-accent transition-colors">Imprimeur Mile-End</Link></li>
+              <li><Link to="/imprimeur-plateau-mont-royal" className="hover:text-accent transition-colors">Imprimeur Plateau Mont-Royal</Link></li>
               <li><Link to="/stickers-personnalises-montreal" className="hover:text-accent transition-colors">Stickers Montréal</Link></li>
               <li><Link to="/print-fine-art-quebec" className="hover:text-accent transition-colors">Print fine art Québec</Link></li>
               <li><Link to="/sublimation-textile-montreal" className="hover:text-accent transition-colors">Sublimation textile MTL</Link></li>

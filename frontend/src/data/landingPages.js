@@ -17,38 +17,38 @@
  */
 
 export const LANDING_PAGES = {
-  'imprimeur-mile-end': {
-    keyword: 'Imprimeur Mile-End',
-    geo: 'Mile-End, Montréal',
-    title: 'Imprimeur Mile-End Montréal | Stickers, Prints, Sublimation | Massive Medias',
-    description: 'Imprimeur indépendant au Mile-End à Montréal. Stickers personnalisés, fine art, sublimation textile, design graphique. Production locale, livraison 24-48h, ramassage sur place.',
-    h1: 'Imprimeur au Mile-End, Montréal',
-    intro: 'Massive Medias est un studio d\'impression indépendant basé au cœur du Mile-End, à Montréal. Depuis 2022, on imprime des stickers personnalisés, des prints fine art, du merch et du matériel événementiel pour les artistes, les commerces et les organisations du quartier. Production 100% locale, finition soignée, ramassage gratuit sur rendez-vous au studio.',
+  'imprimeur-plateau-mont-royal': {
+    keyword: 'Imprimeur Plateau Mont-Royal',
+    geo: 'Plateau Mont-Royal, Montréal',
+    title: 'Imprimeur Plateau Mont-Royal | Stickers, Prints, Sublimation | Massive Medias',
+    description: 'Imprimeur indépendant sur le Plateau Mont-Royal à Montréal. Stickers personnalisés, fine art, sublimation textile, design graphique. Production locale, livraison 24-48h, ramassage sur place.',
+    h1: 'Imprimeur sur le Plateau Mont-Royal, Montréal',
+    intro: 'Massive Medias est un studio d\'impression indépendant basé sur le Plateau Mont-Royal à Montréal. Depuis 2022, on imprime des stickers personnalisés, des prints fine art, du merch et du matériel événementiel pour les artistes, les commerces et les organisations du quartier. Production 100% locale, finition soignée, ramassage gratuit sur rendez-vous au studio.',
     sections: [
       {
         h2: 'Tous les services d\'impression sous le même toit',
         body: 'Stickers die-cut sur vinyle imperméable, tirages fine art sur papier Hahnemühle 308gsm avec encres pigmentaires 12 couleurs, sublimation textile sur t-shirts/hoodies/tote bags, flyers et cartes d\'affaires en quantités flexibles, design graphique sur mesure et développement web. Une seule équipe, un seul interlocuteur, zéro intermédiaire.',
       },
       {
-        h2: 'Pourquoi imprimer au Mile-End plutôt qu\'en ligne ailleurs',
+        h2: 'Pourquoi imprimer sur le Plateau plutôt qu\'en ligne ailleurs',
         body: 'On valide chaque proof avec toi avant de lancer la production. On répond aux courriels en moins de 24h. On accepte les commandes urgentes (24-48h pour les stickers). Tu peux passer chercher tes prints au studio (5338 rue Marquette) sans frais de livraison. Et chaque dollar reste dans l\'économie locale du quartier.',
       },
       {
         h2: 'Production locale, encres premium, finitions soignées',
-        body: 'Notre équipement : imprimante pigmentaire 12 couleurs Epson SureColor (pour fine art), plotter de découpe Roland (pour stickers die-cut), presse à sublimation Geo Knight (pour textile). Pas d\'externalisation : tout sort du studio Mile-End. Garantie satisfaction ou réimpression gratuite.',
+        body: 'Notre équipement : imprimante pigmentaire 12 couleurs Epson SureColor (pour fine art), plotter de découpe Roland (pour stickers die-cut), presse à sublimation Geo Knight (pour textile). Pas d\'externalisation : tout sort du studio Plateau Mont-Royal. Garantie satisfaction ou réimpression gratuite.',
       },
     ],
     faq: [
       {
-        q: 'Où êtes-vous situés exactement au Mile-End ?',
-        a: 'Au 5338 rue Marquette, Montréal H2J 3Z3. Sur rendez-vous uniquement (lundi au vendredi, 9h-18h). Stationnement libre sur la rue.',
+        q: 'Où êtes-vous situés exactement sur le Plateau Mont-Royal ?',
+        a: 'Au 5338 rue Marquette, Montréal H2J 3Z3, dans le secteur est du Plateau (proche métro Joliette/Préfontaine). Sur rendez-vous uniquement (lundi au vendredi, 9h-18h). Stationnement libre sur la rue.',
       },
       {
         q: 'Quel est le délai de production typique ?',
         a: 'Stickers die-cut : 24-48h. Prints fine art : 2-3 jours ouvrables. Sublimation textile : 3-5 jours ouvrables. Pour les commandes urgentes, on peut accélérer moyennant un supplément.',
       },
       {
-        q: 'Vous livrez à l\'extérieur du Mile-End ?',
+        q: 'Vous livrez à l\'extérieur du Plateau ?',
         a: 'Oui. Livraison gratuite à vélo dans Montréal pour les commandes 50$+. Postes Canada partout au Québec et au Canada. Ramassage gratuit au studio pour qui veut éviter les frais.',
       },
       {
