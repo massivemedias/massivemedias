@@ -324,6 +324,31 @@ function ArtisteDetail({ subdomainSlug }) {
     setMockupSlideIdx(0);
   }, [selectedPrint?.id]);
 
+  // RULES-OF-HOOKS (11 mai 2026) : ces 2 useMemo (localRenames, artistSocials)
+  // etaient declares APRES les early returns `if (cmsLoading && !artist) return`
+  // et `if (!artist) return`. Quand le CMS chargeait (1er render avec
+  // artist=null) -> early return -> ces hooks JAMAIS executes. Au 2eme render
+  // (artist loaded) -> hooks executes. React detecte le mismatch d'ordre et
+  // crash avec error #310 "Rendered more hooks than during the previous render".
+  // Fix : on les declare ici (avant les early returns), avec guards
+  // (optional chaining sur artist) pour gerer le cas artist=null.
+
+  // Renommages: backend (visible par tous) > user_metadata (artiste connecte) > default
+  const localRenames = useMemo(() => {
+    const backendRenames = artistData.itemRenames || {};
+    const userRenames = user?.user_metadata?.artist_renames || {};
+    return { ...userRenames, ...backendRenames };
+  }, [user, artistData]);
+
+  // Liens sociaux : Supabase user_metadata (si artiste connecte) > CMS socials > default
+  const artistSocials = useMemo(() => {
+    const meta = user?.user_metadata;
+    if (meta?.artist_socials && Object.keys(meta.artist_socials).length > 0) {
+      return { ...artist?.socials, ...meta.artist_socials };
+    }
+    return artist?.socials || {};
+  }, [user, artist]);
+
   // SQUARE-MIGRATION (11 mai 2026) : ERADICATION du useEffect async de
   // detection d'orientation. L'ancien code creait un new window.Image() et
   // lisait naturalWidth/naturalHeight au load -> 3 problemes :
@@ -417,26 +442,12 @@ function ArtisteDetail({ subdomainSlug }) {
   const bio = tx({ fr: artist.bio.fr, en: artist.bio.en, es: artist.bio.es || artist.bio.en });
   const minPrice = Math.min(...Object.values(artist.pricing.studio).filter(v => v != null));
 
-  // Renommages: backend (visible par tous) > user_metadata (artiste connecte) > default
-  const localRenames = useMemo(() => {
-    const backendRenames = artistData.itemRenames || {};
-    const userRenames = user?.user_metadata?.artist_renames || {};
-    return { ...userRenames, ...backendRenames };
-  }, [user, artistData]);
+  // Helper function (PAS un hook) qui consomme le useMemo `localRenames`
+  // declare plus haut, avant les early returns (cf. RULES-OF-HOOKS fix).
   const getItemTitle = (item) => {
     if (localRenames[item.id]) return localRenames[item.id];
     return tx({ fr: item.titleFr, en: item.titleEn, es: item.titleEs || item.titleEn });
   };
-
-  // Liens sociaux : Supabase user_metadata (si artiste connecte) > artists.js
-  const artistSocials = useMemo(() => {
-    // Si l'artiste connecte visite sa propre page, lire ses socials depuis Supabase
-    const meta = user?.user_metadata;
-    if (meta?.artist_socials && Object.keys(meta.artist_socials).length > 0) {
-      return { ...artist?.socials, ...meta.artist_socials };
-    }
-    return artist?.socials || {};
-  }, [user, artist]);
 
   const handleSelectPrint = (print) => {
     setSelectedPrint(print);
