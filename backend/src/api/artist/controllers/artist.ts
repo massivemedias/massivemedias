@@ -1543,13 +1543,30 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
     }
     const artist = artists[0] as any;
 
-    const allPrints: any[] = Array.isArray(artist.prints) ? artist.prints : [];
+    const cmsPrints: any[] = Array.isArray(artist.prints) ? artist.prints : [];
+
+    // FALLBACK-PRINTS (10 mai 2026) : pour les artistes qui n'ont pas
+    // encore leurs prints persistes en CMS (cas Gallium - prints
+    // hardcoded dans frontend artists.js), le caller peut envoyer
+    // body.prints = [{id, image, fullImage, titleFr, ...}] directement.
+    // Ces prints seront trimmes ET le tableau artist.prints du CMS sera
+    // peuple avec les nouvelles URLs trimmed - frontend les preferera
+    // au hardcoded grace au merge cms-priority dans ArtisteDetail.jsx.
+    const fallbackPrints: any[] = Array.isArray(body.prints) ? body.prints : [];
+    const sourcePrints = cmsPrints.length > 0 ? cmsPrints : fallbackPrints;
+    // Track si on a utilise le fallback pour persister apres trim
+    const usedFallback = cmsPrints.length === 0 && fallbackPrints.length > 0;
+
     const targets = itemId
-      ? allPrints.filter((p: any) => p.id === itemId)
-      : allPrints;
+      ? sourcePrints.filter((p: any) => p.id === itemId)
+      : sourcePrints;
 
     if (targets.length === 0) {
-      return ctx.badRequest(`Aucun print a trimmer (itemId=${itemId || '(all)'})`);
+      return ctx.badRequest(
+        `Aucun print a trimmer pour ${artistSlug} (itemId=${itemId || '(all)'}). ` +
+        `Solution : si l'artiste n'a pas encore de prints en CMS (cas hardcoded artists.js), ` +
+        `passer body.prints = [{id, image, fullImage, titleFr, ...}] avec les URLs publiques.`
+      );
     }
 
     const results: any[] = [];
@@ -1670,15 +1687,18 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
           trimmedAt: new Date().toISOString(),
           trimmedThreshold: threshold,
         };
-        const newPrints = allPrints.map((p: any) => p.id === print.id ? updatedPrint : p);
+        // Si on est en fallback (sourcePrints vient du body.prints), on
+        // POPULE le tableau artist.prints du CMS pour la 1re fois -
+        // les futures iterations verront ces prints trimmes en CMS.
+        const newPrints = sourcePrints.map((p: any) => p.id === print.id ? updatedPrint : p);
         await strapi.documents('api::artist.artist').update({
           documentId: artist.documentId,
           data: { prints: newPrints },
           status: 'published',
         });
         // Local mirror pour les iterations suivantes
-        const idx = allPrints.findIndex((p: any) => p.id === print.id);
-        if (idx >= 0) allPrints[idx] = updatedPrint;
+        const idx = sourcePrints.findIndex((p: any) => p.id === print.id);
+        if (idx >= 0) sourcePrints[idx] = updatedPrint;
       } catch (err: any) {
         strapi.log.error(`[adminTrimBorders] ${artistSlug}/${print.id}: ${err?.message}`);
         results.push({ id: print.id, error: err?.message || 'unknown' });
