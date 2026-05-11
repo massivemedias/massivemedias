@@ -1,47 +1,22 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
 import { ZoomIn } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getArtistPrintPrice } from '../data/artistPricing';
 import { toFull } from '../utils/paths';
 
-// FIX-SQUARE-CARD (11 mai 2026) : l'aspect ratio du container etait codeen
-// dur a aspect-[2/3] (portrait) -> les images carrees (cas Gallium "Wheel
-// of Time" 1550x1554) etaient cropped en plein milieu par object-cover.
-// Le user voyait l'oeuvre rognee horizontalement. Fix : detecter le ratio
-// au load via onLoad et adapter le container : square (~1:1) ou landscape
-// (>1.1) ou portrait (<1, defaut).
-function getAspectClass(w, h) {
-  if (!w || !h) return 'aspect-[2/3]'; // defaut avant load
-  const ratio = w / h;
-  if (Math.abs(ratio - 1) <= 0.05) return 'aspect-square';
-  if (ratio >= 1.1) return 'aspect-[3/2]';
-  return 'aspect-[2/3]';
-}
-
-// Pre-detection optimiste depuis le filename (evite flicker au 1er paint).
-// Le filename suit la convention <slug>-<format>.webp avec format = WxH ou
-// largeur custom (ex: 20x20=square, 20x14=landscape, 16x20=portrait).
-function guessAspectFromFilename(src = '') {
-  const m = src.match(/-(\d+)x(\d+)\.\w+$/i);
-  if (!m) return 'aspect-[2/3]';
-  return getAspectClass(parseInt(m[1]), parseInt(m[2]));
-}
+// UNIFORM-GRID (11 mai 2026) : la grille des prints sur la page artiste
+// avait des cartes de tailles differentes (chaque carte adoptait le ratio
+// natif de son image : square, portrait, landscape) -> alignement visuel
+// casse. Fix : ratio FIXE aspect-[4/5] (legerement portrait, matche le
+// format poster majoritaire sans crop excessif pour les autres orientations)
+// + object-cover deja en place sur l'image -> tous les conteneurs ont la
+// meme taille, les images remplissent uniformement en croppant les debords
+// proprement. Plus de detection async via onLoad (l'orientation reelle est
+// conservee dans le configurateur via print.orientation du CMS).
 
 function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }) {
   const { tx } = useLang();
   const title = tx({ fr: print.titleFr, en: print.titleEn, es: print.titleEs || print.titleEn });
-
-  // Etat aspect : initialise par devinage depuis filename (pas de flicker pour
-  // les images qui suivent la convention), puis remplace par les VRAIES
-  // dimensions au load de l'image (cas oeuvres rognees square 1550x1554
-  // dont le filename contient encore "20x20" mais le contenu est rogne).
-  const [aspectClass, setAspectClass] = useState(() => guessAspectFromFilename(print.image));
-  const handleImgLoad = (e) => {
-    const w = e.target.naturalWidth;
-    const h = e.target.naturalHeight;
-    setAspectClass(getAspectClass(w, h));
-  };
 
   // Pour les pieces uniques: prix custom ou prix fixe
   const fixedPrice = print.customPrice
@@ -66,13 +41,12 @@ function ArtistPrintCard({ print, minPrice, pricing, selected, onClick, onZoom }
           : 'border-transparent hover:border-accent/30 card-bg-bordered'
       }`}
     >
-      <div className={`relative ${aspectClass} overflow-hidden bg-black/20`}>
+      <div className="relative aspect-[4/5] overflow-hidden bg-black/20">
         <img
           src={print.image}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
-          onLoad={handleImgLoad}
         />
         {(print.unique || print.private) && print.sold && (
           <>

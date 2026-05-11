@@ -241,13 +241,18 @@ function ArtisteDetail({ subdomainSlug }) {
   const isSquare = effectiveOrientation === 'square';
 
   // Scenes du slide: null = print brut, les autres = pieces interieures.
-  // Filtrage strict par orientation : un print carre ne s'affichera JAMAIS
-  // dans un mockup portrait (bedroom/living_room/zen), un print paysage
-  // n'ira QUE dans office (seul mockup landscape-friendly). Sans ce filtre,
-  // tous les prints atterrissent dans tous les cadres avec letterboxing.
+  // STRICT-LANDSCAPE-FILTER (11 mai 2026) : ne JAMAIS injecter une oeuvre
+  // landscape dans un mockup portrait. Probleme observe : `office_black.webp`
+  // est en realite portrait (height 31.66% > width 22.74%) - seul
+  // `office_white.webp` est landscape. Comme InstantMockup choisit l'asset
+  // via `${scene}_${frameColor}` et que le user pick le frameColor dans le
+  // configurateur, on ne peut PAS garantir que `office` soit landscape pour
+  // tous les frameColor. Donc pour landscape on ne propose QUE le mockup
+  // CSS-only `gallery_landscape` (qui est dimensionnellement garanti 3:2).
+  // Idem square : on retire `office` qui peut etre portrait selon frameColor.
   const MOCKUP_SCENES = useMemo(() => {
-    if (isSquare) return [null, 'office', 'gallery_square'];
-    if (isLandscape) return [null, 'office'];
+    if (isSquare) return [null, 'gallery_square'];
+    if (isLandscape) return [null, 'gallery_landscape'];
     return [null, 'bedroom', 'living_room', 'office', 'zen'];
   }, [isSquare, isLandscape]);
   const stickerConfiguratorRef = useRef(null);
@@ -982,63 +987,84 @@ function ArtisteDetail({ subdomainSlug }) {
                           <ZoomIn className="w-5 h-5 md:w-8 md:h-8 absolute bottom-3 right-3 md:static text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)] md:drop-shadow-lg" />
                         </div>
                       </div>
-                    ) : MOCKUP_SCENES[mockupSlideIdx] === 'gallery_square' ? (
-                      /* SQUARE-MIGRATION (11 mai 2026) : mockup CSS-only pour
-                         oeuvres carrees - mur gradient + cadre 1:1 centre +
-                         passepartout + ombre. Pas d'asset webp requis,
-                         InstantMockup ne sait pas gerer cette scene. */
-                      <div className="relative w-full aspect-square overflow-hidden rounded-xl shadow-2xl"
-                        style={{
-                          background: printFrameColor === 'white'
-                            ? 'linear-gradient(180deg, #f4f1ec 0%, #e8e2d8 100%)'
-                            : 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)',
-                        }}
-                      >
-                        <div className="absolute bottom-0 left-0 right-0"
-                          style={{
-                            height: '12%',
-                            background: printFrameColor === 'white'
-                              ? 'linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.10) 100%)'
-                              : 'linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.45) 100%)',
-                          }}
-                        />
-                        <div className="absolute"
-                          style={{
-                            top: '14%',
-                            left: '14%',
-                            width: '72%',
-                            height: '72%',
-                            padding: '5%',
-                            background: printFrameColor === 'white' ? '#ffffff' : '#0a0a0a',
-                            borderRadius: '2px',
-                            boxShadow: printFrameColor === 'white'
-                              ? '0 14px 38px rgba(0,0,0,0.20), 0 3px 8px rgba(0,0,0,0.14)'
-                              : '0 16px 44px rgba(0,0,0,0.50), 0 3px 8px rgba(0,0,0,0.34)',
-                          }}
-                        >
-                          <div
+                    ) : MOCKUP_SCENES[mockupSlideIdx] === 'gallery_square' || MOCKUP_SCENES[mockupSlideIdx] === 'gallery_landscape' ? (
+                      /* GALLERY-CSS-MOCKUPS (11 mai 2026) : mockup CSS-only
+                         pour les orientations square ET landscape - mur
+                         gradient + cadre centre + passepartout + ombre. Pas
+                         d'asset webp requis. Le ratio interieur change :
+                           gallery_square    -> aspect-square (cadre 1:1)
+                           gallery_landscape -> aspect-[3/2]  (cadre 3:2 horiz.)
+                         Le contenant exterieur reste aspect-[4/3] visuellement
+                         "salle de galerie" pour landscape, aspect-square pour
+                         square. */
+                      (() => {
+                        const isLandscapeMock = MOCKUP_SCENES[mockupSlideIdx] === 'gallery_landscape';
+                        const outerAspect = isLandscapeMock ? 'aspect-[4/3]' : 'aspect-square';
+                        // Cadre interieur : 1:1 pour square, 3:2 pour landscape.
+                        // On le centre via top/left + width/height calcules pour
+                        // que le cadre occupe ~70% de la largeur et le ratio
+                        // soit respecte.
+                        const frameStyle = isLandscapeMock
+                          ? { top: '24%', left: '12%', width: '76%', height: '52%' } // 76*0.75/52 ≈ ~1.1, ajusté ci-dessous via ratio
+                          : { top: '14%', left: '14%', width: '72%', height: '72%' };
+                        // Pour landscape, on impose explicitement aspectRatio 3/2
+                        // via inline style pour eviter les imprecisions de %.
+                        if (isLandscapeMock) {
+                          frameStyle.aspectRatio = '3 / 2';
+                          frameStyle.height = 'auto'; // l'aspectRatio gere la hauteur
+                        }
+                        return (
+                          <div className={`relative w-full ${outerAspect} overflow-hidden rounded-xl shadow-2xl`}
                             style={{
-                              width: '100%',
-                              height: '100%',
-                              padding: '4%',
-                              background: printFrameColor === 'white' ? '#fafafa' : '#f5f5f0',
-                              boxSizing: 'border-box',
+                              background: printFrameColor === 'white'
+                                ? 'linear-gradient(180deg, #f4f1ec 0%, #e8e2d8 100%)'
+                                : 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)',
                             }}
                           >
-                            <img
-                              src={selectedPrint.fullImage || toFull(selectedPrint.image)}
-                              alt={getItemTitle(selectedPrint)}
-                              loading="lazy"
+                            <div className="absolute bottom-0 left-0 right-0"
                               style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                display: 'block',
+                                height: '12%',
+                                background: printFrameColor === 'white'
+                                  ? 'linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.10) 100%)'
+                                  : 'linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.45) 100%)',
                               }}
                             />
+                            <div className="absolute"
+                              style={{
+                                ...frameStyle,
+                                padding: '4%',
+                                background: printFrameColor === 'white' ? '#ffffff' : '#0a0a0a',
+                                borderRadius: '2px',
+                                boxShadow: printFrameColor === 'white'
+                                  ? '0 14px 38px rgba(0,0,0,0.20), 0 3px 8px rgba(0,0,0,0.14)'
+                                  : '0 16px 44px rgba(0,0,0,0.50), 0 3px 8px rgba(0,0,0,0.34)',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  padding: '3%',
+                                  background: printFrameColor === 'white' ? '#fafafa' : '#f5f5f0',
+                                  boxSizing: 'border-box',
+                                }}
+                              >
+                                <img
+                                  src={selectedPrint.fullImage || toFull(selectedPrint.image)}
+                                  alt={getItemTitle(selectedPrint)}
+                                  loading="lazy"
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    display: 'block',
+                                  }}
+                                />
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                        );
+                      })()
                     ) : (
                       /* Mockup piece (InstantMockup) */
                       <InstantMockup
