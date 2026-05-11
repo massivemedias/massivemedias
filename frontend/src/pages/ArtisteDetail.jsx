@@ -8,7 +8,6 @@ import { getArtistSchema } from '../components/seo/schemas';
 import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
 import MockupPreview from '../components/MockupPreview';
-import InstantMockup from '../components/InstantMockup';
 import ConfiguratorArtistSticker from '../components/configurators/ConfiguratorArtistSticker';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
@@ -107,6 +106,59 @@ function ContactArtisteForm({ artist, tx }) {
       </button>
     </div>
   );
+}
+
+// DYNAMIC-MOCKUP-COORDS (11 mai 2026) : pour eliminer DEFINITIVEMENT le
+// letterboxing dans les scenes photorealistes, les coords du cadre virtuel
+// sont calculees a la volee selon l'orientation de l'oeuvre. Le cadre est
+// AGRANDI pour deborder de la zone source (cadre dessine dans la photo) et
+// le MASQUER - donc le cadre virtuel devient le SEUL cadre visible, et il
+// peut etre carre, paysage, ou portrait selon l'oeuvre.
+//
+// Coords source = la zone verte de la photo originale (cadre portrait).
+// Pour square/landscape, on garde le MEME centre, on calcule width/height
+// au ratio target, et on PAD le cadre pour deborder du cadre source.
+const MOCKUP_FRAME_COORDS = {
+  // {scene}_{frameColor} : coords portrait de base (zone source)
+  bedroom_black:     { top: 21.6,  left: 41.49, width: 16.8,  height: 25.6  },
+  bedroom_white:     { top: 19.89, left: 41.26, width: 18.51, height: 25.03 },
+  living_room_black: { top: 19.09, left: 40.91, width: 19.66, height: 28.23 },
+  living_room_white: { top: 26.29, left: 38.86, width: 20.69, height: 26.97 },
+  office_black:      { top: 22.17, left: 38.63, width: 22.74, height: 31.66 },
+  office_white:      { top: 30.74, left: 33.94, width: 33.49, height: 23.54 }, // landscape natif
+  zen_black:         { top: 23.54, left: 38.17, width: 25.94, height: 35.77 },
+  zen_white:         { top: 21.49, left: 38.4,  width: 23.2,  height: 33.49 },
+  studio_black:      { top: 32,    left: 40,    width: 19.77, height: 27.77 },
+  studio_white:      { top: 28.46, left: 38.51, width: 22.86, height: 31.66 },
+};
+
+// Calcule les coords du cadre virtuel pour une orientation donnee, en
+// gardant le MEME centre que la zone source et en agrandissant (pad 1.15x)
+// pour masquer le cadre dessine de la photo.
+function frameCoordsFor(sceneKey, frameColor, orientation) {
+  const base = MOCKUP_FRAME_COORDS[`${sceneKey}_${frameColor}`] || MOCKUP_FRAME_COORDS.bedroom_black;
+  const cx = base.left + base.width / 2;
+  const cy = base.top + base.height / 2;
+  const baseSide = Math.max(base.width, base.height);
+  const PAD = 1.15; // 15% de plus que la zone source pour masquer le cadre dessine
+  let w, h;
+  if (orientation === 'square') {
+    w = h = baseSide * PAD;
+  } else if (orientation === 'landscape') {
+    // 3:2 landscape : on prend une width un peu plus grande que le baseSide
+    w = baseSide * PAD * 1.15;
+    h = w / 1.5;
+  } else {
+    // portrait : agrandi du cadre source avec PAD pour masquer
+    w = base.width * PAD;
+    h = base.height * PAD;
+  }
+  return {
+    top: cy - h / 2,
+    left: cx - w / 2,
+    width: w,
+    height: h,
+  };
 }
 
 function buildArtistFromCMS(cms) {
@@ -996,21 +1048,85 @@ function ArtisteDetail({ subdomainSlug }) {
                         </div>
                       </div>
                     ) : (
-                      /* Mockup piece photorealiste (InstantMockup).
-                         PHOTOREALISM-FIRST (11 mai 2026) : prop `orientation`
-                         passee pour que InstantMockup inscrive l'oeuvre dans
-                         un sous-rectangle au ratio strict (1:1 square, 3:2
-                         landscape, ratio natif portrait), centred dans la
-                         zone source, avec passepartout creme autour. Plus de
-                         mockup CSS-only fake : on garde la vraie photo de
-                         piece dans toutes les orientations. */
-                      <InstantMockup
-                        imageUrl={selectedPrint.fullImage || toFull(selectedPrint.image)}
-                        frameColor={printFrameColor}
-                        isLandscape={isLandscape}
-                        orientation={effectiveOrientation}
-                        sceneId={MOCKUP_SCENES[mockupSlideIdx]}
-                      />
+                      /* DYNAMIC-MOCKUP (11 mai 2026) : rendu CSS overlay direct
+                         sur la photo source. Le cadre virtuel change PHYSIQUEMENT
+                         de forme selon l'orientation de l'oeuvre :
+                           portrait  -> cadre portrait inscrit dans la zone source
+                           square    -> cadre 1:1 agrandi, masque le cadre source
+                           landscape -> cadre 3:2 agrandi, masque le cadre source
+                         Coords calculees par frameCoordsFor() avec le meme centre
+                         que la zone source mais width/height adaptes au ratio.
+                         L'oeuvre remplit le cadre virtuel a 100% via object-cover.
+                         Plus de letterboxing : le cadre s'adapte a l'oeuvre, pas
+                         l'inverse. */
+                      (() => {
+                        const sceneKey = MOCKUP_SCENES[mockupSlideIdx];
+                        const photoSrc = `/images/mockups/${sceneKey}_${printFrameColor}.webp`;
+                        const frame = frameCoordsFor(sceneKey, printFrameColor, effectiveOrientation);
+                        const isLightFrame = printFrameColor === 'white';
+                        return (
+                          <div
+                            className="relative w-full aspect-square overflow-hidden rounded-xl shadow-lg cursor-zoom-in"
+                            onClick={() => setLightbox(artist.prints.findIndex(p => p.id === selectedPrint.id))}
+                          >
+                            {/* Photo de la piece en background : conserve TOUT le decor
+                                (mur, meubles, eclairage) photorealiste. */}
+                            <img
+                              src={photoSrc}
+                              alt=""
+                              className="absolute inset-0 w-full h-full object-cover"
+                              loading="lazy"
+                              aria-hidden="true"
+                            />
+                            {/* Cadre virtuel dimensionne dynamiquement par orientation.
+                                Agrandi via PAD pour masquer le cadre dessine de la photo. */}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: `${frame.top}%`,
+                                left: `${frame.left}%`,
+                                width: `${frame.width}%`,
+                                height: `${frame.height}%`,
+                                padding: '4%',
+                                background: isLightFrame ? '#ffffff' : '#0a0a0a',
+                                boxShadow: isLightFrame
+                                  ? '0 10px 28px rgba(0,0,0,0.20), 0 3px 8px rgba(0,0,0,0.16)'
+                                  : '0 14px 36px rgba(0,0,0,0.50), 0 3px 8px rgba(0,0,0,0.34)',
+                                boxSizing: 'border-box',
+                              }}
+                            >
+                              {/* Passepartout (matte) creme interieur. */}
+                              <div
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  padding: '4%',
+                                  background: '#f0ede8',
+                                  boxSizing: 'border-box',
+                                }}
+                              >
+                                {/* Oeuvre : remplit 100% du cadre virtuel via object-cover.
+                                    aspect-ratio impose explicitement le ratio target pour
+                                    eliminer tout vide / bande blanche. */}
+                                <img
+                                  src={selectedPrint.fullImage || toFull(selectedPrint.image)}
+                                  alt={getItemTitle(selectedPrint)}
+                                  loading="lazy"
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    display: 'block',
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="absolute bottom-3 right-3 pointer-events-none">
+                              <ZoomIn className="w-5 h-5 text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)]" />
+                            </div>
+                          </div>
+                        );
+                      })()
                     )}
                   </div>
 
