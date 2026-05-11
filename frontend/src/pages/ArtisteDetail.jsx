@@ -951,25 +951,10 @@ function ArtisteDetail({ subdomainSlug }) {
               {tx({ fr: 'Configurez votre tirage', en: 'Configure Your Print', es: 'Configura tu impresion' })}
             </h2>
 
-            {/* DEBUG-MARKER (11 mai 2026) : marqueur visuel indeniable pour
-                confirmer que le DEPLOY a propage et que le VRAI fichier
-                ArtisteDetail.jsx (et non ArtistPortfolioGrid) a bien ete
-                corrige. A retirer une fois le fix valide en prod. */}
-            <div className="max-w-5xl mx-auto mb-6 p-4 border-8 border-red-500 bg-red-600/20 text-center">
-              <p className="text-white text-lg font-bold">
-                DEBUG: VRAI FICHIER TROUVE - ArtisteDetail.jsx
-              </p>
-              <p className="text-white/90 text-sm mt-1">
-                orientation lue (CMS) : <code className="bg-black/40 px-2 py-0.5 rounded">{effectiveOrientation}</code>
-                {' | '}
-                scenes filtrees : <code className="bg-black/40 px-2 py-0.5 rounded">{MOCKUP_SCENES.map(s => s || 'brut').join(', ')}</code>
-              </p>
-            </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto items-start">
               {/* Slide mockup: 0=print brut, 1-N=pieces filtrees par orientation */}
               <div className="lg:sticky lg:top-24">
-                <div className="relative flex items-center border-8 border-red-500 rounded-xl">
+                <div className="relative flex items-center">
                   {/* Fleche gauche */}
                   <button
                     onClick={() => setMockupSlideIdx(prev => (prev - 1 + MOCKUP_SCENES.length) % MOCKUP_SCENES.length)}
