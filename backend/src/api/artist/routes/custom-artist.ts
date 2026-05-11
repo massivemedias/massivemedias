@@ -21,6 +21,18 @@ export default {
       handler: 'artist.updateBySlug',
       config: { auth: false },
     },
+    // SELF-PROFILE-UPDATE (10 mai 2026) : route auto-applique pour qu'un
+    // artiste connecte modifie SON propre profil (bio, tagline, avatar,
+    // socials) sans passer par l'approbation admin. Le handler verifie
+    // requireUserAuth + ownership : email du JWT doit matcher le user_role
+    // lie a l'artistSlug demande. Garde-fou : ne touche QUE les champs
+    // de profil (pas prints/stickers/merch qui restent en edit-request).
+    {
+      method: 'PUT',
+      path: '/artists/me/update-profile',
+      handler: 'artist.updateMyProfile',
+      config: { auth: false },
+    },
     {
       // Attention: /artists/:id est genere automatiquement par Strapi,
       // donc on utilise un path different pour eviter le conflit

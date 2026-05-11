@@ -2,7 +2,7 @@ import { factories } from '@strapi/strapi';
 import Stripe from 'stripe';
 import crypto from 'crypto';
 import { sendPrivatePrintEmail } from '../../../utils/email';
-import { requireAdminAuth } from '../../../utils/auth';
+import { requireAdminAuth, requireUserAuth } from '../../../utils/auth';
 import { deleteFromSupabase } from '../../../utils/image-processor';
 import { invalidateArtistCache } from '../../../utils/cache-invalidator';
 
@@ -1329,5 +1329,131 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
         gaConfigured: true,
       };
     }
+  },
+
+  /**
+   * PUT /api/artists/me/update-profile
+   * SELF-PROFILE-UPDATE (10 mai 2026) - L'artiste connecte modifie SON propre
+   * profil sans approbation admin. Champs autorises strictement limites a la
+   * presentation (bio, tagline, name, avatar, socials). Tout le reste
+   * (prints/stickers/merch/pricing/slug) reste verrouille pour passer par
+   * artist-edit-request avec approbation manuelle.
+   *
+   * Auth : requireUserAuth (Supabase JWT) + ownership check via user-role
+   * (l'email du JWT doit etre lie a l'artistSlug demande).
+   *
+   * Body : { artistSlug, name?, bioFr?, bioEn?, bioEs?, taglineFr?, taglineEn?,
+   *          taglineEs?, socials? (objet partial, merge avec existant),
+   *          avatarUrl? (URL Supabase, stockee dans socials.avatarUrl) }
+   *
+   * Response : { success, updated: {...champs modifies...} }
+   */
+  async updateMyProfile(ctx) {
+    if (!(await requireUserAuth(ctx))) return;
+
+    const userState = (ctx.state as any).user || {};
+    const userEmail = (userState.userEmail || '').toLowerCase().trim();
+    const isAdmin = !!userState.isAdmin;
+
+    if (!userEmail && !isAdmin) {
+      ctx.status = 401;
+      ctx.body = { error: 'Email manquant dans le JWT' };
+      return;
+    }
+
+    const body = (ctx.request.body || {}) as any;
+    const artistSlug = String(body.artistSlug || '').trim();
+    if (!artistSlug) return ctx.badRequest('artistSlug est requis');
+
+    // OWNERSHIP CHECK : l'admin peut tout modifier ; le user doit etre lie a
+    // l'artistSlug demande via la table user-role (champ artistSlug = lien).
+    if (!isAdmin) {
+      const roles = await strapi.documents('api::user-role.user-role').findMany({
+        filters: { email: { $eqi: userEmail }, artistSlug: { $eq: artistSlug } },
+        limit: 1,
+      });
+      if (!roles || roles.length === 0) {
+        ctx.status = 403;
+        ctx.body = { error: `Vous n'etes pas l'artiste lie au slug "${artistSlug}"` };
+        return;
+      }
+    }
+
+    // Trouver l'artiste cible
+    const artists = await strapi.documents('api::artist.artist').findMany({
+      filters: { slug: { $eq: artistSlug } },
+      limit: 1,
+    });
+    if (!artists || artists.length === 0) {
+      ctx.status = 404;
+      ctx.body = { error: `Artiste "${artistSlug}" introuvable en CMS` };
+      return;
+    }
+    const artist = artists[0] as any;
+
+    // Whitelist STRICTE des champs modifiables. Tout le reste est ignore
+    // silencieusement pour eviter l'escalade de privilege par payload force.
+    const ALLOWED_DIRECT_FIELDS = [
+      'name', 'bioFr', 'bioEn', 'bioEs',
+      'taglineFr', 'taglineEn', 'taglineEs',
+    ];
+    const updateData: Record<string, any> = {};
+    for (const key of ALLOWED_DIRECT_FIELDS) {
+      if (body[key] !== undefined && body[key] !== null) {
+        updateData[key] = String(body[key]).slice(0, 5000); // cap 5kB defensif
+      }
+    }
+
+    // socials = merge partiel (l'artiste envoie ses nouveaux liens, on
+    // preserve les anciens qu'il n'a pas changes - et l'avatarUrl en
+    // particulier qui peut venir d'un autre flow).
+    if (body.socials && typeof body.socials === 'object') {
+      const existingSocials = (artist.socials as Record<string, any>) || {};
+      updateData.socials = { ...existingSocials, ...body.socials };
+    }
+
+    // avatarUrl est stocke dans socials.avatarUrl par convention (cf.
+    // ArtisteDetail.jsx ligne 187 qui lit cms.socials?.avatarUrl en priorite).
+    if (body.avatarUrl && typeof body.avatarUrl === 'string') {
+      const existingSocials = (updateData.socials || artist.socials || {}) as Record<string, any>;
+      updateData.socials = { ...existingSocials, avatarUrl: body.avatarUrl };
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return ctx.badRequest('Aucun champ modifiable fourni');
+    }
+
+    const updated = await strapi.documents('api::artist.artist').update({
+      documentId: artist.documentId,
+      data: updateData,
+      status: 'published', // applique direct sur la version visible
+    });
+
+    // Republier explicitement (defensive : certains workflows Strapi v5
+    // gardent un draft separe meme si on a mis status='published').
+    try {
+      await strapi.documents('api::artist.artist').publish({
+        documentId: artist.documentId,
+      });
+    } catch (err: any) {
+      strapi.log.warn(`[updateMyProfile] publish failed for ${artistSlug}: ${err?.message || err}`);
+    }
+
+    // Invalider le cache des artistes pour que useArtists frontend voit
+    // la nouvelle version sans attendre l'expiration TTL.
+    try {
+      await invalidateArtistCache(artistSlug, strapi.log);
+    } catch (err: any) {
+      strapi.log.warn(`[updateMyProfile] cache invalidation failed: ${err?.message || err}`);
+    }
+
+    strapi.log.info(`[updateMyProfile] ${userEmail} a mis a jour le profil de ${artistSlug}: ${Object.keys(updateData).join(', ')}`);
+
+    ctx.body = {
+      success: true,
+      artistSlug,
+      updated: Object.keys(updateData),
+      data: updated,
+    };
   },
 }));

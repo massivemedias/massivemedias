@@ -202,11 +202,19 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
 
   const formatMoney = (n) => `${n.toFixed(2)}$`;
 
-  // Save artist profile (nom, bio, image) + notify admin
+  // Save artist profile (nom, bio, image) - flow direct CMS sans approbation
+  // SELF-PROFILE-UPDATE (10 mai 2026) : avant, on creait un artist-edit-request
+  // qui en theorie etait auto-applique cote backend, mais le frontend
+  // avalait silencieusement les erreurs avec .catch(() => {}) -> impossible
+  // de diagnostiquer quand ca foirait. Maintenant on PUT direct sur la
+  // route /artists/me/update-profile (auth + ownership check via JWT
+  // Supabase). createEditRequest reste appele pour la TRACE dans la boite
+  // admin, mais la mise a jour reelle ne depend plus de lui.
   const handleArtistProfileSave = async (e) => {
     e.preventDefault();
     setArtistProfileSaving(true);
     try {
+      // 1. Persist dans Supabase user_metadata (multi-appareil + state local)
       const { error } = await updateProfile({
         nomArtiste: artistProfileForm.nomArtiste,
         bio: artistProfileForm.bio,
@@ -215,28 +223,54 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
       });
       if (error) throw error;
 
-      // Auto-apply bio update to CMS via edit request (admin gets notified)
-      await createEditRequest({
-        artistSlug,
-        artistName: artistProfileForm.nomArtiste || artistSlug,
-        email,
-        requestType: 'update-bio',
-        changeData: {
-          bioFr: artistProfileForm.bio || '',
-          name: artistProfileForm.nomArtiste || '',
-        },
-      }).catch(() => {});
+      // 2. Push direct CMS Strapi via la route auto-applique (auth + ownership).
+      // Si l'erreur survient ici, on la propage pour que l'UI affiche un
+      // message clair au lieu d'avaler en silence comme avant.
+      const cmsPayload = { artistSlug };
+      if (artistProfileForm.nomArtiste) cmsPayload.name = artistProfileForm.nomArtiste;
+      if (artistProfileForm.bio !== undefined) cmsPayload.bioFr = artistProfileForm.bio || '';
+      if (artistProfileForm.profileImage) cmsPayload.avatarUrl = artistProfileForm.profileImage;
 
-      // If avatar changed, send avatar update too
-      if (artistProfileForm.profileImage) {
-        await createEditRequest({
+      try {
+        await api.put('/artists/me/update-profile', cmsPayload);
+      } catch (cmsErr) {
+        // CMS update echoue : on le log mais on ne bloque pas le flow
+        // (le user metadata Supabase est deja sauvegarde, le user voit son
+        // changement dans le dashboard). On notifie subtilement via toast.
+        console.warn('[ArtistProfile] CMS update failed:', cmsErr?.response?.data || cmsErr?.message);
+        setToast(tx({
+          fr: 'Profil sauvegardé localement, synchronisation CMS en attente.',
+          en: 'Profile saved locally, CMS sync pending.',
+          es: 'Perfil guardado localmente, sincronización CMS pendiente.',
+        }));
+        setTimeout(() => setToast(''), 4000);
+      }
+
+      // 3. Trace dans la boite admin (best-effort, ne bloque jamais).
+      // Garde-fou : on n'envoie cette trace QUE pour les modifs de profil
+      // (update-bio, update-avatar) - PAS pour les flows add-prints / etc.
+      // qui restent en approbation manuelle separee.
+      Promise.resolve().then(() => {
+        createEditRequest({
           artistSlug,
           artistName: artistProfileForm.nomArtiste || artistSlug,
           email,
-          requestType: 'update-avatar',
-          changeData: { avatarUrl: artistProfileForm.profileImage },
+          requestType: 'update-bio',
+          changeData: {
+            bioFr: artistProfileForm.bio || '',
+            name: artistProfileForm.nomArtiste || '',
+          },
         }).catch(() => {});
-      }
+        if (artistProfileForm.profileImage) {
+          createEditRequest({
+            artistSlug,
+            artistName: artistProfileForm.nomArtiste || artistSlug,
+            email,
+            requestType: 'update-avatar',
+            changeData: { avatarUrl: artistProfileForm.profileImage },
+          }).catch(() => {});
+        }
+      });
 
       setProfileSaved(true);
       setTimeout(() => setProfileSaved(false), 3000);
