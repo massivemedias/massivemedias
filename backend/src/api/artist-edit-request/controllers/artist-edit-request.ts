@@ -882,6 +882,13 @@ async function applyProfileChange(strapi: any, artistSlug: string, requestType: 
 
   switch (requestType) {
     case 'update-bio':
+      // FIX (10 mai 2026) : update-bio traite maintenant aussi le name (le
+      // frontend artist dashboard envoie name + bio dans le meme payload
+      // update-bio). Avant ce fix, le name etait silencieusement ignore.
+      // Le slug est aussi accepte pour permettre les renames controles -
+      // le lifecycle preservera l'existant si pas envoye explicitement.
+      if (changeData.name) updateData.name = changeData.name;
+      if (changeData.slug) updateData.slug = changeData.slug;
       if (changeData.bioFr !== undefined) updateData.bioFr = changeData.bioFr;
       if (changeData.bioEn !== undefined) updateData.bioEn = changeData.bioEn;
       if (changeData.bioEs !== undefined) updateData.bioEs = changeData.bioEs;
@@ -906,7 +913,15 @@ async function applyProfileChange(strapi: any, artistSlug: string, requestType: 
       break;
     case 'update-profile':
       if (changeData.name) updateData.name = changeData.name;
+      // FIX (10 mai 2026) : update-profile accepte aussi un slug explicite
+      // pour permettre les renames d'URL controles. Sans ca, on ne pouvait
+      // jamais corriger un mauvais slug derive (cas Gallium qui s'est
+      // retrouve sous "gallium-beaumer" au lieu de "gallium" suite a un
+      // bug du lifecycle autoSlugify - maintenant fixe via lifecycles.ts).
+      if (changeData.slug) updateData.slug = changeData.slug;
       if (changeData.taglineFr !== undefined) updateData.taglineFr = changeData.taglineFr;
+      if (changeData.taglineEn !== undefined) updateData.taglineEn = changeData.taglineEn;
+      if (changeData.taglineEs !== undefined) updateData.taglineEs = changeData.taglineEs;
       break;
     case 'rename-item': {
       const { itemId, newTitle, field } = changeData;
