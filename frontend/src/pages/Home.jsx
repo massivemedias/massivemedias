@@ -131,12 +131,31 @@ function Home() {
     ? [...resolvedServiceCards, boutiqueCard]
     : [boutiqueCard];
 
+  // STRAPI-ONLY (11 mai 2026) : la homepage lit le CMS via useArtists().
+  // artistsList est declare au niveau du composant car utilise A LA FOIS dans
+  // le useMemo `displayArtworks` ET dans le JSX (section "Massive Artistes"
+  // avec les avatars). Avant cette refactor, il etait scope localement au
+  // useMemo -> ReferenceError au render. Le format CMS est normalise vers
+  // l'ancien shape (avatar URL, tagline.{fr,en,es}) pour minimiser les
+  // changements downstream dans le JSX.
+  const artistsList = useMemo(() => {
+    if (!cmsArtists) return [];
+    return Object.values(cmsArtists).map((cms) => ({
+      slug: cms.slug,
+      name: cms.name,
+      avatar: cms.avatar ? mediaUrl(cms.avatar) : (cms.socials?.avatarUrl || null),
+      heroImage: cms.heroImage ? mediaUrl(cms.heroImage) : null,
+      tagline: {
+        fr: cms.taglineFr || '',
+        en: cms.taglineEn || '',
+        es: cms.taglineEs || cms.taglineEn || '',
+      },
+      prints: cms.prints || [],
+    }));
+  }, [cmsArtists]);
+
   // Oeuvres artistes pour le showcase homepage (aleatoire a chaque visite).
-  // SQUARE-MIGRATION (11 mai 2026) : lit directement le CMS Strapi via
-  // useArtists() au lieu du fallback local supprime. Memo sur la map
-  // cmsArtists pour refresh si le CMS finit son load apres le 1er render.
   const displayArtworks = useMemo(() => {
-    const artistsList = cmsArtists ? Object.values(cmsArtists) : [];
     const all = [];
     artistsList.forEach((artist) => {
       (artist.prints || []).forEach((work) => {
@@ -148,7 +167,7 @@ function Home() {
       [all[i], all[j]] = [all[j], all[i]];
     }
     return all.slice(0, 8);
-  }, [cmsArtists]);
+  }, [artistsList]);
 
   return (
     <>
