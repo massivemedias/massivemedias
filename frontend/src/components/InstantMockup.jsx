@@ -12,7 +12,7 @@ import { X } from 'lucide-react';
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 }; // #f0ede8
 
-function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sceneId, className = '' }) {
+function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, orientation = 'portrait', sceneId, className = '' }) {
   const canvasRef = useRef(null);
   const lightboxCanvasRef = useRef(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -41,7 +41,7 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
     img.src = imageUrl;
   }, [imageUrl]);
 
-  const drawComposite = useCallback((canvas, targetWidth, sid, landscape, fc, genRef) => {
+  const drawComposite = useCallback((canvas, targetWidth, sid, landscape, fc, genRef, ori = 'portrait') => {
     if (!canvas || !userImgRef.current || !sid || !genRef) return;
 
     // Capture la generation de CE call. Si une nouvelle drawComposite est
@@ -134,14 +134,46 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
       const userImg = userImgRef.current;
       const imgRatio = userImg.naturalWidth / userImg.naturalHeight;
 
-      // "Contain": image entiere toujours visible, mat remplit le reste.
+      // ORIENTATION-AWARE INSCRIBED RECTANGLE (11 mai 2026) :
+      // Le rectangle source (zone verte) est typiquement portrait. Si l'oeuvre
+      // est square ou landscape, on l'inscrit dans un sous-rectangle au RATIO
+      // STRICT de l'orientation (1:1 ou 3:2), centre dans la zone source. Le
+      // reste de la zone source devient passepartout creme (MAT_COLOR) - une
+      // convention de framing reelle, pas du letterboxing. L'oeuvre est ensuite
+      // dessinee en "cover" dans ce sous-rectangle (ratio preserve, pas de
+      // bandes blanches autour de l'oeuvre elle-meme).
+      //
+      // Ratio target par orientation (ratio = W / H) :
+      //   square    -> 1.0
+      //   landscape -> 1.5 (3:2)
+      //   portrait  -> conserve le ratio NATIF de l'image (fallback historique)
+      const targetRatio = ori === 'square'    ? 1.0
+                        : ori === 'landscape' ? 1.5
+                        :                       imgRatio; // portrait : ratio natif
+      // Marge interieure pour donner du passepartout meme pour les orientations
+      // qui matchent parfaitement (ex: portrait dans cadre portrait). Plus de
+      // marge pour les orientations non-matchantes.
+      const matMargin = ori === 'portrait' ? 0.02 : 0.06;
+
       let destX = printX, destY = printY, destW = printW, destH = printH;
-      if (imgRatio > printRatio) {
-        destH = Math.round(printW / imgRatio);
-        destY = printY + Math.round((printH - destH) / 2);
+      // Reduce by matMargin from each side, then inscribe target ratio.
+      const innerW = Math.max(1, printW - Math.round(printW * matMargin * 2));
+      const innerH = Math.max(1, printH - Math.round(printH * matMargin * 2));
+      const innerX = printX + Math.round(printW * matMargin);
+      const innerY = printY + Math.round(printH * matMargin);
+      const innerRatio = innerW / innerH;
+      if (targetRatio > innerRatio) {
+        // target plus large que inner : on prend toute la largeur, on reduit la hauteur.
+        destW = innerW;
+        destH = Math.round(innerW / targetRatio);
+        destX = innerX;
+        destY = innerY + Math.round((innerH - destH) / 2);
       } else {
-        destW = Math.round(printH * imgRatio);
-        destX = printX + Math.round((printW - destW) / 2);
+        // target plus etroit que inner : on prend toute la hauteur, on reduit la largeur.
+        destH = innerH;
+        destW = Math.round(innerH * targetRatio);
+        destX = innerX + Math.round((innerW - destW) / 2);
+        destY = innerY;
       }
 
       // 4. CLIPPING VIA MASK BITMAP (chroma-key strict).
@@ -157,9 +189,23 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
       offCanvas.width = cw;
       offCanvas.height = ch;
       const offCtx = offCanvas.getContext('2d');
+
+      // "Cover" sur le sub-rectangle dest : si imgRatio != dstRatio (rare car
+      // on aligne targetRatio sur l'orientation CMS), on crope le centre de
+      // la source pour eviter toute deformation. Pour la majorite des oeuvres
+      // dont l'orientation matche le targetRatio, srcX/Y/W/H = full image.
+      const dstRatio = destW / destH;
+      let srcX = 0, srcY = 0, srcW = userImg.naturalWidth, srcH = userImg.naturalHeight;
+      if (imgRatio > dstRatio) {
+        srcW = Math.round(userImg.naturalHeight * dstRatio);
+        srcX = Math.round((userImg.naturalWidth - srcW) / 2);
+      } else if (imgRatio < dstRatio) {
+        srcH = Math.round(userImg.naturalWidth / dstRatio);
+        srcY = Math.round((userImg.naturalHeight - srcH) / 2);
+      }
       offCtx.drawImage(
         userImg,
-        0, 0, userImg.naturalWidth, userImg.naturalHeight,
+        srcX, srcY, srcW, srcH,
         destX, destY, destW, destH,
       );
 
@@ -219,15 +265,15 @@ function InstantMockup({ imageUrl, frameColor = 'black', isLandscape = false, sc
   // Redessiner quand scene, orientation, cadre ou image change
   useEffect(() => {
     if (!ready || !sceneId) return;
-    if (canvasRef.current) drawComposite(canvasRef.current, 800, sceneId, isLandscape, frameColor, mainGenRef);
-  }, [ready, sceneId, isLandscape, frameColor, drawComposite]);
+    if (canvasRef.current) drawComposite(canvasRef.current, 800, sceneId, isLandscape, frameColor, mainGenRef, orientation);
+  }, [ready, sceneId, isLandscape, frameColor, orientation, drawComposite]);
 
   // Lightbox haute resolution
   useEffect(() => {
     if (lightboxOpen && lightboxCanvasRef.current && ready && sceneId) {
-      drawComposite(lightboxCanvasRef.current, 1400, sceneId, isLandscape, frameColor, lightboxGenRef);
+      drawComposite(lightboxCanvasRef.current, 1400, sceneId, isLandscape, frameColor, lightboxGenRef, orientation);
     }
-  }, [lightboxOpen, ready, sceneId, isLandscape, frameColor, drawComposite]);
+  }, [lightboxOpen, ready, sceneId, isLandscape, frameColor, orientation, drawComposite]);
 
   if (!imageUrl || !ready || !sceneId) return null;
 

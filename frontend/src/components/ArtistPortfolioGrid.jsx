@@ -32,11 +32,10 @@ const orientOf = (w, h) => (w > h ? 'landscape' : 'portrait');
 // conteneur carre + orientation derivee. Mesures par scan de la zone verte
 // (#00FF00) de chaque fichier source dans /public/images/mockups/.
 //
-// SQUARE-MOCKUP (11 mai 2026) : ajout de gallery_square_black / _white
-// (cssOnly=true, pas d'asset webp requis). Cadre 1:1 centre sur un mur de
-// galerie gradient avec ombre. Permet aux oeuvres carrees (Gallium Wheel
-// of Time / Fire Body / etc.) d'avoir un mockup approprie sans
-// letterboxing.
+// PHOTOREALISM-FIRST (11 mai 2026) : les entries gallery_square cssOnly ont
+// ete supprimees - elles cassaient l'immersion. Les oeuvres carrees sont
+// maintenant inscrites dans les vraies scenes photorealistes via un
+// rectangle proportionne (cf logique inscribed-rectangle dans le render).
 const MOCKUP_FRAMES = {
   bedroom_black:        { top: 21.6,  left: 41.49, width: 16.8,  height: 25.6,  orientation: orientOf(16.8,  25.6)  },
   bedroom_white:        { top: 19.89, left: 41.26, width: 18.51, height: 25.03, orientation: orientOf(18.51, 25.03) },
@@ -50,23 +49,18 @@ const MOCKUP_FRAMES = {
   studio_white:         { top: 28.46, left: 38.51, width: 22.86, height: 31.66, orientation: orientOf(22.86, 31.66) },
   zen_black:            { top: 23.54, left: 38.17, width: 25.94, height: 35.77, orientation: orientOf(25.94, 35.77) },
   zen_white:            { top: 21.49, left: 38.4,  width: 23.2,  height: 33.49, orientation: orientOf(23.2,  33.49) },
-  // cssOnly: rendu sans asset webp - mur gradient + cadre 1:1 centre.
-  gallery_square_black: { cssOnly: true, frameColor: 'black', orientation: 'square' },
-  gallery_square_white: { cssOnly: true, frameColor: 'white', orientation: 'square' },
 };
 
-// Cycle deterministe. Inclut maintenant 2 slots gallery_square pour donner
-// aux oeuvres carrees une place visible dans la grille (sinon pickByOrientation
-// les remappe sur des portrait avec letterboxing dur).
+// Cycle deterministe sur 8 vraies scenes photorealistes.
 const SCENE_CYCLE = [
   'living_room_black',
-  'gallery_square_white',
   'bedroom_white',
   'studio_black',
-  'gallery_square_black',
   'office_white',
+  'zen_black',
   'living_room_white',
   'bedroom_black',
+  'studio_white',
 ];
 
 // Image fallback pour les slots sans œuvre. Le print Massive Medias generique
@@ -172,14 +166,12 @@ function ArtistPortfolioGrid({ count = 8 }) {
           return s;
         }
       }
-      // Pass 2 (UNIQUEMENT pour cadres non-carres) : fallback sur n'importe
-      // quelle oeuvre non consommee plutot que d'afficher un placeholder.
-      // Pour les cadres 'square' on REFUSE le fallback - un portrait dans
-      // un cadre carre = letterboxing visible, on prefere le placeholder.
-      if (target === 'square') return null;
+      // PHOTOREALISM-FIRST (11 mai 2026) : fallback gracieux pour TOUTES les
+      // orientations (les scenes cssOnly square ont ete supprimees). Le
+      // rendu inscribed-rectangle (style en bas du JSX) garantit que le
+      // ratio est respecte avec mat creme autour, pas de letterboxing dur.
       for (const s of pool) {
         if (consumed.has(s.id)) continue;
-        if (s.orientation === 'square') continue; // jamais consommer un carre pour un cadre non-carre
         consumed.add(s.id);
         return s;
       }
@@ -213,112 +205,76 @@ function ArtistPortfolioGrid({ count = 8 }) {
         const frame = s.frame;
         const mockupUrl = `/images/mockups/${mockupKey}.webp`;
 
-        // SQUARE-MIGRATION (11 mai 2026) : rendu CSS-only pour les cadres
-        // gallery_square (pas d'asset webp). Un mur de galerie en gradient +
-        // un cadre 1:1 centre + ombre. Le frameColor (black/white) varie le
-        // contour du cadre. Permet d'afficher proprement les oeuvres carrees
-        // sans letterboxing dur dans un cadre portrait.
-        const isCssOnly = frame.cssOnly === true;
-        const isLightFrame = frame.frameColor === 'white';
-
+        // PHOTOREALISM-FIRST (11 mai 2026) : on inscrit l'oeuvre dans un
+        // sous-rectangle du cadre source au ratio strict de son orientation.
+        // Le mat creme entoure proprement (passepartout) - pas de letterboxing
+        // dur ni de mockup CSS fake. Coords calculees pour chaque slot.
+        const targetRatio = s.orientation === 'square'    ? 1.0
+                          : s.orientation === 'landscape' ? 1.5
+                          :                                  frame.width / frame.height; // portrait : match du cadre source
+        // Inscribed rectangle au ratio target, centred dans le cadre source.
+        const srcRatio = frame.width / frame.height;
+        let imgTop = frame.top, imgLeft = frame.left, imgW = frame.width, imgH = frame.height;
+        if (targetRatio > srcRatio) {
+          // target plus large que source -> on garde toute la largeur, on reduit la hauteur.
+          imgH = frame.width / targetRatio;
+          imgTop = frame.top + (frame.height - imgH) / 2;
+        } else if (targetRatio < srcRatio) {
+          // target plus etroit que source -> on garde toute la hauteur, on reduit la largeur.
+          imgW = frame.height * targetRatio;
+          imgLeft = frame.left + (frame.width - imgW) / 2;
+        }
+        // Le mat creme est dessine SUR la zone du cadre source qui n'est pas
+        // couverte par l'oeuvre. Au pixel pres, c'est juste un overlay creme
+        // qui couvre tout le `frame` puis l'oeuvre s'affiche par-dessus.
         const inner = (
           <div className="relative w-full aspect-square overflow-hidden rounded-lg shadow-lg transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl">
-            {isCssOnly ? (
-              // === MOCKUP CSS-ONLY (gallery_square) ===
-              // Mur gradient + cadre 1:1 centre. Pas de scale ici car le
-              // cadre est deja dimensionne pour ~70% du conteneur.
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: isLightFrame
-                    ? 'linear-gradient(180deg, #f4f1ec 0%, #e8e2d8 100%)'
-                    : 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)',
-                }}
-              >
-                {/* Plinthe stylisee pour donner de la profondeur au mur. */}
+            <div
+              className="absolute inset-0"
+              style={{ transform: 'scale(1.15)', transformOrigin: 'center' }}
+            >
+              {/* Photo de la piece (background) avec son cadre dessine. */}
+              <img
+                src={mockupUrl}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 w-full h-full object-cover"
+                aria-hidden="true"
+              />
+              {/* Mat creme qui couvre toute la zone du cadre source (passepartout).
+                  Recouvre la zone verte/print de la photo source.
+                  Necessaire UNIQUEMENT si l'orientation ne matche pas (sinon
+                  l'oeuvre couvre 100% du cadre source et le mat est inutile). */}
+              {s.orientation !== frame.orientation && (
                 <div
-                  className="absolute bottom-0 left-0 right-0"
-                  style={{
-                    height: '12%',
-                    background: isLightFrame
-                      ? 'linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.10) 100%)'
-                      : 'linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.45) 100%)',
-                  }}
-                />
-                {/* Cadre 1:1 centre, ~68% du conteneur. */}
-                <div
-                  className="absolute"
-                  style={{
-                    top: '16%',
-                    left: '16%',
-                    width: '68%',
-                    height: '68%',
-                    padding: '6%',
-                    background: isLightFrame ? '#ffffff' : '#0a0a0a',
-                    borderRadius: '2px',
-                    boxShadow: isLightFrame
-                      ? '0 10px 30px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.12)'
-                      : '0 12px 36px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.30)',
-                  }}
-                >
-                  {/* Passepartout (matte) pour ajouter une bordure douce. */}
-                  <div
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      padding: '4%',
-                      background: isLightFrame ? '#fafafa' : '#f5f5f0',
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <img
-                      src={s.image}
-                      alt={s.placeholder ? '' : (s.title || `Print ${s.artistName}`)}
-                      loading="lazy"
-                      decoding="async"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        display: 'block',
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // === MOCKUP PHOTO (bedroom / studio / etc.) ===
-              // Wrapper interne avec zoom 1.15 : rapproche visuellement le
-              // cadre de l'utilisateur. Le parent overflow-hidden rogne les
-              // bords du mockup zoome.
-              <div
-                className="absolute inset-0"
-                style={{ transform: 'scale(1.15)', transformOrigin: 'center' }}
-              >
-                <img
-                  src={mockupUrl}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  aria-hidden="true"
-                />
-                <img
-                  src={s.image}
-                  alt={s.placeholder ? '' : (s.title || `Print ${s.artistName}`)}
-                  loading="lazy"
-                  decoding="async"
                   style={{
                     position: 'absolute',
                     top: `${frame.top}%`,
                     left: `${frame.left}%`,
                     width: `${frame.width}%`,
                     height: `${frame.height}%`,
-                    objectFit: 'cover',
+                    background: '#f0ede8', // MAT_COLOR equivalent (cf InstantMockup)
                   }}
+                  aria-hidden="true"
                 />
-              </div>
-            )}
+              )}
+              {/* Oeuvre inscrite au ratio strict, centred dans le cadre source. */}
+              <img
+                src={s.image}
+                alt={s.placeholder ? '' : (s.title || `Print ${s.artistName}`)}
+                loading="lazy"
+                decoding="async"
+                style={{
+                  position: 'absolute',
+                  top: `${imgTop}%`,
+                  left: `${imgLeft}%`,
+                  width: `${imgW}%`,
+                  height: `${imgH}%`,
+                  objectFit: 'cover',
+                }}
+              />
+            </div>
             {/* Overlay au hover : titre + artiste */}
             {!s.placeholder && (
               <div className="absolute inset-0 flex flex-col items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/80 via-black/0 to-transparent p-3 pointer-events-none">
