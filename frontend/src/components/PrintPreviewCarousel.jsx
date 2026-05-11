@@ -30,7 +30,7 @@ const MOCKUP_SCENES = [
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 };
 
-function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage }) {
+function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, whiteBorder = true, onClickImage }) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   // On suit le chargement de l'image en STATE (pas seulement en ref) pour
@@ -325,7 +325,10 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const frameAspectRatio = orientationToAspectRatio(imageOrientation);
   const isPostcard = format === 'postcard';
   const frameThickness = withFrame ? Math.max(8, Math.round(previewMaxW * 0.04)) : 0;
-  const matThickness = withFrame ? (isPostcard ? Math.max(16, Math.round(previewMaxW * 0.1)) : Math.max(12, Math.round(previewMaxW * 0.06))) : 0;
+  // WHITE-BORDER (10 mai 2026) : si l'utilisateur a desactive le passe-partout
+  // (whiteBorder=false), on zero out matThickness -> l'image touche directement
+  // l'interieur du cadre, full bleed. Sans frame, pas de mat de toute facon.
+  const matThickness = (withFrame && whiteBorder) ? (isPostcard ? Math.max(16, Math.round(previewMaxW * 0.1)) : Math.max(12, Math.round(previewMaxW * 0.06))) : 0;
 
   return (
     <div className="space-y-2">
