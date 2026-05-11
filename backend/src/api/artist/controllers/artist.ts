@@ -1379,17 +1379,47 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       }
     }
 
-    // Trouver l'artiste cible
-    const artists = await strapi.documents('api::artist.artist').findMany({
+    // Trouver l'artiste cible (chercher dans draft ET published pour ne pas
+    // creer un doublon si une coquille existe en draft non publie).
+    const drafts = await strapi.documents('api::artist.artist').findMany({
       filters: { slug: { $eq: artistSlug } },
+      status: 'draft',
       limit: 1,
     });
-    if (!artists || artists.length === 0) {
-      ctx.status = 404;
-      ctx.body = { error: `Artiste "${artistSlug}" introuvable en CMS` };
-      return;
+    const published = await strapi.documents('api::artist.artist').findMany({
+      filters: { slug: { $eq: artistSlug } },
+      status: 'published',
+      limit: 1,
+    });
+    let artist = (drafts[0] || published[0]) as any;
+
+    // UPSERT (10 mai 2026) : si la coquille n'existe pas encore en CMS
+    // (cas typique des nouveaux artistes signes : ajoutes a artists.js
+    // hardcoded + user-role lie, mais pas encore creee dans Strapi),
+    // on la cree automatiquement avec le minimum requis pour eviter
+    // le 404 et debloquer son flow de mise a jour profil. Sans ce
+    // fallback, l'artiste voit "Sauvegarde" en local mais le CMS reste
+    // muet et le site public ne refletera jamais ses changements.
+    if (!artist) {
+      try {
+        artist = await strapi.documents('api::artist.artist').create({
+          data: {
+            slug: artistSlug,
+            name: body.name || artistSlug,
+            bioFr: '',
+            bioEn: '',
+            socials: {},
+          },
+          status: 'published',
+        });
+        strapi.log.info(`[updateMyProfile] coquille CMS auto-creee pour ${artistSlug} (premiere modif profil)`);
+      } catch (createErr: any) {
+        strapi.log.error(`[updateMyProfile] echec auto-create pour ${artistSlug}: ${createErr?.message}`);
+        ctx.status = 500;
+        ctx.body = { error: `Impossible de creer la coquille CMS pour "${artistSlug}"`, detail: createErr?.message };
+        return;
+      }
     }
-    const artist = artists[0] as any;
 
     // Whitelist STRICTE des champs modifiables. Tout le reste est ignore
     // silencieusement pour eviter l'escalade de privilege par payload force.
