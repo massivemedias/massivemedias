@@ -259,6 +259,12 @@ function ConfiguratorFineArt() {
                 tx={tx}
                 isLandscape={isLandscape}
                 isSquare={isSquare}
+                // DATA-DRIVEN ORIENTATION (11 mai 2026) : on passe l'orientation
+                // explicite calculee localement (isSquare/isLandscape ont deja
+                // detecte le ratio via naturalWidth/Height sur le file upload
+                // - aucun CORS issue car blob: URL local). PrintPreviewCarousel
+                // utilise cette valeur en PRIORITE ABSOLUE pour filter scenes.
+                orientation={isSquare ? 'square' : (isLandscape ? 'landscape' : 'portrait')}
                 onClickImage={() => setLightboxOpen(true)}
               />
             </div>

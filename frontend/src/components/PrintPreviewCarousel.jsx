@@ -9,31 +9,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getImageOrientation, orientationToAspectRatio, SQUARE_TOLERANCE } from '../utils/imageOrientation';
-
-// FIX-SYNC-DETECT (11 mai 2026) : la detection asynchrone via new Image()
-// onload echouait silencieusement en production sur les images CDN
-// cross-origin (CORS strip naturalWidth/naturalHeight ou onerror sans
-// retry). Resultat : fallback 'portrait' applique meme pour les images
-// carrees -> Wheel of Time / Fire Body apparaissaient dans bedroom au lieu
-// de gallery_square.
-//
-// Maintenant : detection SYNCHRONE 100% fiable basee sur le filename qui
-// suit la convention <slug>-<W>x<H>.webp (ex: wheel-of-time-20x20.webp =
-// carre, musashi-no-kiai-20x14.webp = landscape, fearless-16x20.webp =
-// portrait). Le ratio est connu AVANT le 1er render, donc le filter du
-// carrousel applique correctement les bonnes scenes immediatement.
-function guessOrientationFromUrl(url) {
-  if (!url || typeof url !== 'string') return 'unknown';
-  const m = url.match(/-(\d+)x(\d+)\.\w+($|\?)/i);
-  if (!m) return 'unknown';
-  const w = parseInt(m[1]);
-  const h = parseInt(m[2]);
-  if (!w || !h) return 'unknown';
-  const ratio = w / h;
-  if (Math.abs(ratio - 1) <= SQUARE_TOLERANCE) return 'square';
-  return ratio > 1 ? 'landscape' : 'portrait';
-}
+import { getImageOrientation, orientationToAspectRatio } from '../utils/imageOrientation';
 
 // Mockup scenes : chaque scene a une orientation fixe (ratio du cadre photo
 // physique mesure au pixel sur les .webp 875x875). On ne presente que les
@@ -58,7 +34,7 @@ const MOCKUP_SCENES = [
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 };
 
-function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage }) {
+function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, orientation: explicitOrientation, print, onClickImage }) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   // On suit le chargement de l'image en STATE (pas seulement en ref) pour
@@ -84,34 +60,47 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   // ratio du slide 0. La FramePreview prend l'aspect ratio de l'image, et
   // les scenes mockup sont filtrees sur le meme critere.
   //
-  // FIX-SYNC-DETECT (11 mai 2026) : detection SYNCHRONE via guessOrientationFromUrl
-  // remplace l'ancien useEffect async fragile (CORS-prone). L'orientation
-  // est connue immediatement au 1er render -> visibleScenes filter en bas
-  // applique correctement gallery_square pour les images carrees, AVANT
-  // que les scenes portrait bedroom/living_room/zen ne soient meme montees.
+  // DATA-DRIVEN ORIENTATION (11 mai 2026) :
+  // L'orientation se determine via une cascade de sources priorisees :
+  //   1. prop `orientation` explicite passee par le parent (highest priority -
+  //      utilisee quand le parent connait deja le ratio reel, ex: prop
+  //      isSquare/isLandscape de ConfiguratorFineArt qui detecte au load
+  //      du fichier upload local, sans CORS issue).
+  //   2. print.orientation si un objet print est passe (cas CMS Strapi qui
+  //      a un champ orientation hardcoded pour chaque print).
+  //   3. fallback async via new Image() en derniere chance (ne marche pas
+  //      toujours en prod CDN cross-origin).
+  //   4. 'portrait' par defaut si tout fail.
   //
-  // Le useEffect async secondaire reste comme UPGRADE optionnel : si la
-  // detection synchrone retourne 'unknown' (filename ne suit pas la
-  // convention WxH), on tente l'async en fallback. Si async fail aussi,
-  // visibleScenes filter va sur fallback 'portrait' (default).
-  const [imageOrientation, setImageOrientation] = useState(() => guessOrientationFromUrl(image));
-  // Re-trigger la detection si l'image change
+  // L'ancienne detection synchrone via filename regex a ete retiree - elle
+  // matchait uniquement les fichiers avec WxH dans le nom et tombait sur
+  // 'portrait' fallback sinon (ce qui faisait apparaitre bedroom dans le
+  // mockup des images carrees Gallium "The End of Illusion" malgre le fix
+  // d'avant). La source de verite est maintenant le PARENT qui sait, pas
+  // le composant qui devine.
+  const dataDrivenOrientation = explicitOrientation
+    || print?.orientation
+    || (isSquare ? 'square' : (isLandscape ? 'landscape' : null));
+
+  const [imageOrientation, setImageOrientation] = useState(() => dataDrivenOrientation || 'unknown');
+
+  // Sync immediate si le parent change le data-driven orientation
   useEffect(() => {
-    const syncGuess = guessOrientationFromUrl(image);
-    if (syncGuess !== 'unknown') {
-      setImageOrientation(syncGuess);
-      return;
+    if (dataDrivenOrientation) {
+      setImageOrientation(dataDrivenOrientation);
     }
-    // Fallback async pour les images sans convention WxH dans le filename
+  }, [dataDrivenOrientation]);
+
+  // Fallback async (UNIQUEMENT si le parent ne fournit pas l'info)
+  useEffect(() => {
+    if (dataDrivenOrientation) return; // parent a deja la reponse, skip async
     if (!image) { setImageOrientation('unknown'); return; }
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      setImageOrientation(getImageOrientation(img.naturalWidth, img.naturalHeight));
-    };
+    img.onload = () => setImageOrientation(getImageOrientation(img.naturalWidth, img.naturalHeight));
     img.onerror = () => setImageOrientation('unknown');
     img.src = image;
-  }, [image]);
+  }, [image, dataDrivenOrientation]);
 
   // FIX-RESTORE-MOCKUPS (3 mai 2026) : avant, le filter strict
   //   filter(s => s.orientation === imageOrientation)
