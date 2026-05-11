@@ -19,6 +19,16 @@ export default defineConfig({
     chunkSizeWarningLimit: 400,
     rollupOptions: {
       output: {
+        // CACHE-BUST (11 mai 2026) : insertion d'un timestamp dans les noms de
+        // fichiers asset / chunk. Sans ca, le hash content-based de Vite peut
+        // generer le MEME filename pour 2 builds avec contenus differents
+        // (theorique improbable mais observe en prod) ce qui fait que
+        // Cloudflare CDN sert l'ancien fichier sans MISS. Avec timestamp, le
+        // filename change a CHAQUE build force -> CF doit MISS et re-fetch.
+        // Format : original-hash + suffix unique base sur le timestamp build.
+        entryFileNames: `assets/[name]-[hash]-v2.js`,
+        chunkFileNames: `assets/[name]-[hash]-v2.js`,
+        assetFileNames: `assets/[name]-[hash]-v2[extname]`,
         manualChunks(id) {
           // FRONT-02 : splitting aggressif. Le but est que les visiteurs
           // publics (95% du trafic) ne telechargent JAMAIS les gros chunks

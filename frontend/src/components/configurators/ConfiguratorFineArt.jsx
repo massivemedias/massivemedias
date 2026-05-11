@@ -7,7 +7,11 @@ import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useProduct } from '../../hooks/useProducts';
 import FileUpload from '../FileUpload';
-import PrintPreviewCarousel from '../PrintPreviewCarousel';
+// CACHE-BUST (11 mai 2026) : rename PrintPreviewCarousel -> PrintPreviewCarouselV2
+// pour forcer Cloudflare a MISS son cache CDN agressif qui servait l'ancien
+// chunk meme apres plusieurs commits. Le nom de fichier change donc CF doit
+// chercher la nouvelle version sur l'origine.
+import PrintPreviewCarousel from '../PrintPreviewCarouselV2';
 import {
   fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
