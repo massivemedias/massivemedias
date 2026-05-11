@@ -228,12 +228,28 @@ function ArtisteDetail({ subdomainSlug }) {
   const [selectedSticker, setSelectedSticker] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [lightbox, setLightbox] = useState(null);
-  const [isLandscape, setIsLandscape] = useState(false);
   const [mockupSlideIdx, setMockupSlideIdx] = useState(0);
   const configuratorRef = useRef(null);
 
-  // Scenes du slide: null = print brut, les autres = pieces interieures
-  const MOCKUP_SCENES = [null, 'bedroom', 'living_room', 'office', 'zen'];
+  // SQUARE-MIGRATION (11 mai 2026) : orientation lue DIRECTEMENT depuis le
+  // CMS Strapi (champ `orientation` du print). Plus de detection async via
+  // new Image() + naturalWidth/naturalHeight -> evite la race condition au
+  // 1er render qui causait letterboxing dur des oeuvres carrees (Gallium
+  // Wheel of Time / Fire Body / Wheel of Manifestation / etc.).
+  const effectiveOrientation = selectedPrint?.orientation || 'portrait';
+  const isLandscape = effectiveOrientation === 'landscape';
+  const isSquare = effectiveOrientation === 'square';
+
+  // Scenes du slide: null = print brut, les autres = pieces interieures.
+  // Filtrage strict par orientation : un print carre ne s'affichera JAMAIS
+  // dans un mockup portrait (bedroom/living_room/zen), un print paysage
+  // n'ira QUE dans office (seul mockup landscape-friendly). Sans ce filtre,
+  // tous les prints atterrissent dans tous les cadres avec letterboxing.
+  const MOCKUP_SCENES = useMemo(() => {
+    if (isSquare) return [null, 'office', 'gallery_square'];
+    if (isLandscape) return [null, 'office'];
+    return [null, 'bedroom', 'living_room', 'office', 'zen'];
+  }, [isSquare, isLandscape]);
   const stickerConfiguratorRef = useRef(null);
   const printConfigsRef = useRef({}); // Sauvegarder la config par print id
 
@@ -301,35 +317,22 @@ function ArtisteDetail({ subdomainSlug }) {
   // Reset slide quand on change de print
   useEffect(() => {
     setMockupSlideIdx(0);
-    setIsLandscape(false);
   }, [selectedPrint?.id]);
 
-  // FIX-ORIENTATION (4 mai 2026 - re-add apres rollback) : detecte
-  // l'orientation de l'image SELECTED des que selectedPrint change, sans
-  // dependre du onLoad du slide 0. Sans ca, si l'utilisateur clique
-  // directement un mockup (slides 1-4) sans passer par le print brut,
-  // isLandscape reste a false par defaut -> InstantMockup charge les
-  // cadres portrait pour des prints landscape (Mok 1600x900) -> mockups
-  // casses. Detection immediate au changement de print, garantit que
-  // isLandscape est correct AVANT que InstantMockup soit monte.
-  useEffect(() => {
-    if (!selectedPrint) return;
-    const url = selectedPrint.fullImage || toFull(selectedPrint.image);
-    if (!url) return;
-    let cancelled = false;
-    // FIX-CRASH (4 mai 2026) : Image est SHADOWED par l'import lucide-react
-    // ligne 5 (icone Image). new Image() essayait d'instancier l'icone React
-    // -> "Image$1 is not a constructor". Workaround : window.Image pour
-    // bypass le shadowing et acceder au constructeur global du browser.
-    const probe = new window.Image();
-    probe.crossOrigin = 'anonymous';
-    probe.onload = () => {
-      if (cancelled) return;
-      setIsLandscape(probe.naturalWidth > probe.naturalHeight);
-    };
-    probe.src = url;
-    return () => { cancelled = true; };
-  }, [selectedPrint?.id]);
+  // SQUARE-MIGRATION (11 mai 2026) : ERADICATION du useEffect async de
+  // detection d'orientation. L'ancien code creait un new window.Image() et
+  // lisait naturalWidth/naturalHeight au load -> 3 problemes :
+  //   1. Race condition : 1er render avec isLandscape=false alors que le
+  //      print etait deja square (Gallium Wheel of Time 1550x1554) ou
+  //      landscape -> InstantMockup chargeait les cadres portrait par
+  //      defaut -> letterboxing dur visible avant que le probe.onload
+  //      ne corrige.
+  //   2. Pas de support 'square' : la formule (w > h) renvoyait toujours
+  //      false pour un carre (1550 > 1554 = false) -> carre traite comme
+  //      portrait -> mockup bedroom/zen avec letterboxing.
+  //   3. CORS sur cross-domain images : naturalWidth pouvait etre 0.
+  // Maintenant : `effectiveOrientation` est lu de selectedPrint.orientation
+  // (CMS Strapi, peuple par le script de migration), synchrone, deterministe.
 
   // FALLBACK SUBDOMAIN (8 mai 2026) : 3 cas a gerer pour eviter une page
   // blanche si l'artiste n'est pas trouve dans le CMS / artistsData :
@@ -948,10 +951,25 @@ function ArtisteDetail({ subdomainSlug }) {
               {tx({ fr: 'Configurez votre tirage', en: 'Configure Your Print', es: 'Configura tu impresion' })}
             </h2>
 
+            {/* DEBUG-MARKER (11 mai 2026) : marqueur visuel indeniable pour
+                confirmer que le DEPLOY a propage et que le VRAI fichier
+                ArtisteDetail.jsx (et non ArtistPortfolioGrid) a bien ete
+                corrige. A retirer une fois le fix valide en prod. */}
+            <div className="max-w-5xl mx-auto mb-6 p-4 border-8 border-red-500 bg-red-600/20 text-center">
+              <p className="text-white text-lg font-bold">
+                DEBUG: VRAI FICHIER TROUVE - ArtisteDetail.jsx
+              </p>
+              <p className="text-white/90 text-sm mt-1">
+                orientation lue (CMS) : <code className="bg-black/40 px-2 py-0.5 rounded">{effectiveOrientation}</code>
+                {' | '}
+                scenes filtrees : <code className="bg-black/40 px-2 py-0.5 rounded">{MOCKUP_SCENES.map(s => s || 'brut').join(', ')}</code>
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto items-start">
-              {/* Slide mockup: 0=print brut, 1-4=pieces interieures */}
+              {/* Slide mockup: 0=print brut, 1-N=pieces filtrees par orientation */}
               <div className="lg:sticky lg:top-24">
-                <div className="relative flex items-center">
+                <div className="relative flex items-center border-8 border-red-500 rounded-xl">
                   {/* Fleche gauche */}
                   <button
                     onClick={() => setMockupSlideIdx(prev => (prev - 1 + MOCKUP_SCENES.length) % MOCKUP_SCENES.length)}
@@ -974,14 +992,70 @@ function ArtisteDetail({ subdomainSlug }) {
                           src={selectedPrint.fullImage || toFull(selectedPrint.image)}
                           alt={getItemTitle(selectedPrint)}
                           className="max-w-full max-h-[70vh] object-contain"
-                          onLoad={(e) => setIsLandscape(e.target.naturalWidth > e.target.naturalHeight)}
                         />
                         <div className="absolute inset-0 pointer-events-none md:flex md:items-center md:justify-center">
                           <ZoomIn className="w-5 h-5 md:w-8 md:h-8 absolute bottom-3 right-3 md:static text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)] md:drop-shadow-lg" />
                         </div>
                       </div>
+                    ) : MOCKUP_SCENES[mockupSlideIdx] === 'gallery_square' ? (
+                      /* SQUARE-MIGRATION (11 mai 2026) : mockup CSS-only pour
+                         oeuvres carrees - mur gradient + cadre 1:1 centre +
+                         passepartout + ombre. Pas d'asset webp requis,
+                         InstantMockup ne sait pas gerer cette scene. */
+                      <div className="relative w-full aspect-square overflow-hidden rounded-xl shadow-2xl"
+                        style={{
+                          background: printFrameColor === 'white'
+                            ? 'linear-gradient(180deg, #f4f1ec 0%, #e8e2d8 100%)'
+                            : 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)',
+                        }}
+                      >
+                        <div className="absolute bottom-0 left-0 right-0"
+                          style={{
+                            height: '12%',
+                            background: printFrameColor === 'white'
+                              ? 'linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.10) 100%)'
+                              : 'linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.45) 100%)',
+                          }}
+                        />
+                        <div className="absolute"
+                          style={{
+                            top: '14%',
+                            left: '14%',
+                            width: '72%',
+                            height: '72%',
+                            padding: '5%',
+                            background: printFrameColor === 'white' ? '#ffffff' : '#0a0a0a',
+                            borderRadius: '2px',
+                            boxShadow: printFrameColor === 'white'
+                              ? '0 14px 38px rgba(0,0,0,0.20), 0 3px 8px rgba(0,0,0,0.14)'
+                              : '0 16px 44px rgba(0,0,0,0.50), 0 3px 8px rgba(0,0,0,0.34)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              padding: '4%',
+                              background: printFrameColor === 'white' ? '#fafafa' : '#f5f5f0',
+                              boxSizing: 'border-box',
+                            }}
+                          >
+                            <img
+                              src={selectedPrint.fullImage || toFull(selectedPrint.image)}
+                              alt={getItemTitle(selectedPrint)}
+                              loading="lazy"
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                display: 'block',
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     ) : (
-                      /* Mockup piece */
+                      /* Mockup piece (InstantMockup) */
                       <InstantMockup
                         imageUrl={selectedPrint.fullImage || toFull(selectedPrint.image)}
                         frameColor={printFrameColor}
