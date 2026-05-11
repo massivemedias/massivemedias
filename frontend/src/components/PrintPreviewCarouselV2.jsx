@@ -362,13 +362,6 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
 
   return (
     <div className="space-y-2 relative">
-      {/* DEBUG-V3 (11 mai 2026) - banniere visuelle massive pour valider
-          le pipeline de deploiement + la propagation du payload Strapi.
-          Si elle n'apparait pas en prod : le deploy CF Pages est bloque
-          ou le user voit un autre composant. A retirer une fois debug OK. */}
-      <div className="absolute top-0 left-0 right-0 z-[9999] bg-red-600 text-white p-3 font-bold text-base shadow-2xl border-4 border-yellow-400">
-        🔴 DEBUG V3 PrintPreviewCarouselV2 — orientation reçue: {explicitOrientation || print?.orientation || imageOrientation || 'VIDE/UNDEFINED'} | scenes visibles: {visibleScenes.map(s => s.id).join(', ') || 'AUCUNE'}
-      </div>
       {/* Zone d'apercu unique - swipeable */}
       <div className="relative overflow-hidden rounded-xl"
         onTouchStart={(e) => { e.currentTarget._touchX = e.touches[0].clientX; }}

@@ -17,7 +17,7 @@
  * Click sur un mockup = navigation /artistes/:slug?print=:id pour pre-selection
  * de l'œuvre.
  */
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Frame } from 'lucide-react';
 import { useArtists } from '../hooks/useArtists';
 import artistsDataLocal from '../data/artists';
@@ -31,30 +31,39 @@ const orientOf = (w, h) => (w > h ? 'landscape' : 'portrait');
 // Coords du cadre dans chaque mockup, en % (top, left, width, height) du
 // conteneur carre + orientation derivee. Mesures par scan de la zone verte
 // (#00FF00) de chaque fichier source dans /public/images/mockups/.
+//
+// SQUARE-MOCKUP (11 mai 2026) : ajout de gallery_square_black / _white
+// (cssOnly=true, pas d'asset webp requis). Cadre 1:1 centre sur un mur de
+// galerie gradient avec ombre. Permet aux oeuvres carrees (Gallium Wheel
+// of Time / Fire Body / etc.) d'avoir un mockup approprie sans
+// letterboxing.
 const MOCKUP_FRAMES = {
-  bedroom_black:     { top: 21.6,  left: 41.49, width: 16.8,  height: 25.6,  orientation: orientOf(16.8,  25.6)  },
-  bedroom_white:     { top: 19.89, left: 41.26, width: 18.51, height: 25.03, orientation: orientOf(18.51, 25.03) },
-  dining_black:      { top: 24.69, left: 38.74, width: 22.51, height: 30.4,  orientation: orientOf(22.51, 30.4)  },
-  dining_white:      { top: 24.23, left: 41.14, width: 17.94, height: 24.57, orientation: orientOf(17.94, 24.57) },
-  living_room_black: { top: 19.09, left: 40.91, width: 19.66, height: 28.23, orientation: orientOf(19.66, 28.23) },
-  living_room_white: { top: 26.29, left: 38.86, width: 20.69, height: 26.97, orientation: orientOf(20.69, 26.97) },
-  office_black:      { top: 22.17, left: 38.63, width: 22.74, height: 31.66, orientation: orientOf(22.74, 31.66) },
-  office_white:      { top: 30.74, left: 33.94, width: 33.49, height: 23.54, orientation: orientOf(33.49, 23.54) }, // landscape
-  studio_black:      { top: 32,    left: 40,    width: 19.77, height: 27.77, orientation: orientOf(19.77, 27.77) },
-  studio_white:      { top: 28.46, left: 38.51, width: 22.86, height: 31.66, orientation: orientOf(22.86, 31.66) },
-  zen_black:         { top: 23.54, left: 38.17, width: 25.94, height: 35.77, orientation: orientOf(25.94, 35.77) },
-  zen_white:         { top: 21.49, left: 38.4,  width: 23.2,  height: 33.49, orientation: orientOf(23.2,  33.49) },
+  bedroom_black:        { top: 21.6,  left: 41.49, width: 16.8,  height: 25.6,  orientation: orientOf(16.8,  25.6)  },
+  bedroom_white:        { top: 19.89, left: 41.26, width: 18.51, height: 25.03, orientation: orientOf(18.51, 25.03) },
+  dining_black:         { top: 24.69, left: 38.74, width: 22.51, height: 30.4,  orientation: orientOf(22.51, 30.4)  },
+  dining_white:         { top: 24.23, left: 41.14, width: 17.94, height: 24.57, orientation: orientOf(17.94, 24.57) },
+  living_room_black:    { top: 19.09, left: 40.91, width: 19.66, height: 28.23, orientation: orientOf(19.66, 28.23) },
+  living_room_white:    { top: 26.29, left: 38.86, width: 20.69, height: 26.97, orientation: orientOf(20.69, 26.97) },
+  office_black:         { top: 22.17, left: 38.63, width: 22.74, height: 31.66, orientation: orientOf(22.74, 31.66) },
+  office_white:         { top: 30.74, left: 33.94, width: 33.49, height: 23.54, orientation: orientOf(33.49, 23.54) }, // landscape
+  studio_black:         { top: 32,    left: 40,    width: 19.77, height: 27.77, orientation: orientOf(19.77, 27.77) },
+  studio_white:         { top: 28.46, left: 38.51, width: 22.86, height: 31.66, orientation: orientOf(22.86, 31.66) },
+  zen_black:            { top: 23.54, left: 38.17, width: 25.94, height: 35.77, orientation: orientOf(25.94, 35.77) },
+  zen_white:            { top: 21.49, left: 38.4,  width: 23.2,  height: 33.49, orientation: orientOf(23.2,  33.49) },
+  // cssOnly: rendu sans asset webp - mur gradient + cadre 1:1 centre.
+  gallery_square_black: { cssOnly: true, frameColor: 'black', orientation: 'square' },
+  gallery_square_white: { cssOnly: true, frameColor: 'white', orientation: 'square' },
 };
 
-// Cycle deterministe : 8 combinaisons mockup (sceneId + frameColor) qui
-// melange les 6 scenes et les 2 couleurs de cadre - varietes visuelles
-// cote a cote dans la grille 4x2 desktop.
+// Cycle deterministe. Inclut maintenant 2 slots gallery_square pour donner
+// aux oeuvres carrees une place visible dans la grille (sinon pickByOrientation
+// les remappe sur des portrait avec letterboxing dur).
 const SCENE_CYCLE = [
   'living_room_black',
+  'gallery_square_white',
   'bedroom_white',
   'studio_black',
-  'dining_white',
-  'zen_black',
+  'gallery_square_black',
   'office_white',
   'living_room_white',
   'bedroom_black',
@@ -89,6 +98,12 @@ function ArtistPortfolioGrid({ count = 8 }) {
         ? cmsArtists
         : Object.values(cmsArtists);
 
+    // SQUARE-MIGRATION (11 mai 2026) : on lit l'orientation DIRECTEMENT depuis
+    // la base de donnees (CMS Strapi `orientation` ou fallback local). Plus
+    // d'async `new Image().onload` -> evite la course condition, evite les
+    // problemes CORS (`naturalWidth` parfois bloque cross-origin) et evite
+    // surtout le mismatch fichier-vs-realite (cas Gallium "Wheel of Time"
+    // 1550x1554 dont le filename suggere autre chose).
     for (const a of cmsArr) {
       for (const p of (a.prints || [])) {
         if (!p?.id || seen.has(p.id)) continue;
@@ -101,6 +116,7 @@ function ArtistPortfolioGrid({ count = 8 }) {
           title: p.titleFr || p.title || '',
           artistName: a.name || a.slug,
           artistSlug: a.slug,
+          orientation: p.orientation || 'portrait',
         });
       }
     }
@@ -118,6 +134,7 @@ function ArtistPortfolioGrid({ count = 8 }) {
           title: p.titleFr || p.title || '',
           artistName: a.name || slug,
           artistSlug: slug,
+          orientation: p.orientation || 'portrait',
         });
       }
     }
@@ -125,53 +142,44 @@ function ArtistPortfolioGrid({ count = 8 }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cmsArtists]);
 
-  // Map id -> 'landscape' | 'portrait' calcule en chargeant chaque image et
-  // comparant naturalWidth vs naturalHeight. Permet de matcher orientation
-  // œuvre <-> orientation cadre dans MOCKUP_FRAMES (le user a explicitement
-  // demande ce match pour eviter object-fit:cover qui crop dur portrait dans
-  // landscape ou inverse).
-  const [orientations, setOrientations] = useState({});
-  useEffect(() => {
-    let cancelled = false;
-    if (pool.length === 0) return;
-    Promise.all(pool.map(s => new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        resolve([s.id, img.naturalWidth >= img.naturalHeight ? 'landscape' : 'portrait']);
-      };
-      img.onerror = () => resolve([s.id, 'portrait']); // fallback portrait (majoritaire)
-      img.src = s.image;
-    }))).then(entries => {
-      if (cancelled) return;
-      const map = {};
-      for (const [id, ori] of entries) map[id] = ori;
-      setOrientations(map);
-    });
-    return () => { cancelled = true; };
-  }, [pool]);
+  // SQUARE-MIGRATION (11 mai 2026) : ERADICATION DU CODE ASYNC.
+  // Avant : useEffect chargeait chaque image avec `new Image()` et lisait
+  // `naturalWidth/naturalHeight` pour deviner l'orientation -> 3 problemes :
+  //   1. Race condition : 1er render avec orientations={} -> tous mappes
+  //      en 'portrait' -> oeuvres carrees stuckees dans cadres portrait avec
+  //      letterboxing dur (cas Gallium Wheel of Time).
+  //   2. Filename pas fiable : "wheel-of-time-20x20.webp" (carre) mais le
+  //      naturalWidth/Height pouvait ne jamais charger (CORS, lazy, etc.).
+  //   3. Pas de support 'square' du tout : la formule renvoyait soit
+  //      'landscape' soit 'portrait', jamais 'square'.
+  // Maintenant : on lit `s.orientation` qui vient directement du CMS Strapi
+  // (champ `orientation` peuple par le script de migration). Synchrone,
+  // deterministe, source de verite unique.
 
-  // Slots avec matching strict : pour chaque case du SCENE_CYCLE, on prend
-  // la premiere oeuvre du pool dont l'orientation matche celle du cadre. Si
-  // pas dispo (pool epuise pour cette orientation), on tombe sur l'autre
-  // pool ou un placeholder. Tant que `orientations` n'a pas charge, on fait
-  // un best-effort en supposant tout en portrait (majoritaire en pratique).
+  // Slots avec matching strict orientation : pour chaque case du SCENE_CYCLE,
+  // on prend la premiere oeuvre du pool dont `orientation` matche celle du
+  // cadre. Filtrage strict : un cadre 'square' (gallery_square) ne recevra
+  // QUE des oeuvres `orientation === 'square'`, idem pour landscape/portrait.
+  // Si epuise -> placeholder Massive Medias (preferable au letterboxing).
   const slots = useMemo(() => {
-    // Index global de consommation par orientation pour ne pas re-utiliser la
-    // meme oeuvre dans 2 slots
     const consumed = new Set();
     const pickByOrientation = (target) => {
+      // Pass 1 : match strict d'orientation.
       for (const s of pool) {
         if (consumed.has(s.id)) continue;
-        const ori = orientations[s.id] || 'portrait';
-        if (ori === target) {
+        if (s.orientation === target) {
           consumed.add(s.id);
           return s;
         }
       }
-      // Fallback : prend n'importe quelle oeuvre non consommee meme si
-      // l'orientation ne match pas (mieux qu'un placeholder).
+      // Pass 2 (UNIQUEMENT pour cadres non-carres) : fallback sur n'importe
+      // quelle oeuvre non consommee plutot que d'afficher un placeholder.
+      // Pour les cadres 'square' on REFUSE le fallback - un portrait dans
+      // un cadre carre = letterboxing visible, on prefere le placeholder.
+      if (target === 'square') return null;
       for (const s of pool) {
         if (consumed.has(s.id)) continue;
+        if (s.orientation === 'square') continue; // jamais consommer un carre pour un cadre non-carre
         consumed.add(s.id);
         return s;
       }
@@ -196,7 +204,7 @@ function ArtistPortfolioGrid({ count = 8 }) {
       }
     }
     return result;
-  }, [pool, orientations, count]);
+  }, [pool, count]);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -205,45 +213,112 @@ function ArtistPortfolioGrid({ count = 8 }) {
         const frame = s.frame;
         const mockupUrl = `/images/mockups/${mockupKey}.webp`;
 
+        // SQUARE-MIGRATION (11 mai 2026) : rendu CSS-only pour les cadres
+        // gallery_square (pas d'asset webp). Un mur de galerie en gradient +
+        // un cadre 1:1 centre + ombre. Le frameColor (black/white) varie le
+        // contour du cadre. Permet d'afficher proprement les oeuvres carrees
+        // sans letterboxing dur dans un cadre portrait.
+        const isCssOnly = frame.cssOnly === true;
+        const isLightFrame = frame.frameColor === 'white';
+
         const inner = (
           <div className="relative w-full aspect-square overflow-hidden rounded-lg shadow-lg transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl">
-            {/* Wrapper interne avec zoom 1.15 : rapproche visuellement le
-                cadre de l'utilisateur (le cadre passe de ~20% a ~23% de la
-                surface visible apres scale). transform-origin: center pour
-                garder le cadre approximativement au milieu apres crop. Le
-                parent overflow-hidden rogne les bords du mockup zoome. */}
-            <div
-              className="absolute inset-0"
-              style={{ transform: 'scale(1.15)', transformOrigin: 'center' }}
-            >
-              {/* Mockup en background : photo de la piece avec son cadre vide */}
-              <img
-                src={mockupUrl}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 w-full h-full object-cover"
-                aria-hidden="true"
-              />
-              {/* Œuvre injectee dans le cadre du mockup. Coords en % du
-                  conteneur, pre-mesurees depuis la zone verte source.
-                  L'orientation a ete pre-matchee dans le useMemo `slots`
-                  pour eviter qu'object-fit:cover crop trop dur. */}
-              <img
-                src={s.image}
-                alt={s.placeholder ? '' : (s.title || `Print ${s.artistName}`)}
-                loading="lazy"
-                decoding="async"
+            {isCssOnly ? (
+              // === MOCKUP CSS-ONLY (gallery_square) ===
+              // Mur gradient + cadre 1:1 centre. Pas de scale ici car le
+              // cadre est deja dimensionne pour ~70% du conteneur.
+              <div
+                className="absolute inset-0"
                 style={{
-                  position: 'absolute',
-                  top: `${frame.top}%`,
-                  left: `${frame.left}%`,
-                  width: `${frame.width}%`,
-                  height: `${frame.height}%`,
-                  objectFit: 'cover',
+                  background: isLightFrame
+                    ? 'linear-gradient(180deg, #f4f1ec 0%, #e8e2d8 100%)'
+                    : 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)',
                 }}
-              />
-            </div>
+              >
+                {/* Plinthe stylisee pour donner de la profondeur au mur. */}
+                <div
+                  className="absolute bottom-0 left-0 right-0"
+                  style={{
+                    height: '12%',
+                    background: isLightFrame
+                      ? 'linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.10) 100%)'
+                      : 'linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.45) 100%)',
+                  }}
+                />
+                {/* Cadre 1:1 centre, ~68% du conteneur. */}
+                <div
+                  className="absolute"
+                  style={{
+                    top: '16%',
+                    left: '16%',
+                    width: '68%',
+                    height: '68%',
+                    padding: '6%',
+                    background: isLightFrame ? '#ffffff' : '#0a0a0a',
+                    borderRadius: '2px',
+                    boxShadow: isLightFrame
+                      ? '0 10px 30px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.12)'
+                      : '0 12px 36px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.30)',
+                  }}
+                >
+                  {/* Passepartout (matte) pour ajouter une bordure douce. */}
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      padding: '4%',
+                      background: isLightFrame ? '#fafafa' : '#f5f5f0',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <img
+                      src={s.image}
+                      alt={s.placeholder ? '' : (s.title || `Print ${s.artistName}`)}
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // === MOCKUP PHOTO (bedroom / studio / etc.) ===
+              // Wrapper interne avec zoom 1.15 : rapproche visuellement le
+              // cadre de l'utilisateur. Le parent overflow-hidden rogne les
+              // bords du mockup zoome.
+              <div
+                className="absolute inset-0"
+                style={{ transform: 'scale(1.15)', transformOrigin: 'center' }}
+              >
+                <img
+                  src={mockupUrl}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  aria-hidden="true"
+                />
+                <img
+                  src={s.image}
+                  alt={s.placeholder ? '' : (s.title || `Print ${s.artistName}`)}
+                  loading="lazy"
+                  decoding="async"
+                  style={{
+                    position: 'absolute',
+                    top: `${frame.top}%`,
+                    left: `${frame.left}%`,
+                    width: `${frame.width}%`,
+                    height: `${frame.height}%`,
+                    objectFit: 'cover',
+                  }}
+                />
+              </div>
+            )}
             {/* Overlay au hover : titre + artiste */}
             {!s.placeholder && (
               <div className="absolute inset-0 flex flex-col items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/80 via-black/0 to-transparent p-3 pointer-events-none">
