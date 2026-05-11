@@ -8,8 +8,8 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
-import { createEditRequest, getMyEditRequests, sendArtistMessage } from '../services/artistService';
-import api, { uploadArtistFile } from '../services/api';
+import { createEditRequest, getMyEditRequests } from '../services/artistService';
+import { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
 import artistsData, { artistFormats, framePriceByFormat } from '../data/artists';
 import { useArtists } from '../hooks/useArtists';
@@ -144,17 +144,43 @@ function ArtistGalleryManager() {
     return img(src);
   };
 
-  // Hero image - lue depuis user_metadata
+  // Hero image - lue depuis user_metadata + push CMS Strapi
+  // FIX-FACADE (10 mai 2026) : avant ce fix, handleSetHero ecrivait dans
+  // user_role.heroImageId via api.put silent (catch ignored) et dans
+  // Supabase user_metadata, mais JAMAIS dans le CMS Strapi. Resultat :
+  // l'artiste voyait "Image hero mise a jour!" alors que la page publique
+  // ne la voyait jamais. Maintenant : on push direct au CMS via
+  // createEditRequest update-profile (auto-applique cote backend, cf
+  // applyProfileChange case update-profile + heroImageId). Erreurs
+  // propagees a l'UI pour vrai feedback.
   const currentHeroId = user?.user_metadata?.artist_hero_image || null;
   const handleSetHero = async (itemId) => {
     try {
-      await updateProfile({ artist_hero_image: itemId });
-      // Sauvegarder aussi dans le backend pour la page publique
-      api.put('/user-roles/artist-data', { email, heroImageId: itemId }).catch(() => {});
+      // 1. Persiste dans Supabase user_metadata (multi-appareil + state local)
+      const { error: profileErr } = await updateProfile({ artist_hero_image: itemId });
+      if (profileErr) throw profileErr;
+
+      // 2. Push direct au CMS via createEditRequest auto-applique. Si ca
+      // foire, on le sait : l'erreur remonte au catch et on affiche
+      // "Erreur sauvegarde CMS" au lieu d'un faux succes.
+      await createEditRequest({
+        artistSlug,
+        artistName: artistName || artistSlug,
+        email,
+        requestType: 'update-profile',
+        changeData: { heroImageId: itemId },
+      });
+
       setSuccess(tx({ fr: 'Image hero mise a jour!', en: 'Hero image updated!', es: 'Imagen hero actualizada!' }));
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError(tx({ fr: 'Erreur', en: 'Error', es: 'Error' }));
+      const detail = err?.response?.data?.error?.message || err?.message || '';
+      setError(tx({
+        fr: `Erreur sauvegarde CMS${detail ? ' : ' + detail : ''}`,
+        en: `CMS save error${detail ? ': ' + detail : ''}`,
+        es: `Error al guardar CMS${detail ? ': ' + detail : ''}`,
+      }));
+      setTimeout(() => setError(''), 5000);
     }
   };
 
@@ -200,22 +226,57 @@ function ArtistGalleryManager() {
     }
   };
 
-  // Renommer un item (sauvegarde locale + message admin)
+  // Renommer un item (push CMS Strapi via rename-item auto-applique)
+  // FIX-FACADE (10 mai 2026) : avant ce fix, handleRename faisait :
+  //   - api.put('/user-roles/...').catch(() => {})  -> silent
+  //   - updateProfile().catch(() => {})  -> silent
+  //   - sendArtistMessage({ subject: 'Renommage: ...' }).catch(() => {})
+  //     -> facade : message admin manuel pour quelque chose qui devrait
+  //     etre auto-applique. L'admin recevait un message sans action
+  //     possible (pas de bouton "appliquer", c'etait juste pour info).
+  // Le backend a deja un case rename-item dans applyProfileChange qui
+  // update directement le CMS (artist[fieldName][idx].titleFr/En = newTitle).
+  // Maintenant : on utilise createEditRequest('rename-item') qui declenche
+  // l'auto-apply. Erreurs propagees a l'UI.
   const handleRename = async (itemId, category) => {
     if (!renameValue.trim()) { setRenamingId(null); return; }
     const newName = renameValue.trim();
     const meta = user?.user_metadata || {};
     const saved = { ...(meta.artist_renames || {}), [itemId]: newName };
 
-    // Tout est non-bloquant - le rename reussit toujours cote UI
-    api.put('/user-roles/artist-data', { email, itemRenames: saved }).catch(() => {});
-    updateProfile({ artist_renames: saved }).catch(() => {});
-    sendArtistMessage({ artistSlug, artistName: artistName || artistSlug, email, subject: `Renommage: ${itemId}`, message: `Renommer "${itemId}" en "${newName}" (${category})`, category: 'other' }).catch(() => {});
+    // Persist user_metadata Supabase pour le state local (best-effort,
+    // si ca foire on continue car le CMS push est ce qui compte vraiment).
+    updateProfile({ artist_renames: saved }).catch(err => {
+      console.warn('[ArtistGallery] artist_renames meta save failed:', err?.message);
+    });
 
-    setRenamingId(null);
-    setRenameValue('');
-    setSuccess(tx({ fr: `Renomme: "${newName}"`, en: `Renamed: "${newName}"`, es: `Renombrado: "${newName}"` }));
-    setTimeout(() => setSuccess(''), 4000);
+    // Push CMS Strapi : c'est CA qui doit reussir pour que la page publique
+    // affiche le nouveau titre. Erreurs propagees vers l'UI.
+    try {
+      await createEditRequest({
+        artistSlug,
+        artistName: artistName || artistSlug,
+        email,
+        requestType: 'rename-item',
+        changeData: {
+          itemId,
+          newTitle: newName,
+          field: category, // 'prints' | 'stickers' | 'merch'
+        },
+      });
+      setRenamingId(null);
+      setRenameValue('');
+      setSuccess(tx({ fr: `Renomme: "${newName}"`, en: `Renamed: "${newName}"`, es: `Renombrado: "${newName}"` }));
+      setTimeout(() => setSuccess(''), 4000);
+    } catch (err) {
+      const detail = err?.response?.data?.error?.message || err?.message || '';
+      setError(tx({
+        fr: `Erreur renommage CMS${detail ? ' : ' + detail : ''}`,
+        en: `Rename error${detail ? ': ' + detail : ''}`,
+        es: `Error al renombrar${detail ? ': ' + detail : ''}`,
+      }));
+      setTimeout(() => setError(''), 5000);
+    }
   };
 
   // Prix minimum pour piece unique/privee = prix du format + tier choisis

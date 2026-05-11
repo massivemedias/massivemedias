@@ -913,15 +913,22 @@ async function applyProfileChange(strapi: any, artistSlug: string, requestType: 
       break;
     case 'update-profile':
       if (changeData.name) updateData.name = changeData.name;
-      // FIX (10 mai 2026) : update-profile accepte aussi un slug explicite
-      // pour permettre les renames d'URL controles. Sans ca, on ne pouvait
-      // jamais corriger un mauvais slug derive (cas Gallium qui s'est
-      // retrouve sous "gallium-beaumer" au lieu de "gallium" suite a un
-      // bug du lifecycle autoSlugify - maintenant fixe via lifecycles.ts).
       if (changeData.slug) updateData.slug = changeData.slug;
       if (changeData.taglineFr !== undefined) updateData.taglineFr = changeData.taglineFr;
       if (changeData.taglineEn !== undefined) updateData.taglineEn = changeData.taglineEn;
       if (changeData.taglineEs !== undefined) updateData.taglineEs = changeData.taglineEs;
+      // FIX (10 mai 2026 - audit anti-facade) : heroImage etait stockee
+      // uniquement dans user_role.heroImageId (silent) + Supabase
+      // user_metadata, JAMAIS pushee au CMS Strapi. Resultat : ArtistGallery
+      // setHero affichait "Image hero mise a jour" alors que la page
+      // publique ne la voyait jamais. Maintenant : si heroImageId est
+      // envoye, on le persiste dans le champ socials.heroImageId du CMS
+      // (le frontend ArtisteDetail merge socials.heroImageId pour resoudre
+      // l'image source depuis prints/stickers/merch list).
+      if (changeData.heroImageId) {
+        const existingSocials = (artist.socials as Record<string, any>) || {};
+        updateData.socials = { ...existingSocials, heroImageId: changeData.heroImageId };
+      }
       break;
     case 'rename-item': {
       const { itemId, newTitle, field } = changeData;
