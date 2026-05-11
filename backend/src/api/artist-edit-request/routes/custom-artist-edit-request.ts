@@ -42,5 +42,16 @@ export default {
       handler: 'artist-edit-request.uploadDirect',
       config: { auth: false },
     },
+    // EMERGENCY CLEANUP (11 mai 2026) : route pour supprimer en bulk les
+    // edit-requests + artist-messages crees en spam par un retry loop
+    // background. Restrictions strictes (artistSlug + email + status +
+    // window de creation < 12h max) pour eviter abus. Cf. handler
+    // bulkCleanupSpam dans le controller.
+    {
+      method: 'POST',
+      path: '/artist-edit-requests/bulk-cleanup-spam',
+      handler: 'artist-edit-request.bulkCleanupSpam',
+      config: { auth: false },
+    },
   ],
 };

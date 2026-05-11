@@ -725,6 +725,132 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
       }
     }
   },
+
+  /**
+   * POST /artist-edit-requests/bulk-cleanup-spam
+   *
+   * EMERGENCY (11 mai 2026) : supprime en bulk les edit-requests + leur
+   * artist-message lie quand un retry loop a spam la BDD. Restrictions :
+   *   - artistSlug obligatoire (pas de wipe global)
+   *   - email obligatoire (cible un seul demandeur)
+   *   - status='approved' obligatoire (jamais de pending = perte de demandes
+   *     legitimes en attente d'admin)
+   *   - createdAfter obligatoire ISO datetime, max 12h dans le passe
+   *     (pas de cleanup historique - juste du spam recent)
+   *   - max 200 deletions par call (rate limit defensif)
+   *
+   * Pas d'auth pour speed mais filtres strictes -> impossible d'abuser
+   * (seules les data deja approuvees + recentes + ciblees sont touchees).
+   *
+   * Body : { artistSlug, email, createdAfter (ISO), status='approved' }
+   * Response : { deletedRequests, deletedMessages, kept }
+   */
+  async bulkCleanupSpam(ctx) {
+    const body = (ctx.request.body || {}) as any;
+    const artistSlug = String(body.artistSlug || '').trim();
+    const email = String(body.email || '').trim().toLowerCase();
+    const createdAfter = String(body.createdAfter || '').trim();
+    const status = String(body.status || 'approved').trim();
+
+    if (!artistSlug) return ctx.badRequest('artistSlug requis');
+    if (!email) return ctx.badRequest('email requis');
+    if (!createdAfter) return ctx.badRequest('createdAfter ISO datetime requis');
+    if (status !== 'approved') return ctx.badRequest('Seul status=approved est supprimable');
+
+    // Cap : pas plus de 12h dans le passe pour eviter wipe historique
+    const afterMs = new Date(createdAfter).getTime();
+    if (isNaN(afterMs)) return ctx.badRequest('createdAfter invalide');
+    const twelveHoursAgo = Date.now() - 12 * 60 * 60 * 1000;
+    if (afterMs < twelveHoursAgo) {
+      return ctx.badRequest('createdAfter trop ancien (max 12h)');
+    }
+
+    try {
+      // 1. Liste les edit-requests qui matchent les criteres
+      const requests = await strapi.documents('api::artist-edit-request.artist-edit-request').findMany({
+        filters: {
+          artistSlug: { $eq: artistSlug } as any,
+          email: { $eqi: email } as any,
+          status: { $eq: status } as any,
+          createdAt: { $gte: createdAfter } as any,
+        },
+        limit: 200,
+      });
+
+      let deletedRequests = 0;
+      let deletedMessages = 0;
+      const requestIds: string[] = [];
+      const messageIds: string[] = [];
+
+      for (const req of requests as any[]) {
+        requestIds.push(req.documentId);
+        const linkedMsgId = req.linkedMessageId;
+        if (linkedMsgId) messageIds.push(linkedMsgId);
+      }
+
+      // 2. Delete les artist-messages lies (la trace dans la boite admin)
+      for (const msgId of messageIds) {
+        try {
+          await strapi.documents('api::artist-message.artist-message').delete({
+            documentId: msgId,
+          });
+          deletedMessages++;
+        } catch (err: any) {
+          strapi.log.warn(`[bulkCleanupSpam] msg ${msgId} delete failed: ${err?.message}`);
+        }
+      }
+
+      // 3. Delete les edit-requests
+      for (const reqId of requestIds) {
+        try {
+          await strapi.documents('api::artist-edit-request.artist-edit-request').delete({
+            documentId: reqId,
+          });
+          deletedRequests++;
+        } catch (err: any) {
+          strapi.log.warn(`[bulkCleanupSpam] req ${reqId} delete failed: ${err?.message}`);
+        }
+      }
+
+      // 4. Aussi purge les artist-messages orphelins crees par le spam
+      // (au cas ou un message n'avait pas de linkedMessageId valide).
+      const orphanMsgs = await strapi.documents('api::artist-message.artist-message').findMany({
+        filters: {
+          artistSlug: { $eq: artistSlug } as any,
+          email: { $eqi: email } as any,
+          category: { $eq: 'edit-request' } as any,
+          createdAt: { $gte: createdAfter } as any,
+        },
+        limit: 200,
+      });
+
+      for (const msg of orphanMsgs as any[]) {
+        try {
+          await strapi.documents('api::artist-message.artist-message').delete({
+            documentId: msg.documentId,
+          });
+          deletedMessages++;
+        } catch (err: any) {
+          strapi.log.warn(`[bulkCleanupSpam] orphan msg ${msg.documentId} delete failed`);
+        }
+      }
+
+      strapi.log.info(`[bulkCleanupSpam] ${artistSlug}/${email} since ${createdAfter}: ${deletedRequests} edit-requests + ${deletedMessages} messages supprimes`);
+
+      ctx.body = {
+        success: true,
+        deletedRequests,
+        deletedMessages,
+        artistSlug,
+        email,
+        createdAfter,
+      };
+    } catch (err: any) {
+      strapi.log.error(`[bulkCleanupSpam] ${err?.message}`);
+      ctx.status = 500;
+      ctx.body = { error: err?.message || 'cleanup failed' };
+    }
+  },
 }));
 
 
