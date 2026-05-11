@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { ShoppingCart, Check, Sparkles, Info, Scissors, Loader2 } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, Info, Scissors, Loader2, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -17,12 +17,43 @@ import { removeBackground } from '../../utils/removeBg';
 // Image par defaut quand le client n'a rien upload (logo Massive Medias)
 const DEFAULT_STICKER_URL = '/images/graphism/massive_sticker.webp';
 
+// Classe Tailwind reutilisable pour tous les <select> natifs. Look custom :
+// appearance-none + caret chevron Lucide overlay positionne en absolute via
+// le wrapper. Padding right plus large pour ne pas chevaucher le chevron.
+const SELECT_CLASS = 'w-full appearance-none bg-black/20 border-2 border-grey-muted/20 hover:border-grey-muted/40 focus:border-accent rounded-lg px-3 py-2.5 pr-9 text-sm text-heading transition-colors cursor-pointer focus:outline-none';
+
+function SelectControl({ label, value, onChange, options, getOptionLabel }) {
+  return (
+    <div>
+      <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={SELECT_CLASS}
+        >
+          {options.map((opt) => (
+            <option key={opt.id} value={opt.id} className="bg-black text-white">
+              {getOptionLabel(opt)}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={16}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none"
+        />
+      </div>
+    </div>
+  );
+}
+
 function ConfiguratorStickers({ onFinishChange }) {
   const { tx } = useLang();
   const { addToCart } = useCart();
   // PRIX-HARDCODE : on lit UNIQUEMENT les labels (finitions, formes, tailles) depuis le CMS.
-  // Les prix et paliers sont STRICTEMENT hardcodes dans data/products.js pour que le
-  // frontend soit totalement decouple du backend/CMS sur la grille tarifaire.
+  // Les prix et paliers sont strictement hardcodes dans data/products.js.
   const cmsProduct = useProduct('stickers');
   const pd = cmsProduct?.pricingData;
 
@@ -34,45 +65,27 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [shape, setShape] = useState('diecut');
   const [size, setSize] = useState('2.5in');
   const [qtyIndex, setQtyIndex] = useState(0);
-  // CUSTOM-QTY (5 mai 2026) : input libre du client. Quand non vide et valide
-  // (>= 25), il PRIME sur qtyIndex et le prix est calcule par interpolation
-  // lineaire entre les paliers via lookupStickerPriceCustomQty.
-  // Format : string pour permettre la saisie progressive ('1' -> '15' -> '150').
-  // Vide ('') = mode palier classique (les boutons gerent qtyIndex).
   const [customQty, setCustomQty] = useState('');
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
   const [strokeColor, setStrokeColor] = useState('#ffffff');
   const [strokeWidth, setStrokeWidth] = useState(0);
-  const [localPreviewUrl, setLocalPreviewUrl] = useState(null); // preview derive des fichiers upload
-  const [thumbUrl, setThumbUrl] = useState(null); // thumb PNG genere par le canvas
+  const [localPreviewUrl, setLocalPreviewUrl] = useState(null);
+  const [thumbUrl, setThumbUrl] = useState(null);
 
-  // REMOVE-BG (10 mai 2026) : detourage IA in-browser via @imgly/background-removal.
-  // Quand activeRemoveBg = true ET qu'on a une image source, on appelle la lib
-  // (lazy-loaded) qui charge un model WASM/ONNX et detoure le sujet. Le resultat
-  // est un PNG transparent stocke dans bgRemovedUrl. C'est CETTE URL qui est
-  // ensuite passee au StickerPreviewCanvas, donc le calcul du stroke s'applique
-  // sur le sujet detoure (le contour epouse la silhouette au lieu d'un rectangle).
+  // REMOVE-BG : detourage IA in-browser via @imgly/background-removal.
   const [activeRemoveBg, setActiveRemoveBg] = useState(false);
   const [isRemovingBg, setIsRemovingBg] = useState(false);
   const [bgRemovedUrl, setBgRemovedUrl] = useState(null);
   const [bgRemoveError, setBgRemoveError] = useState(null);
-  // Track la derniere URL traitee pour eviter re-process si rien n'a change.
   const lastProcessedRef = useRef(null);
 
-  // PRIX-HARDCODE : on IGNORE pd?.tiers. La grille officielle vit uniquement dans
-  // data/products.js. Aucun override CMS/API possible depuis avril 2026.
-  // FIX-PRICING-TIERS (27 avril 2026) : on PASSE maintenant `size` a getStickerPrice
-  // pour que le prix reflete le palier de taille (Standard/Medium/Large). React
-  // re-render automatiquement quand `size` change dans le state -> prix dynamique.
   const getStickerPrice = defaultGetPrice;
   const tiers = defaultTiers;
   const currentTier = tiers[qtyIndex] || tiers[0];
 
-  // CUSTOM-QTY-RESOLVE : si customQty saisie >= 25, on remplace priceInfo par
-  // l'interpolation. Sinon mode palier classique. useMemo evite recalcul a
-  // chaque keystroke pour les autres deps.
+  // Prix custom interpole entre les paliers quand customQty >= 25.
   const customPriceInfo = useMemo(() => {
     if (!customQty || String(customQty).trim() === '') return null;
     return lookupStickerPriceCustomQty(finish, customQty, size);
@@ -83,31 +96,23 @@ function ConfiguratorStickers({ onFinishChange }) {
   const shapeLabel = stickerShapes.find(s => s.id === shape);
   const sizeLabel = stickerSizes.find(s => s.id === size)?.label;
 
-  // Image source du preview, ordre de priorite :
-  // 1. bgRemovedUrl (detourage IA actif et termine) - le canvas applique le
-  //    stroke sur la silhouette du sujet, pas sur le rectangle de l'image
-  // 2. localPreviewUrl (upload client brut)
-  // 3. DEFAULT_STICKER_URL (logo Massive Medias par defaut)
+  // Source du preview : bgRemovedUrl > localPreviewUrl > default.
   const previewSource = useMemo(() => {
     if (activeRemoveBg && bgRemovedUrl) return bgRemovedUrl;
     return localPreviewUrl || DEFAULT_STICKER_URL;
   }, [activeRemoveBg, bgRemovedUrl, localPreviewUrl]);
 
-  // REMOVE-BG effect : declenche le detourage IA quand le toggle est active.
-  // Skip si pas d'upload (pas de sens sur le sticker default), ou si on a
-  // deja traite cette URL (cache via lastProcessedRef).
+  // Detourage IA quand le toggle est active.
   useEffect(() => {
     if (!activeRemoveBg) {
       setIsRemovingBg(false);
       return;
     }
     if (!localPreviewUrl) {
-      // Toggle active mais pas d'image -> on attend l'upload
       setBgRemovedUrl(null);
       setBgRemoveError(null);
       return;
     }
-    // Deja traite cette image en mode IA -> rien a faire
     if (lastProcessedRef.current === localPreviewUrl && bgRemovedUrl) return;
 
     let cancelled = false;
@@ -123,7 +128,6 @@ function ConfiguratorStickers({ onFinishChange }) {
         if (cancelled) return;
         console.error('[ConfiguratorStickers] removeBackground failed:', err);
         setBgRemoveError(err?.message || 'Detourage echoue');
-        // Fallback : on garde l'image originale au lieu de bloquer le user
         setBgRemovedUrl(null);
       })
       .finally(() => {
@@ -135,7 +139,6 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
 
-  // Sync du preview avec les fichiers upload
   const handleFilesChange = (files) => {
     setUploadedFiles(files);
     const firstImage = files.find(f => (f.type || '').startsWith('image/') || /\.(png|jpe?g|webp|svg)$/i.test(f.name || ''));
@@ -149,35 +152,34 @@ function ConfiguratorStickers({ onFinishChange }) {
       productName: tx({ fr: 'Sticker Custom', en: 'Custom Sticker', es: 'Sticker Personalizado' }),
       finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn }),
       shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn }),
-      size: sizeLabel, // affichage label (ex: '3"')
-      sizeId: size,    // id stable pour le recalcul (ex: '3in')
+      size: sizeLabel,
+      sizeId: size,
       quantity: priceInfo.qty,
       unitPrice: priceInfo.unitPrice,
       totalPrice: priceInfo.price,
-      // image = thumb PNG genere avec FX. Fallback sur une image statique si le canvas n'a pas encore produit.
       image: thumbUrl || stickerImages[0],
       uploadedFiles,
       notes,
-      fxPreview: {
-        finish,
-        shape,
-        size,
-        strokeColor,
-        strokeWidth,
-        hasCustomDesign: !!localPreviewUrl,
-      },
+      fxPreview: { finish, shape, size, strokeColor, strokeWidth, hasCustomDesign: !!localPreviewUrl },
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
 
+  // Options du select Quantite : 5 paliers + une option "Custom".
+  // qtyValue == 'custom' active l'input libre en dessous.
+  const qtyValue = customQty && customPriceInfo ? 'custom' : String(qtyIndex);
+
   return (
     <>
-      {/* Preview canvas + selectors */}
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-4 md:mb-6">
-        {/* Preview (canvas avec FX live) */}
-        <div className="md:w-72 flex-shrink-0 md:self-start">
-          <div className="rounded-xl p-3 md:p-4">
+      {/* LAYOUT-V3 (11 mai 2026) : grid 2/3 - 1/3 sur desktop pour donner
+          la majorite de l'espace au preview du sticker. Le tilt 3D + FX
+          live sont visibles a grande echelle, les controles sont compacts
+          en colonne droite via des selects natifs. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 lg:gap-7 mb-4">
+        {/* ============ PREVIEW (col gauche, grand) ============ */}
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-2xl p-3 md:p-4 lg:p-6 bg-black/10">
             <StickerPreviewCanvas
               imageUrl={previewSource}
               shape={shape}
@@ -185,10 +187,11 @@ function ConfiguratorStickers({ onFinishChange }) {
               strokeColor={strokeColor}
               strokeWidth={strokeWidth}
               onThumbChange={setThumbUrl}
-              className="w-full"
+              enableTilt
+              className="w-full max-w-lg mx-auto"
             />
-            <div className="mt-3 text-center">
-              <span className="text-heading text-sm font-semibold">
+            <div className="mt-4 text-center">
+              <span className="text-heading text-base font-semibold">
                 {tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
               </span>
               <span className="block text-grey-muted text-sm mt-0.5">
@@ -196,218 +199,123 @@ function ConfiguratorStickers({ onFinishChange }) {
               </span>
             </div>
 
-            {/* Controles stroke (contour) */}
-            <div className="mt-3 p-2.5 rounded-lg bg-black/10 space-y-2">
-              <label className="block text-sm uppercase tracking-wider text-grey-muted font-semibold">
-                {tx({ fr: 'Contour (optionnel)', en: 'Outline (optional)', es: 'Contorno (opcional)' })}
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={strokeColor}
-                  onChange={(e) => setStrokeColor(e.target.value)}
-                  className="w-7 h-7 rounded cursor-pointer bg-transparent border border-white/10"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="40"
-                  step="1"
-                  value={strokeWidth}
-                  onChange={(e) => setStrokeWidth(parseInt(e.target.value))}
-                  className="flex-1 accent-accent"
-                />
-                <span className="text-sm font-mono text-grey-muted w-6 text-right">{strokeWidth}</span>
-              </div>
-            </div>
-
-            {/* REMOVE-BG (10 mai 2026) : toggle de detourage IA. La case
-                n'apparait que si un upload est dispo (pas de sens sur le
-                sticker default qui a deja un fond transparent). Quand
-                cochee, l'image est passee dans @imgly/background-removal
-                et le contour epouse la silhouette du sujet. */}
+            {/* Toggle Retirer l'arriere-plan : visible dans la zone preview
+                pour etre accessible des qu'un upload est presente. */}
             {localPreviewUrl && (
-              <div className="mt-2 p-2.5 rounded-lg bg-black/10">
-                <label className="flex items-start gap-2.5 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={activeRemoveBg}
-                    onChange={(e) => setActiveRemoveBg(e.target.checked)}
-                    disabled={isRemovingBg}
-                    className="mt-0.5 w-4 h-4 rounded accent-accent cursor-pointer disabled:cursor-wait flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <Scissors size={13} className="text-accent flex-shrink-0" />
-                      <span className="text-sm text-heading font-semibold leading-tight">
-                        {tx({
-                          fr: 'Détourer l\'image (Remove Background)',
-                          en: 'Remove background (cut subject)',
-                          es: 'Recortar imagen (sin fondo)',
-                        })}
-                      </span>
-                      {isRemovingBg && (
-                        <span className="inline-flex items-center gap-1 text-xs text-accent">
-                          <Loader2 size={12} className="animate-spin" />
-                          {tx({ fr: 'Détourage...', en: 'Cutting...', es: 'Recortando...' })}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-grey-muted mt-0.5 leading-snug">
-                      {tx({
-                        fr: 'Le contour épousera la forme du sujet, pas le rectangle.',
-                        en: 'The outline will follow the subject shape, not the rectangle.',
-                        es: 'El contorno seguirá la forma del sujeto, no el rectángulo.',
-                      })}
-                    </p>
-                    {bgRemoveError && (
-                      <p className="text-xs text-red-400 mt-1">
-                        {tx({ fr: 'Erreur : ', en: 'Error: ', es: 'Error: ' })}{bgRemoveError}
-                      </p>
-                    )}
-                  </div>
-                </label>
+              <div className="mt-4 mx-auto max-w-md">
+                <button
+                  onClick={() => setActiveRemoveBg((v) => !v)}
+                  disabled={isRemovingBg}
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all border-2 ${
+                    activeRemoveBg
+                      ? 'border-accent bg-accent/10 text-accent'
+                      : 'border-grey-muted/20 hover:border-grey-muted/40 text-heading'
+                  } disabled:opacity-60 disabled:cursor-wait`}
+                >
+                  {isRemovingBg ? (
+                    <>
+                      <Loader2 size={15} className="animate-spin" />
+                      {tx({ fr: 'Detourage en cours...', en: 'Removing background...', es: 'Recortando...' })}
+                    </>
+                  ) : (
+                    <>
+                      <Scissors size={15} />
+                      {activeRemoveBg
+                        ? tx({ fr: 'Arriere-plan retire', en: 'Background removed', es: 'Fondo eliminado' })
+                        : tx({ fr: "Retirer l'arriere-plan", en: 'Remove background', es: 'Quitar fondo' })}
+                    </>
+                  )}
+                </button>
+                {bgRemoveError && (
+                  <p className="text-xs text-red-400 mt-1.5 text-center">
+                    {tx({ fr: 'Erreur : ', en: 'Error: ', es: 'Error: ' })}{bgRemoveError}
+                  </p>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Right: Selectors */}
-        <div className="flex-1 min-w-0 space-y-4 md:space-y-5">
-          {/* Votre design + Finition (cote a cote) */}
-          {/* FIX-UI (5 mai 2026) : on retire le label "Votre design (haute def)"
-              ET le preview image upload parce que le preview cote gauche
-              affiche deja exactement le meme visuel. Le user voit juste le
-              nom du fichier (FileUpload en mode compact + hidePreview).
-              Strict DRY : 2 previews du meme image en parallele = bruit. */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-3 md:gap-4 items-start">
+        {/* ============ CONTROLES (col droite, compact) ============ */}
+        <div className="space-y-3">
+          {/* Upload du design */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+              {tx({ fr: 'Design', en: 'Design', es: 'Diseno' })}
+            </label>
             <FileUpload
               files={uploadedFiles}
               onFilesChange={handleFilesChange}
               compact
               hidePreview
             />
-            <div>
-              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-                {tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
-              </label>
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
-                {stickerFinishes.map(f => (
-                  <button
-                    key={f.id}
-                    onClick={() => { setFinish(f.id); onFinishChange?.(f.id); }}
-                    className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-lg text-xs font-medium transition-all border-2 ${finish === f.id
-                      ? 'border-accent option-selected'
-                      : 'border-transparent hover:border-grey-muted/30 option-default'
-                    }`}
-                  >
-                    <span className={`w-3.5 h-3.5 rounded-full mb-1 border ${
-                      f.id === 'matte' ? 'bg-gradient-to-br from-gray-300 to-gray-400 border-gray-500' :
-                      f.id === 'glossy' ? 'bg-white border-gray-300 shadow-sm' :
-                      f.id === 'holographic' ? 'bg-gradient-to-br from-pink-300 via-purple-300 to-cyan-300 border-transparent' :
-                      f.id === 'broken-glass' ? 'bg-gradient-to-br from-cyan-200 via-white to-cyan-400 border-cyan-300' :
-                      f.id === 'stars' ? 'bg-gradient-to-br from-yellow-200 via-amber-300 to-yellow-400 border-yellow-300' :
-                      f.id === 'dots' ? 'bg-gradient-to-br from-orange-200 via-rose-300 to-pink-400 border-rose-300' :
-                      'bg-white/80 border-gray-300'
-                    }`} />
-                    <span className="text-heading leading-tight text-center font-semibold text-[11px]">
-                      {tx({ fr: f.labelFr.replace('Vinyle ', ''), en: f.labelEn.replace(' Vinyl', ''), es: f.labelEn.replace(' Vinyl', '') })}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
-          {/* Taille - grille 4 egale */}
-          <div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
-              {tx({ fr: 'Taille', en: 'Size', es: 'Tamaño' })}
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {stickerSizes.map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => setSize(s.id)}
-                  className={`py-3 px-2 rounded-lg text-sm font-semibold transition-all border-2 ${size === s.id
-                    ? 'border-accent text-heading option-selected'
-                    : 'border-transparent text-heading hover:border-grey-muted/30 option-default'
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-            {/* FIX-PRICING-TIERS (27 avril 2026) : helper qui explique les 3
-                paliers de prix selon la taille. Avant : tous formats au meme
-                prix (devenu FAUX avec la refonte). Maintenant : 3 paliers
-                (Standard <=2.5", Medium <=3.5", Large <=5") avec une grille
-                de prix par palier. Le helper indique le palier actuel actif. */}
-            <p className="mt-2 flex items-start gap-1.5 text-[11px] text-grey-muted leading-relaxed">
-              <Info size={11} className="text-accent flex-shrink-0 mt-0.5" />
-              <span>
-                {priceInfo?.tier === 'large' ? (
-                  tx({
-                    fr: 'Palier Large (jusqu\'a 5"). Prix calcule selon la dimension la plus large de ton design.',
-                    en: 'Large tier (up to 5"). Price based on the longest dimension of your design.',
-                    es: 'Nivel Large (hasta 5"). Precio según la dimensión más larga de tu diseño.',
-                  })
-                ) : priceInfo?.tier === 'medium' ? (
-                  tx({
-                    fr: 'Palier Medium (jusqu\'a 3.5"). Prix calcule selon la dimension la plus large de ton design.',
-                    en: 'Medium tier (up to 3.5"). Price based on the longest dimension of your design.',
-                    es: 'Nivel Medium (hasta 3.5"). Precio según la dimensión más larga de tu diseño.',
-                  })
-                ) : (
-                  tx({
-                    fr: 'Palier Standard (jusqu\'a 2.5"). Prix calcule selon la dimension la plus large de ton design.',
-                    en: 'Standard tier (up to 2.5"). Price based on the longest dimension of your design.',
-                    es: 'Nivel Standard (hasta 2.5"). Precio según la dimensión más larga de tu diseño.',
-                  })
-                )}
-              </span>
-            </p>
-          </div>
+          {/* Finition - select natif */}
+          <SelectControl
+            label={tx({ fr: 'Finition', en: 'Finish', es: 'Acabado' })}
+            value={finish}
+            onChange={(v) => { setFinish(v); onFinishChange?.(v); }}
+            options={stickerFinishes}
+            getOptionLabel={(f) => tx({ fr: f.labelFr, en: f.labelEn, es: f.labelEn })}
+          />
 
-          {/* QTY-GRID-V2 (7 mai 2026) : grille unifiee 6 cellules = 5 paliers
-              presets + 1 cellule "Quantite personnalisee". L'ancien input
-              full-width sous la grille a ete fusionne dans la 6e case pour
-              gagner de l'espace vertical et garder le meme design carre. */}
-          <div>
-            <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2.5">
-              {tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })}
-            </label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {tiers.map((tier, i) => {
-                const p = getStickerPrice(finish, shape, tier.qty, size);
-                const isActive = !customPriceInfo && qtyIndex === i;
-                return (
-                  <button
-                    key={tier.qty}
-                    onClick={() => {
-                      setQtyIndex(i);
-                      setCustomQty('');
-                    }}
-                    className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg transition-all border-2 ${isActive
-                      ? 'border-accent option-selected'
-                      : 'border-transparent hover:border-grey-muted/30 option-default'
-                    }`}
-                  >
-                    <span className="text-heading font-bold text-sm">{tier.qty}</span>
-                    <span className="text-grey-muted mt-0.5 text-sm">{p ? `${money(p.unitPrice)}$/u` : ''}</span>
-                  </button>
-                );
-              })}
+          {/* Forme - select natif */}
+          <SelectControl
+            label={tx({ fr: 'Forme', en: 'Shape', es: 'Forma' })}
+            value={shape}
+            onChange={setShape}
+            options={stickerShapes}
+            getOptionLabel={(s) => tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
+          />
 
-              {/* 6e cellule : Quantite personnalisee (memo design carre).
-                  Active visuellement quand customPriceInfo existe, prix par
-                  interpolation lineaire entre paliers (lookupStickerPriceCustomQty). */}
-              <div
-                className={`flex flex-col items-center justify-center py-2 px-1.5 rounded-lg transition-all border-2 ${customPriceInfo
-                  ? 'border-accent option-selected'
-                  : 'border-transparent option-default'
-                }`}
+          {/* Taille - select natif */}
+          <SelectControl
+            label={tx({ fr: 'Taille', en: 'Size', es: 'Tamano' })}
+            value={size}
+            onChange={setSize}
+            options={stickerSizes}
+            getOptionLabel={(s) => s.label}
+          />
+
+          {/* Quantite - select avec paliers + option Custom */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+              {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
+            </label>
+            <div className="relative">
+              <select
+                value={qtyValue}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === 'custom') {
+                    if (!customQty) setCustomQty('25');
+                  } else {
+                    setQtyIndex(parseInt(v, 10));
+                    setCustomQty('');
+                  }
+                }}
+                className={SELECT_CLASS}
               >
+                {tiers.map((tier, i) => {
+                  const p = getStickerPrice(finish, shape, tier.qty, size);
+                  return (
+                    <option key={tier.qty} value={String(i)} className="bg-black text-white">
+                      {tier.qty} · {p ? `${money(p.unitPrice)}$/u` : ''} · {p ? formatPrice(p.price) : ''}
+                    </option>
+                  );
+                })}
+                <option value="custom" className="bg-black text-white">
+                  {tx({ fr: 'Personnalisee (min. 25)', en: 'Custom (min. 25)', es: 'Personalizada (min. 25)' })}
+                </option>
+              </select>
+              <ChevronDown
+                size={16}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none"
+              />
+            </div>
+            {qtyValue === 'custom' && (
+              <div className="mt-2 flex items-center gap-2">
                 <input
                   type="number"
                   min="25"
@@ -418,133 +326,123 @@ function ConfiguratorStickers({ onFinishChange }) {
                     const cleaned = e.target.value.replace(/[^0-9]/g, '');
                     setCustomQty(cleaned);
                   }}
-                  placeholder={tx({ fr: 'Custom', en: 'Custom', es: 'Custom' })}
-                  aria-label={tx({ fr: 'Quantite personnalisee (min 25)', en: 'Custom quantity (min 25)', es: 'Cantidad personalizada' })}
-                  className="w-full text-center text-heading font-bold text-sm bg-transparent border-0 focus:outline-none focus:ring-0 placeholder:text-grey-muted/80 placeholder:font-normal"
+                  placeholder="25"
+                  className="flex-1 bg-black/20 border-2 border-grey-muted/20 focus:border-accent rounded-lg px-3 py-2 text-sm text-heading focus:outline-none"
                 />
-                {customQty && customPriceInfo ? (
-                  <span className="text-accent mt-0.5 text-sm font-semibold">
-                    {money(customPriceInfo.unitPrice)}$/u
-                  </span>
-                ) : customQty ? (
-                  <span className="text-yellow-400 mt-0.5 text-[11px]">
-                    {tx({ fr: 'Min. 25', en: 'Min. 25', es: 'Mín. 25' })}
-                  </span>
-                ) : (
-                  <span className="text-grey-muted mt-0.5 text-[11px]">
-                    {tx({ fr: 'Personnalisé', en: 'Custom', es: 'Personal.' })}
-                  </span>
-                )}
-              </div>
-            </div>
-            <p className="text-xs text-grey-muted mt-2 leading-relaxed">
-              {tx({
-                fr: 'Cellule "Custom" : tarif calculé entre les paliers (interpolation linéaire, min. 25).',
-                en: '"Custom" cell: price calculated between tiers (linear interpolation, min. 25).',
-                es: 'Celda "Custom": precio interpolado entre niveles (mín. 25).',
-              })}
-            </p>
-          </div>
-
-          {/* LAYOUT-V2 (7 mai 2026) : 3 colonnes sur lg+ (Notes / Prix / Actions),
-              stack vertical sur mobile/tablette. Les actions (Ajouter / Voir
-              panier) restent w-full sur mobile pour le tap au pouce mais
-              passent en colonne compacte a droite du Prix sur desktop. */}
-          <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] lg:grid-cols-[3fr_2fr_auto] gap-3 md:gap-4 items-start">
-            <div>
-              <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-                {tx({ fr: 'Notes / Description', en: 'Notes / Description', es: 'Notas / Descripción' })}
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                placeholder={tx({ fr: 'Décrivez le produit souhaité (couleurs, style, details...)', en: 'Describe the desired product (colors, style, details...)', es: 'Describe el producto deseado (colores, estilo, detalles...)' })}
-                className="w-full min-h-[80px] md:min-h-[100px] rounded-lg border-2 border-grey-muted/20 bg-transparent px-3 py-2.5 md:px-4 md:py-3 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
-              />
-            </div>
-            {priceInfo && (
-              <div className="p-4 rounded-xl highlight-bordered">
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-2xl md:text-3xl font-heading font-bold text-heading">{formatPrice(priceInfo.price)}</span>
-                  <span className="text-grey-muted text-xs">
-                    ({money(priceInfo.unitPrice)}$/u × {priceInfo.qty})
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
-                    <span className="text-accent text-xs font-medium">
-                      {tx({ fr: 'Effets Speciaux', en: 'Special Effects', es: 'Efectos Especiales' })}
-                    </span>
-                  )}
-                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                    <Sparkles size={12} />
-                    {tx({ fr: 'Proof avant impression', en: 'Digital proof included', es: 'Prueba antes de imprimir' })}
-                  </span>
-                </div>
-                <p className="mt-3 pt-2.5 border-t border-white/5 text-[11px] text-grey-muted/80 leading-relaxed">
-                  {tx({
-                    fr: 'Inclus : Vérification manuelle des fichiers, épreuve numérique et contrôle qualité studio.',
-                    en: 'Included: Manual file check, digital proof and studio quality control.',
-                    es: 'Incluido: Verificación manual de archivos, prueba digital y control de calidad del estudio.',
-                  })}
-                </p>
+                <span className="text-grey-muted text-xs whitespace-nowrap">
+                  {customPriceInfo ? (
+                    <span className="text-accent font-semibold">{money(customPriceInfo.unitPrice)}$/u</span>
+                  ) : customQty ? (
+                    <span className="text-yellow-400">{tx({ fr: 'Min. 25', en: 'Min. 25', es: 'Min. 25' })}</span>
+                  ) : null}
+                </span>
               </div>
             )}
+          </div>
 
-            {/* Colonne actions desktop only (lg+). En dessous de lg, masquee :
-                les boutons full-width sont rendus plus bas pour l'UX mobile. */}
-            <div className="hidden lg:flex lg:flex-col lg:gap-2 lg:min-w-[180px]">
-              <button
-                onClick={handleAddToCart}
-                disabled={!canAddToCart}
-                className={`btn-primary justify-center text-sm py-2.5 px-4 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}
-              >
-                {added ? (
-                  <><Check size={16} className="mr-1.5" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
-                ) : (
-                  <><ShoppingCart size={16} className="mr-1.5" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar' })}</>
-                )}
-              </button>
-              <Link to="/panier" className="btn-outline justify-center text-sm py-2 px-4">
-                {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
-              </Link>
-              {!canAddToCart && (
-                <p className="text-yellow-400 text-[11px] text-center leading-relaxed mt-1">
-                  {tx({
-                    fr: 'Ajoute un design ou décris ton projet dans les notes.',
-                    en: 'Upload a design or describe your project in the notes.',
-                    es: 'Sube un diseño o describe tu proyecto en las notas.',
-                  })}
+          {/* Contour (stroke) - compact */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+              {tx({ fr: 'Contour', en: 'Outline', es: 'Contorno' })}
+            </label>
+            <div className="flex items-center gap-2 bg-black/20 rounded-lg px-3 py-2.5 border-2 border-grey-muted/20">
+              <input
+                type="color"
+                value={strokeColor}
+                onChange={(e) => setStrokeColor(e.target.value)}
+                className="w-7 h-7 rounded cursor-pointer bg-transparent border border-white/10"
+                aria-label={tx({ fr: 'Couleur du contour', en: 'Outline color', es: 'Color del contorno' })}
+              />
+              <input
+                type="range"
+                min="0"
+                max="40"
+                step="1"
+                value={strokeWidth}
+                onChange={(e) => setStrokeWidth(parseInt(e.target.value))}
+                className="flex-1 accent-accent"
+                aria-label={tx({ fr: 'Epaisseur du contour', en: 'Outline thickness', es: 'Grosor del contorno' })}
+              />
+              <span className="text-xs font-mono text-grey-muted w-6 text-right">{strokeWidth}</span>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+              {tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })}
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder={tx({ fr: 'Couleurs, style, details...', en: 'Colors, style, details...', es: 'Colores, estilo, detalles...' })}
+              className="w-full rounded-lg border-2 border-grey-muted/20 bg-black/20 px-3 py-2 text-sm text-heading placeholder:text-grey-muted/50 focus:border-accent focus:outline-none transition-colors resize-none"
+            />
+          </div>
+
+          {/* Prix + actions */}
+          {priceInfo && (
+            <div className="p-3 rounded-xl highlight-bordered">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-2xl font-heading font-bold text-heading">{formatPrice(priceInfo.price)}</span>
+                <span className="text-grey-muted text-xs">
+                  ({money(priceInfo.unitPrice)}$/u × {priceInfo.qty})
+                </span>
+              </div>
+              {priceInfo?.tier && (
+                <p className="mt-1.5 flex items-center gap-1 text-[11px] text-grey-muted">
+                  <Info size={10} className="text-accent flex-shrink-0" />
+                  <span>
+                    {priceInfo.tier === 'large'
+                      ? tx({ fr: 'Palier Large (jusqu\'a 5")', en: 'Large tier (up to 5")', es: 'Nivel Large (hasta 5")' })
+                      : priceInfo.tier === 'medium'
+                      ? tx({ fr: 'Palier Medium (jusqu\'a 3.5")', en: 'Medium tier (up to 3.5")', es: 'Nivel Medium (hasta 3.5")' })
+                      : tx({ fr: 'Palier Standard (jusqu\'a 2.5")', en: 'Standard tier (up to 2.5")', es: 'Nivel Standard (hasta 2.5")' })}
+                  </span>
                 </p>
               )}
+              {(finish === 'holographic' || finish === 'broken-glass' || finish === 'stars' || finish === 'dots') && (
+                <span className="inline-block mt-2 text-accent text-[11px] font-medium">
+                  {tx({ fr: 'Effets Speciaux inclus', en: 'Special Effects included', es: 'Efectos Especiales incluidos' })}
+                </span>
+              )}
+              <span className="block mt-2 text-[11px] text-grey-muted/80 leading-snug flex items-center gap-1">
+                <Sparkles size={11} className="text-accent flex-shrink-0" />
+                {tx({ fr: 'Proof + verification studio inclus', en: 'Proof + studio verification included', es: 'Prueba + verificacion estudio incluido' })}
+              </span>
             </div>
+          )}
+
+          <div className="space-y-2">
+            <button
+              onClick={handleAddToCart}
+              disabled={!canAddToCart}
+              className={`btn-primary w-full justify-center text-sm py-2.5 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}
+            >
+              {added ? (
+                <><Check size={16} className="mr-1.5" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
+              ) : (
+                <><ShoppingCart size={16} className="mr-1.5" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
+              )}
+            </button>
+            <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2">
+              {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
+            </Link>
+            {!canAddToCart && (
+              <p className="text-yellow-400 text-[11px] text-center leading-snug">
+                {tx({
+                  fr: 'Ajoute un design ou decris ton projet dans les notes.',
+                  en: 'Upload a design or describe your project in the notes.',
+                  es: 'Sube un diseno o describe tu proyecto en las notas.',
+                })}
+              </p>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Actions mobile / tablette only (jusqu'a md inclus). Boutons pleine
-          largeur pour le tap au pouce, comme avant le redesign desktop. */}
-      <div className="lg:hidden">
-        <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary w-full justify-center text-sm md:text-base py-3 md:py-3.5 mb-2 md:mb-3 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
-          {added ? (
-            <><Check size={18} className="mr-2" />{tx({ fr: 'Ajoute!', en: 'Added!', es: 'Agregado!' })}</>
-          ) : (
-            <><ShoppingCart size={18} className="mr-2" />{tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar al carrito' })}</>
-          )}
-        </button>
-        {!canAddToCart && (
-          <p className="text-yellow-400 text-sm text-center">
-            {tx({ fr: 'Ajoutez votre design ou decrivez votre projet dans les notes', en: 'Upload your design or describe your project in the notes', es: 'Suba su diseno o describa su proyecto en las notas' })}
-          </p>
-        )}
-
-        <Link to="/panier" className="btn-outline w-full justify-center text-sm py-2 md:py-2.5">
-          {tx({ fr: 'Voir le panier', en: 'View cart', es: 'Ver el carrito' })}
-        </Link>
-      </div>
-
-      <p className="text-grey-muted text-sm mt-2 md:mt-3 text-center">
+      <p className="text-grey-muted text-xs mt-2 text-center">
         {tx({
           fr: 'Massive vous contactera pour valider le rendu par photo ou video avant l\'envoi du produit.',
           en: 'Massive will contact you to validate the result by photo or video before shipping.',

@@ -370,48 +370,48 @@ function StickerPreviewCanvas({
   const fx = normalizeFx(finish);
   const fxOverlay = tilting && fx ? getFxOverlayStyle(fx, tilt) : null;
 
+  // 3D-V2 (11 mai 2026) : perspective plus profonde (1400px au lieu de 900)
+  // pour amplifier l'effet de profondeur sans deformation excessive. Le tilt
+  // est legerement amplifie et un boost de scale au survol donne une
+  // sensation tactile (le sticker se rapproche du curseur). Les ombres
+  // portees suivent dynamiquement l'inclinaison via shadowOffsetX/Y derives
+  // du tilt - plus on incline, plus l'ombre s'eloigne du sticker -> illusion
+  // d'un objet qui se souleve de la surface.
+  const shadowOffsetX = -tilt.y * 2.2;
+  const shadowOffsetY = tilt.x * 2.2 + 8;
+  const shadowBlur = tilting ? 22 : 12;
+  const shadowAlpha = tilting ? 0.48 : 0.30;
+
   return (
     <div
       className={className}
-      style={{ perspective: '900px' }}
+      style={{ perspective: '1400px' }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
       <div
         className="relative w-full"
         style={{
-          transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilting ? 1.02 : 1})`,
-          transition: tilting ? 'transform 0.08s ease-out, filter 0.08s ease-out' : 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1), filter 0.55s cubic-bezier(0.25,0.8,0.25,1)',
+          transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale(${tilting ? 1.04 : 1})`,
+          transition: tilting
+            ? 'transform 0.08s ease-out, filter 0.12s ease-out, box-shadow 0.12s ease-out'
+            : 'transform 0.55s cubic-bezier(0.25,0.8,0.25,1), filter 0.55s cubic-bezier(0.25,0.8,0.25,1), box-shadow 0.55s cubic-bezier(0.25,0.8,0.25,1)',
           transformStyle: 'preserve-3d',
-          // FIX-SHAPE (3 mai 2026) : retire clipPath: circle(50%) du wrapper
-          // diecut. Avant, ca forcait un disque parfait quelle que soit la
-          // forme reelle de l'image -> stickers etoile/coeur/silhouette
-          // custom etaient cropees en cercle. Maintenant le canvas a sa
-          // propre alpha (transparence des pixels en dehors de l'image)
-          // et le drop-shadow s'applique sur la silhouette via filter.
-          // round/square/rectangle : on garde overflow:hidden + borderRadius
-          // car ces formes ont un contour rectangulaire defini par CSS.
-          // Aspect-ratio : suit la dimension reelle du canvas (canvasAspect)
-          // au lieu d'imposer 1:1 ou 3:2 hardcode.
-          // FIX-LAYOUT (3 mai 2026 v2) : ajout w-full pour que aspectRatio
-          // ait une largeur de reference (sinon collapse a 0 sans children
-          // sized) -> le wrapper interne occupe la zone complete du parent
-          // perspective, garantit que onMouseMove du parent recoit les
-          // events sur toute la silhouette du sticker.
+          // Aspect-ratio suit le canvas reel (1:1 ou 3:2 selon shape).
+          // round/square/rectangle : overflow hidden + borderRadius pour CSS clip.
+          // diecut : visible pour laisser passer le drop-shadow de la silhouette
+          // (alpha-channel) et ne pas couper la zone du contour.
           aspectRatio: canvasAspect || 1,
           borderRadius: shape === 'diecut' ? undefined : shapeRadius,
           overflow: shape === 'diecut' ? 'visible' : 'hidden',
           boxShadow: shape === 'diecut'
             ? 'none'
-            : (tilting
-              ? `${-tilt.y * 1.5}px ${tilt.x * 1.5}px 28px rgba(0,0,0,0.35)`
-              : '0 4px 16px rgba(0,0,0,0.18)'),
+            : `${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px rgba(0,0,0,${shadowAlpha})`,
+          // drop-shadow pour diecut suit la silhouette alpha du canvas.
           filter: shape === 'diecut'
-            ? (tilting
-              ? `drop-shadow(${-tilt.y * 1.5}px ${tilt.x * 1.5 + 6}px 14px rgba(0,0,0,0.45))`
-              : 'drop-shadow(0 4px 10px rgba(0,0,0,0.35))')
+            ? `drop-shadow(${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur * 0.7}px rgba(0,0,0,${shadowAlpha + 0.05}))`
             : undefined,
-          willChange: 'transform, filter',
+          willChange: 'transform, filter, box-shadow',
         }}
       >
         <canvas
