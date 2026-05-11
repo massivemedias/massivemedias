@@ -283,24 +283,16 @@ function ArtisteDetail({ subdomainSlug }) {
   const [mockupSlideIdx, setMockupSlideIdx] = useState(0);
   const configuratorRef = useRef(null);
 
-  // SQUARE-MIGRATION (11 mai 2026) : orientation lue DIRECTEMENT depuis le
-  // CMS Strapi (champ `orientation` du print). Plus de detection async via
-  // new Image() + naturalWidth/naturalHeight -> evite la race condition au
-  // 1er render qui causait letterboxing dur des oeuvres carrees (Gallium
-  // Wheel of Time / Fire Body / Wheel of Manifestation / etc.).
+  // Orientation lue directement depuis le CMS Strapi (champ `orientation`
+  // du print). Source de verite unique - utilisee pour dimensionner
+  // dynamiquement le cadre virtuel dans le carrousel (cf frameCoordsFor()
+  // module-level).
   const effectiveOrientation = selectedPrint?.orientation || 'portrait';
-  const isLandscape = effectiveOrientation === 'landscape';
-  const isSquare = effectiveOrientation === 'square';
 
-  // Scenes du slide: null = print brut, les autres = pieces interieures.
-  // PHOTOREALISM-FIRST (11 mai 2026) : on garde les VRAIES scenes
-  // photorealistes (bedroom, living_room, office, zen) pour TOUTES les
-  // orientations. InstantMockup recoit la prop `orientation` et inscrit
-  // l'oeuvre dans un sous-rectangle au ratio strict (1:1 square, 3:2
-  // landscape, ratio natif portrait) AU CENTRE de la zone source. Le
-  // mat creme entoure proprement -> passepartout naturel, pas de
-  // letterboxing. Les mockups CSS-only (gallery_square/gallery_landscape)
-  // ont ete supprimes : ils cassaient l'immersion photorealiste du site.
+  // Scenes du slide: null = print brut, les autres = pieces interieures
+  // photorealistes. Pour chaque scene, frameCoordsFor() calcule les coords
+  // du cadre virtuel en fonction de effectiveOrientation, masquant le
+  // cadre dessine de la photo et eliminant tout letterboxing.
   const MOCKUP_SCENES = useMemo(() => {
     return [null, 'bedroom', 'living_room', 'office', 'zen'];
   }, []);
@@ -373,14 +365,9 @@ function ArtisteDetail({ subdomainSlug }) {
     setMockupSlideIdx(0);
   }, [selectedPrint?.id]);
 
-  // RULES-OF-HOOKS (11 mai 2026) : ces 2 useMemo (localRenames, artistSocials)
-  // etaient declares APRES les early returns `if (cmsLoading && !artist) return`
-  // et `if (!artist) return`. Quand le CMS chargeait (1er render avec
-  // artist=null) -> early return -> ces hooks JAMAIS executes. Au 2eme render
-  // (artist loaded) -> hooks executes. React detecte le mismatch d'ordre et
-  // crash avec error #310 "Rendered more hooks than during the previous render".
-  // Fix : on les declare ici (avant les early returns), avec guards
-  // (optional chaining sur artist) pour gerer le cas artist=null.
+  // Hooks de profile et socials. DECLARES AVANT les early returns pour
+  // respecter les Rules of Hooks (sinon React error #310 quand le CMS
+  // charge async et que artist passe de null a defini entre 2 renders).
 
   // Renommages: backend (visible par tous) > user_metadata (artiste connecte) > default
   const localRenames = useMemo(() => {
@@ -398,36 +385,12 @@ function ArtisteDetail({ subdomainSlug }) {
     return artist?.socials || {};
   }, [user, artist]);
 
-  // SQUARE-MIGRATION (11 mai 2026) : ERADICATION du useEffect async de
-  // detection d'orientation. L'ancien code creait un new window.Image() et
-  // lisait naturalWidth/naturalHeight au load -> 3 problemes :
-  //   1. Race condition : 1er render avec isLandscape=false alors que le
-  //      print etait deja square (Gallium Wheel of Time 1550x1554) ou
-  //      landscape -> InstantMockup chargeait les cadres portrait par
-  //      defaut -> letterboxing dur visible avant que le probe.onload
-  //      ne corrige.
-  //   2. Pas de support 'square' : la formule (w > h) renvoyait toujours
-  //      false pour un carre (1550 > 1554 = false) -> carre traite comme
-  //      portrait -> mockup bedroom/zen avec letterboxing.
-  //   3. CORS sur cross-domain images : naturalWidth pouvait etre 0.
-  // Maintenant : `effectiveOrientation` est lu de selectedPrint.orientation
-  // (CMS Strapi, peuple par le script de migration), synchrone, deterministe.
-
-  // FALLBACK SUBDOMAIN (8 mai 2026) : 3 cas a gerer pour eviter une page
-  // blanche si l'artiste n'est pas trouve dans le CMS / artistsData :
-  //
-  // 1. Chargement CMS en cours (cmsLoading=true ET aucune fallback locale) :
-  //    on attend le fetch /api/artists pour ne pas dire "introuvable" alors
-  //    qu'on est juste en cours de chargement initial.
-  //
-  // 2. Sous-domaine artiste detecte (ex: gallium.massivemedias.com) mais
-  //    artiste pas trouve : on affiche un message clair + bouton absolu
-  //    vers https://massivemedias.com/ pour SORTIR du sous-domaine
-  //    (sinon le visiteur reste coince sur l'URL artiste).
-  //
-  // 3. Route classique /artistes/:slug avec slug invalide : Link relatif
-  //    vers /artistes (la liste des artistes du site), comportement
-  //    historique inchange.
+  // Fallback subdomain : 3 cas pour eviter une page blanche.
+  // 1. CMS en cours de chargement -> loader pour ne pas dire "introuvable"
+  //    pendant le fetch initial.
+  // 2. Sous-domaine artiste introuvable -> message + bouton absolu vers
+  //    https://massivemedias.com/ pour sortir du sous-domaine.
+  // 3. Route /artistes/:slug avec slug invalide -> Link relatif vers la liste.
   if (cmsLoading && !artist) {
     return (
       <div className="section-container pt-32 pb-20 flex flex-col items-center justify-center min-h-[60vh] gap-3">

@@ -1,21 +1,17 @@
 /**
- * ArtistPortfolioGrid (8 mai 2026, v3 absolute positioning)
+ * ArtistPortfolioGrid
  * ------------------------------------------------------------------------
- * Grille de 8 prints aleatoires des artistes Massive Medias affiches DANS
+ * Grille de N prints aleatoires des artistes Massive Medias, affiches dans
  * les vrais mockups environnementaux (bedroom, dining, living_room, office,
  * studio, zen) en versions black et white.
  *
- * Architecture v3 (8 mai 2026) : on REMPLACE le canvas chroma-key d'InstantMockup
- * (v2) par un simple positioning absolu sur l'œuvre, avec coords pre-mesurees
- * pour chaque mockup. Plus simple, plus rapide (pas de getImageData/drawImage),
- * affichage immediat sans delai de chargement async.
+ * Approche : positioning absolu de l'oeuvre dans la zone du cadre source
+ * de chaque mockup. Les coords MOCKUP_FRAMES ont ete extraites en parsant
+ * la zone verte (#00FF00) de chaque fichier source dans /public/images/mockups/.
+ * Pour les orientations qui ne matchent pas le cadre source, l'oeuvre est
+ * inscrite au ratio strict et entouree de mat creme (passepartout).
  *
- * Les coords MOCKUP_FRAMES ont ete extraites en parsant la zone verte (#00FF00)
- * de chaque mockup via canvas - cf. script de calibration. Elles sont en %
- * du conteneur carre (875x875 sur les sources).
- *
- * Click sur un mockup = navigation /artistes/:slug?print=:id pour pre-selection
- * de l'œuvre.
+ * Click sur un mockup = navigation /artistes/:slug?print=:id pour pre-selection.
  */
 import { useMemo } from 'react';
 import { Frame } from 'lucide-react';
@@ -23,19 +19,12 @@ import { useArtists } from '../hooks/useArtists';
 import artistsDataLocal from '../data/artistPricing';
 import { useLang } from '../i18n/LanguageContext';
 
-// Helper : derive l'orientation depuis les dimensions du frame (width > height
-// = landscape). Pre-applique a chaque entry de MOCKUP_FRAMES pour eviter de
-// recalculer a chaque render.
+// Derive l'orientation depuis les dimensions du frame (width > height = landscape).
 const orientOf = (w, h) => (w > h ? 'landscape' : 'portrait');
 
 // Coords du cadre dans chaque mockup, en % (top, left, width, height) du
 // conteneur carre + orientation derivee. Mesures par scan de la zone verte
 // (#00FF00) de chaque fichier source dans /public/images/mockups/.
-//
-// PHOTOREALISM-FIRST (11 mai 2026) : les entries gallery_square cssOnly ont
-// ete supprimees - elles cassaient l'immersion. Les oeuvres carrees sont
-// maintenant inscrites dans les vraies scenes photorealistes via un
-// rectangle proportionne (cf logique inscribed-rectangle dans le render).
 const MOCKUP_FRAMES = {
   bedroom_black:        { top: 21.6,  left: 41.49, width: 16.8,  height: 25.6,  orientation: orientOf(16.8,  25.6)  },
   bedroom_white:        { top: 19.89, left: 41.26, width: 18.51, height: 25.03, orientation: orientOf(18.51, 25.03) },
@@ -92,12 +81,8 @@ function ArtistPortfolioGrid({ count = 8 }) {
         ? cmsArtists
         : Object.values(cmsArtists);
 
-    // SQUARE-MIGRATION (11 mai 2026) : on lit l'orientation DIRECTEMENT depuis
-    // la base de donnees (CMS Strapi `orientation` ou fallback local). Plus
-    // d'async `new Image().onload` -> evite la course condition, evite les
-    // problemes CORS (`naturalWidth` parfois bloque cross-origin) et evite
-    // surtout le mismatch fichier-vs-realite (cas Gallium "Wheel of Time"
-    // 1550x1554 dont le filename suggere autre chose).
+    // Orientation lue directement depuis le CMS Strapi (champ `orientation`).
+    // Synchrone, deterministe, source de verite unique.
     for (const a of cmsArr) {
       for (const p of (a.prints || [])) {
         if (!p?.id || seen.has(p.id)) continue;
@@ -136,25 +121,11 @@ function ArtistPortfolioGrid({ count = 8 }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cmsArtists]);
 
-  // SQUARE-MIGRATION (11 mai 2026) : ERADICATION DU CODE ASYNC.
-  // Avant : useEffect chargeait chaque image avec `new Image()` et lisait
-  // `naturalWidth/naturalHeight` pour deviner l'orientation -> 3 problemes :
-  //   1. Race condition : 1er render avec orientations={} -> tous mappes
-  //      en 'portrait' -> oeuvres carrees stuckees dans cadres portrait avec
-  //      letterboxing dur (cas Gallium Wheel of Time).
-  //   2. Filename pas fiable : "wheel-of-time-20x20.webp" (carre) mais le
-  //      naturalWidth/Height pouvait ne jamais charger (CORS, lazy, etc.).
-  //   3. Pas de support 'square' du tout : la formule renvoyait soit
-  //      'landscape' soit 'portrait', jamais 'square'.
-  // Maintenant : on lit `s.orientation` qui vient directement du CMS Strapi
-  // (champ `orientation` peuple par le script de migration). Synchrone,
-  // deterministe, source de verite unique.
-
-  // Slots avec matching strict orientation : pour chaque case du SCENE_CYCLE,
-  // on prend la premiere oeuvre du pool dont `orientation` matche celle du
-  // cadre. Filtrage strict : un cadre 'square' (gallery_square) ne recevra
-  // QUE des oeuvres `orientation === 'square'`, idem pour landscape/portrait.
-  // Si epuise -> placeholder Massive Medias (preferable au letterboxing).
+  // Slots : pour chaque case du SCENE_CYCLE, on prefere une oeuvre du pool
+  // dont `orientation` matche celle du cadre source. Fallback gracieux
+  // (n'importe quelle oeuvre non consommee) si pas de match strict. Le
+  // rendu inscribed-rectangle garantit que le ratio est respecte
+  // visuellement avec mat creme autour.
   const slots = useMemo(() => {
     const consumed = new Set();
     const pickByOrientation = (target) => {
@@ -166,10 +137,7 @@ function ArtistPortfolioGrid({ count = 8 }) {
           return s;
         }
       }
-      // PHOTOREALISM-FIRST (11 mai 2026) : fallback gracieux pour TOUTES les
-      // orientations (les scenes cssOnly square ont ete supprimees). Le
-      // rendu inscribed-rectangle (style en bas du JSX) garantit que le
-      // ratio est respecte avec mat creme autour, pas de letterboxing dur.
+      // Pass 2 : fallback gracieux. Le rendu inscribed-rectangle gere le ratio.
       for (const s of pool) {
         if (consumed.has(s.id)) continue;
         consumed.add(s.id);
@@ -205,28 +173,21 @@ function ArtistPortfolioGrid({ count = 8 }) {
         const frame = s.frame;
         const mockupUrl = `/images/mockups/${mockupKey}.webp`;
 
-        // PHOTOREALISM-FIRST (11 mai 2026) : on inscrit l'oeuvre dans un
-        // sous-rectangle du cadre source au ratio strict de son orientation.
-        // Le mat creme entoure proprement (passepartout) - pas de letterboxing
-        // dur ni de mockup CSS fake. Coords calculees pour chaque slot.
+        // Inscribed rectangle : on inscrit l'oeuvre au ratio strict de son
+        // orientation dans la zone du cadre source. Le mat creme entoure
+        // l'oeuvre (passepartout) si l'orientation ne matche pas le cadre.
         const targetRatio = s.orientation === 'square'    ? 1.0
                           : s.orientation === 'landscape' ? 1.5
-                          :                                  frame.width / frame.height; // portrait : match du cadre source
-        // Inscribed rectangle au ratio target, centred dans le cadre source.
+                          :                                  frame.width / frame.height;
         const srcRatio = frame.width / frame.height;
         let imgTop = frame.top, imgLeft = frame.left, imgW = frame.width, imgH = frame.height;
         if (targetRatio > srcRatio) {
-          // target plus large que source -> on garde toute la largeur, on reduit la hauteur.
           imgH = frame.width / targetRatio;
           imgTop = frame.top + (frame.height - imgH) / 2;
         } else if (targetRatio < srcRatio) {
-          // target plus etroit que source -> on garde toute la hauteur, on reduit la largeur.
           imgW = frame.height * targetRatio;
           imgLeft = frame.left + (frame.width - imgW) / 2;
         }
-        // Le mat creme est dessine SUR la zone du cadre source qui n'est pas
-        // couverte par l'oeuvre. Au pixel pres, c'est juste un overlay creme
-        // qui couvre tout le `frame` puis l'oeuvre s'affiche par-dessus.
         const inner = (
           <div className="relative w-full aspect-square overflow-hidden rounded-lg shadow-lg transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl">
             <div
@@ -254,7 +215,7 @@ function ArtistPortfolioGrid({ count = 8 }) {
                     left: `${frame.left}%`,
                     width: `${frame.width}%`,
                     height: `${frame.height}%`,
-                    background: '#f0ede8', // MAT_COLOR equivalent (cf InstantMockup)
+                    background: '#f0ede8', // mat creme (passepartout)
                   }}
                   aria-hidden="true"
                 />
