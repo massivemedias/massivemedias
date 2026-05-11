@@ -9,7 +9,31 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getImageOrientation, orientationToAspectRatio } from '../utils/imageOrientation';
+import { getImageOrientation, orientationToAspectRatio, SQUARE_TOLERANCE } from '../utils/imageOrientation';
+
+// FIX-SYNC-DETECT (11 mai 2026) : la detection asynchrone via new Image()
+// onload echouait silencieusement en production sur les images CDN
+// cross-origin (CORS strip naturalWidth/naturalHeight ou onerror sans
+// retry). Resultat : fallback 'portrait' applique meme pour les images
+// carrees -> Wheel of Time / Fire Body apparaissaient dans bedroom au lieu
+// de gallery_square.
+//
+// Maintenant : detection SYNCHRONE 100% fiable basee sur le filename qui
+// suit la convention <slug>-<W>x<H>.webp (ex: wheel-of-time-20x20.webp =
+// carre, musashi-no-kiai-20x14.webp = landscape, fearless-16x20.webp =
+// portrait). Le ratio est connu AVANT le 1er render, donc le filter du
+// carrousel applique correctement les bonnes scenes immediatement.
+function guessOrientationFromUrl(url) {
+  if (!url || typeof url !== 'string') return 'unknown';
+  const m = url.match(/-(\d+)x(\d+)\.\w+($|\?)/i);
+  if (!m) return 'unknown';
+  const w = parseInt(m[1]);
+  const h = parseInt(m[2]);
+  if (!w || !h) return 'unknown';
+  const ratio = w / h;
+  if (Math.abs(ratio - 1) <= SQUARE_TOLERANCE) return 'square';
+  return ratio > 1 ? 'landscape' : 'portrait';
+}
 
 // Mockup scenes : chaque scene a une orientation fixe (ratio du cadre photo
 // physique mesure au pixel sur les .webp 875x875). On ne presente que les
@@ -60,10 +84,25 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   // ratio du slide 0. La FramePreview prend l'aspect ratio de l'image, et
   // les scenes mockup sont filtrees sur le meme critere.
   //
-  // useState pour orientation pilote par un useEffect qui detecte le ratio
-  // au load de l'image (asynchrone car on lit naturalWidth/naturalHeight).
-  const [imageOrientation, setImageOrientation] = useState('unknown');
+  // FIX-SYNC-DETECT (11 mai 2026) : detection SYNCHRONE via guessOrientationFromUrl
+  // remplace l'ancien useEffect async fragile (CORS-prone). L'orientation
+  // est connue immediatement au 1er render -> visibleScenes filter en bas
+  // applique correctement gallery_square pour les images carrees, AVANT
+  // que les scenes portrait bedroom/living_room/zen ne soient meme montees.
+  //
+  // Le useEffect async secondaire reste comme UPGRADE optionnel : si la
+  // detection synchrone retourne 'unknown' (filename ne suit pas la
+  // convention WxH), on tente l'async en fallback. Si async fail aussi,
+  // visibleScenes filter va sur fallback 'portrait' (default).
+  const [imageOrientation, setImageOrientation] = useState(() => guessOrientationFromUrl(image));
+  // Re-trigger la detection si l'image change
   useEffect(() => {
+    const syncGuess = guessOrientationFromUrl(image);
+    if (syncGuess !== 'unknown') {
+      setImageOrientation(syncGuess);
+      return;
+    }
+    // Fallback async pour les images sans convention WxH dans le filename
     if (!image) { setImageOrientation('unknown'); return; }
     const img = new Image();
     img.crossOrigin = 'anonymous';
