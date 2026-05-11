@@ -33,6 +33,17 @@ export default {
       handler: 'artist.updateMyProfile',
       config: { auth: false },
     },
+    // AUTO-TRIM (10 mai 2026) : route admin pour appliquer sharp().trim()
+    // sur les prints d'un artiste afin de retirer les bords blancs
+    // periphriques (burned-in borders) qui creaient des doubles bords
+    // une fois affiches dans le passe-partout CSS du configurateur.
+    // Auth admin (requireAdminAuth dans le handler).
+    {
+      method: 'POST',
+      path: '/artists/admin-trim-borders',
+      handler: 'artist.adminTrimBorders',
+      config: { auth: false },
+    },
     {
       // Attention: /artists/:id est genere automatiquement par Strapi,
       // donc on utilise un path different pour eviter le conflit

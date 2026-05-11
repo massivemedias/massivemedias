@@ -17,20 +17,24 @@ import { getImageOrientation, orientationToAspectRatio } from '../utils/imageOri
 // par le client - garantit zero letterboxing / zero crop excessif.
 //   - portrait : bedroom, living_room, zen (cadres ~3:4 sur les 3 photos)
 //   - landscape : office (cadre ~4:3)
-//   - square   : aucun asset disponible pour l'instant. Quand client uploade
-//     une image carree, on retombe sur la FramePreview CSS (slide 0) qui
-//     supporte le 1:1 nativement. Pour ajouter une scene carree dans le
-//     futur : asset .webp avec cadre vert pur 1:1 + entree { id, orientation: 'square' }.
+//   - square   : gallery_square (CSS-only, mur galerie minimaliste + cadre 1:1)
+//
+// SQUARE-MOCKUP (10 mai 2026) : ajout de gallery_square. cssOnly=true
+// signale au render qu'on utilise un div CSS (gradient mur + cadre +
+// ombre douce facon galerie d'art) au lieu d'un canvas chroma-key.
+// Pas d'asset webp requis -> deployable immediatement, pas de waiting
+// sur un photo shoot d'une scene physique 1:1.
 const MOCKUP_SCENES = [
   { id: 'bedroom', fr: 'Chambre', en: 'Bedroom', orientation: 'portrait' },
   { id: 'living_room', fr: 'Salon', en: 'Living Room', orientation: 'portrait' },
   { id: 'office', fr: 'Bureau', en: 'Office', orientation: 'landscape' },
   { id: 'zen', fr: 'Zen', en: 'Zen', orientation: 'portrait' },
+  { id: 'gallery_square', fr: 'Galerie', en: 'Gallery', orientation: 'square', cssOnly: true },
 ];
 
 const MAT_COLOR = { r: 240, g: 237, b: 232 };
 
-function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, whiteBorder = true, onClickImage }) {
+function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, tx, isLandscape, isSquare = false, onClickImage }) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   // On suit le chargement de l'image en STATE (pas seulement en ref) pour
@@ -85,11 +89,11 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   // donc c'est le default le plus naturel. Object-cover gere le crop si l'image
   // n'est pas exactement portrait. Au moins les mockups environnementaux
   // photorealistes sont toujours visibles.
-  // RESTORE-MOCKUPS (4 mai 2026) : fallback portrait pour 'unknown' (etat
-  // initial avant detection async) et 'square' (pas d'asset 1:1 dispo).
-  // Garantit qu'au moins les 3 scenes portrait (bedroom, living_room, zen)
-  // sont toujours visibles, peu importe le ratio image source.
-  const effectiveOrientation = (imageOrientation === 'unknown' || imageOrientation === 'square') ? 'portrait' : imageOrientation;
+  // SQUARE-FIX (10 mai 2026) : retire le fallback square -> portrait. Avec
+  // l'ajout de gallery_square (cssOnly), les images carrees ont maintenant
+  // leur propre scene mockup 1:1. unknown reste fallback portrait pour
+  // l'etat initial avant la detection async.
+  const effectiveOrientation = imageOrientation === 'unknown' ? 'portrait' : imageOrientation;
   const visibleScenes = MOCKUP_SCENES.filter(s => s.orientation === effectiveOrientation);
   const totalSlides = image ? 1 + visibleScenes.length : 0;
 
@@ -271,16 +275,15 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   // Dessiner le mockup du slide actif quand les options changent
   useEffect(() => {
     if (!image || !userImgLoaded || slideIdx === 0) return;
-    // FIX-CRASH (4 mai 2026) : hideRoomMockups etait une variable de l'ancienne
-    // logique (avant ratio-driven du commit 9a5760c). Remplacee par le check
-    // direct sur visibleScenes.length - couvre tous les cas ou aucune scene
-    // n'est dispo (image carree sans asset 1:1, fallback non-applicable, etc.)
     if (visibleScenes.length === 0) return;
-    const sceneId = visibleScenes[slideIdx - 1]?.id;
-    if (!sceneId) return;
+    const scene = visibleScenes[slideIdx - 1];
+    if (!scene) return;
+    // SQUARE-FIX (10 mai 2026) : cssOnly scenes (gallery_square) n'ont pas
+    // de canvas a dessiner - elles sont rendues via div CSS uniquement.
+    if (scene.cssOnly) return;
     const timer = setTimeout(() => {
-      const canvas = canvasRefs.current[sceneId];
-      if (canvas) drawMockup(canvas, 600, sceneId);
+      const canvas = canvasRefs.current[scene.id];
+      if (canvas) drawMockup(canvas, 600, scene.id);
     }, 100);
     return () => clearTimeout(timer);
   }, [image, userImgLoaded, frameColor, withFrame, slideIdx, drawMockup]);
@@ -290,6 +293,8 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
     if (!image || !userImgLoaded) return;
     const timer = setTimeout(() => {
       visibleScenes.forEach(s => {
+        // SQUARE-FIX (10 mai 2026) : skip cssOnly (rendered en CSS pur).
+        if (s.cssOnly) return;
         const canvas = canvasRefs.current[s.id];
         if (canvas) drawMockup(canvas, 600, s.id);
       });
@@ -325,10 +330,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
   const frameAspectRatio = orientationToAspectRatio(imageOrientation);
   const isPostcard = format === 'postcard';
   const frameThickness = withFrame ? Math.max(8, Math.round(previewMaxW * 0.04)) : 0;
-  // WHITE-BORDER (10 mai 2026) : si l'utilisateur a desactive le passe-partout
-  // (whiteBorder=false), on zero out matThickness -> l'image touche directement
-  // l'interieur du cadre, full bleed. Sans frame, pas de mat de toute facon.
-  const matThickness = (withFrame && whiteBorder) ? (isPostcard ? Math.max(16, Math.round(previewMaxW * 0.1)) : Math.max(12, Math.round(previewMaxW * 0.06))) : 0;
+  const matThickness = withFrame ? (isPostcard ? Math.max(16, Math.round(previewMaxW * 0.1)) : Math.max(12, Math.round(previewMaxW * 0.06))) : 0;
 
   return (
     <div className="space-y-2">
@@ -473,11 +475,72 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
             key={s.id}
             className={`relative w-full ${slideIdx === i + 1 ? '' : 'hidden'}`}
           >
-            <canvas
-              ref={el => { canvasRefs.current[s.id] = el; }}
-              className="w-full h-auto block cursor-pointer"
-              onClick={() => setLightboxOpen(true)}
-            />
+            {s.cssOnly ? (
+              /* SQUARE-MOCKUP (10 mai 2026) : scene cssOnly pour images
+                 carrees. Pas de canvas - on rend un faux mur de galerie
+                 minimaliste avec le print centre + cadre + ombre douce.
+                 Aspect 4:5 du conteneur (meme que les autres scenes
+                 portrait/landscape pour cohesion visuelle), mais le
+                 cadre interne est strictement 1:1. */
+              <div
+                className="relative w-full cursor-pointer overflow-hidden"
+                style={{ aspectRatio: '5 / 4', background: 'linear-gradient(180deg, #ebe7e0 0%, #d8d2c8 68%, #c8c1b5 100%)' }}
+                onClick={() => setLightboxOpen(true)}
+              >
+                {/* Mur (haut) / sol (bas) - effet plinthe */}
+                <div className="absolute left-0 right-0 bottom-0 h-[18%]"
+                  style={{ background: 'linear-gradient(180deg, #c8c1b5 0%, #a89e8d 100%)', borderTop: '1px solid rgba(0,0,0,0.06)' }} />
+
+                {/* Cadre carre 1:1 centre. Padding interne genere le passe-partout. */}
+                <div
+                  className="absolute left-1/2 top-[44%] -translate-x-1/2 -translate-y-1/2"
+                  style={{
+                    width: '42%',
+                    aspectRatio: '1 / 1',
+                    background: withFrame
+                      ? (frameColor === 'black'
+                          ? 'linear-gradient(135deg, #2a2a2a, #111)'
+                          : 'linear-gradient(135deg, #fff, #e8e3de)')
+                      : '#ffffff',
+                    boxShadow: '0 14px 32px rgba(0,0,0,0.28), 0 4px 10px rgba(0,0,0,0.12)',
+                    padding: `${withFrame ? 5 : 0}%`,
+                  }}
+                >
+                  {/* Mat (passe-partout) - couleur ivoire #f5f2ed */}
+                  <div
+                    className="w-full h-full overflow-hidden"
+                    style={{ background: withFrame ? '#f5f2ed' : '#ffffff', padding: withFrame ? '7%' : '0' }}
+                  >
+                    <div className="w-full h-full overflow-hidden">
+                      <img
+                        src={image}
+                        alt=""
+                        className="w-full h-full block"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ombre projetee au sol pour profondeur */}
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 rounded-[50%]"
+                  style={{
+                    bottom: '8%',
+                    width: '36%',
+                    height: '3%',
+                    background: 'radial-gradient(ellipse, rgba(0,0,0,0.22), transparent 70%)',
+                    filter: 'blur(2px)',
+                  }}
+                />
+              </div>
+            ) : (
+              <canvas
+                ref={el => { canvasRefs.current[s.id] = el; }}
+                className="w-full h-auto block cursor-pointer"
+                onClick={() => setLightboxOpen(true)}
+              />
+            )}
           </div>
         ))}
       </div>

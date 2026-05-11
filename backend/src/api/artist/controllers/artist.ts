@@ -1486,4 +1486,217 @@ export default factories.createCoreController('api::artist.artist', ({ strapi })
       data: updated,
     };
   },
+
+  /**
+   * POST /api/artists/admin-trim-borders
+   * AUTO-TRIM (10 mai 2026) - Pour chaque print de l'artiste, telecharge
+   * l'image originale, applique sharp().trim({ threshold }) pour enlever
+   * les pixels blancs periphriques (burned-in borders), re-uploade le
+   * resultat sur Supabase et update le CMS Strapi avec la nouvelle URL.
+   *
+   * Auth : requireAdminAuth (operation destructive sur les assets - jamais
+   * exposer au public).
+   *
+   * Body : {
+   *   artistSlug: string (required)
+   *   itemId?: string (si fourni, trim juste cet item ; sinon trim tous
+   *                    les prints du tableau artist.prints)
+   *   threshold?: number (1-50, default 10) - tolerance de trim. Plus bas
+   *                       = plus agressif. 10 par defaut suffit pour les
+   *                       bords blancs francs sans toucher aux oeuvres
+   *                       avec fond blanc pur (qui ont du contraste interne).
+   *   dryRun?: boolean (default false) - liste les changements sans les
+   *                                       appliquer.
+   * }
+   *
+   * Garde-fous : on conserve l'URL originale dans changeData.originalImageUrl
+   * pour rollback manuel si trim a trop tape.
+   */
+  async adminTrimBorders(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+
+    const body = (ctx.request.body || {}) as any;
+    const artistSlug = String(body.artistSlug || '').trim();
+    const itemId = body.itemId ? String(body.itemId).trim() : null;
+    const threshold = Math.min(50, Math.max(1, parseInt(body.threshold) || 10));
+    const dryRun = !!body.dryRun;
+
+    if (!artistSlug) return ctx.badRequest('artistSlug requis');
+
+    // Lazy imports : sharp + fs uniquement quand on entre dans le handler
+    // (evite cold-start penalty sur les autres routes).
+    const sharp = (await import('sharp')).default;
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const os = await import('node:os');
+    const { randomUUID } = await import('node:crypto');
+    const { Readable } = await import('node:stream');
+    const { pipeline } = await import('node:stream/promises');
+
+    // Charger l'artiste
+    const artists = await strapi.documents('api::artist.artist').findMany({
+      filters: { slug: { $eq: artistSlug } } as any,
+      limit: 1,
+    });
+    if (!artists || artists.length === 0) {
+      return ctx.notFound(`Artiste "${artistSlug}" introuvable`);
+    }
+    const artist = artists[0] as any;
+
+    const allPrints: any[] = Array.isArray(artist.prints) ? artist.prints : [];
+    const targets = itemId
+      ? allPrints.filter((p: any) => p.id === itemId)
+      : allPrints;
+
+    if (targets.length === 0) {
+      return ctx.badRequest(`Aucun print a trimmer (itemId=${itemId || '(all)'})`);
+    }
+
+    const results: any[] = [];
+
+    for (const print of targets) {
+      const originalUrl = print.fullImage || print.image;
+      if (!originalUrl || !originalUrl.startsWith('http')) {
+        results.push({ id: print.id, skipped: 'no_remote_url', originalUrl });
+        continue;
+      }
+
+      const tmpDir = os.tmpdir();
+      const uid = randomUUID();
+      const inputPath = path.join(tmpDir, `mm-trim-in-${uid}`);
+      const outputPath = path.join(tmpDir, `mm-trim-out-${uid}.webp`);
+
+      try {
+        // Download
+        const dlRes = await fetch(originalUrl);
+        if (!dlRes.ok || !dlRes.body) {
+          results.push({ id: print.id, error: `download_${dlRes.status}` });
+          continue;
+        }
+        await pipeline(
+          Readable.fromWeb(dlRes.body as any),
+          fs.createWriteStream(inputPath),
+        );
+
+        // Mesure avant/apres pour reporter ce qui a ete coupe
+        const metaBefore = await sharp(inputPath).metadata();
+        const widthBefore = metaBefore.width || 0;
+        const heightBefore = metaBefore.height || 0;
+
+        // Trim avec threshold (tolerance) - enleve les bords presque-blancs
+        // sans toucher au contenu si l'oeuvre n'a pas de marge.
+        await sharp(inputPath)
+          .trim({ threshold })
+          .webp({ quality: 90 })
+          .toFile(outputPath);
+
+        const metaAfter = await sharp(outputPath).metadata();
+        const widthAfter = metaAfter.width || 0;
+        const heightAfter = metaAfter.height || 0;
+
+        const trimmedX = widthBefore - widthAfter;
+        const trimmedY = heightBefore - heightAfter;
+        const trimmedPct = widthBefore > 0
+          ? Math.round(((widthBefore * heightBefore - widthAfter * heightAfter) / (widthBefore * heightBefore)) * 100)
+          : 0;
+
+        if (trimmedX === 0 && trimmedY === 0) {
+          results.push({
+            id: print.id,
+            skipped: 'no_borders_detected',
+            sizeBefore: `${widthBefore}x${heightBefore}`,
+            threshold,
+          });
+          continue;
+        }
+
+        if (dryRun) {
+          results.push({
+            id: print.id,
+            wouldTrim: { x: trimmedX, y: trimmedY, pct: trimmedPct },
+            sizeBefore: `${widthBefore}x${heightBefore}`,
+            sizeAfter: `${widthAfter}x${heightAfter}`,
+            originalUrl,
+          });
+          continue;
+        }
+
+        // Upload sur Supabase (nouveau path pour ne pas ecraser l'original)
+        const apiUrl = process.env.SUPABASE_API_URL;
+        const apiKey = process.env.SUPABASE_API_KEY;
+        const bucket = process.env.SUPABASE_BUCKET || 'order-files';
+        if (!apiUrl || !apiKey) {
+          results.push({ id: print.id, error: 'supabase_env_missing' });
+          continue;
+        }
+        const storagePath = `artist-prints-trimmed/${artistSlug}/${print.id}-${Date.now()}.webp`;
+        const stat = await fs.promises.stat(outputPath);
+        const upRes = await fetch(`${apiUrl}/storage/v1/object/${bucket}/${storagePath}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            apikey: apiKey,
+            'Content-Type': 'image/webp',
+            'Content-Length': String(stat.size),
+            'x-upsert': 'true',
+            'cache-control': 'max-age=3600',
+          },
+          body: fs.createReadStream(outputPath) as any,
+          // @ts-ignore undici-specific
+          duplex: 'half',
+        });
+        if (!upRes.ok) {
+          const err = await upRes.text();
+          results.push({ id: print.id, error: `upload_${upRes.status}: ${err.slice(0, 100)}` });
+          continue;
+        }
+        const newUrl = `${apiUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
+
+        results.push({
+          id: print.id,
+          trimmed: { x: trimmedX, y: trimmedY, pct: trimmedPct },
+          sizeBefore: `${widthBefore}x${heightBefore}`,
+          sizeAfter: `${widthAfter}x${heightAfter}`,
+          oldUrl: originalUrl,
+          newUrl,
+        });
+
+        // Update le print dans le CMS - on garde originalImageUrl pour rollback
+        const updatedPrint = {
+          ...print,
+          image: newUrl,
+          fullImage: newUrl,
+          originalImageUrlBackup: print.originalImageUrlBackup || originalUrl,
+          trimmedAt: new Date().toISOString(),
+          trimmedThreshold: threshold,
+        };
+        const newPrints = allPrints.map((p: any) => p.id === print.id ? updatedPrint : p);
+        await strapi.documents('api::artist.artist').update({
+          documentId: artist.documentId,
+          data: { prints: newPrints },
+          status: 'published',
+        });
+        // Local mirror pour les iterations suivantes
+        const idx = allPrints.findIndex((p: any) => p.id === print.id);
+        if (idx >= 0) allPrints[idx] = updatedPrint;
+      } catch (err: any) {
+        strapi.log.error(`[adminTrimBorders] ${artistSlug}/${print.id}: ${err?.message}`);
+        results.push({ id: print.id, error: err?.message || 'unknown' });
+      } finally {
+        try { fs.unlinkSync(inputPath); } catch {}
+        try { fs.unlinkSync(outputPath); } catch {}
+      }
+    }
+
+    strapi.log.info(`[adminTrimBorders] ${artistSlug} threshold=${threshold} dryRun=${dryRun} -> ${results.length} prints traites`);
+
+    ctx.body = {
+      success: true,
+      artistSlug,
+      threshold,
+      dryRun,
+      processed: results.length,
+      results,
+    };
+  },
 }));

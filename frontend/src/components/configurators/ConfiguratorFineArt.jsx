@@ -105,12 +105,6 @@ function ConfiguratorFineArt() {
   const [format, setFormat] = useState('a4');
   const [withFrame, setWithFrame] = useState(false);
   const [frameColor, setFrameColor] = useState('black');
-  // WHITE-BORDER (10 mai 2026) : toggle "Bordure blanche (Passe-partout)".
-  // Active par defaut (true) car la majorite des artistes uploadent des
-  // images sans bordure et veulent le mat blanc autour. Desactivable
-  // pour les artistes qui ont deja une bordure blanche integree dans
-  // l'image (sinon double bord disgracieux).
-  const [whiteBorder, setWhiteBorder] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -265,7 +259,6 @@ function ConfiguratorFineArt() {
                 tx={tx}
                 isLandscape={isLandscape}
                 isSquare={isSquare}
-                whiteBorder={whiteBorder}
                 onClickImage={() => setLightboxOpen(true)}
               />
             </div>
@@ -403,38 +396,6 @@ function ConfiguratorFineArt() {
             </div>
           )}
         </div>
-
-        {/* WHITE-BORDER toggle (10 mai 2026) - "Bordure blanche / Passe-partout".
-            Active par defaut. Quand desactive, l'image fait full bleed dans
-            le cadre (utile quand l'artiste a deja une bordure blanche
-            integree dans son fichier source - sinon double bord). */}
-        <label className="flex items-start gap-3 cursor-pointer group p-3 rounded-lg bg-white/[0.03] border border-white/5 hover:bg-white/[0.05] transition-colors">
-          <input
-            type="checkbox"
-            checked={whiteBorder}
-            onChange={(e) => setWhiteBorder(e.target.checked)}
-            className="sr-only"
-          />
-          <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${whiteBorder ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
-            {whiteBorder && <Check size={12} className="text-white" />}
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="block text-heading text-sm font-semibold leading-tight">
-              {tx({
-                fr: 'Bordure blanche (Passe-partout)',
-                en: 'White border (Mat board)',
-                es: 'Borde blanco (Paspartú)',
-              })}
-            </span>
-            <span className="block text-xs text-grey-muted mt-0.5 leading-snug">
-              {tx({
-                fr: 'Désactive si ton image a déjà une bordure blanche intégrée (évite le double bord).',
-                en: 'Disable if your image already has a built-in white border (prevents double margin).',
-                es: 'Desactívalo si tu imagen ya tiene un borde blanco incorporado (evita el doble margen).',
-              })}
-            </span>
-          </div>
-        </label>
 
         {/* Notes */}
         <textarea
