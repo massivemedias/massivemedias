@@ -11,7 +11,7 @@ import { useUserRole } from '../contexts/UserRoleContext';
 import { createEditRequest, getMyEditRequests } from '../services/artistService';
 import { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
-import artistsData, { artistFormats, framePriceByFormat } from '../data/artists';
+import artistsData, { artistFormats, framePriceByFormat } from '../data/artistPricing';
 import { useArtists } from '../hooks/useArtists';
 import { thumb, img } from '../utils/paths';
 import { mediaUrl } from '../utils/cms';

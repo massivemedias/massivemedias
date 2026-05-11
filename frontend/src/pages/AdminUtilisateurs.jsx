@@ -12,14 +12,17 @@ import { getClients, getArtistSubmissions } from '../services/adminService';
 import { getUserRoles, setUserRole } from '../services/userRoleService';
 import UserMergeModal from '../components/UserMergeModal';
 import { useNotifications } from '../contexts/NotificationContext';
-import artistsData from '../data/artists';
+import { useArtists } from '../hooks/useArtists';
 
-const ARTIST_SLUGS = Object.keys(artistsData);
 const GA_PROPERTY_ID = '525792501';
 
 function AdminUtilisateurs() {
   const { tx } = useLang();
   const { markUsersViewed } = useNotifications();
+  // STRAPI-ONLY (11 mai 2026) : ARTIST_SLUGS et artistsData lus depuis CMS.
+  const { artists: cmsArtists } = useArtists();
+  const artistsData = cmsArtists || {};
+  const ARTIST_SLUGS = Object.keys(artistsData);
 
   // Marquer les nouveaux utilisateurs comme vus au chargement de la page
   useEffect(() => { markUsersViewed(); }, [markUsersViewed]);

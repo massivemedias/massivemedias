@@ -17,7 +17,7 @@ import { getCommissions } from '../services/adminService';
 import { sendArtistMessage, getMyMessages, createWithdrawal, getMyWithdrawals, createEditRequest } from '../services/artistService';
 import api, { uploadArtistFile } from '../services/api';
 import FileUpload from './FileUpload';
-import artistsData from '../data/artists';
+import artistsData from '../data/artistPricing';
 import { useArtists } from '../hooks/useArtists';
 import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION, ARTIST_FAQ } from '../data/artistContract';
 import { HelpCircle } from 'lucide-react';

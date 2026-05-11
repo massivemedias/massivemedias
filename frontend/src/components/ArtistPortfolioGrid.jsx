@@ -20,7 +20,7 @@
 import { useMemo } from 'react';
 import { Frame } from 'lucide-react';
 import { useArtists } from '../hooks/useArtists';
-import artistsDataLocal from '../data/artists';
+import artistsDataLocal from '../data/artistPricing';
 import { useLang } from '../i18n/LanguageContext';
 
 // Helper : derive l'orientation depuis les dimensions du frame (width > height

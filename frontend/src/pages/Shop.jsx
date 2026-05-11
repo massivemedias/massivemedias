@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useCart } from '../contexts/CartContext';
 import { useProducts } from '../hooks/useProducts';
-import artistsData from '../data/artists';
+import artistsData from '../data/artistPricing';
 import { useArtists } from '../hooks/useArtists';
 import { img } from '../utils/paths';
 import { formatPrice } from '../utils/formatCurrency';

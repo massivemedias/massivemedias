@@ -11,7 +11,7 @@ import MerchMockupTool from '../components/merch/MerchMockupTool';
 import StickerPreviewCanvas from '../components/StickerPreviewCanvas';
 import api from '../services/api';
 import { getAdminArtistsList, getAdminArtistDetail } from '../services/adminService';
-import artistsHardcoded from '../data/artists';
+import artistsHardcoded from '../data/artistPricing';
 import { removeBackground } from '../utils/removeBg';
 // HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
 

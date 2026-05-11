@@ -6,7 +6,7 @@ import { useLang } from '../../i18n/LanguageContext';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import {
   getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable, framePriceByFormat,
-} from '../../data/artists';
+} from '../../data/artistPricing';
 import { formatPrice } from '../../utils/formatCurrency';
 
 function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onFrameColorChange }) {

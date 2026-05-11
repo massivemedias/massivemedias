@@ -6,7 +6,6 @@ import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useArtists } from '../hooks/useArtists';
 import { mediaUrl } from '../utils/cms';
-import artistsData from '../data/artists';
 
 // Type map for each artist slug
 const ARTIST_TYPES = {
@@ -50,51 +49,23 @@ function Artistes() {
     }
   }, [location.hash]);
 
+  // STRAPI-ONLY (11 mai 2026) : la source de verite est 100% le CMS. Plus
+  // de fallback artists.js (supprime). Si le CMS n'a pas charge / vide, on
+  // affiche une liste vide (Loading...) plutot qu'un fallback potentiellement
+  // stale.
   const artists = useMemo(() => {
-    const localList = Object.values(artistsData);
     const cmsArray = !cmsArtists ? [] : Array.isArray(cmsArtists) ? cmsArtists : Object.values(cmsArtists);
-    if (cmsArray.length === 0) return localList;
-
-    const merged = localList.map(local => {
-      const cms = cmsArray.find(a => a.slug === local.slug);
-      if (!cms) return local;
-      return {
-        ...local,
-        name: cms.name || local.name,
-        tagline: {
-          fr: cms.taglineFr || local.tagline.fr,
-          en: cms.taglineEn || local.tagline.en,
-          es: local.tagline.es || local.tagline.en,
-        },
-        bio: {
-          fr: cms.bioFr || local.bio.fr,
-          en: cms.bioEn || local.bio.en,
-          es: local.bio.es || local.bio.en,
-        },
-        avatar: cms.socials?.avatarUrl || (cms.avatar ? mediaUrl(cms.avatar) : null) || local.avatar,
-        heroImage: cms.heroImage ? mediaUrl(cms.heroImage) : local.heroImage,
-      };
-    });
-
-    const localSlugs = new Set(localList.map(a => a.slug));
-    const cmsOnly = cmsArray
-      .filter(a => !localSlugs.has(a.slug))
-      .map(cms => ({
-        slug: cms.slug,
-        name: cms.name,
-        tagline: { fr: cms.taglineFr || '', en: cms.taglineEn || '' },
-        bio: { fr: cms.bioFr || '', en: cms.bioEn || '' },
-        avatar: mediaUrl(cms.avatar),
-        heroImage: mediaUrl(cms.heroImage),
-        prints: (cms.prints || []).map((p, i) => ({
-          ...p,
-          image: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : '',
-        })),
-        pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 } },
-        socials: cms.socials || {},
-      }));
-
-    return [...merged, ...cmsOnly];
+    return cmsArray.map((cms) => ({
+      slug: cms.slug,
+      name: cms.name,
+      tagline: { fr: cms.taglineFr || '', en: cms.taglineEn || '', es: cms.taglineEs || cms.taglineEn || '' },
+      bio: { fr: cms.bioFr || '', en: cms.bioEn || '', es: cms.bioEs || cms.bioEn || '' },
+      avatar: cms.socials?.avatarUrl || (cms.avatar ? mediaUrl(cms.avatar) : null),
+      heroImage: cms.heroImage ? mediaUrl(cms.heroImage) : null,
+      prints: cms.prints || [],
+      pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 } },
+      socials: cms.socials || {},
+    }));
   }, [cmsArtists]);
 
   // Merge all creators into a single list with unified shape

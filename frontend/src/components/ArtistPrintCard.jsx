@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { ZoomIn } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getArtistPrintPrice } from '../data/artists';
+import { getArtistPrintPrice } from '../data/artistPricing';
 import { toFull } from '../utils/paths';
 
 // FIX-SQUARE-CARD (11 mai 2026) : l'aspect ratio du container etait codeen

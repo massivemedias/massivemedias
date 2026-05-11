@@ -16,7 +16,7 @@ import {
   MapPin,
   ShoppingBag,
 } from 'lucide-react';
-import artistsData from '../data/artists';
+import { useArtists } from '../hooks/useArtists';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import LeadMagnetCTA from '../components/LeadMagnetCTA';
@@ -67,6 +67,7 @@ const fallbackFeaturedProjectLinks = [
 function Home() {
   const { t, lang, tx } = useLang();
   const { content } = useSiteContent();
+  const { artists: cmsArtists } = useArtists();
 
   // ── Service Cards (fallback si vide ou absent) ──
   const cmsServiceCards = content?.serviceCards?.length ? content.serviceCards : null;
@@ -130,22 +131,24 @@ function Home() {
     ? [...resolvedServiceCards, boutiqueCard]
     : [boutiqueCard];
 
-  // Oeuvres artistes pour le showcase homepage (aleatoire a chaque visite)
-  const artistsList = Object.values(artistsData);
+  // Oeuvres artistes pour le showcase homepage (aleatoire a chaque visite).
+  // SQUARE-MIGRATION (11 mai 2026) : lit directement le CMS Strapi via
+  // useArtists() au lieu du fallback local supprime. Memo sur la map
+  // cmsArtists pour refresh si le CMS finit son load apres le 1er render.
   const displayArtworks = useMemo(() => {
+    const artistsList = cmsArtists ? Object.values(cmsArtists) : [];
     const all = [];
-    artistsList.forEach(artist => {
-      (artist.prints || []).forEach(work => {
+    artistsList.forEach((artist) => {
+      (artist.prints || []).forEach((work) => {
         all.push({ ...work, artistSlug: artist.slug, artistName: artist.name });
       });
     });
-    // Fisher-Yates shuffle
     for (let i = all.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [all[i], all[j]] = [all[j], all[i]];
     }
     return all.slice(0, 8);
-  }, []);
+  }, [cmsArtists]);
 
   return (
     <>

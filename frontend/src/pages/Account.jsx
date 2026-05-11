@@ -21,7 +21,7 @@ import { AccountSidebarNav } from '../components/AdminSidebar';
 // Lazy import - jsPDF (~386KB) charge seulement au clic
 const loadGenerateInvoice = () => import('../utils/generateInvoice').then(m => m.generateInvoicePDF);
 import AddressAutocomplete from '../components/AddressAutocomplete';
-import artistsData from '../data/artists';
+import artistsData from '../data/artistPricing';
 
 const AccountArtistDashboard = lazy(() => import('../components/AccountArtistDashboard'));
 

@@ -23,7 +23,7 @@ import {
   createArtistPayment, getCommissions, getArtistTopArtworks,
 } from '../services/adminService';
 import ActivatePrivateSaleModal from '../components/ActivatePrivateSaleModal';
-import artistsHardcoded from '../data/artists';
+import artistsHardcoded from '../data/artistPricing';
 import { formatPrice } from '../utils/formatCurrency';
 
 function AdminArtistManager() {

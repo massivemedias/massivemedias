@@ -14,7 +14,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import { useArtists } from '../hooks/useArtists';
 import { mediaUrl } from '../utils/cms';
-import artistsData from '../data/artists';
+import artistsData from '../data/artistPricing';
 import { toFull } from '../utils/paths';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';

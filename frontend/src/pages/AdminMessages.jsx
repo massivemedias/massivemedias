@@ -17,7 +17,7 @@ import {
   getArtistMessagesAdmin, replyArtistMessage, updateArtistMessageStatus, deleteArtistMessage,
   approveEditRequest, rejectEditRequest,
 } from '../services/artistService';
-import artistsData from '../data/artists';
+import artistsData from '../data/artistPricing';
 
 // Helper: rend les URLs cliquables et parse les liens sociaux
 function Linkify({ text }) {

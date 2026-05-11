@@ -4,7 +4,8 @@ import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, 
 import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import artistsData, { artistPrinterTiers, artistFormats } from '../data/artists';
+import { artistPrinterTiers, artistFormats } from '../data/artistPricing';
+import { useArtists } from '../hooks/useArtists';
 // FIX-PRICING-TIERS (27 avril 2026) : import depuis SSOT au lieu de hardcoder
 // les arrays. STICKER_GRID expose 3 paliers (standard/medium/large) - cette
 // page admin affiche le palier 'standard' par defaut + une note pour rappeler
@@ -123,8 +124,12 @@ function Td({ children, className = 'text-heading', center = true }) {
 
 function AdminTarifs() {
   const { tx } = useLang();
+  const { artists: cmsArtists } = useArtists();
   const [copied, setCopied] = useState(false);
   const artistSheetRef = useRef(null);
+  // STRAPI-ONLY (11 mai 2026) : lit le CMS. artistsData reste comme nom
+  // de variable pour eviter de refactorer les usages downstream.
+  const artistsData = cmsArtists || {};
 
   // --- Copier texte artiste ---
   const handleCopy = () => {
