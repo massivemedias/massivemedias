@@ -833,14 +833,51 @@ function buildNotificationMessage(requestType: string, changeData: any, artistNa
 async function applyProfileChange(strapi: any, artistSlug: string, requestType: string, changeData: any) {
   if (!artistSlug) return;
 
-  const artists = await strapi.documents('api::artist.artist').findMany({
+  // Cherche en draft ET published pour eviter doublon (Strapi v5).
+  const draftArtists = await strapi.documents('api::artist.artist').findMany({
     filters: { slug: { $eq: artistSlug } },
+    status: 'draft',
     limit: 1,
   });
+  const publishedArtists = await strapi.documents('api::artist.artist').findMany({
+    filters: { slug: { $eq: artistSlug } },
+    status: 'published',
+    limit: 1,
+  });
+  let artist = (draftArtists[0] || publishedArtists[0]) as any;
 
-  if (!artists || artists.length === 0) return;
+  // UPSERT (10 mai 2026) : Avant ce fix, applyProfileChange retournait
+  // silencieusement quand l'artiste n'existait pas en CMS, mais le caller
+  // marquait quand meme l'edit-request comme 'approved'. Resultat : les
+  // modifs profil de Gallium (et tout autre artiste sans coquille CMS)
+  // tombaient dans le vide depuis le debut. Le frontend voyait
+  // "Sauvegarde", la trace admin etait creee, le statut etait 'approved',
+  // mais le site public ne refletait JAMAIS les changements.
+  // Fix : on cree la coquille a la volee si elle manque (avec slug,
+  // name fallback sur slug, bio vide). Puis le switch case ci-dessous
+  // applique normalement les valeurs envoyees par l'artiste.
+  if (!artist) {
+    try {
+      const fallbackName = changeData?.name
+        || changeData?.artistName
+        || artistSlug;
+      artist = await strapi.documents('api::artist.artist').create({
+        data: {
+          slug: artistSlug,
+          name: fallbackName,
+          bioFr: '',
+          bioEn: '',
+          socials: {},
+        },
+        status: 'published',
+      });
+      strapi.log.info(`[applyProfileChange] coquille CMS auto-creee pour ${artistSlug} (premiere modif via createEditRequest)`);
+    } catch (createErr: any) {
+      strapi.log.error(`[applyProfileChange] echec auto-create pour ${artistSlug}: ${createErr?.message}`);
+      return;
+    }
+  }
 
-  const artist = artists[0] as any;
   const updateData: any = {};
 
   switch (requestType) {
