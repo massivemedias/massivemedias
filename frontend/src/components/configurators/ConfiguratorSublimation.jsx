@@ -171,33 +171,27 @@ function ConfiguratorSublimation() {
         {/* ============ COLONNE GAUCHE : PREVIEW (lg:col-span-7, sticky) ============ */}
         <div className="lg:col-span-7 lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-2xl bg-black/10 p-4 md:p-6">
-            {/* Apercu image produit dynamique (textiles) ou statique (mug/tumbler/bag) */}
+            {/* Apercu image produit dynamique (textiles) ou statique (mug/tumbler/bag).
+                IMG-SYNC-FIX (12 mai 2026) : retrait d'AnimatePresence + motion.img
+                qui causaient un bug ou l'image ancienne (T-shirt) restait affichee
+                meme apres changement de produit (Long Sleeve). Le mode="wait"
+                + key change ne forcait pas le re-mount correctement dans le
+                nouveau layout 2-col. Remplace par un simple <img> avec key
+                explicite pour garantir le re-render. */}
             {hasColors ? (
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={`${product}-${selectedColor}`}
-                  src={currentGetImage(selectedColor)}
-                  alt={`${productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn }) : product} ${colorObj.name}`}
-                  className="w-full max-w-md mx-auto h-auto object-contain rounded-lg"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                />
-              </AnimatePresence>
+              <img
+                key={`${product}-${selectedColor}`}
+                src={currentGetImage(selectedColor)}
+                alt={`${productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn }) : product} ${colorObj.name}`}
+                className="w-full max-w-md mx-auto h-auto object-contain rounded-lg"
+              />
             ) : staticProductImages[product] ? (
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={product}
-                  src={staticProductImages[product]}
-                  alt={productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn, es: productLabel.labelEs || productLabel.labelEn }) : product}
-                  className="w-full max-w-md mx-auto h-auto object-contain rounded-lg"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                />
-              </AnimatePresence>
+              <img
+                key={product}
+                src={staticProductImages[product]}
+                alt={productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn, es: productLabel.labelEs || productLabel.labelEn }) : product}
+                className="w-full max-w-md mx-auto h-auto object-contain rounded-lg"
+              />
             ) : null}
 
             {/* Label couleur + taille sous l'image */}
