@@ -132,20 +132,10 @@ export function applyShader(ctx, rawShader, w, h) {
 
   if (shader === 'holographic') {
     ctx.globalCompositeOperation = 'source-atop';
-    // HOLO-SOFTEN-V2 (12 mai 2026) : user feedback "trop intense et
-    // artificiel avec une pointe centrale". Changements :
-    //   - alpha rainbow 0.28 -> 0.15 (reduction ~46%)
-    //   - origine du conicGradient decentree HORS du canvas (au coin
-    //     superieur-gauche, offset -30%) -> le point convergent du
-    //     conic-gradient n'est plus visible sur le sticker, donc plus
-    //     de "pointe centrale" nette.
-    //   - highlight blanc alpha 0.10 -> 0.05 (reduction 50%)
-    ctx.globalAlpha = 0.15;
+    ctx.globalAlpha = 0.28;
     let grad;
     if (typeof ctx.createConicGradient === 'function') {
-      // Origine deplacee au coin superieur-gauche, hors du canvas.
-      // L'effet rainbow reste visible mais sans le point convergent net.
-      grad = ctx.createConicGradient(0, -w * 0.3, -h * 0.3);
+      grad = ctx.createConicGradient(0, w / 2, h / 2);
       grad.addColorStop(0.00, '#ff00cc');
       grad.addColorStop(0.14, '#ff6600');
       grad.addColorStop(0.28, '#ffee00');
@@ -166,7 +156,7 @@ export function applyShader(ctx, rawShader, w, h) {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
 
-    ctx.globalAlpha = 0.05;
+    ctx.globalAlpha = 0.10;
     const high = ctx.createLinearGradient(0, 0, w, h);
     high.addColorStop(0.0, 'rgba(255,255,255,0)');
     high.addColorStop(0.4, 'rgba(255,255,255,1)');
