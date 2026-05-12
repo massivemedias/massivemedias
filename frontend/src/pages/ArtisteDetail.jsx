@@ -1041,8 +1041,16 @@ function ArtisteDetail({ subdomainSlug }) {
                               loading="lazy"
                               aria-hidden="true"
                             />
-                            {/* Cadre virtuel dimensionne dynamiquement par orientation.
-                                Agrandi via PAD pour masquer le cadre dessine de la photo. */}
+                            {/* MINIMAL-FRAME-V2 (12 mai 2026) : user feedback
+                                "je vois pas l'interet des strokes noirs". Pour
+                                les artworks photo/photo-artistique (deja
+                                completes visuellement), le cadre noir epais +
+                                passepartout creme ajoutaient de la matiere
+                                redondante. Maintenant : l'oeuvre s'affiche
+                                edge-to-edge avec un cadre 1.5% extremement
+                                fin + ombre douce. Style gallerie moderne
+                                minimaliste. Le user voit son artwork comme
+                                accroche directement au mur, sans fioritures. */}
                             <div
                               style={{
                                 position: 'absolute',
@@ -1050,39 +1058,27 @@ function ArtisteDetail({ subdomainSlug }) {
                                 left: `${frame.left}%`,
                                 width: `${frame.width}%`,
                                 height: `${frame.height}%`,
-                                padding: '4%',
-                                background: isLightFrame ? '#ffffff' : '#0a0a0a',
+                                padding: '1.5%',
+                                background: isLightFrame ? '#ffffff' : '#1a1a1a',
                                 boxShadow: isLightFrame
-                                  ? '0 10px 28px rgba(0,0,0,0.20), 0 3px 8px rgba(0,0,0,0.16)'
-                                  : '0 14px 36px rgba(0,0,0,0.50), 0 3px 8px rgba(0,0,0,0.34)',
+                                  ? '0 8px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.12)'
+                                  : '0 10px 30px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.28)',
                                 boxSizing: 'border-box',
                               }}
                             >
-                              {/* Passepartout (matte) creme interieur. */}
-                              <div
+                              {/* Oeuvre : remplit ~97% via cadre 1.5% padding,
+                                  plus de passepartout creme intermediaire. */}
+                              <img
+                                src={selectedPrint.fullImage || toFull(selectedPrint.image)}
+                                alt={getItemTitle(selectedPrint)}
+                                loading="lazy"
                                 style={{
                                   width: '100%',
                                   height: '100%',
-                                  padding: '4%',
-                                  background: '#f0ede8',
-                                  boxSizing: 'border-box',
+                                  objectFit: 'cover',
+                                  display: 'block',
                                 }}
-                              >
-                                {/* Oeuvre : remplit 100% du cadre virtuel via object-cover.
-                                    aspect-ratio impose explicitement le ratio target pour
-                                    eliminer tout vide / bande blanche. */}
-                                <img
-                                  src={selectedPrint.fullImage || toFull(selectedPrint.image)}
-                                  alt={getItemTitle(selectedPrint)}
-                                  loading="lazy"
-                                  style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                    display: 'block',
-                                  }}
-                                />
-                              </div>
+                              />
                             </div>
                             <div className="absolute bottom-3 right-3 pointer-events-none">
                               <ZoomIn className="w-5 h-5 text-white drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)]" />
