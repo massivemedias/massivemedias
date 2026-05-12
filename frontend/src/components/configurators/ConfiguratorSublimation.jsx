@@ -158,24 +158,29 @@ function ConfiguratorSublimation() {
 
   return (
     <>
-      {/* Product type selector - icons + noms, une seule ligne scrollable */}
+      {/* Product type selector - icons + noms.
+          MOBILE-FIX (12 mai 2026) : flex-wrap pour que les 7 boutons passent
+          a la ligne sur mobile au lieu de deborder. Padding compact mobile
+          (py-2 px-3) + plus genereux desktop (md:py-2.5 md:px-3.5). Plus de
+          truncate / whitespace-nowrap qui pouvaient causer "Long Sleev..."
+          ou "Hoodi..." sur petits ecrans. */}
       <div className="mb-4 md:mb-5">
         <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
           {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
         </label>
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex flex-wrap gap-2">
           {sublimationProducts.map(p => {
             const Icon = PRODUCT_ICONS[p.id] || Package;
             return (
               <button
                 key={p.id}
                 onClick={() => handleProductChange(p.id)}
-                className={`flex items-center gap-2 py-2.5 px-3.5 rounded-lg text-sm font-semibold transition-all border-2 whitespace-nowrap flex-shrink-0 ${product === p.id
+                className={`flex items-center gap-1.5 md:gap-2 py-2 px-3 md:py-2.5 md:px-3.5 rounded-lg text-xs md:text-sm font-semibold transition-all border-2 ${product === p.id
                   ? 'border-accent option-selected'
                   : 'border-transparent hover:border-grey-muted/30 option-default'
                 }`}
               >
-                <Icon size={15} className={product === p.id ? 'text-accent' : 'text-grey-muted'} />
+                <Icon size={14} className={product === p.id ? 'text-accent' : 'text-grey-muted'} />
                 {tx({ fr: p.labelFr, en: p.labelEn, es: p.labelEs || p.labelEn })}
               </button>
             );
