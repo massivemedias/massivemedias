@@ -65,7 +65,7 @@ export function drawStickerWithStroke(ctx, img, strokeColor, strokeWidth) {
     const sharp = document.createElement('canvas');
     sharp.width = drawW;
     sharp.height = drawH;
-    const sharpCtx = sharp.getContext('2d');
+    const sharpCtx = sharp.getContext('2d', { willReadFrequently: true });
     sharpCtx.imageSmoothingEnabled = true;
     sharpCtx.drawImage(img, 0, 0, drawW, drawH);
     sharpCtx.globalCompositeOperation = 'source-in';
@@ -78,7 +78,7 @@ export function drawStickerWithStroke(ctx, img, strokeColor, strokeWidth) {
     const dilated = document.createElement('canvas');
     dilated.width = w;
     dilated.height = h;
-    const dctx = dilated.getContext('2d');
+    const dctx = dilated.getContext('2d', { willReadFrequently: true });
     const steps = 32;
     for (let i = 0; i < steps; i++) {
       const angle = (i / steps) * Math.PI * 2;
@@ -286,7 +286,7 @@ export function applyShader(ctx, rawShader, w, h) {
     const tmp = document.createElement('canvas');
     tmp.width = w;
     tmp.height = h;
-    const tc = tmp.getContext('2d');
+    const tc = tmp.getContext('2d', { willReadFrequently: true });
 
     const draw4Star = (c, x, y, outerR, innerR, angle = 0) => {
       c.beginPath();
@@ -438,7 +438,7 @@ export function drawSticker(canvas, img, opts) {
   const { shape = 'diecut', shader = 'none', strokeColor = '#ffffff', strokeWidth = 0, bgColor } = opts || {};
   const W = canvas.width;
   const H = canvas.height;
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
   ctx.clearRect(0, 0, W, H);
 
@@ -460,7 +460,7 @@ export function drawSticker(canvas, img, opts) {
   const inner = document.createElement('canvas');
   inner.width = innerW;
   inner.height = innerH;
-  const ictx = inner.getContext('2d');
+  const ictx = inner.getContext('2d', { willReadFrequently: true });
 
   // Clip selon la forme (sauf diecut qui suit la silhouette de l'image)
   ictx.save();
@@ -497,7 +497,7 @@ export function drawSticker(canvas, img, opts) {
     const off = document.createElement('canvas');
     off.width = drawW;
     off.height = drawH;
-    const octx = off.getContext('2d');
+    const octx = off.getContext('2d', { willReadFrequently: true });
     drawStickerWithStroke(octx, img, strokeColor, 0);
 
     if (strokeWidth > 0) {
@@ -505,7 +505,7 @@ export function drawSticker(canvas, img, opts) {
       const off2 = document.createElement('canvas');
       off2.width = drawW + pad * 2;
       off2.height = drawH + pad * 2;
-      const o2ctx = off2.getContext('2d');
+      const o2ctx = off2.getContext('2d', { willReadFrequently: true });
       drawStickerWithStroke(o2ctx, img, strokeColor, pad);
       const finalRatio = off2.width / off2.height;
       let fw, fh;
@@ -620,7 +620,7 @@ export function canvasToBlobUrl(canvas) {
       const ratio = Math.min(maxDim / canvas.width, maxDim / canvas.height, 1);
       thumb.width = Math.round(canvas.width * ratio);
       thumb.height = Math.round(canvas.height * ratio);
-      const ctx = thumb.getContext('2d');
+      const ctx = thumb.getContext('2d', { willReadFrequently: true });
       ctx.drawImage(canvas, 0, 0, thumb.width, thumb.height);
       // toDataURL avec compression PNG (lossless pour stickers qui ont souvent
       // peu de couleurs). Si c'est trop gros on bascule sur JPEG q=0.85.

@@ -579,12 +579,6 @@ function AdminOrders() {
       if (searchDebounce) params.search = searchDebounce;
       const { data } = await getOrders(params);
       const received = Array.isArray(data?.data) ? data.data : [];
-      // LOG DE PREUVE : on verifie ici que toute la data traverse bien le tuyau.
-      console.log(
-        '[AdminOrders] Nombre TOTAL de commandes recues du serveur :',
-        received.length,
-        '(meta.total backend:', data?.meta?.total, '| pageSize:', meta.pageSize, '| page:', meta.page, ')',
-      );
       if (data?.meta?.total > received.length) {
         console.warn(
           '[AdminOrders] ATTENTION : le backend indique', data.meta.total,

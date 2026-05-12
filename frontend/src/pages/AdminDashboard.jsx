@@ -185,17 +185,6 @@ function AdminDashboard() {
         const res = await api.get('/admin-notes/list');
         if (cancelled) return;
 
-        // Log de diagnostic : si le widget affiche encore "Aucune note" malgre
-        // des entrees en BDD, ce log montrera EXACTEMENT ce que renvoie l'API.
-        // A supprimer une fois le bug client confirme resolu.
-        console.log('[Dashboard.Notes] API response shape :', {
-          hasData: !!res?.data,
-          dataIsArray: Array.isArray(res?.data),
-          hasDataData: !!res?.data?.data,
-          dataDataLength: Array.isArray(res?.data?.data) ? res.data.data.length : 'not array',
-          sampleKeys: res?.data?.data?.[0] ? Object.keys(res.data.data[0]) : null,
-        });
-
         const cmsNotes = (res.data?.data || []).map(n => ({
           id: n.documentId || n.id,
           title: n.title || '',

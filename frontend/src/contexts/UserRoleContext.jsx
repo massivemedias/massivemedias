@@ -59,11 +59,23 @@ export function UserRoleProvider({ children }) {
 
     async function fetchRole(attempt = 1) {
       try {
-        const { data } = await api.get('/user-roles/by-email', {
+        // SILENT-401 (12 mai 2026) : validateStatus accepte les 401 sans
+        // throw -> evite le log "401 (Unauthorized)" dans la console
+        // browser pour un user non-authentifie cote backend. Si 401, on
+        // detecte le response.status et on tombe sur le fallback 'user'
+        // graceful, sans bruit dans la console.
+        const response = await api.get('/user-roles/by-email', {
           params: { email: user.email },
+          validateStatus: (s) => s < 500, // accepte 200-499 sans throw
         });
         if (!cancelled) {
-          const rd = data.data || { role: 'user', artistSlug: null };
+          if (response.status === 401) {
+            // Session backend expiree ou pas authentifie -> fallback silencieux
+            setRoleData({ role: 'user', artistSlug: null });
+            setFetched(true);
+            return;
+          }
+          const rd = response.data?.data || { role: 'user', artistSlug: null };
           setRoleData(rd);
           setCachedRole(user.email, rd);
           setFetched(true);
@@ -76,7 +88,6 @@ export function UserRoleProvider({ children }) {
               if (!cancelled) fetchRole(attempt + 1);
             }, attempt * 3000);
           } else if (!cached) {
-            // After all retries and no cache, fallback to user
             setRoleData({ role: 'user', artistSlug: null });
             setFetched(true);
           }
@@ -94,12 +105,14 @@ export function UserRoleProvider({ children }) {
   const refreshRole = useCallback(async () => {
     if (!user?.email) return;
     try {
-      const { data } = await api.get('/user-roles/by-email', {
+      const response = await api.get('/user-roles/by-email', {
         params: { email: user.email },
+        validateStatus: (s) => s < 500, // SILENT-401 : accepte 401 sans throw
       });
-      setRoleData(data.data || { role: 'user', artistSlug: null });
+      if (response.status === 401) return; // fallback silencieux
+      setRoleData(response.data?.data || { role: 'user', artistSlug: null });
     } catch {
-      // ignore
+      // ignore network errors
     }
   }, [user?.email]);
 

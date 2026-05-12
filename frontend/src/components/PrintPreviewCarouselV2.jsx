@@ -163,7 +163,7 @@ function PrintPreviewCarousel({ image, withFrame, frameColor, format, formats, t
       const ch = Math.round(cw * roomRatio);
       canvas.width = cw;
       canvas.height = ch;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
       ctx.drawImage(roomImg, 0, 0, cw, ch);
 
       // Chroma-key: identifier les pixels verts (cadre photo + parasites
