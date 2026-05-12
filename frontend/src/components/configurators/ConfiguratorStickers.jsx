@@ -156,8 +156,19 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   const handleFilesChange = (files) => {
     setUploadedFiles(files);
-    const firstImage = files.find(f => (f.type || '').startsWith('image/') || /\.(png|jpe?g|webp|svg)$/i.test(f.name || ''));
-    setLocalPreviewUrl(firstImage?.url || null);
+    // PREVIEW-DETECT-V2 (12 mai 2026) : FileUpload stocke le MIME dans `mime`
+    // et le filename original dans `originalName` (le `name` est un hash
+    // Google Drive sans extension). Avant on cherchait seulement `type` et
+    // `name` -> aucun match -> preview ne se replace pas. Maintenant on
+    // verifie mime + type + name + originalName et on accepte plus de
+    // formats (gif/bmp/tiff). Fallback sur driveUrl si url est vide.
+    const firstImage = files.find((f) => {
+      const mime = f.mime || f.type || '';
+      if (mime.startsWith('image/')) return true;
+      const candidate = f.originalName || f.name || '';
+      return /\.(png|jpe?g|webp|svg|gif|bmp|tiff?|avif)$/i.test(candidate);
+    });
+    setLocalPreviewUrl(firstImage?.url || firstImage?.driveUrl || null);
   };
 
   const handleAddToCart = () => {
