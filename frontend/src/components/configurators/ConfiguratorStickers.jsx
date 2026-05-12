@@ -199,44 +199,6 @@ function ConfiguratorStickers({ onFinishChange }) {
               </span>
             </div>
 
-            {/* Toggle Retirer l'arriere-plan : TOUJOURS visible dans la zone
-                preview pour que l'utilisateur sache que la feature existe.
-                Disabled (avec hint) tant qu'aucune image custom n'a ete
-                deposee - sur l'image par defaut (logo Massive) ce serait
-                inutile car le fond est deja transparent. */}
-            <div className="mt-4 mx-auto max-w-md">
-              <button
-                onClick={() => setActiveRemoveBg((v) => !v)}
-                disabled={isRemovingBg || !localPreviewUrl}
-                title={!localPreviewUrl ? tx({ fr: 'Depose une image pour activer', en: 'Upload an image to enable', es: 'Sube una imagen para activar' }) : ''}
-                className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all border-2 ${
-                  activeRemoveBg
-                    ? 'border-accent bg-accent/10 text-accent'
-                    : 'border-grey-muted/20 hover:border-grey-muted/40 text-heading'
-                } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-grey-muted/20`}
-              >
-                {isRemovingBg ? (
-                  <>
-                    <Loader2 size={15} className="animate-spin" />
-                    {tx({ fr: 'Detourage en cours...', en: 'Removing background...', es: 'Recortando...' })}
-                  </>
-                ) : (
-                  <>
-                    <Scissors size={15} />
-                    {!localPreviewUrl
-                      ? tx({ fr: "Retirer l'arriere-plan (depose une image)", en: 'Remove background (upload first)', es: 'Quitar fondo (subir imagen)' })
-                      : activeRemoveBg
-                      ? tx({ fr: 'Arriere-plan retire - cliquer pour annuler', en: 'Background removed - click to undo', es: 'Fondo eliminado - clic para deshacer' })
-                      : tx({ fr: "Retirer l'arriere-plan", en: 'Remove background', es: 'Quitar fondo' })}
-                  </>
-                )}
-              </button>
-              {bgRemoveError && (
-                <p className="text-xs text-red-400 mt-1.5 text-center">
-                  {tx({ fr: 'Erreur : ', en: 'Error: ', es: 'Error: ' })}{bgRemoveError}
-                </p>
-              )}
-            </div>
           </div>
         </div>
 
@@ -369,6 +331,44 @@ function ConfiguratorStickers({ onFinishChange }) {
               />
               <span className="text-xs font-mono text-grey-muted w-6 text-right">{strokeWidth}</span>
             </div>
+          </div>
+
+          {/* Toggle Retirer l'arriere-plan : juste sous le selecteur de
+              contour. Disabled (avec hint) tant qu'aucune image custom n'a
+              ete deposee - sur l'image par defaut (logo Massive) ce serait
+              inutile car le fond est deja transparent. */}
+          <div>
+            <button
+              onClick={() => setActiveRemoveBg((v) => !v)}
+              disabled={isRemovingBg || !localPreviewUrl}
+              title={!localPreviewUrl ? tx({ fr: 'Depose une image pour activer', en: 'Upload an image to enable', es: 'Sube una imagen para activar' }) : ''}
+              className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all border-2 ${
+                activeRemoveBg
+                  ? 'border-accent bg-accent/10 text-accent'
+                  : 'border-grey-muted/20 hover:border-grey-muted/40 text-heading'
+              } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-grey-muted/20`}
+            >
+              {isRemovingBg ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  {tx({ fr: 'Detourage en cours...', en: 'Removing background...', es: 'Recortando...' })}
+                </>
+              ) : (
+                <>
+                  <Scissors size={15} />
+                  {!localPreviewUrl
+                    ? tx({ fr: "Retirer l'arriere-plan (depose une image)", en: 'Remove background (upload first)', es: 'Quitar fondo (subir imagen)' })
+                    : activeRemoveBg
+                    ? tx({ fr: 'Arriere-plan retire - cliquer pour annuler', en: 'Background removed - click to undo', es: 'Fondo eliminado - clic para deshacer' })
+                    : tx({ fr: "Retirer l'arriere-plan", en: 'Remove background', es: 'Quitar fondo' })}
+                </>
+              )}
+            </button>
+            {bgRemoveError && (
+              <p className="text-xs text-red-400 mt-1.5 text-center">
+                {tx({ fr: 'Erreur : ', en: 'Error: ', es: 'Error: ' })}{bgRemoveError}
+              </p>
+            )}
           </div>
 
           {/* Notes */}
