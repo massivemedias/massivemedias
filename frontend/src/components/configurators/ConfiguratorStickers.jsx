@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { ShoppingCart, Check, Sparkles, Info, Scissors, Loader2, ChevronDown, Upload } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, Info, Scissors, Loader2, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -195,15 +195,15 @@ function ConfiguratorStickers({ onFinishChange }) {
         {/* ============ PREVIEW (col gauche, grand) ============ */}
         <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-2xl p-3 md:p-4 lg:p-6 bg-black/10">
-            {/* CLICKABLE-PREVIEW (12 mai 2026) : wrapper cliquable autour
-                du canvas qui declenche le file picker du composant
-                FileUpload (mode upload Drive complet). Le overlay hover
-                avec icone Upload + texte indique que la zone est
-                interactive. Le tilt 3D du canvas n'est PAS bloqué par
-                ce wrapper (pointer-events:none sur l'overlay).
-                Role/tabIndex pour accessibilite : focusable au clavier. */}
+            {/* CLICKABLE-PREVIEW v2 (12 mai 2026) : wrapper cliquable autour
+                du canvas qui declenche le file picker. Retrait de l'overlay
+                sombre + icone + texte sur user feedback ("non-instinctif",
+                "fioritures visuelles"). Seul indicateur : cursor-pointer.
+                Le tilt 3D + FX live du canvas restent visibles au hover
+                sans aucune obstruction. Accessibilite preservee via
+                role/tabIndex/aria-label + clavier Enter/Space. */}
             <div
-              className="relative group cursor-pointer w-full max-w-lg mx-auto"
+              className="cursor-pointer w-full max-w-lg mx-auto"
               onClick={openFilePicker}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFilePicker(); } }}
               role="button"
@@ -220,18 +220,6 @@ function ConfiguratorStickers({ onFinishChange }) {
                 enableTilt
                 className="w-full"
               />
-              {/* Overlay hover : assombrit la zone + affiche un appel a
-                  action. pointer-events:none pour que le clic atteigne
-                  toujours le parent (pas un double-handler) et que le
-                  hover du tilt 3D du canvas continue de fonctionner. */}
-              <div
-                className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl bg-black/0 group-hover:bg-black/45 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none"
-              >
-                <Upload size={32} className="text-white drop-shadow-lg" />
-                <span className="text-white text-sm font-semibold uppercase tracking-wider drop-shadow-md">
-                  {tx({ fr: 'Televerse ton image', en: 'Upload your image', es: 'Sube tu imagen' })}
-                </span>
-              </div>
             </div>
             <div className="mt-4 text-center">
               <span className="text-heading text-base font-semibold">

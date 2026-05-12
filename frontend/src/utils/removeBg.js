@@ -104,8 +104,22 @@ export async function removeBackground(sourceUrl) {
   // depuis notre dist - le WASM ort-wasm-simd-threaded.jsep depasse la
   // limite 25 MiB de CF Pages. Le post-build supprime ces fichiers du dist
   // (cf. package.json build script).
+  //
+  // QUALITY-V2 (12 mai 2026) : on passe explicitement model='isnet' (full
+  // precision FP32) au lieu du default 'isnet_fp16' (half precision FP16).
+  // FP32 -> bords pixel-perfect, aucun flou periphérique introduit par
+  // l'arrondi de quantization. Trade-off : 2x plus lent et 2x plus de
+  // memoire, mais le user a explicitement rejete le rendu actuel comme
+  // 'camouflé par du flou'.
+  // output.quality 1.0 + format image/png : pas de re-compression lossy
+  // qui pourrait flouter les bords du canal alpha.
   const blob = await removeBackgroundFn(sourceBlob, {
     publicPath: 'https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/',
+    model: 'isnet',
+    output: {
+      format: 'image/png',
+      quality: 1.0,
+    },
     debug: false,
   });
   const blobUrl = URL.createObjectURL(blob);
