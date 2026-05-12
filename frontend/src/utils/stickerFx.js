@@ -211,6 +211,26 @@ export function applyShader(ctx, rawShader, w, h) {
   }
 
   else if (shader === 'broken-glass') {
+    // BROKEN-GLASS-V4 (12 mai 2026) : refonte complete pour realisme
+    // "cracked ice / shattered glass" sur user feedback ("triangles plats
+    // facon vitrail vs verre brise reel"). V3 dessinait des triangles HSL
+    // OPAQUES (alpha 0.18-0.50, fill hsl 100% sat) qui couvraient le
+    // design comme un vitrail colore. V4 transforme chaque eclat en une
+    // facette de verre majoritairement transparente :
+    //   1. Gradient lineaire IRISE le long d'une normale 2D simulee
+    //      (alpha 0.03-0.13 -> ~70% reduction). Suggere l'inclinaison
+    //      sans masquer le design dessous.
+    //   2. Bucket de teinte par angle de la normale (cyan/magenta/jaune/
+    //      violet) -> chaque facette reflechit une partie differente du
+    //      spectre, comme un vrai eclat irise.
+    //   3. Specular ponctuel (~28% des facettes) en blanc pur : ces eclats
+    //      sont deja "allumes" dans la base, donnent du relief.
+    //   4. Cracks blanches plus fines mais plus nombreuses (12 -> 16).
+    //   5. Voile bleute global divise par 2 (0.07 -> 0.035) pour ne pas
+    //      tasser le design dessous.
+    // Le mouvement dynamique vient du CSS overlay (color-dodge + drift)
+    // qui balaye des reflets clairs ; les facettes touchees par le
+    // balayage s'eclairent davantage = illusion shard-by-shard correcte.
     ctx.globalCompositeOperation = 'source-atop';
 
     let seed = ((w * 31337) ^ (h * 42069)) >>> 0;
@@ -219,17 +239,15 @@ export function applyShader(ctx, rawShader, w, h) {
       return (seed >>> 0) / 4294967296;
     };
 
-    const FACETS = 34;
-    const hueShift = rnd() * 360;
+    const FACETS = 38;
     const refSize = Math.min(w, h);
 
+    // Pre-genere les donnees des facettes pour pouvoir dessiner en
+    // plusieurs passes (gradient irise puis highlight ponctuel)
+    const facetData = [];
     for (let i = 0; i < FACETS; i++) {
       const cx = rnd() * w;
       const cy = rnd() * h;
-      // FINER-SHARDS (12 mai 2026) : reduction de ~2% sur la taille des
-      // facettes (avant 0.07-0.27 -> maintenant 0.05-0.23). User feedback :
-      // les eclats de verre etaient trop gros vs le motif du sticker, ne
-      // respectaient pas le design. Maintenant plus fins, plus discrets.
       const size = refSize * (0.05 + rnd() * 0.18);
       const a0 = rnd() * Math.PI * 2;
       const a1 = a0 + Math.PI * (0.35 + rnd() * 1.0);
@@ -237,32 +255,115 @@ export function applyShader(ctx, rawShader, w, h) {
       const r0 = size * (0.6 + rnd() * 0.5);
       const r1 = size * (0.5 + rnd() * 0.6);
       const r2 = size * (0.4 + rnd() * 0.7);
+      const v0x = cx + Math.cos(a0) * r0;
+      const v0y = cy + Math.sin(a0) * r0;
+      const v1x = cx + Math.cos(a1) * r1;
+      const v1y = cy + Math.sin(a1) * r1;
+      const v2x = cx + Math.cos(a2) * r2;
+      const v2y = cy + Math.sin(a2) * r2;
+      const ccx = (v0x + v1x + v2x) / 3;
+      const ccy = (v0y + v1y + v2y) / 3;
+      // "Normale 2D" simulee = direction selon laquelle la facette penche
+      const normalAngle = rnd() * Math.PI * 2;
+      facetData.push({
+        v0x, v0y, v1x, v1y, v2x, v2y,
+        cx: ccx, cy: ccy, size,
+        nx: Math.cos(normalAngle),
+        ny: Math.sin(normalAngle),
+        normalAngle,
+        lit: rnd() < 0.28, // ~28% des facettes ont un specular dans la base
+        litStrength: 0.35 + rnd() * 0.35,
+      });
+    }
 
+    // Passe 1 : gradient irise tres subtil par facette (le design reste
+    // largement visible dessous)
+    for (const f of facetData) {
       ctx.save();
-      ctx.globalAlpha = 0.18 + rnd() * 0.32;
-      const hue = (hueShift + i * (360 / FACETS) + rnd() * 25) % 360;
-      ctx.fillStyle = `hsl(${hue}, 100%, 62%)`;
+      const gradLen = f.size * 0.85;
+      const gx0 = f.cx - f.nx * gradLen;
+      const gy0 = f.cy - f.ny * gradLen;
+      const gx1 = f.cx + f.nx * gradLen;
+      const gy1 = f.cy + f.ny * gradLen;
+      const grad = ctx.createLinearGradient(gx0, gy0, gx1, gy1);
+
+      // Bucket de teinte selon l'angle de la normale (4 zones du
+      // spectre irise : cyan / magenta / jaune / violet)
+      const bucket = Math.floor(((f.normalAngle / Math.PI + 1) * 0.5) * 4) % 4;
+      if (bucket === 0) {
+        // cyan / bleu clair
+        grad.addColorStop(0, 'rgba(180,220,255,0.02)');
+        grad.addColorStop(0.5, 'rgba(210,240,255,0.13)');
+        grad.addColorStop(1, 'rgba(255,255,255,0.02)');
+      } else if (bucket === 1) {
+        // magenta / rose
+        grad.addColorStop(0, 'rgba(255,205,235,0.02)');
+        grad.addColorStop(0.5, 'rgba(255,220,240,0.11)');
+        grad.addColorStop(1, 'rgba(245,210,255,0.02)');
+      } else if (bucket === 2) {
+        // jaune / vert clair
+        grad.addColorStop(0, 'rgba(225,255,225,0.02)');
+        grad.addColorStop(0.5, 'rgba(255,250,210,0.10)');
+        grad.addColorStop(1, 'rgba(210,255,235,0.02)');
+      } else {
+        // violet / lavande
+        grad.addColorStop(0, 'rgba(220,210,255,0.02)');
+        grad.addColorStop(0.5, 'rgba(230,220,255,0.12)');
+        grad.addColorStop(1, 'rgba(255,225,250,0.02)');
+      }
+
+      ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.moveTo(cx + Math.cos(a0) * r0, cy + Math.sin(a0) * r0);
-      ctx.lineTo(cx + Math.cos(a1) * r1, cy + Math.sin(a1) * r1);
-      ctx.lineTo(cx + Math.cos(a2) * r2, cy + Math.sin(a2) * r2);
+      ctx.moveTo(f.v0x, f.v0y);
+      ctx.lineTo(f.v1x, f.v1y);
+      ctx.lineTo(f.v2x, f.v2y);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
     }
 
+    // Passe 2 : specular ponctuel sur ~28% des facettes (les eclats
+    // "deja allumes" dans la base statique - le reste est presque
+    // transparent, attendant que le CSS overlay les eclaire au hover)
+    for (const f of facetData) {
+      if (!f.lit) continue;
+      ctx.save();
+      // Clip au polygon -> le specular reste contenu dans la facette
+      ctx.beginPath();
+      ctx.moveTo(f.v0x, f.v0y);
+      ctx.lineTo(f.v1x, f.v1y);
+      ctx.lineTo(f.v2x, f.v2y);
+      ctx.closePath();
+      ctx.clip();
+
+      // Position du highlight legerement decalee dans la direction de
+      // la normale -> simule un point de reflet specifique a l'angle
+      const hx = f.cx + f.nx * f.size * 0.18;
+      const hy = f.cy + f.ny * f.size * 0.18;
+      const hR = f.size * 0.38;
+      const hgrad = ctx.createRadialGradient(hx, hy, 0, hx, hy, hR);
+      hgrad.addColorStop(0, `rgba(255,255,255,${f.litStrength})`);
+      hgrad.addColorStop(0.45, `rgba(255,255,255,${f.litStrength * 0.35})`);
+      hgrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = hgrad;
+      ctx.fillRect(hx - hR, hy - hR, hR * 2, hR * 2);
+      ctx.restore();
+    }
+
+    // Passe 3 : cracks blanches (structure principale du verre brise -
+    // c'est ce qui donne au sticker son aspect "fracture" net)
     ctx.save();
     ctx.strokeStyle = 'rgba(255,255,255,0.7)';
     ctx.lineCap = 'round';
-    const CRACKS = 12;
+    const CRACKS = 16;
     for (let c = 0; c < CRACKS; c++) {
       const x0 = rnd() * w;
       const y0 = rnd() * h;
       const angle = rnd() * Math.PI * 2;
       const mainLen = refSize * (0.08 + rnd() * 0.28);
       ctx.save();
-      ctx.globalAlpha = 0.35 + rnd() * 0.30;
-      ctx.lineWidth = 0.4 + rnd() * 1.2;
+      ctx.globalAlpha = 0.30 + rnd() * 0.30;
+      ctx.lineWidth = 0.3 + rnd() * 1.1;
       ctx.beginPath();
       ctx.moveTo(x0, y0);
       ctx.lineTo(x0 + Math.cos(angle) * mainLen, y0 + Math.sin(angle) * mainLen);
@@ -278,8 +379,10 @@ export function applyShader(ctx, rawShader, w, h) {
     }
     ctx.restore();
 
+    // Passe 4 : voile bleute global tres tres subtil (avant 0.07 -> 0.035)
+    // Garde une touche "cool glass" sans tasser le design dessous.
     ctx.save();
-    ctx.globalAlpha = 0.07;
+    ctx.globalAlpha = 0.035;
     ctx.fillStyle = 'rgba(220,230,255,1)';
     ctx.fillRect(0, 0, w, h);
     ctx.restore();

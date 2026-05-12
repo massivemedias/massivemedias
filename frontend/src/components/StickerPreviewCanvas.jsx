@@ -106,84 +106,91 @@ function getFxOverlayStyle(fx, tilt) {
       };
     case 'broken-glass':
     case 'broken_glass': {
-      // BROKEN-GLASS-V3 (12 mai 2026) : effet 3D renforce sur user feedback
-      // ("plus en 3D quand on passe la souris"). Changements vs V2 :
-      //   - amp augmente de 18 a 26 (constellation s'eloigne plus du
-      //     centre quand on bouge -> illusion de parallax/depth).
-      //   - drift multiplier 1.5 -> 2.4 (les reflets bougent plus vite
-      //     que le curseur, donnent l'impression que le verre est en
-      //     volume au-dessus du sticker).
-      //   - Spread des facettes module par tilt : les facettes proches
-      //     du curseur GROSSISSENT (1.0 -> 1.6x), celles loin retrecissent
-      //     (1.0 -> 0.7x) -> perspective forte, comme une lumiere ponctuelle
-      //     proche du verre.
-      //   - Nouveau highlight specular concentre (15% du sticker) au
-      //     centre du curseur -> brille intensement, simule un point de
-      //     lumiere puissant sur la surface fracturee.
-      // mix-blend-mode color-dodge eclaire fortement les arretes blanches
-      // dessinees par le canvas (FACETS reduites a 5-23% dans stickerFx.js).
-      const amp = 26;
+      // BROKEN-GLASS-V4 (12 mai 2026) : refonte realiste "verre brise reel"
+      // sur user feedback ("triangles colores plats vs cracked ice reflets
+      // dynamiques"). Avec la passe canvas V4 qui rend les eclats
+      // MAJORITAIREMENT TRANSPARENTS (iridescence subtile uniquement),
+      // l'overlay CSS doit fournir des reflets blancs/lumineux puissants
+      // qui se promenent d'un eclat a l'autre selon la souris. Changements
+      // vs V3 :
+      //   - Constellation : couleurs pastel reduites -> blanc/argent
+      //     dominant. Les iridescences viennent du canvas, pas de l'overlay.
+      //   - Amplitude amp 26 -> 34 (+31%) : reflets se promenent plus
+      //     large -> impression franche de "lumiere qui glisse".
+      //   - Drift 2.4 -> 3.8 (+58%) : parallax beaucoup plus marque,
+      //     les reflets surfent loin devant la souris.
+      //   - Specular central plus serre (15% -> 12%) et plus intense
+      //     (alpha 0.85 -> 0.98) -> ressemble a un vrai point de lumiere
+      //     speculaire au lieu d'un halo flou.
+      //   - prismBand allege (0.4 -> 0.28 alpha max) : le rainbow vient
+      //     surtout du canvas maintenant, l'overlay donne juste le
+      //     "wash" de couleur qui bascule.
+      // mix-blend-mode color-dodge : la lumiere ne s'ajoute que sur les
+      // facettes claires du canvas -> illusion d'eclats deja la qui
+      // s'illuminent quand le faisceau les touche.
+      const amp = 34;
       const facets = [
-        { ox: 0,         oy: 0,          color: 'rgba(255,255,255,0.95)', spread: 8 },
-        { ox: -amp,      oy: -amp * 0.6, color: 'rgba(180,230,255,0.75)', spread: 6 },
-        { ox: amp * 0.8, oy: -amp * 0.4, color: 'rgba(255,200,240,0.65)', spread: 6 },
-        { ox: -amp * 1.3,oy: amp * 0.55, color: 'rgba(200,255,230,0.6)',  spread: 5 },
-        { ox: amp * 0.55,oy: amp * 1.1,  color: 'rgba(255,240,200,0.65)', spread: 5 },
-        { ox: amp * 1.5, oy: -amp * 0.2, color: 'rgba(220,200,255,0.6)',  spread: 4 },
-        { ox: -amp * 0.75,oy: amp * 1.2, color: 'rgba(255,220,255,0.55)', spread: 4 },
-        { ox: amp * 1.1, oy: amp * 0.9,  color: 'rgba(255,250,200,0.5)',  spread: 4 },
-        { ox: -amp * 0.4,oy: -amp * 1.1, color: 'rgba(200,220,255,0.55)', spread: 5 },
+        { ox: 0,           oy: 0,           color: 'rgba(255,255,255,0.98)', spread: 7 },
+        { ox: -amp,        oy: -amp * 0.6,  color: 'rgba(245,250,255,0.78)', spread: 6 },
+        { ox: amp * 0.85,  oy: -amp * 0.45, color: 'rgba(255,250,250,0.70)', spread: 6 },
+        { ox: -amp * 1.35, oy: amp * 0.55,  color: 'rgba(250,255,250,0.62)', spread: 5 },
+        { ox: amp * 0.55,  oy: amp * 1.15,  color: 'rgba(255,253,245,0.65)', spread: 5 },
+        { ox: amp * 1.55,  oy: -amp * 0.2,  color: 'rgba(250,248,255,0.58)', spread: 4 },
+        { ox: -amp * 0.75, oy: amp * 1.25,  color: 'rgba(255,250,255,0.55)', spread: 4 },
+        { ox: amp * 1.15,  oy: amp * 0.95,  color: 'rgba(255,255,250,0.50)', spread: 4 },
+        { ox: -amp * 0.4,  oy: -amp * 1.15, color: 'rgba(248,250,255,0.55)', spread: 5 },
       ];
-      const driftX = -tilt.y * 2.4;
-      const driftY = tilt.x * 2.4;
-      // 3D perspective : intensite du tilt en valeur normalisee (0-1).
-      // Plus on incline, plus les facettes proches grossissent et celles
-      // loin retrecissent (parallax simulee).
+      const driftX = -tilt.y * 3.8;
+      const driftY = tilt.x * 3.8;
+      // Magnitude du tilt 0-1 : amplifie la parallax des facettes
+      // (proches grossissent, lointaines retrecissent) quand le sticker
+      // "bascule" sous le doigt/curseur.
       const tiltMag = Math.min(1, Math.sqrt(tilt.x * tilt.x + tilt.y * tilt.y) / 10);
       const constellation = facets.map((f) => {
         const cx = px + f.ox + driftX;
         const cy = py + f.oy + driftY;
-        // Distance au curseur (en %), pour moduler le spread.
         const dx = cx - px;
         const dy = cy - py;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        // Facette proche (dist < 20%) -> spread x1.6 ; loin (> 40%) -> x0.7.
-        const proximityBoost = dist < 20 ? 1 + tiltMag * 0.6 : dist > 40 ? 1 - tiltMag * 0.3 : 1;
+        // Facette proche du curseur grossit (1.0 -> 1.7x), loin retrecit
+        // (1.0 -> 0.65x) -> illusion d'une source ponctuelle proche du verre.
+        const proximityBoost = dist < 20 ? 1 + tiltMag * 0.7 : dist > 40 ? 1 - tiltMag * 0.35 : 1;
         const finalSpread = Math.max(2, f.spread * proximityBoost);
-        return `radial-gradient(circle ${finalSpread}% at ${cx}% ${cy}%, ${f.color} 0%, transparent 60%)`;
+        return `radial-gradient(circle ${finalSpread}% at ${cx}% ${cy}%, ${f.color} 0%, transparent 62%)`;
       }).join(', ');
 
-      // Highlight specular concentre - point de lumiere ponctuel intense
-      // au centre du curseur. Beaucoup plus brillant que le sweep classique,
-      // donne l'impression d'une LED qui passe sur le verre.
-      const specular = `radial-gradient(circle 15% at ${px}% ${py}%, ` +
-        `rgba(255,255,255,0.85) 0%, ` +
-        `rgba(255,255,255,0.4) 20%, ` +
-        `transparent 50%)`;
+      // Specular central tres serre et tres brillant - represente le point
+      // de reflexion direct de la "lumiere virtuelle" sur le shard sous
+      // le curseur. Color-dodge le transforme en "LED" sur les pixels clairs.
+      const specular = `radial-gradient(circle 12% at ${px}% ${py}%, ` +
+        `rgba(255,255,255,0.98) 0%, ` +
+        `rgba(255,255,255,0.55) 18%, ` +
+        `rgba(255,255,255,0.18) 38%, ` +
+        `transparent 55%)`;
 
-      // Sweep secondaire (40%) : zone de lumiere plus douce autour du spot.
-      const sweep = `radial-gradient(circle 45% at ${px}% ${py}%, ` +
-        `rgba(255,255,255,0.5) 0%, ` +
-        `rgba(220,240,255,0.25) 25%, ` +
-        `rgba(255,220,250,0.1) 50%, ` +
+      // Halo doux autour du specular - "lumiere indirecte" qui eclaire
+      // les facettes adjacentes.
+      const sweep = `radial-gradient(circle 48% at ${px}% ${py}%, ` +
+        `rgba(255,255,255,0.45) 0%, ` +
+        `rgba(235,245,255,0.20) 25%, ` +
+        `rgba(255,240,250,0.08) 50%, ` +
         `transparent 75%)`;
 
-      // Bandeau diagonale prismatique qui balaie le sticker. L'angle se
-      // module fortement avec le tilt pour donner le sentiment d'un verre
-      // qui bascule en 3D.
-      const sweepAngle = 110 + tilt.y * 6;
-      const stop1 = Math.max(5, Math.min(45, 20 + tilt.x * 2));
-      const stop2 = Math.max(40, Math.min(80, 55 + tilt.y * 2));
+      // Bandeau prismatique allege - la couleur principale vient du
+      // canvas maintenant, ce bandeau ajoute juste un "wash" qui bascule
+      // avec le tilt pour suggerer que la lumiere change d'angle.
+      const sweepAngle = 110 + tilt.y * 8;
+      const stop1 = Math.max(5, Math.min(45, 20 + tilt.x * 2.5));
+      const stop2 = Math.max(40, Math.min(80, 55 + tilt.y * 2.5));
       const prismBand = `linear-gradient(${sweepAngle}deg, ` +
         `transparent ${stop1 - 5}%, ` +
-        `rgba(255,200,240,0.4) ${stop1}%, ` +
-        `rgba(200,240,255,0.45) ${(stop1 + stop2) / 2}%, ` +
-        `rgba(255,240,200,0.35) ${stop2}%, ` +
+        `rgba(255,210,245,0.26) ${stop1}%, ` +
+        `rgba(210,240,255,0.28) ${(stop1 + stop2) / 2}%, ` +
+        `rgba(255,245,210,0.22) ${stop2}%, ` +
         `transparent ${stop2 + 5}%)`;
 
       return {
-        // Ordre : specular (point chaud) > sweep (halo) > prismBand
-        // (arc-en-ciel) > constellation (reflets distants).
+        // Ordre : specular > halo > prismBand > constellation
         background: `${specular}, ${sweep}, ${prismBand}, ${constellation}`,
         mixBlendMode: 'color-dodge',
         opacity: 0.95,
