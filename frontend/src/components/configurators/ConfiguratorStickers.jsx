@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { ShoppingCart, Check, Sparkles, Info, Scissors, Loader2, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Check, Sparkles, Info, Scissors, Loader2, ChevronDown, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
@@ -83,6 +83,12 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [bgRemovedUrl, setBgRemovedUrl] = useState(null);
   const [bgRemoveError, setBgRemoveError] = useState(null);
   const lastProcessedRef = useRef(null);
+
+  // CLICKABLE-PREVIEW (12 mai 2026) : ref vers le composant FileUpload pour
+  // declencher son file picker quand l'utilisateur clique sur la zone de
+  // preview du sticker. Reutilise le meme flux d'upload Drive existant.
+  const fileUploadRef = useRef(null);
+  const openFilePicker = () => fileUploadRef.current?.openPicker?.();
 
   const getStickerPrice = defaultGetPrice;
   const tiers = defaultTiers;
@@ -189,16 +195,44 @@ function ConfiguratorStickers({ onFinishChange }) {
         {/* ============ PREVIEW (col gauche, grand) ============ */}
         <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-2xl p-3 md:p-4 lg:p-6 bg-black/10">
-            <StickerPreviewCanvas
-              imageUrl={previewSource}
-              shape={shape}
-              finish={finish}
-              strokeColor={strokeColor}
-              strokeWidth={strokeWidth}
-              onThumbChange={setThumbUrl}
-              enableTilt
-              className="w-full max-w-lg mx-auto"
-            />
+            {/* CLICKABLE-PREVIEW (12 mai 2026) : wrapper cliquable autour
+                du canvas qui declenche le file picker du composant
+                FileUpload (mode upload Drive complet). Le overlay hover
+                avec icone Upload + texte indique que la zone est
+                interactive. Le tilt 3D du canvas n'est PAS bloqué par
+                ce wrapper (pointer-events:none sur l'overlay).
+                Role/tabIndex pour accessibilite : focusable au clavier. */}
+            <div
+              className="relative group cursor-pointer w-full max-w-lg mx-auto"
+              onClick={openFilePicker}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFilePicker(); } }}
+              role="button"
+              tabIndex={0}
+              aria-label={tx({ fr: 'Cliquer pour televerser une nouvelle image', en: 'Click to upload a new image', es: 'Haz clic para subir una nueva imagen' })}
+            >
+              <StickerPreviewCanvas
+                imageUrl={previewSource}
+                shape={shape}
+                finish={finish}
+                strokeColor={strokeColor}
+                strokeWidth={strokeWidth}
+                onThumbChange={setThumbUrl}
+                enableTilt
+                className="w-full"
+              />
+              {/* Overlay hover : assombrit la zone + affiche un appel a
+                  action. pointer-events:none pour que le clic atteigne
+                  toujours le parent (pas un double-handler) et que le
+                  hover du tilt 3D du canvas continue de fonctionner. */}
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl bg-black/0 group-hover:bg-black/45 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none"
+              >
+                <Upload size={32} className="text-white drop-shadow-lg" />
+                <span className="text-white text-sm font-semibold uppercase tracking-wider drop-shadow-md">
+                  {tx({ fr: 'Cliquer pour modifier', en: 'Click to change', es: 'Haz clic para modificar' })}
+                </span>
+              </div>
+            </div>
             <div className="mt-4 text-center">
               <span className="text-heading text-base font-semibold">
                 {tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
@@ -219,6 +253,7 @@ function ConfiguratorStickers({ onFinishChange }) {
               {tx({ fr: 'Design', en: 'Design', es: 'Diseno' })}
             </label>
             <FileUpload
+              ref={fileUploadRef}
               files={uploadedFiles}
               onFilesChange={handleFilesChange}
               compact

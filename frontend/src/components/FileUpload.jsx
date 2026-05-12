@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Upload, X, FileText, Loader2, Plus } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -92,11 +92,18 @@ function formatSize(bytes) {
  *   - Logge: "{email} - cart-{cartId}"
  *   - Anonyme: "Guest_Cart_{cartId}"
  */
-function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn, hidePreview = false, orderId, contextLabel, defaultPreviewImage = null }) {
+const FileUpload = forwardRef(function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = false, uploadFn, hidePreview = false, orderId, contextLabel, defaultPreviewImage = null }, ref) {
   const { tx } = useLang();
   const { user } = useAuth();
   const { cartId } = useCart();
   const inputRef = useRef(null);
+  // CLICKABLE-PREVIEW (12 mai 2026) : expose une method openPicker()
+  // pour declencher le file picker depuis l'exterieur (ex: clic sur
+  // l'image preview du configurateur stickers). Reutilise le meme flux
+  // d'upload Drive + validation que le mode click-on-uploader.
+  useImperativeHandle(ref, () => ({
+    openPicker: () => inputRef.current?.click(),
+  }), []);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [dragOver, setDragOver] = useState(false);
@@ -533,6 +540,6 @@ function FileUpload({ files = [], onFilesChange, label, maxFiles = 5, compact = 
       })()}
     </div>
   );
-}
+});
 
 export default FileUpload;
