@@ -198,15 +198,56 @@ function ConfiguratorSublimation() {
                 + key change ne forcait pas le re-mount correctement dans le
                 nouveau layout 2-col. Remplace par un simple <img> avec key
                 explicite pour garantir le re-render. */}
-            {hasColors ? (
-              /* LONG-SLEEVE-ASSETS-OK (12 mai 2026) : le user a fourni
-                 crewneck black.webp (Desktop). Les autres couleurs (white,
-                 light-pink, daisy via gold, gold, kelly via irish-green,
-                 dark-heather, royal, scarlet-red via cherry-red, purple)
-                 sont copiees depuis /crewneck/ vers /longsleeve/ pour
-                 conserver le path attendu par getLongSleeveImage. Plus
-                 besoin de SVG inline - on utilise <img> classique comme
-                 les autres textiles. */
+            {/* PREVIEW-MORPH (12 mai 2026) : 2 modes de rendu :
+                  - showMockup=false (defaut) : image statique du produit
+                  - showMockup=true (textiles only) : MerchPreview drag/drop
+                    front (+ back si hasSides) prend la place du preview
+                    -> user peut directement deposer son logo sur le vetement
+                Plus de double rendu (preview + mockup en dessous). */}
+            {showMockup && hasColors ? (
+              <div className={`grid gap-3 ${hasSides ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 max-w-md mx-auto'}`}>
+                <div>
+                  <span className="block text-sm font-semibold text-heading mb-1.5">
+                    {hasSides ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : tx({ fr: 'Apercu', en: 'Preview', es: 'Vista previa' })}
+                    {frontLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
+                  </span>
+                  <MerchPreview
+                    productImageUrl={currentGetImage(selectedColor)}
+                    logoUrl={frontLogoUrl}
+                    logoPosition={frontLogoPos}
+                    onLogoPositionChange={setFrontLogoPos}
+                    onFileSelect={(file) => {
+                      const url = URL.createObjectURL(file);
+                      if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
+                      setFrontLogoUrl(url);
+                      setUploadedFiles(prev => [...prev, file]);
+                    }}
+                    onLogoRemove={() => { if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl); setFrontLogoUrl(null); }}
+                  />
+                </div>
+                {hasSides && (
+                  <div>
+                    <span className="block text-sm font-semibold text-heading mb-1.5">
+                      {tx({ fr: 'Dos', en: 'Back', es: 'Detras' })}
+                      {backLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
+                    </span>
+                    <MerchPreview
+                      productImageUrl={BACK_IMAGES[product] || currentGetImage(selectedColor)}
+                      logoUrl={backLogoUrl}
+                      logoPosition={backLogoPos}
+                      onLogoPositionChange={setBackLogoPos}
+                      onFileSelect={(file) => {
+                        const url = URL.createObjectURL(file);
+                        if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
+                        setBackLogoUrl(url);
+                        setUploadedFiles(prev => [...prev, file]);
+                      }}
+                      onLogoRemove={() => { if (backLogoUrl) URL.revokeObjectURL(backLogoUrl); setBackLogoUrl(null); }}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : hasColors ? (
               <img
                 key={`${product}-${selectedColor}`}
                 src={currentGetImage(selectedColor)}
@@ -222,15 +263,17 @@ function ConfiguratorSublimation() {
               />
             ) : null}
 
-            {/* Label couleur + taille sous l'image */}
-            <div className="mt-3 text-center">
-              <span className="text-heading text-base font-semibold">
-                {hasColors ? colorObj.name : tx({ fr: productLabel?.labelFr, en: productLabel?.labelEn, es: productLabel?.labelEs || productLabel?.labelEn })}
-              </span>
-              {hasSizes && <span className="text-grey-muted text-sm block mt-0.5">{selectedSize}</span>}
-            </div>
+            {/* Label couleur + taille sous l'image (cache pendant le mockup pour libérer l'espace) */}
+            {!showMockup && (
+              <div className="mt-3 text-center">
+                <span className="text-heading text-base font-semibold">
+                  {hasColors ? colorObj.name : tx({ fr: productLabel?.labelFr, en: productLabel?.labelEn, es: productLabel?.labelEs || productLabel?.labelEn })}
+                </span>
+                {hasSizes && <span className="text-grey-muted text-sm block mt-0.5">{selectedSize}</span>}
+              </div>
+            )}
 
-            {/* Bouton "Personnaliser" + Mockups front/back (textiles only) */}
+            {/* Bouton "Personnaliser" / "Retour a l'apercu" (textiles only) */}
             {hasColors && (
               <div className="mt-4">
                 <button
@@ -240,64 +283,19 @@ function ConfiguratorSublimation() {
                 >
                   <span className="flex items-center gap-2 text-base font-bold" style={{ color: 'var(--logo-accent, #ffcc02)' }}>
                     <Upload size={17} style={{ color: 'var(--logo-accent, #ffcc02)' }} />
-                    {tx({
-                      fr: `Personnaliser votre ${productLabel?.labelFr || 'produit'}`,
-                      en: `Customize your ${productLabel?.labelEn || 'product'}`,
-                      es: `Personalizar tu ${productLabel?.labelEs || productLabel?.labelEn || 'producto'}`,
-                    })}
+                    {showMockup
+                      ? tx({ fr: "Revenir a l'apercu", en: 'Back to preview', es: 'Volver a vista previa' })
+                      : tx({
+                          fr: `Personnaliser votre ${productLabel?.labelFr || 'produit'}`,
+                          en: `Customize your ${productLabel?.labelEn || 'product'}`,
+                          es: `Personalizar tu ${productLabel?.labelEs || productLabel?.labelEn || 'producto'}`,
+                        })}
                     {(frontLogoUrl || backLogoUrl) && (
                       <span className="ml-1 inline-block w-2 h-2 rounded-full bg-green-400" />
                     )}
                   </span>
                   <ChevronDown size={18} className={`text-accent transition-transform ${showMockup ? 'rotate-180' : ''}`} />
                 </button>
-
-                {showMockup && (
-                  <div className="mt-3 space-y-2">
-                    <div className={`grid gap-3 ${hasSides ? 'grid-cols-2' : 'grid-cols-1 max-w-[250px] mx-auto'}`}>
-                      <div>
-                        <span className="block text-sm font-semibold text-heading mb-1.5">
-                          {hasSides ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : tx({ fr: 'Apercu', en: 'Preview', es: 'Vista previa' })}
-                          {frontLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
-                        </span>
-                        <MerchPreview
-                          productImageUrl={currentGetImage(selectedColor)}
-                          logoUrl={frontLogoUrl}
-                          logoPosition={frontLogoPos}
-                          onLogoPositionChange={setFrontLogoPos}
-                          onFileSelect={(file) => {
-                            const url = URL.createObjectURL(file);
-                            if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
-                            setFrontLogoUrl(url);
-                            setUploadedFiles(prev => [...prev, file]);
-                          }}
-                          onLogoRemove={() => { if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl); setFrontLogoUrl(null); }}
-                        />
-                      </div>
-                      {hasSides && (
-                        <div>
-                          <span className="block text-sm font-semibold text-heading mb-1.5">
-                            {tx({ fr: 'Dos', en: 'Back', es: 'Detras' })}
-                            {backLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
-                          </span>
-                          <MerchPreview
-                            productImageUrl={BACK_IMAGES[product] || currentGetImage(selectedColor)}
-                            logoUrl={backLogoUrl}
-                            logoPosition={backLogoPos}
-                            onLogoPositionChange={setBackLogoPos}
-                            onFileSelect={(file) => {
-                              const url = URL.createObjectURL(file);
-                              if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
-                              setBackLogoUrl(url);
-                              setUploadedFiles(prev => [...prev, file]);
-                            }}
-                            onLogoRemove={() => { if (backLogoUrl) URL.revokeObjectURL(backLogoUrl); setBackLogoUrl(null); }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
