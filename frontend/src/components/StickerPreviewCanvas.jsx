@@ -106,93 +106,88 @@ function getFxOverlayStyle(fx, tilt) {
       };
     case 'broken-glass':
     case 'broken_glass': {
-      // BROKEN-GLASS-V4 (12 mai 2026) : refonte realiste "verre brise reel"
-      // sur user feedback ("triangles colores plats vs cracked ice reflets
-      // dynamiques"). Avec la passe canvas V4 qui rend les eclats
-      // MAJORITAIREMENT TRANSPARENTS (iridescence subtile uniquement),
-      // l'overlay CSS doit fournir des reflets blancs/lumineux puissants
-      // qui se promenent d'un eclat a l'autre selon la souris. Changements
-      // vs V3 :
-      //   - Constellation : couleurs pastel reduites -> blanc/argent
-      //     dominant. Les iridescences viennent du canvas, pas de l'overlay.
-      //   - Amplitude amp 26 -> 34 (+31%) : reflets se promenent plus
-      //     large -> impression franche de "lumiere qui glisse".
-      //   - Drift 2.4 -> 3.8 (+58%) : parallax beaucoup plus marque,
-      //     les reflets surfent loin devant la souris.
-      //   - Specular central plus serre (15% -> 12%) et plus intense
-      //     (alpha 0.85 -> 0.98) -> ressemble a un vrai point de lumiere
-      //     speculaire au lieu d'un halo flou.
-      //   - prismBand allege (0.4 -> 0.28 alpha max) : le rainbow vient
-      //     surtout du canvas maintenant, l'overlay donne juste le
-      //     "wash" de couleur qui bascule.
-      // mix-blend-mode color-dodge : la lumiere ne s'ajoute que sur les
-      // facettes claires du canvas -> illusion d'eclats deja la qui
-      // s'illuminent quand le faisceau les touche.
-      const amp = 34;
-      const facets = [
-        { ox: 0,           oy: 0,           color: 'rgba(255,255,255,0.98)', spread: 7 },
-        { ox: -amp,        oy: -amp * 0.6,  color: 'rgba(245,250,255,0.78)', spread: 6 },
-        { ox: amp * 0.85,  oy: -amp * 0.45, color: 'rgba(255,250,250,0.70)', spread: 6 },
-        { ox: -amp * 1.35, oy: amp * 0.55,  color: 'rgba(250,255,250,0.62)', spread: 5 },
-        { ox: amp * 0.55,  oy: amp * 1.15,  color: 'rgba(255,253,245,0.65)', spread: 5 },
-        { ox: amp * 1.55,  oy: -amp * 0.2,  color: 'rgba(250,248,255,0.58)', spread: 4 },
-        { ox: -amp * 0.75, oy: amp * 1.25,  color: 'rgba(255,250,255,0.55)', spread: 4 },
-        { ox: amp * 1.15,  oy: amp * 0.95,  color: 'rgba(255,255,250,0.50)', spread: 4 },
-        { ox: -amp * 0.4,  oy: -amp * 1.15, color: 'rgba(248,250,255,0.55)', spread: 5 },
-      ];
-      const driftX = -tilt.y * 3.8;
-      const driftY = tilt.x * 3.8;
-      // Magnitude du tilt 0-1 : amplifie la parallax des facettes
-      // (proches grossissent, lointaines retrecissent) quand le sticker
-      // "bascule" sous le doigt/curseur.
+      // BROKEN-GLASS-V5 (12 mai 2026) : refonte CRITIQUE sur user feedback
+      // ("on doit voir un reflet brillant balayer les eclats en fonction
+      // de la souris"). Avec la passe canvas V5 (texture monochrome blanche,
+      // ZERO couleur), l'overlay CSS porte INTEGRALEMENT le reflet :
+      //   - SPOTLIGHT : gradient radial blanc TRES intense (alpha 1.0)
+      //     centre sur la souris (16% du sticker) -> point de lumiere franc.
+      //   - HALO : gradient radial blanc doux (48%) autour du spotlight
+      //     pour suggerer la diffusion lumineuse.
+      //   - BEAM : ligne lumineuse DIRECTIONNELLE (linear-gradient)
+      //     dont l'angle suit le mouvement de la souris -> simule un
+      //     faisceau de lumiere qui balaye la surface.
+      //   - CONSTELLATION : 8 reflets secondaires blancs qui derivent
+      //     loin du curseur (parallax) -> les eclats voisins s'illuminent
+      //     aussi quand le faisceau passe.
+      //
+      // mix-blend-mode 'screen' (au lieu de 'color-dodge') : moins
+      // saturant, plus naturel. Avec 'screen' le blanc s'AJOUTE proprement
+      // sur le design (les couleurs originales restent visibles partout
+      // SAUF aux points eclaires). Le canvas V5 est tout blanc -> les
+      // cracks et bevels s'illuminent franchement la ou le faisceau passe.
+      //
+      // Coordonnees liees a la souris (desktop) via setTilt() dans
+      // handleMouseMove. Pour mobile, le composant ecoute aussi onTouchMove
+      // (cf handleTouchMove ci-dessous) -> meme effet au doigt.
+
+      // SPOTLIGHT : reflet blanc franc au curseur
+      const spotlight = `radial-gradient(circle 16% at ${px}% ${py}%, ` +
+        `rgba(255,255,255,1) 0%, ` +
+        `rgba(255,255,255,0.75) 20%, ` +
+        `rgba(255,255,255,0.28) 45%, ` +
+        `transparent 65%)`;
+
+      // HALO : diffusion lumineuse autour du spotlight
+      const halo = `radial-gradient(circle 48% at ${px}% ${py}%, ` +
+        `rgba(255,255,255,0.50) 0%, ` +
+        `rgba(248,250,255,0.20) 30%, ` +
+        `transparent 75%)`;
+
+      // BEAM : faisceau directionnel - ligne de lumiere dont l'angle suit
+      // les coordonnees de la souris (tilt) -> impression d'un faisceau
+      // qui balaye la surface du sticker.
+      const beamAngle = 90 + tilt.x * 14 + tilt.y * 14;
+      const beam = `linear-gradient(${beamAngle}deg, ` +
+        `transparent 32%, ` +
+        `rgba(255,255,255,0.18) 46%, ` +
+        `rgba(255,255,255,0.42) 50%, ` +
+        `rgba(255,255,255,0.18) 54%, ` +
+        `transparent 68%)`;
+
+      // CONSTELLATION : reflets blancs secondaires qui derivent autour
+      // du spotlight pour eclairer les eclats voisins (parallax fort).
+      const amp = 32;
+      const driftX = -tilt.y * 4.0;
+      const driftY = tilt.x * 4.0;
       const tiltMag = Math.min(1, Math.sqrt(tilt.x * tilt.x + tilt.y * tilt.y) / 10);
+      const facets = [
+        { ox: -amp,        oy: -amp * 0.6,  alpha: 0.70, spread: 5 },
+        { ox: amp * 0.9,   oy: -amp * 0.5,  alpha: 0.65, spread: 5 },
+        { ox: -amp * 1.4,  oy: amp * 0.6,   alpha: 0.55, spread: 4 },
+        { ox: amp * 0.6,   oy: amp * 1.2,   alpha: 0.55, spread: 4 },
+        { ox: amp * 1.55,  oy: -amp * 0.2,  alpha: 0.48, spread: 4 },
+        { ox: -amp * 0.8,  oy: amp * 1.3,   alpha: 0.45, spread: 3 },
+        { ox: amp * 1.15,  oy: amp * 0.95,  alpha: 0.42, spread: 3 },
+        { ox: -amp * 0.4,  oy: -amp * 1.2,  alpha: 0.45, spread: 4 },
+      ];
       const constellation = facets.map((f) => {
         const cx = px + f.ox + driftX;
         const cy = py + f.oy + driftY;
         const dx = cx - px;
         const dy = cy - py;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        // Facette proche du curseur grossit (1.0 -> 1.7x), loin retrecit
-        // (1.0 -> 0.65x) -> illusion d'une source ponctuelle proche du verre.
         const proximityBoost = dist < 20 ? 1 + tiltMag * 0.7 : dist > 40 ? 1 - tiltMag * 0.35 : 1;
         const finalSpread = Math.max(2, f.spread * proximityBoost);
-        return `radial-gradient(circle ${finalSpread}% at ${cx}% ${cy}%, ${f.color} 0%, transparent 62%)`;
+        return `radial-gradient(circle ${finalSpread}% at ${cx}% ${cy}%, ` +
+          `rgba(255,255,255,${f.alpha}) 0%, transparent 62%)`;
       }).join(', ');
 
-      // Specular central tres serre et tres brillant - represente le point
-      // de reflexion direct de la "lumiere virtuelle" sur le shard sous
-      // le curseur. Color-dodge le transforme en "LED" sur les pixels clairs.
-      const specular = `radial-gradient(circle 12% at ${px}% ${py}%, ` +
-        `rgba(255,255,255,0.98) 0%, ` +
-        `rgba(255,255,255,0.55) 18%, ` +
-        `rgba(255,255,255,0.18) 38%, ` +
-        `transparent 55%)`;
-
-      // Halo doux autour du specular - "lumiere indirecte" qui eclaire
-      // les facettes adjacentes.
-      const sweep = `radial-gradient(circle 48% at ${px}% ${py}%, ` +
-        `rgba(255,255,255,0.45) 0%, ` +
-        `rgba(235,245,255,0.20) 25%, ` +
-        `rgba(255,240,250,0.08) 50%, ` +
-        `transparent 75%)`;
-
-      // Bandeau prismatique allege - la couleur principale vient du
-      // canvas maintenant, ce bandeau ajoute juste un "wash" qui bascule
-      // avec le tilt pour suggerer que la lumiere change d'angle.
-      const sweepAngle = 110 + tilt.y * 8;
-      const stop1 = Math.max(5, Math.min(45, 20 + tilt.x * 2.5));
-      const stop2 = Math.max(40, Math.min(80, 55 + tilt.y * 2.5));
-      const prismBand = `linear-gradient(${sweepAngle}deg, ` +
-        `transparent ${stop1 - 5}%, ` +
-        `rgba(255,210,245,0.26) ${stop1}%, ` +
-        `rgba(210,240,255,0.28) ${(stop1 + stop2) / 2}%, ` +
-        `rgba(255,245,210,0.22) ${stop2}%, ` +
-        `transparent ${stop2 + 5}%)`;
-
       return {
-        // Ordre : specular > halo > prismBand > constellation
-        background: `${specular}, ${sweep}, ${prismBand}, ${constellation}`,
-        mixBlendMode: 'color-dodge',
+        // Ordre : spotlight (point chaud) > halo (diffusion) > beam
+        // (faisceau directionnel) > constellation (reflets secondaires).
+        background: `${spotlight}, ${halo}, ${beam}, ${constellation}`,
+        mixBlendMode: 'screen',
         opacity: 0.95,
       };
     }
@@ -412,6 +407,28 @@ function StickerPreviewCanvas({
   };
   const handleMouseLeave = () => setTilt({ x: 0, y: 0 });
 
+  // TOUCH-SUPPORT-V5 (12 mai 2026) : le reflet doit suivre le doigt sur
+  // mobile. Reutilise la meme logique de tilt que handleMouseMove en
+  // prenant le 1er touche. Pas de gyroscope (requirePermission iOS
+  // complique le UX) ; le doigt sur l'image suffit.
+  const handleTouchMove = (e) => {
+    if (!enableTilt) return;
+    if (!e.touches || e.touches.length === 0) return;
+    const t = e.touches[0];
+    const rect = e.currentTarget.getBoundingClientRect();
+    const dx = (t.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
+    const dy = (t.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
+    if (shape === 'round') {
+      const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+      if (distFromCenter > 1) {
+        setTilt({ x: 0, y: 0 });
+        return;
+      }
+    }
+    setTilt({ x: -dy * 10, y: dx * 10 });
+  };
+  const handleTouchEnd = () => setTilt({ x: 0, y: 0 });
+
   const tilting = tilt.x !== 0 || tilt.y !== 0;
   const shapeRadius = getShapeRadius(shape);
   const fx = normalizeFx(finish);
@@ -435,6 +452,9 @@ function StickerPreviewCanvas({
       style={{ perspective: '1400px' }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
     >
       <div
         className="relative w-full"

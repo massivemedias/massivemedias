@@ -211,26 +211,26 @@ export function applyShader(ctx, rawShader, w, h) {
   }
 
   else if (shader === 'broken-glass') {
-    // BROKEN-GLASS-V4 (12 mai 2026) : refonte complete pour realisme
-    // "cracked ice / shattered glass" sur user feedback ("triangles plats
-    // facon vitrail vs verre brise reel"). V3 dessinait des triangles HSL
-    // OPAQUES (alpha 0.18-0.50, fill hsl 100% sat) qui couvraient le
-    // design comme un vitrail colore. V4 transforme chaque eclat en une
-    // facette de verre majoritairement transparente :
-    //   1. Gradient lineaire IRISE le long d'une normale 2D simulee
-    //      (alpha 0.03-0.13 -> ~70% reduction). Suggere l'inclinaison
-    //      sans masquer le design dessous.
-    //   2. Bucket de teinte par angle de la normale (cyan/magenta/jaune/
-    //      violet) -> chaque facette reflechit une partie differente du
-    //      spectre, comme un vrai eclat irise.
-    //   3. Specular ponctuel (~28% des facettes) en blanc pur : ces eclats
-    //      sont deja "allumes" dans la base, donnent du relief.
-    //   4. Cracks blanches plus fines mais plus nombreuses (12 -> 16).
-    //   5. Voile bleute global divise par 2 (0.07 -> 0.035) pour ne pas
-    //      tasser le design dessous.
-    // Le mouvement dynamique vient du CSS overlay (color-dodge + drift)
-    // qui balaye des reflets clairs ; les facettes touchees par le
-    // balayage s'eclairent davantage = illusion shard-by-shard correcte.
+    // BROKEN-GLASS-V5 (12 mai 2026) : refonte CRITIQUE sur user feedback
+    // ("couleurs plates ou geometriques - on doit voir un reflet brillant
+    // qui balaye en fonction de la souris"). V4 avait encore des gradients
+    // irises (cyan/magenta/jaune/violet) qui se lisaient comme "couleurs
+    // plates" au repos.
+    //
+    // V5 strippe TOUTE couleur du canvas. Le canvas devient un PUR
+    // MASQUE STRUCTUREL en blanc/gris :
+    //   1. Bevels blancs subtils par facette (alpha 0.01-0.09) -> relief
+    //      3D mais incolore.
+    //   2. Specular ponctuel BLANC sur ~25% des facettes -> certains
+    //      eclats sont deja "allumes" dans la base.
+    //   3. Cracks blanches (structure principale).
+    //   4. Voile gris-neutre tres tres faible (0.025) sans dominante bleue.
+    // Aucune teinte colore : tout est pur blanc/gris -> le design dessous
+    // garde 100% de ses couleurs originales.
+    //
+    // La lumiere/reflet vient INTEGRALEMENT du CSS overlay V5 qui injecte
+    // un spotlight blanc dominant + un faisceau directionnel qui balayent
+    // avec la souris (mix-blend-mode 'screen' pour eclairer proprement).
     ctx.globalCompositeOperation = 'source-atop';
 
     let seed = ((w * 31337) ^ (h * 42069)) >>> 0;
@@ -239,11 +239,10 @@ export function applyShader(ctx, rawShader, w, h) {
       return (seed >>> 0) / 4294967296;
     };
 
-    const FACETS = 38;
+    const FACETS = 36;
     const refSize = Math.min(w, h);
 
-    // Pre-genere les donnees des facettes pour pouvoir dessiner en
-    // plusieurs passes (gradient irise puis highlight ponctuel)
+    // Pre-genere les donnees des facettes
     const facetData = [];
     for (let i = 0; i < FACETS; i++) {
       const cx = rnd() * w;
@@ -263,55 +262,30 @@ export function applyShader(ctx, rawShader, w, h) {
       const v2y = cy + Math.sin(a2) * r2;
       const ccx = (v0x + v1x + v2x) / 3;
       const ccy = (v0y + v1y + v2y) / 3;
-      // "Normale 2D" simulee = direction selon laquelle la facette penche
       const normalAngle = rnd() * Math.PI * 2;
       facetData.push({
         v0x, v0y, v1x, v1y, v2x, v2y,
         cx: ccx, cy: ccy, size,
         nx: Math.cos(normalAngle),
         ny: Math.sin(normalAngle),
-        normalAngle,
-        lit: rnd() < 0.28, // ~28% des facettes ont un specular dans la base
-        litStrength: 0.35 + rnd() * 0.35,
+        lit: rnd() < 0.25,
+        litStrength: 0.32 + rnd() * 0.32,
       });
     }
 
-    // Passe 1 : gradient irise tres subtil par facette (le design reste
-    // largement visible dessous)
+    // Passe 1 : bevel BLANC pur par facette (relief 3D sans teinte)
     for (const f of facetData) {
       ctx.save();
-      const gradLen = f.size * 0.85;
+      const gradLen = f.size * 0.9;
       const gx0 = f.cx - f.nx * gradLen;
       const gy0 = f.cy - f.ny * gradLen;
       const gx1 = f.cx + f.nx * gradLen;
       const gy1 = f.cy + f.ny * gradLen;
       const grad = ctx.createLinearGradient(gx0, gy0, gx1, gy1);
-
-      // Bucket de teinte selon l'angle de la normale (4 zones du
-      // spectre irise : cyan / magenta / jaune / violet)
-      const bucket = Math.floor(((f.normalAngle / Math.PI + 1) * 0.5) * 4) % 4;
-      if (bucket === 0) {
-        // cyan / bleu clair
-        grad.addColorStop(0, 'rgba(180,220,255,0.02)');
-        grad.addColorStop(0.5, 'rgba(210,240,255,0.13)');
-        grad.addColorStop(1, 'rgba(255,255,255,0.02)');
-      } else if (bucket === 1) {
-        // magenta / rose
-        grad.addColorStop(0, 'rgba(255,205,235,0.02)');
-        grad.addColorStop(0.5, 'rgba(255,220,240,0.11)');
-        grad.addColorStop(1, 'rgba(245,210,255,0.02)');
-      } else if (bucket === 2) {
-        // jaune / vert clair
-        grad.addColorStop(0, 'rgba(225,255,225,0.02)');
-        grad.addColorStop(0.5, 'rgba(255,250,210,0.10)');
-        grad.addColorStop(1, 'rgba(210,255,235,0.02)');
-      } else {
-        // violet / lavande
-        grad.addColorStop(0, 'rgba(220,210,255,0.02)');
-        grad.addColorStop(0.5, 'rgba(230,220,255,0.12)');
-        grad.addColorStop(1, 'rgba(255,225,250,0.02)');
-      }
-
+      // PUR BLANC - aucune teinte coloree
+      grad.addColorStop(0, 'rgba(255,255,255,0.01)');
+      grad.addColorStop(0.5, 'rgba(255,255,255,0.09)');
+      grad.addColorStop(1, 'rgba(255,255,255,0.01)');
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.moveTo(f.v0x, f.v0y);
@@ -322,13 +296,10 @@ export function applyShader(ctx, rawShader, w, h) {
       ctx.restore();
     }
 
-    // Passe 2 : specular ponctuel sur ~28% des facettes (les eclats
-    // "deja allumes" dans la base statique - le reste est presque
-    // transparent, attendant que le CSS overlay les eclaire au hover)
+    // Passe 2 : specular BLANC ponctuel sur ~25% des facettes
     for (const f of facetData) {
       if (!f.lit) continue;
       ctx.save();
-      // Clip au polygon -> le specular reste contenu dans la facette
       ctx.beginPath();
       ctx.moveTo(f.v0x, f.v0y);
       ctx.lineTo(f.v1x, f.v1y);
@@ -336,24 +307,21 @@ export function applyShader(ctx, rawShader, w, h) {
       ctx.closePath();
       ctx.clip();
 
-      // Position du highlight legerement decalee dans la direction de
-      // la normale -> simule un point de reflet specifique a l'angle
-      const hx = f.cx + f.nx * f.size * 0.18;
-      const hy = f.cy + f.ny * f.size * 0.18;
-      const hR = f.size * 0.38;
+      const hx = f.cx + f.nx * f.size * 0.2;
+      const hy = f.cy + f.ny * f.size * 0.2;
+      const hR = f.size * 0.4;
       const hgrad = ctx.createRadialGradient(hx, hy, 0, hx, hy, hR);
       hgrad.addColorStop(0, `rgba(255,255,255,${f.litStrength})`);
-      hgrad.addColorStop(0.45, `rgba(255,255,255,${f.litStrength * 0.35})`);
+      hgrad.addColorStop(0.4, `rgba(255,255,255,${f.litStrength * 0.35})`);
       hgrad.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = hgrad;
       ctx.fillRect(hx - hR, hy - hR, hR * 2, hR * 2);
       ctx.restore();
     }
 
-    // Passe 3 : cracks blanches (structure principale du verre brise -
-    // c'est ce qui donne au sticker son aspect "fracture" net)
+    // Passe 3 : cracks blanches (structure principale)
     ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.78)';
     ctx.lineCap = 'round';
     const CRACKS = 16;
     for (let c = 0; c < CRACKS; c++) {
@@ -362,7 +330,7 @@ export function applyShader(ctx, rawShader, w, h) {
       const angle = rnd() * Math.PI * 2;
       const mainLen = refSize * (0.08 + rnd() * 0.28);
       ctx.save();
-      ctx.globalAlpha = 0.30 + rnd() * 0.30;
+      ctx.globalAlpha = 0.32 + rnd() * 0.30;
       ctx.lineWidth = 0.3 + rnd() * 1.1;
       ctx.beginPath();
       ctx.moveTo(x0, y0);
@@ -379,11 +347,10 @@ export function applyShader(ctx, rawShader, w, h) {
     }
     ctx.restore();
 
-    // Passe 4 : voile bleute global tres tres subtil (avant 0.07 -> 0.035)
-    // Garde une touche "cool glass" sans tasser le design dessous.
+    // Passe 4 : voile gris-neutre tres tres faible (sans dominante bleue)
     ctx.save();
-    ctx.globalAlpha = 0.035;
-    ctx.fillStyle = 'rgba(220,230,255,1)';
+    ctx.globalAlpha = 0.025;
+    ctx.fillStyle = 'rgba(230,230,232,1)';
     ctx.fillRect(0, 0, w, h);
     ctx.restore();
   }
