@@ -152,7 +152,6 @@ const PRESET_DEFINITIONS = {
     { id: 'design-identite',     description: 'Identite visuelle complete',     price: 800 },
     { id: 'design-affiche',      description: 'Affiche / flyer evenement',      price: 150 },
     { id: 'design-pochette',     description: 'Pochette album/single',          price: 200 },
-    { id: 'design-icones',       description: 'Design d\'icones (set)',         price: 200 },
     { id: 'design-retouche',     description: 'Retouche photo (par image)',     price: 15 },
     { id: 'design-hours',        description: 'Banque d\'heures Design',        price: 85, isHourly: true },
   ],

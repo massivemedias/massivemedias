@@ -559,7 +559,6 @@ function AdminTarifs() {
     { service: tx({ fr: 'Identité visuelle complète', en: 'Full visual identity', es: 'Identidad visual completa' }), price: '800$ - 1 500$', delai: tx({ fr: '2-3 semaines', en: '2-3 weeks', es: '2-3 semanas' }) },
     { service: tx({ fr: 'Affiche / flyer événement', en: 'Poster / event flyer', es: 'Cartel / flyer de evento' }), price: '150$ - 300$', delai: tx({ fr: '3-5 jours', en: '3-5 days', es: '3-5 dias' }) },
     { service: tx({ fr: 'Pochette album / single', en: 'Album / single artwork', es: 'Portada album / single' }), price: '200$ - 400$', delai: tx({ fr: '5-7 jours', en: '5-7 days', es: '5-7 dias' }) },
-    { service: tx({ fr: "Design d'icones (set)", en: 'Icon design (set)', es: 'Diseno de iconos (set)' }), price: '200$ - 500$', delai: tx({ fr: '3-7 jours', en: '3-7 days', es: '3-7 dias' }) },
     { service: tx({ fr: 'Retouche photo (par image)', en: 'Photo retouching (per image)', es: 'Retoque de foto (por imagen)' }), price: '15$ - 50$', delai: '24-48h' },
   ];
 
