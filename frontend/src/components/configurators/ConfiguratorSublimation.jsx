@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Check, Palette, Sparkles, Shirt, ShoppingBag, Coffee, Package, ChevronDown, Upload } from 'lucide-react';
-import ColorSwatches from '../ColorSwatches';
 import MerchPreview from '../merch/MerchPreview';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
@@ -156,230 +155,228 @@ function ConfiguratorSublimation() {
     setTimeout(() => setAdded(false), 2000);
   };
 
+  // SELECT-STYLE-V3 (12 mai 2026) : classes Tailwind reutilisables pour
+  // tous les <select> du configurateur (Produit/Couleur/Taille/Quantite).
+  // Coherent avec le configurateur stickers.
+  const SELECT_CLASS = 'w-full appearance-none bg-black/20 border-2 border-grey-muted/20 hover:border-grey-muted/40 focus:border-accent rounded-lg px-3 py-2.5 pr-9 text-sm text-heading transition-colors cursor-pointer focus:outline-none';
+
   return (
     <>
-      {/* Product type selector - icons + noms.
-          MOBILE-FIX (12 mai 2026) : flex-wrap pour que les 7 boutons passent
-          a la ligne sur mobile au lieu de deborder. Padding compact mobile
-          (py-2 px-3) + plus genereux desktop (md:py-2.5 md:px-3.5). Plus de
-          truncate / whitespace-nowrap qui pouvaient causer "Long Sleev..."
-          ou "Hoodi..." sur petits ecrans. */}
-      <div className="mb-4 md:mb-5">
-        <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-          {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {sublimationProducts.map(p => {
-            const Icon = PRODUCT_ICONS[p.id] || Package;
-            return (
-              <button
-                key={p.id}
-                onClick={() => handleProductChange(p.id)}
-                className={`flex items-center gap-1.5 md:gap-2 py-2 px-3 md:py-2.5 md:px-3.5 rounded-lg text-xs md:text-sm font-semibold transition-all border-2 ${product === p.id
-                  ? 'border-accent option-selected'
-                  : 'border-transparent hover:border-grey-muted/30 option-default'
-                }`}
-              >
-                <Icon size={14} className={product === p.id ? 'text-accent' : 'text-grey-muted'} />
-                {tx({ fr: p.labelFr, en: p.labelEn, es: p.labelEs || p.labelEn })}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      {/* LAYOUT-2COL-V3 (12 mai 2026) : grid 12 colonnes responsive.
+          Desktop (lg+) : preview lg:col-span-7 sticky a gauche, controles
+          lg:col-span-5 a droite. Mobile (<lg) : stack 1 colonne, preview en
+          haut. Coherent avec le configurateur stickers refondu. */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 mb-4">
 
-      {/* Apercu produit + Color + Size (toujours visible) */}
-      {hasColors && (
-        <div className="mb-4 md:mb-5">
-          <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-            {/* Apercu produit compact */}
-            <div className="flex md:flex-col items-center gap-3 md:gap-2 md:w-40 flex-shrink-0">
+        {/* ============ COLONNE GAUCHE : PREVIEW (lg:col-span-7, sticky) ============ */}
+        <div className="lg:col-span-7 lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-2xl bg-black/10 p-4 md:p-6">
+            {/* Apercu image produit dynamique (textiles) ou statique (mug/tumbler/bag) */}
+            {hasColors ? (
               <AnimatePresence mode="wait">
                 <motion.img
                   key={`${product}-${selectedColor}`}
                   src={currentGetImage(selectedColor)}
                   alt={`${productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn }) : product} ${colorObj.name}`}
-                  className="w-24 h-24 md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
+                  className="w-full max-w-md mx-auto h-auto object-contain rounded-lg"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
                 />
               </AnimatePresence>
-              <div className="text-left md:text-center">
-                <span className="text-heading text-sm font-semibold block">{colorObj.name}</span>
-                {hasSizes && <span className="text-grey-muted text-sm">{selectedSize}</span>}
-              </div>
+            ) : staticProductImages[product] ? (
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={product}
+                  src={staticProductImages[product]}
+                  alt={productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn, es: productLabel.labelEs || productLabel.labelEn }) : product}
+                  className="w-full max-w-md mx-auto h-auto object-contain rounded-lg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </AnimatePresence>
+            ) : null}
+
+            {/* Label couleur + taille sous l'image */}
+            <div className="mt-3 text-center">
+              <span className="text-heading text-base font-semibold">
+                {hasColors ? colorObj.name : tx({ fr: productLabel?.labelFr, en: productLabel?.labelEn, es: productLabel?.labelEs || productLabel?.labelEn })}
+              </span>
+              {hasSizes && <span className="text-grey-muted text-sm block mt-0.5">{selectedSize}</span>}
             </div>
 
-            {/* Couleur + Taille */}
-            <div className="flex-1 min-w-0 space-y-3">
-              <ColorSwatches
-                colors={currentColors}
-                selected={selectedColor}
-                onChange={setSelectedColor}
-                label={tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
-              />
-
-              {hasSizes && (
-                <div>
-                  <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
-                    {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {merchSizes.map(size => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSize(size)}
-                        className={`py-2 px-3 rounded-lg text-sm font-semibold transition-all border-2 ${
-                          selectedSize === size
-                            ? 'border-accent option-selected'
-                            : 'border-transparent hover:border-grey-muted/30 option-default'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bouton "Personnaliser" pour derouler les mockups front/back */}
-      {hasColors && (
-        <div className="mb-4 md:mb-5">
-          <button
-            type="button"
-            onClick={() => setShowMockup(!showMockup)}
-            className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.09] shadow-md shadow-black/20 hover:shadow-lg hover:shadow-black/30 transition-all"
-          >
-            <span className="flex items-center gap-2 text-base font-bold" style={{ color: 'var(--logo-accent, #ffcc02)' }}>
-              <Upload size={17} style={{ color: 'var(--logo-accent, #ffcc02)' }} />
-              {tx({
-                fr: `Personnaliser votre ${productLabel?.labelFr || 'produit'}`,
-                en: `Customize your ${productLabel?.labelEn || 'product'}`,
-                es: `Personalizar tu ${productLabel?.labelEs || productLabel?.labelEn || 'producto'}`,
-              })}
-              {(frontLogoUrl || backLogoUrl) && (
-                <span className="ml-1 inline-block w-2 h-2 rounded-full bg-green-400" />
-              )}
-            </span>
-            <ChevronDown size={18} className={`text-accent transition-transform ${showMockup ? 'rotate-180' : ''}`} />
-          </button>
-
-          {/* Mockups front + back (collapsible) */}
-          {showMockup && (
-            <div className="mt-3 space-y-2">
-              <div className={`grid gap-3 ${hasSides ? 'grid-cols-2' : 'grid-cols-1 max-w-[250px]'}`}>
-                {/* FRONT */}
-                <div>
-                  <span className="block text-sm font-semibold text-heading mb-1.5">
-                    {hasSides ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : tx({ fr: 'Aperçu', en: 'Preview', es: 'Vista previa' })}
-                    {frontLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
+            {/* Bouton "Personnaliser" + Mockups front/back (textiles only) */}
+            {hasColors && (
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowMockup(!showMockup)}
+                  className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.09] shadow-md shadow-black/20 hover:shadow-lg hover:shadow-black/30 transition-all"
+                >
+                  <span className="flex items-center gap-2 text-base font-bold" style={{ color: 'var(--logo-accent, #ffcc02)' }}>
+                    <Upload size={17} style={{ color: 'var(--logo-accent, #ffcc02)' }} />
+                    {tx({
+                      fr: `Personnaliser votre ${productLabel?.labelFr || 'produit'}`,
+                      en: `Customize your ${productLabel?.labelEn || 'product'}`,
+                      es: `Personalizar tu ${productLabel?.labelEs || productLabel?.labelEn || 'producto'}`,
+                    })}
+                    {(frontLogoUrl || backLogoUrl) && (
+                      <span className="ml-1 inline-block w-2 h-2 rounded-full bg-green-400" />
+                    )}
                   </span>
-                  <MerchPreview
-                    productImageUrl={currentGetImage(selectedColor)}
-                    logoUrl={frontLogoUrl}
-                    logoPosition={frontLogoPos}
-                    onLogoPositionChange={setFrontLogoPos}
-                    onFileSelect={(file) => {
-                      const url = URL.createObjectURL(file);
-                      if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
-                      setFrontLogoUrl(url);
-                      setUploadedFiles(prev => [...prev, file]);
-                    }}
-                    onLogoRemove={() => { if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl); setFrontLogoUrl(null); }}
-                  />
-                </div>
-                {/* BACK (textiles only) */}
-                {hasSides && (
-                  <div>
-                    <span className="block text-sm font-semibold text-heading mb-1.5">
-                      {tx({ fr: 'Dos', en: 'Back', es: 'Detras' })}
-                      {backLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
-                    </span>
-                    <MerchPreview
-                      productImageUrl={BACK_IMAGES[product] || currentGetImage(selectedColor)}
-                      logoUrl={backLogoUrl}
-                      logoPosition={backLogoPos}
-                      onLogoPositionChange={setBackLogoPos}
-                      onFileSelect={(file) => {
-                        const url = URL.createObjectURL(file);
-                        if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
-                        setBackLogoUrl(url);
-                        setUploadedFiles(prev => [...prev, file]);
-                      }}
-                      onLogoRemove={() => { if (backLogoUrl) URL.revokeObjectURL(backLogoUrl); setBackLogoUrl(null); }}
-                    />
+                  <ChevronDown size={18} className={`text-accent transition-transform ${showMockup ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showMockup && (
+                  <div className="mt-3 space-y-2">
+                    <div className={`grid gap-3 ${hasSides ? 'grid-cols-2' : 'grid-cols-1 max-w-[250px] mx-auto'}`}>
+                      <div>
+                        <span className="block text-sm font-semibold text-heading mb-1.5">
+                          {hasSides ? tx({ fr: 'Devant', en: 'Front', es: 'Delante' }) : tx({ fr: 'Apercu', en: 'Preview', es: 'Vista previa' })}
+                          {frontLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
+                        </span>
+                        <MerchPreview
+                          productImageUrl={currentGetImage(selectedColor)}
+                          logoUrl={frontLogoUrl}
+                          logoPosition={frontLogoPos}
+                          onLogoPositionChange={setFrontLogoPos}
+                          onFileSelect={(file) => {
+                            const url = URL.createObjectURL(file);
+                            if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl);
+                            setFrontLogoUrl(url);
+                            setUploadedFiles(prev => [...prev, file]);
+                          }}
+                          onLogoRemove={() => { if (frontLogoUrl) URL.revokeObjectURL(frontLogoUrl); setFrontLogoUrl(null); }}
+                        />
+                      </div>
+                      {hasSides && (
+                        <div>
+                          <span className="block text-sm font-semibold text-heading mb-1.5">
+                            {tx({ fr: 'Dos', en: 'Back', es: 'Detras' })}
+                            {backLogoUrl && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-green-400 align-middle" />}
+                          </span>
+                          <MerchPreview
+                            productImageUrl={BACK_IMAGES[product] || currentGetImage(selectedColor)}
+                            logoUrl={backLogoUrl}
+                            logoPosition={backLogoPos}
+                            onLogoPositionChange={setBackLogoPos}
+                            onFileSelect={(file) => {
+                              const url = URL.createObjectURL(file);
+                              if (backLogoUrl) URL.revokeObjectURL(backLogoUrl);
+                              setBackLogoUrl(url);
+                              setUploadedFiles(prev => [...prev, file]);
+                            }}
+                            onLogoRemove={() => { if (backLogoUrl) URL.revokeObjectURL(backLogoUrl); setBackLogoUrl(null); }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Static preview for non-textile products (mug, tumbler, bag) */}
-      {!hasColors && staticProductImages[product] && (
-        <div className="mb-4 md:mb-5">
-          <div className="flex md:flex-col items-center gap-3 md:gap-0 md:w-48 rounded-xl p-3 overflow-hidden md:self-start">
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={product}
-                src={staticProductImages[product]}
-                alt={productLabel ? tx({ fr: productLabel.labelFr, en: productLabel.labelEn, es: productLabel.labelEs || productLabel.labelEn }) : product}
-                className="w-[96px] h-[96px] md:w-full md:h-auto object-contain rounded-lg flex-shrink-0"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              />
-            </AnimatePresence>
-            <div className="text-left md:text-center md:mt-3">
-              <span className="text-heading text-sm font-semibold">
-                {tx({ fr: productLabel?.labelFr, en: productLabel?.labelEn, es: productLabel?.labelEs || productLabel?.labelEn })}
-              </span>
-            </div>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Quantity selector.
-          DROPDOWN-V2 (12 mai 2026) : remplace les boutons inline par un
-          <select> natif pour gagner de l'espace vertical (1 ligne au lieu
-          de 4 cellules grid sur mobile). Chaque option combine qty +
-          prix unitaire (ou "Soumission" si tier.surSoumission). */}
-      <div className="mb-4 md:mb-5">
-        <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-1.5 md:mb-2.5">
-          {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
-        </label>
-        <div className="relative">
-          <select
-            value={qtyIndex}
-            onChange={(e) => setQtyIndex(parseInt(e.target.value, 10))}
-            className="w-full appearance-none bg-black/20 border-2 border-grey-muted/20 hover:border-grey-muted/40 focus:border-accent rounded-lg px-3 py-2.5 pr-9 text-sm text-heading transition-colors cursor-pointer focus:outline-none"
-          >
-            {tiers.map((tier, i) => (
-              <option key={tier.qty} value={i} className="bg-black text-white">
-                {tier.qty}
-                {' · '}
-                {tier.surSoumission
-                  ? tx({ fr: 'Sur soumission', en: 'On quote', es: 'Cotizacion' })
-                  : `${tier.unitPrice}$/u`}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={16}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none"
-          />
-        </div>
-      </div>
+        {/* ============ COLONNE DROITE : CONTROLES (lg:col-span-5) ============ */}
+        <div className="lg:col-span-5 space-y-3 md:space-y-4">
 
-      {/* Design option */}
+          {/* Produit - select natif */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+              {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
+            </label>
+            <div className="relative">
+              <select
+                value={product}
+                onChange={(e) => handleProductChange(e.target.value)}
+                className={SELECT_CLASS}
+              >
+                {sublimationProducts.map((p) => (
+                  <option key={p.id} value={p.id} className="bg-black text-white">
+                    {tx({ fr: p.labelFr, en: p.labelEn, es: p.labelEs || p.labelEn })}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Couleur - select natif (textiles only) */}
+          {hasColors && (
+            <div>
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+                {tx({ fr: 'Couleur', en: 'Color', es: 'Color' })}
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedColor}
+                  onChange={(e) => setSelectedColor(e.target.value)}
+                  className={SELECT_CLASS}
+                >
+                  {currentColors.map((c) => (
+                    <option key={c.id} value={c.id} className="bg-black text-white">
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none" />
+              </div>
+            </div>
+          )}
+
+          {/* Taille - select natif (textiles only) */}
+          {hasSizes && (
+            <div>
+              <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+                {tx({ fr: 'Taille', en: 'Size', es: 'Talla' })}
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedSize}
+                  onChange={(e) => setSelectedSize(e.target.value)}
+                  className={SELECT_CLASS}
+                >
+                  {merchSizes.map((size) => (
+                    <option key={size} value={size} className="bg-black text-white">
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none" />
+              </div>
+            </div>
+          )}
+
+          {/* Quantite - select natif (deja fait) */}
+          <div>
+            <label className="block text-heading font-semibold text-xs uppercase tracking-wider mb-1.5">
+              {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
+            </label>
+            <div className="relative">
+              <select
+                value={qtyIndex}
+                onChange={(e) => setQtyIndex(parseInt(e.target.value, 10))}
+                className={SELECT_CLASS}
+              >
+                {tiers.map((tier, i) => (
+                  <option key={tier.qty} value={i} className="bg-black text-white">
+                    {tier.qty}
+                    {' · '}
+                    {tier.surSoumission
+                      ? tx({ fr: 'Sur soumission', en: 'On quote', es: 'Cotizacion' })
+                      : `${tier.unitPrice}$/u`}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Design option */}
       <div className="mb-4 md:mb-6">
         <label className={`flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-lg cursor-pointer transition-all border-2 ${withDesign ? 'checkbox-active' : 'option-default'}`}>
           <input
@@ -563,6 +560,9 @@ function ConfiguratorSublimation() {
           {tx({ fr: 'Demander une soumission', en: 'Request a quote', es: 'Solicitar cotizacion' })}
         </Link>
       )}
+
+        </div>{/* /col droite */}
+      </div>{/* /grid 2col */}
 
       <p className="text-grey-muted text-sm mt-2 md:mt-3 text-center">
         {tx({
