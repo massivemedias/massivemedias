@@ -93,9 +93,29 @@ function ConfiguratorSublimation() {
   const hasSizes = productsWithSizes.includes(product);
   const hasSides = productsWithSides.includes(product);
   const colorsMap = { tshirt: merchColors, hoodie: hoodieColors, longsleeve: longsleeveColors, totebag: totebagColors };
-  const imageMap = { tshirt: getTshirtImage, hoodie: getHoodieImage, longsleeve: getLongSleeveImage, totebag: getTotebagImage };
+  // STRICT-MAPPING-V3 (12 mai 2026) : association produit -> image. Chaque
+  // cle DOIT matcher exactement le `id` de sublimationProducts (cf
+  // data/products.js : 'tshirt', 'longsleeve', 'hoodie', 'totebag').
+  //   getLongSleeveImage('black') -> /images/longsleeve/black.webp (verifie
+  //   present dans public/images/longsleeve/).
+  //   getTshirtImage('black') -> /images/tshirts/black.webp.
+  //   getHoodieImage('black') -> /images/hoodies/black.webp.
+  //   getTotebagImage('black') -> /images/totebags/black.webp.
+  const imageMap = {
+    tshirt:     getTshirtImage,
+    longsleeve: getLongSleeveImage,
+    hoodie:     getHoodieImage,
+    totebag:    getTotebagImage,
+  };
   const currentColors = colorsMap[product] || merchColors;
-  const currentGetImage = imageMap[product] || getTshirtImage;
+  // STRICT-MAPPING : pas de fallback silencieux vers T-shirt si la cle
+  // n'existe pas dans imageMap. On warn dans la console et on renvoie null
+  // (l'image ne s'affiche pas plutot que d'afficher un mauvais produit).
+  const currentGetImage = imageMap[product];
+  if (!currentGetImage && hasColors) {
+    // eslint-disable-next-line no-console
+    console.warn(`[ConfiguratorSublimation] No image getter for product='${product}'. Check imageMap keys vs sublimationProducts ids in data/products.js.`);
+  }
   const colorObj = currentColors.find(c => c.id === selectedColor) || currentColors[0];
 
   const defaultColorMap = { tshirt: 'black', hoodie: 'black', longsleeve: 'black', totebag: 'black' };
