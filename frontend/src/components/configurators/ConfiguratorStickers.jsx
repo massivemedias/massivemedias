@@ -14,8 +14,11 @@ import { lookupStickerPriceCustomQty } from '../../utils/pricingData';
 import { formatPrice, money } from '../../utils/formatCurrency';
 import { removeBackground } from '../../utils/removeBg';
 
-// Image par defaut quand le client n'a rien upload (logo Massive Medias)
-const DEFAULT_STICKER_URL = '/images/graphism/massive_sticker.webp';
+// Image par defaut affichee au montage du composant, avant tout upload.
+// Asset Massive Sticker PNG importe depuis l'atelier print du studio.
+// PNG avec transparency preserve pour que le die-cut + stroke fonctionnent
+// directement (pas besoin de remove-bg pour cette image precise).
+const DEFAULT_STICKER_URL = '/images/stickers/massive-sticker-default.png';
 
 // Classe Tailwind reutilisable pour tous les <select> natifs. Look custom :
 // appearance-none + caret chevron Lucide overlay positionne en absolute via
@@ -96,32 +99,38 @@ function ConfiguratorStickers({ onFinishChange }) {
   const shapeLabel = stickerShapes.find(s => s.id === shape);
   const sizeLabel = stickerSizes.find(s => s.id === size)?.label;
 
-  // Source du preview : bgRemovedUrl > localPreviewUrl > default.
+  // Source brute du sticker (avant detourage eventuel) : upload utilisateur
+  // si dispo, sinon l'asset par defaut Massive Sticker.
+  const rawSource = localPreviewUrl || DEFAULT_STICKER_URL;
+
+  // Source affichee dans le preview : bgRemovedUrl > rawSource.
   const previewSource = useMemo(() => {
     if (activeRemoveBg && bgRemovedUrl) return bgRemovedUrl;
-    return localPreviewUrl || DEFAULT_STICKER_URL;
-  }, [activeRemoveBg, bgRemovedUrl, localPreviewUrl]);
+    return rawSource;
+  }, [activeRemoveBg, bgRemovedUrl, rawSource]);
 
-  // Detourage IA quand le toggle est active.
+  // Detourage IA quand le toggle est active. Fonctionne autant sur l'upload
+  // utilisateur que sur l'image par defaut - le mandat exige que tous les
+  // effets (stroke, 3D, bg removal) s'appliquent meme avant upload.
   useEffect(() => {
     if (!activeRemoveBg) {
       setIsRemovingBg(false);
       return;
     }
-    if (!localPreviewUrl) {
+    if (!rawSource) {
       setBgRemovedUrl(null);
       setBgRemoveError(null);
       return;
     }
-    if (lastProcessedRef.current === localPreviewUrl && bgRemovedUrl) return;
+    if (lastProcessedRef.current === rawSource && bgRemovedUrl) return;
 
     let cancelled = false;
     setIsRemovingBg(true);
     setBgRemoveError(null);
-    removeBackground(localPreviewUrl)
+    removeBackground(rawSource)
       .then((url) => {
         if (cancelled) return;
-        lastProcessedRef.current = localPreviewUrl;
+        lastProcessedRef.current = rawSource;
         setBgRemovedUrl(url);
       })
       .catch((err) => {
@@ -135,7 +144,7 @@ function ConfiguratorStickers({ onFinishChange }) {
       });
 
     return () => { cancelled = true; };
-  }, [activeRemoveBg, localPreviewUrl]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeRemoveBg, rawSource]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const canAddToCart = uploadedFiles.length > 0 || notes.trim().length > 0;
 
@@ -334,19 +343,18 @@ function ConfiguratorStickers({ onFinishChange }) {
           </div>
 
           {/* Toggle Retirer l'arriere-plan : juste sous le selecteur de
-              contour. Disabled (avec hint) tant qu'aucune image custom n'a
-              ete deposee - sur l'image par defaut (logo Massive) ce serait
-              inutile car le fond est deja transparent. */}
+              contour. Fonctionne sur l'image upload OU sur l'image par
+              defaut (le mandat impose que bg removal s'applique aussi
+              avant upload). */}
           <div>
             <button
               onClick={() => setActiveRemoveBg((v) => !v)}
-              disabled={isRemovingBg || !localPreviewUrl}
-              title={!localPreviewUrl ? tx({ fr: 'Depose une image pour activer', en: 'Upload an image to enable', es: 'Sube una imagen para activar' }) : ''}
+              disabled={isRemovingBg}
               className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all border-2 ${
                 activeRemoveBg
                   ? 'border-accent bg-accent/10 text-accent'
                   : 'border-grey-muted/20 hover:border-grey-muted/40 text-heading'
-              } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-grey-muted/20`}
+              } disabled:opacity-50 disabled:cursor-wait`}
             >
               {isRemovingBg ? (
                 <>
@@ -356,9 +364,7 @@ function ConfiguratorStickers({ onFinishChange }) {
               ) : (
                 <>
                   <Scissors size={15} />
-                  {!localPreviewUrl
-                    ? tx({ fr: "Retirer l'arriere-plan (depose une image)", en: 'Remove background (upload first)', es: 'Quitar fondo (subir imagen)' })
-                    : activeRemoveBg
+                  {activeRemoveBg
                     ? tx({ fr: 'Arriere-plan retire - cliquer pour annuler', en: 'Background removed - click to undo', es: 'Fondo eliminado - clic para deshacer' })
                     : tx({ fr: "Retirer l'arriere-plan", en: 'Remove background', es: 'Quitar fondo' })}
                 </>
