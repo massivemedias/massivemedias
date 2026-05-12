@@ -144,6 +144,10 @@ function ConfiguratorStickers({ onFinishChange }) {
         console.error('[ConfiguratorStickers] removeBackground failed:', err);
         setBgRemoveError(err?.message || 'Detourage echoue');
         setBgRemovedUrl(null);
+        // ERROR-RESET (12 mai 2026) : si le detourage echoue, on revient a
+        // l'image originale pour eviter une UX trompeuse (bouton qui dit
+        // "Arriere-plan retire" alors qu'aucun detourage n'a eu lieu).
+        setActiveRemoveBg(false);
       })
       .finally(() => {
         if (!cancelled) setIsRemovingBg(false);
@@ -219,7 +223,7 @@ function ConfiguratorStickers({ onFinishChange }) {
                 NE SONT PAS des overlays UI sur la zone cliquable.
                 Accessibilite preservee (role/tabIndex/aria-label/clavier). */}
             <div
-              className="cursor-pointer w-full max-w-lg mx-auto"
+              className="relative cursor-pointer w-full max-w-lg mx-auto"
               onClick={openFilePicker}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFilePicker(); } }}
               role="button"
@@ -236,6 +240,32 @@ function ConfiguratorStickers({ onFinishChange }) {
                 enableTilt
                 className="w-full"
               />
+              {/* LOADING-OVERLAY (12 mai 2026) : overlay visible pendant le
+                  detourage IA (~5-15s). Spinner + texte + barre de progression
+                  CSS pulse pour montrer que ça travaille. pointerEvents:auto
+                  pour bloquer les clics pendant le traitement. */}
+              {isRemovingBg && (
+                <div
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-xl bg-black/70 backdrop-blur-sm z-20"
+                  style={{ pointerEvents: 'auto' }}
+                  onClick={(e) => e.stopPropagation()}
+                  aria-live="polite"
+                >
+                  <Loader2 size={36} className="text-accent animate-spin" />
+                  <div className="text-center px-4">
+                    <p className="text-white text-base font-bold uppercase tracking-wider drop-shadow-lg">
+                      {tx({ fr: 'Detourage en cours...', en: 'Removing background...', es: 'Recortando fondo...' })}
+                    </p>
+                    <p className="text-white/80 text-xs mt-1">
+                      {tx({ fr: '~5 a 15 secondes', en: '~5 to 15 seconds', es: '~5 a 15 segundos' })}
+                    </p>
+                  </div>
+                  {/* Barre de progression indeterminate (CSS animation) */}
+                  <div className="w-40 h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full w-1/3 bg-accent rounded-full animate-[loading_1.2s_ease-in-out_infinite]" style={{ animation: 'loading-slide 1.4s ease-in-out infinite' }} />
+                  </div>
+                </div>
+              )}
             </div>
             <div className="mt-4 text-center">
               <span className="text-heading text-base font-semibold">
