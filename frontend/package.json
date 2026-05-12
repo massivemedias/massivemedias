@@ -20,7 +20,7 @@
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.563.0",
-    "onnxruntime-web": "^1.26.0",
+    "onnxruntime-web": "1.21.0",
     "pdfjs-dist": "^5.5.207",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",

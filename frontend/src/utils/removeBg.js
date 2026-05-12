@@ -83,13 +83,28 @@ export async function removeBackground(sourceUrl) {
     throw new Error('removeBackground: API @imgly/background-removal inattendue');
   }
 
-  // CF-PAGES-25MB-FIX (10 mai 2026) : Cloudflare Pages limite a 25 MiB par
-  // fichier. Le WASM ort-wasm-simd-threaded.jsep fait exactement 25 MiB,
-  // depasse la limite et fait echouer le build. Solution : on configure
-  // imgly pour charger les WASM depuis leur CDN officiel au lieu de les
-  // servir depuis notre dist. Le post-build supprime ces fichiers du dist
+  // URL-FETCH-FIX (12 mai 2026) : @imgly resolve les paths relatifs contre
+  // son `publicPath` (le CDN imgly) au lieu de l'origine du site. Resultat :
+  // un path local comme `/images/stickers/x.png` essaye d'etre fetche
+  // depuis le CDN imgly et retourne du text/html (404 page) -> erreur
+  // "Invalid format: text/html with params: [object Object]".
+  // Fix : on fetch le blob nous-memes depuis l'origine du site et on passe
+  // directement le Blob a @imgly (qui supporte string|URL|ArrayBuffer|Blob).
+  let sourceBlob;
+  try {
+    const response = await fetch(sourceUrl);
+    if (!response.ok) throw new Error(`fetch source HTTP ${response.status}`);
+    sourceBlob = await response.blob();
+  } catch (err) {
+    throw new Error(`Image source inaccessible: ${err.message}`);
+  }
+
+  // CF-PAGES-25MB-FIX : on configure imgly pour charger les WASM depuis leur
+  // CDN officiel (background-removal-data/1.7.0/dist/) au lieu de les servir
+  // depuis notre dist - le WASM ort-wasm-simd-threaded.jsep depasse la
+  // limite 25 MiB de CF Pages. Le post-build supprime ces fichiers du dist
   // (cf. package.json build script).
-  const blob = await removeBackgroundFn(sourceUrl, {
+  const blob = await removeBackgroundFn(sourceBlob, {
     publicPath: 'https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/',
     debug: false,
   });
