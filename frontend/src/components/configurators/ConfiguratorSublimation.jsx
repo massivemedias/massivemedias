@@ -198,7 +198,53 @@ function ConfiguratorSublimation() {
                 + key change ne forcait pas le re-mount correctement dans le
                 nouveau layout 2-col. Remplace par un simple <img> avec key
                 explicite pour garantir le re-render. */}
-            {hasColors ? (
+            {hasColors && product === 'longsleeve' ? (
+              /* ASSET-MISSING (12 mai 2026) : les fichiers PNG dans
+                 /public/images/longsleeve/ etaient des duplicates bit-a-bit
+                 des t-shirts manches courtes (verifie via md5sum). Les vrais
+                 mockups longsleeve ne sont pas dispo. En attendant que le
+                 client fournisse les assets, on affiche un SVG inline avec
+                 des manches longues clairement distinctes, tinte selon
+                 selectedColor. Le SVG est visuellement DIFFERENT du t-shirt
+                 -> impossible de confondre les deux produits.
+                 TODO client : fournir long-sleeve-{color}.webp pour les 10
+                 couleurs (black/white/daisy/gold/kelly/light-pink/purple/
+                 royal/scarlet-red/dark-heather) puis remettre l'<img> normal. */
+              <div
+                key={`longsleeve-${selectedColor}`}
+                className="relative w-full max-w-md mx-auto"
+                aria-label={`Long Sleeve ${colorObj.name} (apercu provisoire)`}
+              >
+                <svg
+                  viewBox="0 0 400 460"
+                  className="w-full h-auto"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Manches longues : 2 longs rectangles partant des epaules
+                      jusqu'aux poignets - CE qui DIFFERENCIE visuellement le
+                      long sleeve du t-shirt classique. */}
+                  <path
+                    d="M 60 95 L 95 65 L 145 80 Q 165 55 200 55 Q 235 55 255 80 L 305 65 L 340 95 L 320 145 L 295 130 L 295 410 Q 295 430 280 430 L 120 430 Q 105 430 105 410 L 105 130 L 80 145 Z"
+                    fill={colorObj.hex || '#222'}
+                    stroke="rgba(0,0,0,0.25)"
+                    strokeWidth="1.5"
+                  />
+                  {/* Encolure */}
+                  <path
+                    d="M 165 60 Q 200 90 235 60"
+                    fill="none"
+                    stroke="rgba(0,0,0,0.35)"
+                    strokeWidth="2"
+                  />
+                  {/* Poignets - bandes au bas des manches */}
+                  <rect x="60" y="135" width="50" height="14" fill="rgba(0,0,0,0.18)" rx="2" />
+                  <rect x="290" y="135" width="50" height="14" fill="rgba(0,0,0,0.18)" rx="2" />
+                </svg>
+                <span className="absolute top-2 right-2 text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full bg-accent/20 text-accent border border-accent/40">
+                  Long Sleeve
+                </span>
+              </div>
+            ) : hasColors ? (
               <img
                 key={`${product}-${selectedColor}`}
                 src={currentGetImage(selectedColor)}
