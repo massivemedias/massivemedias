@@ -211,26 +211,6 @@ export function applyShader(ctx, rawShader, w, h) {
   }
 
   else if (shader === 'broken-glass') {
-    // BROKEN-GLASS-V5 (12 mai 2026) : refonte CRITIQUE sur user feedback
-    // ("couleurs plates ou geometriques - on doit voir un reflet brillant
-    // qui balaye en fonction de la souris"). V4 avait encore des gradients
-    // irises (cyan/magenta/jaune/violet) qui se lisaient comme "couleurs
-    // plates" au repos.
-    //
-    // V5 strippe TOUTE couleur du canvas. Le canvas devient un PUR
-    // MASQUE STRUCTUREL en blanc/gris :
-    //   1. Bevels blancs subtils par facette (alpha 0.01-0.09) -> relief
-    //      3D mais incolore.
-    //   2. Specular ponctuel BLANC sur ~25% des facettes -> certains
-    //      eclats sont deja "allumes" dans la base.
-    //   3. Cracks blanches (structure principale).
-    //   4. Voile gris-neutre tres tres faible (0.025) sans dominante bleue.
-    // Aucune teinte colore : tout est pur blanc/gris -> le design dessous
-    // garde 100% de ses couleurs originales.
-    //
-    // La lumiere/reflet vient INTEGRALEMENT du CSS overlay V5 qui injecte
-    // un spotlight blanc dominant + un faisceau directionnel qui balayent
-    // avec la souris (mix-blend-mode 'screen' pour eclairer proprement).
     ctx.globalCompositeOperation = 'source-atop';
 
     let seed = ((w * 31337) ^ (h * 42069)) >>> 0;
@@ -239,14 +219,17 @@ export function applyShader(ctx, rawShader, w, h) {
       return (seed >>> 0) / 4294967296;
     };
 
-    const FACETS = 36;
+    const FACETS = 34;
+    const hueShift = rnd() * 360;
     const refSize = Math.min(w, h);
 
-    // Pre-genere les donnees des facettes
-    const facetData = [];
     for (let i = 0; i < FACETS; i++) {
       const cx = rnd() * w;
       const cy = rnd() * h;
+      // FINER-SHARDS (12 mai 2026) : reduction de ~2% sur la taille des
+      // facettes (avant 0.07-0.27 -> maintenant 0.05-0.23). User feedback :
+      // les eclats de verre etaient trop gros vs le motif du sticker, ne
+      // respectaient pas le design. Maintenant plus fins, plus discrets.
       const size = refSize * (0.05 + rnd() * 0.18);
       const a0 = rnd() * Math.PI * 2;
       const a1 = a0 + Math.PI * (0.35 + rnd() * 1.0);
@@ -254,84 +237,32 @@ export function applyShader(ctx, rawShader, w, h) {
       const r0 = size * (0.6 + rnd() * 0.5);
       const r1 = size * (0.5 + rnd() * 0.6);
       const r2 = size * (0.4 + rnd() * 0.7);
-      const v0x = cx + Math.cos(a0) * r0;
-      const v0y = cy + Math.sin(a0) * r0;
-      const v1x = cx + Math.cos(a1) * r1;
-      const v1y = cy + Math.sin(a1) * r1;
-      const v2x = cx + Math.cos(a2) * r2;
-      const v2y = cy + Math.sin(a2) * r2;
-      const ccx = (v0x + v1x + v2x) / 3;
-      const ccy = (v0y + v1y + v2y) / 3;
-      const normalAngle = rnd() * Math.PI * 2;
-      facetData.push({
-        v0x, v0y, v1x, v1y, v2x, v2y,
-        cx: ccx, cy: ccy, size,
-        nx: Math.cos(normalAngle),
-        ny: Math.sin(normalAngle),
-        lit: rnd() < 0.25,
-        litStrength: 0.32 + rnd() * 0.32,
-      });
-    }
 
-    // Passe 1 : bevel BLANC pur par facette (relief 3D sans teinte)
-    for (const f of facetData) {
       ctx.save();
-      const gradLen = f.size * 0.9;
-      const gx0 = f.cx - f.nx * gradLen;
-      const gy0 = f.cy - f.ny * gradLen;
-      const gx1 = f.cx + f.nx * gradLen;
-      const gy1 = f.cy + f.ny * gradLen;
-      const grad = ctx.createLinearGradient(gx0, gy0, gx1, gy1);
-      // PUR BLANC - aucune teinte coloree
-      grad.addColorStop(0, 'rgba(255,255,255,0.01)');
-      grad.addColorStop(0.5, 'rgba(255,255,255,0.09)');
-      grad.addColorStop(1, 'rgba(255,255,255,0.01)');
-      ctx.fillStyle = grad;
+      ctx.globalAlpha = 0.18 + rnd() * 0.32;
+      const hue = (hueShift + i * (360 / FACETS) + rnd() * 25) % 360;
+      ctx.fillStyle = `hsl(${hue}, 100%, 62%)`;
       ctx.beginPath();
-      ctx.moveTo(f.v0x, f.v0y);
-      ctx.lineTo(f.v1x, f.v1y);
-      ctx.lineTo(f.v2x, f.v2y);
+      ctx.moveTo(cx + Math.cos(a0) * r0, cy + Math.sin(a0) * r0);
+      ctx.lineTo(cx + Math.cos(a1) * r1, cy + Math.sin(a1) * r1);
+      ctx.lineTo(cx + Math.cos(a2) * r2, cy + Math.sin(a2) * r2);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
     }
 
-    // Passe 2 : specular BLANC ponctuel sur ~25% des facettes
-    for (const f of facetData) {
-      if (!f.lit) continue;
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(f.v0x, f.v0y);
-      ctx.lineTo(f.v1x, f.v1y);
-      ctx.lineTo(f.v2x, f.v2y);
-      ctx.closePath();
-      ctx.clip();
-
-      const hx = f.cx + f.nx * f.size * 0.2;
-      const hy = f.cy + f.ny * f.size * 0.2;
-      const hR = f.size * 0.4;
-      const hgrad = ctx.createRadialGradient(hx, hy, 0, hx, hy, hR);
-      hgrad.addColorStop(0, `rgba(255,255,255,${f.litStrength})`);
-      hgrad.addColorStop(0.4, `rgba(255,255,255,${f.litStrength * 0.35})`);
-      hgrad.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = hgrad;
-      ctx.fillRect(hx - hR, hy - hR, hR * 2, hR * 2);
-      ctx.restore();
-    }
-
-    // Passe 3 : cracks blanches (structure principale)
     ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.78)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
     ctx.lineCap = 'round';
-    const CRACKS = 16;
+    const CRACKS = 12;
     for (let c = 0; c < CRACKS; c++) {
       const x0 = rnd() * w;
       const y0 = rnd() * h;
       const angle = rnd() * Math.PI * 2;
       const mainLen = refSize * (0.08 + rnd() * 0.28);
       ctx.save();
-      ctx.globalAlpha = 0.32 + rnd() * 0.30;
-      ctx.lineWidth = 0.3 + rnd() * 1.1;
+      ctx.globalAlpha = 0.35 + rnd() * 0.30;
+      ctx.lineWidth = 0.4 + rnd() * 1.2;
       ctx.beginPath();
       ctx.moveTo(x0, y0);
       ctx.lineTo(x0 + Math.cos(angle) * mainLen, y0 + Math.sin(angle) * mainLen);
@@ -347,10 +278,9 @@ export function applyShader(ctx, rawShader, w, h) {
     }
     ctx.restore();
 
-    // Passe 4 : voile gris-neutre tres tres faible (sans dominante bleue)
     ctx.save();
-    ctx.globalAlpha = 0.025;
-    ctx.fillStyle = 'rgba(230,230,232,1)';
+    ctx.globalAlpha = 0.07;
+    ctx.fillStyle = 'rgba(220,230,255,1)';
     ctx.fillRect(0, 0, w, h);
     ctx.restore();
   }
