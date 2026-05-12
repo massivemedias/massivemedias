@@ -198,119 +198,15 @@ function ConfiguratorSublimation() {
                 + key change ne forcait pas le re-mount correctement dans le
                 nouveau layout 2-col. Remplace par un simple <img> avec key
                 explicite pour garantir le re-render. */}
-            {hasColors && product === 'longsleeve' ? (
-              /* ASSET-MISSING (12 mai 2026) : les fichiers PNG dans
-                 /public/images/longsleeve/ etaient des duplicates bit-a-bit
-                 des t-shirts manches courtes (verifie via md5sum). Les vrais
-                 mockups longsleeve ne sont pas dispo. En attendant que le
-                 client fournisse les assets, on affiche un SVG inline avec
-                 des manches longues clairement distinctes, tinte selon
-                 selectedColor. Le SVG est visuellement DIFFERENT du t-shirt
-                 -> impossible de confondre les deux produits.
-                 TODO client : fournir long-sleeve-{color}.webp pour les 10
-                 couleurs (black/white/daisy/gold/kelly/light-pink/purple/
-                 royal/scarlet-red/dark-heather) puis remettre l'<img> normal. */
-              <div
-                key={`longsleeve-${selectedColor}`}
-                className="relative w-full max-w-md mx-auto"
-                aria-label={`Long Sleeve ${colorObj.name} (apercu provisoire)`}
-              >
-                {/* SVG long sleeve v2 (12 mai 2026) - VRAIES manches longues
-                    qui descendent jusqu'aux poignets, contrairement a la v1
-                    qui ressemblait a un t-shirt classique.
-                    Structure : encolure + epaules + manches descendantes
-                    diagonales + bandes de poignet + corps rectangulaire. */}
-                <svg
-                  viewBox="0 0 400 500"
-                  className="w-full h-auto drop-shadow-2xl"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Silhouette principale en un path continu : on part de
-                      l'encolure, descend la manche gauche jusqu'au poignet,
-                      remonte par l'interieur, descend le corps gauche,
-                      passe le bottom, remonte le corps droit, sort par la
-                      manche droite jusqu'au poignet, retour par l'interieur. */}
-                  <path
-                    d="
-                      M 155 80
-                      L 90 130
-                      L 55 320
-                      L 30 340
-                      L 38 372
-                      L 95 358
-                      L 105 340
-                      L 130 165
-                      L 130 470
-                      Q 130 485 145 485
-                      L 255 485
-                      Q 270 485 270 470
-                      L 270 165
-                      L 295 340
-                      L 305 358
-                      L 362 372
-                      L 370 340
-                      L 345 320
-                      L 310 130
-                      L 245 80
-                      Q 222 70 200 70
-                      Q 178 70 155 80
-                      Z
-                    "
-                    fill={colorObj.hex || '#222'}
-                    stroke="rgba(0,0,0,0.30)"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-                  {/* Encolure (col en U) */}
-                  <path
-                    d="M 168 78 Q 200 110 232 78"
-                    fill="rgba(0,0,0,0.15)"
-                    stroke="rgba(0,0,0,0.35)"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  {/* Bande de poignet gauche - ribbing typique des manches longues */}
-                  <path
-                    d="M 30 340 L 38 372 L 95 358 L 105 340 Q 65 332 30 340 Z"
-                    fill="rgba(0,0,0,0.18)"
-                    stroke="rgba(0,0,0,0.3)"
-                    strokeWidth="1"
-                  />
-                  {/* Bande de poignet droit */}
-                  <path
-                    d="M 295 340 Q 335 332 370 340 L 362 372 L 305 358 Z"
-                    fill="rgba(0,0,0,0.18)"
-                    stroke="rgba(0,0,0,0.3)"
-                    strokeWidth="1"
-                  />
-                  {/* Lignes de couture des manches pour donner du volume */}
-                  <path
-                    d="M 105 130 L 105 340"
-                    fill="none"
-                    stroke="rgba(0,0,0,0.12)"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M 295 130 L 295 340"
-                    fill="none"
-                    stroke="rgba(0,0,0,0.12)"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                  />
-                  {/* Ourlet bas (hem) du corps */}
-                  <path
-                    d="M 130 475 L 270 475"
-                    fill="none"
-                    stroke="rgba(0,0,0,0.15)"
-                    strokeWidth="1.5"
-                  />
-                </svg>
-                <span className="absolute top-2 right-2 text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full bg-accent/20 text-accent border border-accent/40">
-                  Long Sleeve
-                </span>
-              </div>
-            ) : hasColors ? (
+            {hasColors ? (
+              /* LONG-SLEEVE-ASSETS-OK (12 mai 2026) : le user a fourni
+                 crewneck black.webp (Desktop). Les autres couleurs (white,
+                 light-pink, daisy via gold, gold, kelly via irish-green,
+                 dark-heather, royal, scarlet-red via cherry-red, purple)
+                 sont copiees depuis /crewneck/ vers /longsleeve/ pour
+                 conserver le path attendu par getLongSleeveImage. Plus
+                 besoin de SVG inline - on utilise <img> classique comme
+                 les autres textiles. */
               <img
                 key={`${product}-${selectedColor}`}
                 src={currentGetImage(selectedColor)}
