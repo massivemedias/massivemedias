@@ -216,7 +216,11 @@ export function applyShader(ctx, rawShader, w, h) {
     for (let i = 0; i < FACETS; i++) {
       const cx = rnd() * w;
       const cy = rnd() * h;
-      const size = refSize * (0.07 + rnd() * 0.20);
+      // FINER-SHARDS (12 mai 2026) : reduction de ~2% sur la taille des
+      // facettes (avant 0.07-0.27 -> maintenant 0.05-0.23). User feedback :
+      // les eclats de verre etaient trop gros vs le motif du sticker, ne
+      // respectaient pas le design. Maintenant plus fins, plus discrets.
+      const size = refSize * (0.05 + rnd() * 0.18);
       const a0 = rnd() * Math.PI * 2;
       const a1 = a0 + Math.PI * (0.35 + rnd() * 1.0);
       const a2 = a1 + Math.PI * (0.35 + rnd() * 1.0);
