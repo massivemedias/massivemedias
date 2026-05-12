@@ -229,7 +229,7 @@ function ConfiguratorStickers({ onFinishChange }) {
               >
                 <Upload size={32} className="text-white drop-shadow-lg" />
                 <span className="text-white text-sm font-semibold uppercase tracking-wider drop-shadow-md">
-                  {tx({ fr: 'Cliquer pour modifier', en: 'Click to change', es: 'Haz clic para modificar' })}
+                  {tx({ fr: 'Televerse ton image', en: 'Upload your image', es: 'Sube tu imagen' })}
                 </span>
               </div>
             </div>
