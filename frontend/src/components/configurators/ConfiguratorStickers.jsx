@@ -206,13 +206,18 @@ function ConfiguratorStickers({ onFinishChange }) {
         {/* ============ PREVIEW (col gauche, grand) ============ */}
         <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-2xl p-3 md:p-4 lg:p-6 bg-black/10">
-            {/* CLICKABLE-PREVIEW v2 (12 mai 2026) : wrapper cliquable autour
-                du canvas qui declenche le file picker. Retrait de l'overlay
-                sombre + icone + texte sur user feedback ("non-instinctif",
-                "fioritures visuelles"). Seul indicateur : cursor-pointer.
-                Le tilt 3D + FX live du canvas restent visibles au hover
-                sans aucune obstruction. Accessibilite preservee via
-                role/tabIndex/aria-label + clavier Enter/Space. */}
+            {/* CLICKABLE-PREVIEW v3 (12 mai 2026) - VERSION FINALE GELEE.
+                REGLES DURES (validation client) :
+                  - AUCUN overlay sombre au hover.
+                  - AUCUNE icone Upload visible.
+                  - AUCUN texte "Televerse ton image" / "Upload your image".
+                  - AUCUN flou (filter:blur, backdrop-filter).
+                  - AUCUN assombrissement (opacity, bg-black/X).
+                Seul indicateur d'interactivite : cursor:pointer (CSS native).
+                Le tilt 3D + FX du sticker continuent de fonctionner car
+                ils sont rendus a l'interieur du StickerPreviewCanvas et
+                NE SONT PAS des overlays UI sur la zone cliquable.
+                Accessibilite preservee (role/tabIndex/aria-label/clavier). */}
             <div
               className="cursor-pointer w-full max-w-lg mx-auto"
               onClick={openFilePicker}
