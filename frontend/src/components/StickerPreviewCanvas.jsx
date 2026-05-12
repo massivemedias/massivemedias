@@ -73,13 +73,22 @@ function getFxOverlayStyle(fx, tilt) {
 
   switch (fx) {
     case 'holographic':
+      // HOLO-SOFTEN-V2 (12 mai 2026) : retire le conic-gradient (qui
+      // creait une pointe centrale nette au repos quand px,py=50,50)
+      // pour un linear-gradient dont l'angle suit le tilt -> rainbow
+      // holo qui glisse avec la souris SANS point convergent.
+      // alpha individuels reduits + opacity 0.45 -> 0.25 (reduction ~44%).
       return {
-        background: `conic-gradient(from ${angle + 90}deg at ${px}% ${py}%,
-          rgba(255,0,200,0.35), rgba(255,165,0,0.3), rgba(255,255,0,0.3),
-          rgba(0,255,100,0.3), rgba(0,180,255,0.35), rgba(130,0,255,0.3),
-          rgba(255,0,200,0.35))`,
+        background: `linear-gradient(${angle + 90}deg,
+          rgba(255,0,200,0.20) 0%,
+          rgba(255,165,0,0.18) 16%,
+          rgba(255,255,0,0.18) 32%,
+          rgba(0,255,100,0.18) 48%,
+          rgba(0,180,255,0.20) 64%,
+          rgba(130,0,255,0.18) 80%,
+          rgba(255,0,200,0.20) 100%)`,
         mixBlendMode: 'color',
-        opacity: 0.45,
+        opacity: 0.25,
       };
     case 'glossy':
       return {
