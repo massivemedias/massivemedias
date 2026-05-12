@@ -45,7 +45,13 @@ export function ThemeProvider({ children }) {
   }, []);
 
   // Valeur dérivée pour rétro-compatibilité (CSS overrides, etc.)
-  const theme = step <= 5 ? 'vibrant' : 'light';
+  // THEME-LUMINANCE-FIX (12 mai 2026) : avant `step <= 5` classifiait Acajou
+  // (step 6), Ember (step 7) et Slate (step 8) comme 'light' alors qu'ils
+  // sont en realite DARK. Bug visible sur ServiceCard qui appliquait bg-white
+  // sur ces themes -> texte gris clair illisible. Le seuil est aligne sur
+  // celui de applyTheme() dans brightnessEngine.js (step <= 8 = data-theme
+  // vibrant, step 9-10 = themes clairs Creme/Light).
+  const theme = step <= 8 ? 'vibrant' : 'light';
 
   // brightness rétro-compatible (pour anti-FOUC dans index.html)
   const brightness = Math.round((step / (THEME_COUNT - 1)) * 100);
