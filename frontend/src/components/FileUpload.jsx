@@ -281,9 +281,12 @@ const FileUpload = forwardRef(function FileUpload({ files = [], onFilesChange, l
                   <Loader2 size={14} className="text-white animate-spin" />
                 ) : (
                   <>
-                    <Upload size={14} className="text-white" />
-                    <span className="text-white text-xs font-semibold leading-tight">
-                      {tx({ fr: 'Glissez ou cliquez pour téléverser votre fichier', en: 'Drop or click to upload your file', es: 'Arrastra o haz clic para subir tu archivo' })}
+                    <Upload size={14} style={{ color: 'var(--logo-accent, #FFCC02)' }} />
+                    <span
+                      className="text-xs font-bold leading-tight"
+                      style={{ color: 'var(--logo-accent, #FFCC02)' }}
+                    >
+                      {tx({ fr: 'Cliquez pour téléverser', en: 'Click to upload', es: 'Haz clic para subir' })}
                     </span>
                   </>
                 )}
@@ -321,9 +324,12 @@ const FileUpload = forwardRef(function FileUpload({ files = [], onFilesChange, l
               </>
             ) : (
               <>
-                <Upload size={22} className="text-grey-muted" />
-                <span className="text-heading text-sm font-semibold leading-snug">
-                  {tx({ fr: 'Glissez ou cliquez pour téléverser votre fichier', en: 'Drop or click to upload your file', es: 'Arrastra o haz clic para subir tu archivo' })}
+                <Upload size={22} style={{ color: 'var(--logo-accent, #FFCC02)' }} />
+                <span
+                  className="text-sm font-bold leading-snug"
+                  style={{ color: 'var(--logo-accent, #FFCC02)' }}
+                >
+                  {tx({ fr: 'Cliquez pour téléverser', en: 'Click to upload', es: 'Haz clic para subir' })}
                 </span>
                 <span className="text-grey-muted/80 text-[10px]">PNG, JPG, TIFF, PDF, AI</span>
               </>
