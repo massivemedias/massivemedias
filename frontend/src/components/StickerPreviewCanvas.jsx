@@ -72,14 +72,20 @@ function getFxOverlayStyle(fx, tilt) {
   const py = 50 - tilt.x * 5; // vertical shift
 
   switch (fx) {
-    case 'holographic':
-      // HOLO-SOFTEN-V2 (12 mai 2026) : retire le conic-gradient (qui
-      // creait une pointe centrale nette au repos quand px,py=50,50)
-      // pour un linear-gradient dont l'angle suit le tilt -> rainbow
-      // holo qui glisse avec la souris SANS point convergent.
-      // alpha individuels reduits + opacity 0.45 -> 0.25 (reduction ~44%).
+    case 'holographic': {
+      // DYNAMIC-AMP-V3 (12 mai 2026) : amplitude angulaire amplifiee
+      // pour scintillement visible au hover desktop. Le `atan2(tilt.y,
+      // tilt.x)` precedent ne variait QU'EN DIRECTION (pas en magnitude),
+      // donc en pratique l'angle restait quasi statique tant que la
+      // souris bougeait dans le meme quadrant. Remplace par un calcul
+      // direct multiplicatif (tilt.x + tilt.y) * facteur -> l'angle
+      // glisse continuellement avec la position du curseur, donnant un
+      // scintillement franc et continu (~+90% d'amplitude).
+      // Static colors INCHANGEES (alpha 0.18-0.20, opacity 0.25, NO
+      // conic-gradient -> pas de pointe centrale).
+      const dynamicAngle = 90 + tilt.x * 12 + tilt.y * 12;
       return {
-        background: `linear-gradient(${angle + 90}deg,
+        background: `linear-gradient(${dynamicAngle}deg,
           rgba(255,0,200,0.20) 0%,
           rgba(255,165,0,0.18) 16%,
           rgba(255,255,0,0.18) 32%,
@@ -90,6 +96,7 @@ function getFxOverlayStyle(fx, tilt) {
         mixBlendMode: 'color',
         opacity: 0.25,
       };
+    }
     case 'glossy':
       return {
         background: `radial-gradient(ellipse 60% 40% at ${px}% ${py}%,
