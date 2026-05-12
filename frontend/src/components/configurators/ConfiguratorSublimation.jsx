@@ -215,30 +215,96 @@ function ConfiguratorSublimation() {
                 className="relative w-full max-w-md mx-auto"
                 aria-label={`Long Sleeve ${colorObj.name} (apercu provisoire)`}
               >
+                {/* SVG long sleeve v2 (12 mai 2026) - VRAIES manches longues
+                    qui descendent jusqu'aux poignets, contrairement a la v1
+                    qui ressemblait a un t-shirt classique.
+                    Structure : encolure + epaules + manches descendantes
+                    diagonales + bandes de poignet + corps rectangulaire. */}
                 <svg
-                  viewBox="0 0 400 460"
-                  className="w-full h-auto"
+                  viewBox="0 0 400 500"
+                  className="w-full h-auto drop-shadow-2xl"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  {/* Manches longues : 2 longs rectangles partant des epaules
-                      jusqu'aux poignets - CE qui DIFFERENCIE visuellement le
-                      long sleeve du t-shirt classique. */}
+                  {/* Silhouette principale en un path continu : on part de
+                      l'encolure, descend la manche gauche jusqu'au poignet,
+                      remonte par l'interieur, descend le corps gauche,
+                      passe le bottom, remonte le corps droit, sort par la
+                      manche droite jusqu'au poignet, retour par l'interieur. */}
                   <path
-                    d="M 60 95 L 95 65 L 145 80 Q 165 55 200 55 Q 235 55 255 80 L 305 65 L 340 95 L 320 145 L 295 130 L 295 410 Q 295 430 280 430 L 120 430 Q 105 430 105 410 L 105 130 L 80 145 Z"
+                    d="
+                      M 155 80
+                      L 90 130
+                      L 55 320
+                      L 30 340
+                      L 38 372
+                      L 95 358
+                      L 105 340
+                      L 130 165
+                      L 130 470
+                      Q 130 485 145 485
+                      L 255 485
+                      Q 270 485 270 470
+                      L 270 165
+                      L 295 340
+                      L 305 358
+                      L 362 372
+                      L 370 340
+                      L 345 320
+                      L 310 130
+                      L 245 80
+                      Q 222 70 200 70
+                      Q 178 70 155 80
+                      Z
+                    "
                     fill={colorObj.hex || '#222'}
-                    stroke="rgba(0,0,0,0.25)"
+                    stroke="rgba(0,0,0,0.30)"
                     strokeWidth="1.5"
+                    strokeLinejoin="round"
                   />
-                  {/* Encolure */}
+                  {/* Encolure (col en U) */}
                   <path
-                    d="M 165 60 Q 200 90 235 60"
-                    fill="none"
+                    d="M 168 78 Q 200 110 232 78"
+                    fill="rgba(0,0,0,0.15)"
                     stroke="rgba(0,0,0,0.35)"
                     strokeWidth="2"
+                    strokeLinejoin="round"
                   />
-                  {/* Poignets - bandes au bas des manches */}
-                  <rect x="60" y="135" width="50" height="14" fill="rgba(0,0,0,0.18)" rx="2" />
-                  <rect x="290" y="135" width="50" height="14" fill="rgba(0,0,0,0.18)" rx="2" />
+                  {/* Bande de poignet gauche - ribbing typique des manches longues */}
+                  <path
+                    d="M 30 340 L 38 372 L 95 358 L 105 340 Q 65 332 30 340 Z"
+                    fill="rgba(0,0,0,0.18)"
+                    stroke="rgba(0,0,0,0.3)"
+                    strokeWidth="1"
+                  />
+                  {/* Bande de poignet droit */}
+                  <path
+                    d="M 295 340 Q 335 332 370 340 L 362 372 L 305 358 Z"
+                    fill="rgba(0,0,0,0.18)"
+                    stroke="rgba(0,0,0,0.3)"
+                    strokeWidth="1"
+                  />
+                  {/* Lignes de couture des manches pour donner du volume */}
+                  <path
+                    d="M 105 130 L 105 340"
+                    fill="none"
+                    stroke="rgba(0,0,0,0.12)"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M 295 130 L 295 340"
+                    fill="none"
+                    stroke="rgba(0,0,0,0.12)"
+                    strokeWidth="1"
+                    strokeLinecap="round"
+                  />
+                  {/* Ourlet bas (hem) du corps */}
+                  <path
+                    d="M 130 475 L 270 475"
+                    fill="none"
+                    stroke="rgba(0,0,0,0.15)"
+                    strokeWidth="1.5"
+                  />
                 </svg>
                 <span className="absolute top-2 right-2 text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full bg-accent/20 text-accent border border-accent/40">
                   Long Sleeve
