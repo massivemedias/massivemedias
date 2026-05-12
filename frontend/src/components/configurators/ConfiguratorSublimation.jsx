@@ -347,27 +347,35 @@ function ConfiguratorSublimation() {
         </div>
       )}
 
-      {/* Quantity selector */}
+      {/* Quantity selector.
+          DROPDOWN-V2 (12 mai 2026) : remplace les boutons inline par un
+          <select> natif pour gagner de l'espace vertical (1 ligne au lieu
+          de 4 cellules grid sur mobile). Chaque option combine qty +
+          prix unitaire (ou "Soumission" si tier.surSoumission). */}
       <div className="mb-4 md:mb-5">
         <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-1.5 md:mb-2.5">
           {tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
         </label>
-        <div className="grid grid-cols-4 md:flex md:flex-wrap gap-1.5 md:gap-2">
-          {tiers.map((tier, i) => (
-            <button
-              key={tier.qty}
-              onClick={() => setQtyIndex(i)}
-              className={`flex flex-col items-center py-1.5 px-2 md:py-2.5 md:px-4 rounded-lg text-sm font-medium transition-all border-2 md:min-w-[5rem] ${qtyIndex === i
-                ? 'border-accent option-selected'
-                : 'border-transparent hover:border-grey-muted/30 option-default'
-              }`}
-            >
-              <span className="text-heading font-bold text-base">{tier.qty}</span>
-              <span className="text-grey-muted mt-0.5 text-sm">
-                {tier.surSoumission ? tx({ fr: 'Soumission', en: 'Quote', es: 'Cotizacion' }) : `${tier.unitPrice}$/u`}
-              </span>
-            </button>
-          ))}
+        <div className="relative">
+          <select
+            value={qtyIndex}
+            onChange={(e) => setQtyIndex(parseInt(e.target.value, 10))}
+            className="w-full appearance-none bg-black/20 border-2 border-grey-muted/20 hover:border-grey-muted/40 focus:border-accent rounded-lg px-3 py-2.5 pr-9 text-sm text-heading transition-colors cursor-pointer focus:outline-none"
+          >
+            {tiers.map((tier, i) => (
+              <option key={tier.qty} value={i} className="bg-black text-white">
+                {tier.qty}
+                {' · '}
+                {tier.surSoumission
+                  ? tx({ fr: 'Sur soumission', en: 'On quote', es: 'Cotizacion' })
+                  : `${tier.unitPrice}$/u`}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={16}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none"
+          />
         </div>
       </div>
 
