@@ -21,6 +21,16 @@ export default factories.createCoreController('api::expense.expense', ({ strapi 
       ];
     }
 
+    // A9 (2026-05-13) : `allFiltered` est maintenant la SOURCE DE VERITE
+    // pour le summary. Avant ce fix :
+    //   1. `allFiltered` chargeait sans `limit` -> tronque silencieusement
+    //      a 100 par la pagination par defaut Strapi v5 -> `total` faux
+    //      des qu'on depasse 100 expenses dans la cat/recherche.
+    //   2. `summary` faisait un 2e findMany({}) SANS filtre -> les cartes
+    //      affichaient le total GLOBAL meme quand l'admin filtrait par
+    //      categorie ou recherche.
+    // Fix : `limit: -1` bypasse la pagination, et `summary` est calcule
+    // depuis `allFiltered` qui respecte les filtres.
     const [items, allFiltered] = await Promise.all([
       strapi.documents('api::expense.expense').findMany({
         filters,
@@ -28,24 +38,29 @@ export default factories.createCoreController('api::expense.expense', ({ strapi 
         limit: pageSize,
         start: (page - 1) * pageSize,
       }),
-      strapi.documents('api::expense.expense').findMany({ filters }),
+      strapi.documents('api::expense.expense').findMany({
+        filters,
+        limit: -1, // bypass pagination Strapi v5 (100 par defaut)
+      }),
     ]);
 
-    // Summary
-    // FIX-COMPTA (27 avril 2026) : `deductible` est calcule en HT (avant taxes)
-    // au lieu de TTC. Raison fiscale QC : les TPS/TVQ payees sont RECUPERABLES
-    // via credits de taxes sur intrants (CTI/RTI). Les inclure dans les
-    // "depenses deductibles" gonfle artificiellement la deduction fiscale.
+    // Summary calcule sur `allFiltered` -> respecte les filtres + tout est
+    // inclus (pas de troncature). Format de reponse INCHANGE.
+    //
+    // FIX-COMPTA (27 avril 2026) : `deductible` est calcule en HT (avant
+    // taxes) au lieu de TTC. Raison fiscale QC : les TPS/TVQ payees sont
+    // RECUPERABLES via credits de taxes sur intrants (CTI/RTI). Les inclure
+    // dans les "depenses deductibles" gonfle artificiellement la deduction
+    // fiscale.
     // Bonne formule : amount HT = amount_TTC - tps - tvq.
     // Ex: facture 200$ TTC = 173.91$ HT + 8.70$ TPS + 17.39$ TVQ
     //     -> deductible compte 173.91$ (les 26.09$ taxes sont recuperees
     //        separement via la ligne "Net a remettre").
-    const allExpenses = await strapi.documents('api::expense.expense').findMany({});
     const summary = {
-      total: allExpenses.reduce((s: number, e: any) => s + (parseFloat(e.amount) || 0), 0),
-      tps: allExpenses.reduce((s: number, e: any) => s + (parseFloat(e.tpsAmount) || 0), 0),
-      tvq: allExpenses.reduce((s: number, e: any) => s + (parseFloat(e.tvqAmount) || 0), 0),
-      deductible: allExpenses.filter((e: any) => e.taxDeductible).reduce((s: number, e: any) => {
+      total: allFiltered.reduce((s: number, e: any) => s + (parseFloat(e.amount) || 0), 0),
+      tps: allFiltered.reduce((s: number, e: any) => s + (parseFloat(e.tpsAmount) || 0), 0),
+      tvq: allFiltered.reduce((s: number, e: any) => s + (parseFloat(e.tvqAmount) || 0), 0),
+      deductible: allFiltered.filter((e: any) => e.taxDeductible).reduce((s: number, e: any) => {
         const amt = parseFloat(e.amount) || 0;
         const tpsAmt = parseFloat(e.tpsAmount) || 0;
         const tvqAmt = parseFloat(e.tvqAmount) || 0;
