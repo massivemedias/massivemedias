@@ -55,6 +55,7 @@ import {
 import { requireAdminAuth, requireUserAuth } from '../../../utils/auth';
 import { dispatchWebhook } from '../../../utils/webhook';
 import { nextInvoiceNumber } from '../../../utils/invoice-counter';
+import { withArtistLock } from '../../../utils/artist-lock';
 
 const getStripe = () => {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -221,30 +222,35 @@ async function reserveUniquePieces(
     byArtist.get(p.artistDocId)!.push({ printId: p.printId, title: p.title });
   }
   for (const [artistDocId, printRefs] of byArtist) {
-    const artist: any = await strapiInstance.documents('api::artist.artist').findFirst({
-      filters: { documentId: artistDocId },
-    });
-    if (!artist) throw new Error('Artiste introuvable lors de la reservation');
-    const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
-    for (const { printId, title } of printRefs) {
-      const idx = prints.findIndex((p: any) => p.id === printId);
-      if (idx === -1) throw new Error(`Piece introuvable chez ${artist.slug}`);
-      const print = prints[idx];
-      if (print.sold === true) {
-        throw new Error(`La piece "${print.title || title || printId}" a ete vendue pendant votre checkout.`);
+    // A4 (2026-05-13) : verrou per-artiste pour serialiser les reservations.
+    // Le re-read FRAIS inside le lock garantit qu'on voit l'etat le plus
+    // recent (pas de write-write race avec un autre checkout simultane).
+    await withArtistLock(artistDocId, async () => {
+      const artist: any = await strapiInstance.documents('api::artist.artist').findFirst({
+        filters: { documentId: artistDocId },
+      });
+      if (!artist) throw new Error('Artiste introuvable lors de la reservation');
+      const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
+      for (const { printId, title } of printRefs) {
+        const idx = prints.findIndex((p: any) => p.id === printId);
+        if (idx === -1) throw new Error(`Piece introuvable chez ${artist.slug}`);
+        const print = prints[idx];
+        if (print.sold === true) {
+          throw new Error(`La piece "${print.title || title || printId}" a ete vendue pendant votre checkout.`);
+        }
+        const existingUntil = print.reservedUntil ? new Date(print.reservedUntil).getTime() : 0;
+        if (existingUntil > now && print.reservedByOrderId && print.reservedByOrderId !== reservationId) {
+          const minsLeft = Math.max(1, Math.ceil((existingUntil - now) / 60000));
+          throw new Error(
+            `La piece "${print.title || title || printId}" est reservee par un autre client (disponible dans ${minsLeft} min).`
+          );
+        }
+        prints[idx] = { ...print, reservedUntil: expiresAtIso, reservedByOrderId: reservationId };
       }
-      const existingUntil = print.reservedUntil ? new Date(print.reservedUntil).getTime() : 0;
-      if (existingUntil > now && print.reservedByOrderId && print.reservedByOrderId !== reservationId) {
-        const minsLeft = Math.max(1, Math.ceil((existingUntil - now) / 60000));
-        throw new Error(
-          `La piece "${print.title || title || printId}" est reservee par un autre client (disponible dans ${minsLeft} min).`
-        );
-      }
-      prints[idx] = { ...print, reservedUntil: expiresAtIso, reservedByOrderId: reservationId };
-    }
-    await strapiInstance.documents('api::artist.artist').update({
-      documentId: artistDocId,
-      data: { prints },
+      await strapiInstance.documents('api::artist.artist').update({
+        documentId: artistDocId,
+        data: { prints },
+      });
     });
   }
 }
@@ -266,30 +272,34 @@ async function releaseUniquePieceReservations(
     byArtist.get(p.artistDocId)!.push(p.printId);
   }
   for (const [artistDocId, printIds] of byArtist) {
-    const artist: any = await strapiInstance.documents('api::artist.artist').findFirst({
-      filters: { documentId: artistDocId },
-    });
-    if (!artist) continue;
-    const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
-    let mutated = false;
-    for (const printId of printIds) {
-      const idx = prints.findIndex((p: any) => p.id === printId);
-      if (idx === -1) continue;
-      const print = prints[idx];
-      if (print.sold === true) continue; // ne touche jamais une piece vendue
-      if (print.reservedByOrderId === reservationId) {
-        // Strip les champs de reservation mais garde le reste intact
-        const { reservedUntil: _ru, reservedByOrderId: _rb, ...rest } = print;
-        prints[idx] = rest;
-        mutated = true;
-      }
-    }
-    if (mutated) {
-      await strapiInstance.documents('api::artist.artist').update({
-        documentId: artistDocId,
-        data: { prints },
+    // A4 (2026-05-13) : meme lock que reserve, pour eviter de relacher une
+    // reservation pendant qu'une autre operation lit/ecrit les prints.
+    await withArtistLock(artistDocId, async () => {
+      const artist: any = await strapiInstance.documents('api::artist.artist').findFirst({
+        filters: { documentId: artistDocId },
       });
-    }
+      if (!artist) return;
+      const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
+      let mutated = false;
+      for (const printId of printIds) {
+        const idx = prints.findIndex((p: any) => p.id === printId);
+        if (idx === -1) continue;
+        const print = prints[idx];
+        if (print.sold === true) continue; // ne touche jamais une piece vendue
+        if (print.reservedByOrderId === reservationId) {
+          // Strip les champs de reservation mais garde le reste intact
+          const { reservedUntil: _ru, reservedByOrderId: _rb, ...rest } = print;
+          prints[idx] = rest;
+          mutated = true;
+        }
+      }
+      if (mutated) {
+        await strapiInstance.documents('api::artist.artist').update({
+          documentId: artistDocId,
+          data: { prints },
+        });
+      }
+    });
   }
 }
 
@@ -1050,27 +1060,45 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           });
           const artist = artists[0];
           if (artist) {
-            const prints = Array.isArray(artist.prints) ? (artist.prints as any[]) : [];
-            const updated = prints.map((p: any) => {
-              if (p?.id === meta.printId && p?.privateToken === meta.privateSaleToken) {
-                return {
-                  ...p,
-                  sold: true,
-                  soldAt: new Date().toISOString(),
-                  soldAmount: typeof obj.amount_total === 'number'
-                    ? obj.amount_total / 100
-                    : (typeof obj.amount === 'number' ? obj.amount / 100 : null),
-                  stripePaymentIntentId: obj.payment_intent || obj.id || null,
-                };
+            // A4 (2026-05-13) : verrou per-artiste pour eviter qu'un autre
+            // webhook (ou une reservation simultanee) ne race sur le meme
+            // print. Re-read FRAIS inside le lock pour voir l'etat le plus
+            // recent et detecter une double-vente (sold deja true => skip
+            // proprement avec un log warn).
+            await withArtistLock(artist.documentId, async () => {
+              const fresh: any = await strapi.documents('api::artist.artist').findFirst({
+                filters: { documentId: artist.documentId },
+                status: 'published',
+              });
+              const prints = Array.isArray(fresh?.prints) ? (fresh.prints as any[]) : [];
+              const idx = prints.findIndex((p: any) =>
+                p?.id === meta.printId && p?.privateToken === meta.privateSaleToken,
+              );
+              if (idx === -1) {
+                strapi.log.warn(`[webhook:${requestId}] private-sale: print ${meta.artistSlug}/${meta.printId} introuvable apres re-read (deja vendu ou token invalide)`);
+                return;
               }
-              return p;
+              if (prints[idx].sold === true) {
+                strapi.log.warn(`[webhook:${requestId}] private-sale: ${meta.artistSlug}/${meta.printId} deja vendu (double webhook ?), skip`);
+                return;
+              }
+              const updated = [...prints];
+              updated[idx] = {
+                ...prints[idx],
+                sold: true,
+                soldAt: new Date().toISOString(),
+                soldAmount: typeof obj.amount_total === 'number'
+                  ? obj.amount_total / 100
+                  : (typeof obj.amount === 'number' ? obj.amount / 100 : null),
+                stripePaymentIntentId: obj.payment_intent || obj.id || null,
+              };
+              await strapi.documents('api::artist.artist').update({
+                documentId: artist.documentId,
+                data: { prints: updated } as any,
+                status: 'published',
+              });
+              strapi.log.info(`[webhook:${requestId}] private-sale SOLD: ${meta.artistSlug}/${meta.printId} token=${meta.privateSaleToken.slice(0, 8)}...`);
             });
-            await strapi.documents('api::artist.artist').update({
-              documentId: artist.documentId,
-              data: { prints: updated } as any,
-              status: 'published',
-            });
-            strapi.log.info(`[webhook:${requestId}] private-sale SOLD: ${meta.artistSlug}/${meta.printId} token=${meta.privateSaleToken.slice(0, 8)}...`);
           } else {
             strapi.log.warn(`[webhook:${requestId}] private-sale: artist ${meta.artistSlug} introuvable`);
           }
@@ -1530,29 +1558,35 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
             if (!matchedArtist || !printId) continue;
 
-            const prints = Array.isArray(matchedArtist.prints) ? [...matchedArtist.prints] : [];
-            const idx = prints.findIndex((p: any) => p.id === printId);
-            if (idx === -1) continue;
-
-            const print = prints[idx];
-            // Marquer comme vendu si: unique OU private (piece sur commande)
-            // Les prints non-uniques / non-prives (editions multiples) ne sont pas marques
-            const shouldMarkSold = print.unique === true || print.private === true || item.isUnique === true;
-            if (!shouldMarkSold) continue;
-            if (print.sold === true) {
-              strapi.log.warn(`Piece ${printId} de ${matchedArtist.slug} deja marquee vendue (race condition?)`);
-              continue;
-            }
-
-            // RACE-01: strip les champs de reservation quand on marque sold - la reservation
-            // est consommee, inutile de laisser reservedUntil/reservedByOrderId trainer.
-            const { reservedUntil: _ru, reservedByOrderId: _rb, ...restPrint } = print;
-            prints[idx] = { ...restPrint, sold: true, soldAt: new Date().toISOString() };
-            await strapi.documents('api::artist.artist').update({
-              documentId: matchedArtist.documentId,
-              data: { prints },
+            // A4 (2026-05-13) : verrou per-artiste + re-read frais inside le
+            // lock. Necessaire car le find() ci-dessus utilise un cache des
+            // artistes charge en debut de boucle ; entre le chargement et ici,
+            // un autre webhook a pu deja marquer le print sold. On re-read
+            // FRESH pour voir l'etat le plus recent, on skip si sold deja true.
+            // RACE-01 strip des champs de reservation conservee.
+            await withArtistLock(matchedArtist.documentId, async () => {
+              const fresh: any = await strapi.documents('api::artist.artist').findFirst({
+                filters: { documentId: matchedArtist.documentId },
+              });
+              if (!fresh) return;
+              const prints = Array.isArray(fresh.prints) ? [...fresh.prints] : [];
+              const idx = prints.findIndex((p: any) => p.id === printId);
+              if (idx === -1) return;
+              const print = prints[idx];
+              const shouldMarkSold = print.unique === true || print.private === true || item.isUnique === true;
+              if (!shouldMarkSold) return;
+              if (print.sold === true) {
+                strapi.log.warn(`Piece ${printId} de ${matchedArtist.slug} deja marquee vendue (race condition evitee par lock)`);
+                return;
+              }
+              const { reservedUntil: _ru, reservedByOrderId: _rb, ...restPrint } = print;
+              prints[idx] = { ...restPrint, sold: true, soldAt: new Date().toISOString() };
+              await strapi.documents('api::artist.artist').update({
+                documentId: matchedArtist.documentId,
+                data: { prints },
+              });
+              strapi.log.info(`Piece ${print.unique ? 'unique' : 'privee'} ${printId} de ${matchedArtist.slug} marquee comme vendue`);
             });
-            strapi.log.info(`Piece ${print.unique ? 'unique' : 'privee'} ${printId} de ${matchedArtist.slug} marquee comme vendue`);
           }
         } catch (err) {
           strapi.log.error('Could not mark unique/private pieces as sold:', err);
