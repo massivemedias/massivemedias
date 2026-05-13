@@ -52,7 +52,7 @@ import {
   // vers le bon prix dans STICKER_GRID (3 paliers de taille).
   lookupStickerPriceBySize,
 } from '../../../utils/pricing-config';
-import { requireAdminAuth } from '../../../utils/auth';
+import { requireAdminAuth, requireUserAuth } from '../../../utils/auth';
 import { dispatchWebhook } from '../../../utils/webhook';
 
 const getStripe = () => {
@@ -860,11 +860,36 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
   },
 
   async myOrders(ctx) {
+    // SEC-A2 (2026-05-13) : route precedemment publique -> fuite massive PII
+    // via `?email=victime@x.com`. On exige maintenant un JWT Supabase valide
+    // ET on verifie que les params de query correspondent a l'identite du
+    // JWT (sauf admin qui peut interroger n'importe qui).
+    if (!(await requireUserAuth(ctx))) return;
+    const user = (ctx.state as any).user;
+
     const supabaseUserId = ctx.query.supabaseUserId as string;
     const email = (ctx.query.email as string || '').trim().toLowerCase();
 
     if (!supabaseUserId && !email) {
       return ctx.badRequest('Missing user ID or email');
+    }
+
+    // Ownership : un user non-admin ne peut interroger que SES propres
+    // commandes (par son userId Supabase ET/OU son email du JWT). Les
+    // admins (emails dans ADMIN_EMAILS) bypassent ce check pour le support.
+    if (!user.isAdmin) {
+      const jwtEmail = String(user.userEmail || '').toLowerCase();
+      const jwtUserId = String(user.userId || '');
+      if (supabaseUserId && String(supabaseUserId) !== jwtUserId) {
+        ctx.status = 403;
+        ctx.body = { error: { status: 403, name: 'Forbidden', message: 'supabaseUserId does not match authenticated user' } };
+        return;
+      }
+      if (email && email !== jwtEmail) {
+        ctx.status = 403;
+        ctx.body = { error: { status: 403, name: 'Forbidden', message: 'email does not match authenticated user' } };
+        return;
+      }
     }
 
     // FIX-ERP (avril 2026) : filtrer par supabaseUserId ET/OU email pour rattraper
@@ -3837,6 +3862,17 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
   // GET /orders/by-payment-intent/:paymentIntentId - Recupere infos minimales d'une commande pour CheckoutSuccess
   async getByPaymentIntent(ctx) {
+    // SEC-A2 (2026-05-13) : route precedemment publique -> connaitre un
+    // pi_xxx (leak via screenshot/log) donnait acces aux PII. On exige
+    // maintenant DEUX voies d'autorisation possibles :
+    //   (a) Le PaymentIntent est FRESH (cree il y a moins de 30 min via
+    //       Stripe API, status succeeded/processing/requires_capture).
+    //       Cas legitime : redirect post-checkout pour guest (pas encore
+    //       de compte) sur la page CheckoutSuccess.jsx.
+    //   (b) Le caller est authentifie (JWT Supabase) ET soit admin, soit
+    //       proprietaire de la commande (email ou userId match).
+    //       Cas legitime : Account portal qui re-fetche un ancien PI.
+    // Sans aucune de ces voies, on retourne 401.
     const { paymentIntentId } = ctx.params;
     if (!paymentIntentId) return ctx.badRequest('paymentIntentId required');
     try {
@@ -3844,6 +3880,64 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         filters: { stripePaymentIntentId: paymentIntentId },
       }) as any;
       if (!order) return ctx.notFound('Order not found');
+
+      let authorized = false;
+
+      // Path (a) : freshness via Stripe API
+      try {
+        const stripe = getStripe();
+        const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+        const okStatus = pi.status === 'succeeded' || pi.status === 'processing' || pi.status === 'requires_capture';
+        const ageMs = Date.now() - (pi.created * 1000);
+        const FRESH_WINDOW_MS = 30 * 60 * 1000; // 30 min
+        if (okStatus && ageMs >= 0 && ageMs <= FRESH_WINDOW_MS) {
+          authorized = true;
+        }
+      } catch (stripeErr: any) {
+        strapi.log.warn(`[getByPaymentIntent] Stripe lookup failed for ${paymentIntentId}: ${stripeErr?.message || stripeErr}`);
+      }
+
+      // Path (b) : JWT auth + ownership (verification INLINE pour ne pas
+      // emettre un 401 premature - on a deja la freshness comme 2e voie).
+      // Reuse de la meme logique que requireUserAuth (auth.ts) mais sans
+      // l'effet de bord 401 quand le header est absent ou le token expire.
+      if (!authorized) {
+        const authHeader = String(ctx.request.headers['authorization'] || '').trim();
+        if (authHeader) {
+          const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+          try {
+            const supabaseUrl = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
+            const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
+            if (supabaseUrl && supabaseKey && token) {
+              const { createClient } = require('@supabase/supabase-js');
+              const supabase = createClient(supabaseUrl, supabaseKey);
+              const { data, error } = await supabase.auth.getUser(token);
+              if (!error && data?.user?.email) {
+                const jwtEmail = data.user.email.toLowerCase();
+                const jwtUserId = data.user.id;
+                const adminEmails = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '')
+                  .split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean);
+                if (adminEmails.includes(jwtEmail)) {
+                  authorized = true;
+                } else if (jwtEmail === String(order.customerEmail || '').toLowerCase()) {
+                  authorized = true;
+                } else if (jwtUserId && order.supabaseUserId && jwtUserId === order.supabaseUserId) {
+                  authorized = true;
+                }
+              }
+            }
+          } catch (_authErr: any) {
+            // silencieux : 401 emis ci-dessous si rien n'a autorise
+          }
+        }
+      }
+
+      if (!authorized) {
+        ctx.status = 401;
+        ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Authentication required or PaymentIntent stale' } };
+        return;
+      }
+
       // Retourner SEULEMENT les infos non-sensibles necessaires au signup
       ctx.body = {
         customerName: order.customerName || '',
@@ -3861,8 +3955,37 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
   // POST /orders/link-by-email - Lier les guest orders au nouveau compte par email match
   async linkByEmail(ctx) {
+    // SEC-A3 (2026-05-13) : route precedemment publique -> account hijacking.
+    // Un attaquant qui creait un compte Supabase pouvait envoyer
+    // `{email: "victime@x.com", supabaseUserId: "<son_id>"}` et s'approprier
+    // toutes les guest orders de la victime (visibles dans son portail).
+    // Correctif : on exige un JWT Supabase valide ET on impose que :
+    //   - `email` du body == userEmail du JWT
+    //   - `supabaseUserId` du body == userId du JWT
+    // -> impossible de lier des orders a un compte qui n'est pas le sien.
+    // Les admins (isAdmin) bypassent ce check pour les operations support.
+    if (!(await requireUserAuth(ctx))) return;
+    const user = (ctx.state as any).user;
+
     const { email, supabaseUserId } = ctx.request.body as any;
     if (!email || !supabaseUserId) return ctx.badRequest('email and supabaseUserId required');
+
+    if (!user.isAdmin) {
+      const requestedEmail = String(email).toLowerCase();
+      const jwtEmail = String(user.userEmail || '').toLowerCase();
+      const jwtUserId = String(user.userId || '');
+      if (requestedEmail !== jwtEmail) {
+        ctx.status = 403;
+        ctx.body = { error: { status: 403, name: 'Forbidden', message: 'email does not match authenticated user' } };
+        return;
+      }
+      if (String(supabaseUserId) !== jwtUserId) {
+        ctx.status = 403;
+        ctx.body = { error: { status: 403, name: 'Forbidden', message: 'supabaseUserId does not match authenticated user' } };
+        return;
+      }
+    }
+
     try {
       const orders = await strapi.documents('api::order.order').findMany({
         filters: {
