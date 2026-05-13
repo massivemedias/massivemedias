@@ -1364,26 +1364,52 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
             const sku = item.sku || item.slug;
             if (!sku) continue;
 
-            const rowsAffected = await knex('inventory_items')
+            // INVENTORY-A1 (2026-05-13) : exact match d'abord (cas legacy
+            // et admin qui set le SKU verbatim), puis prefix match
+            // avec separateur '-' (cas createItem qui auto-suffix `-NNN`).
+            // On retient le `matchedSku` reel pour le log et la mise a
+            // jour conditionnelle ; en cas de prefix multi-match on prend
+            // le 1er ordre alphabetique (suffixe `-001` avant `-002`).
+            let matchedSku = sku;
+            let rowsAffected = await knex('inventory_items')
               .where({ sku, active: true })
               .andWhere('quantity', '>=', qty)
               .update({ quantity: knex.raw('quantity - ?', [qty]) });
 
+            if (rowsAffected === 0) {
+              const candidate = await knex('inventory_items')
+                .where('active', true)
+                .where('sku', 'like', `${sku}-%`)
+                .andWhere('quantity', '>=', qty)
+                .orderBy('sku')
+                .first('sku', 'quantity');
+              if (candidate) {
+                rowsAffected = await knex('inventory_items')
+                  .where({ sku: candidate.sku, active: true })
+                  .andWhere('quantity', '>=', qty)
+                  .update({ quantity: knex.raw('quantity - ?', [qty]) });
+                if (rowsAffected > 0) matchedSku = candidate.sku;
+              }
+            }
+
             if (rowsAffected > 0) {
               const row = await knex('inventory_items')
-                .where({ sku, active: true })
+                .where({ sku: matchedSku, active: true })
                 .first('quantity');
-              strapi.log.info(`Inventory ${sku}: -${qty} -> ${row?.quantity ?? '?'} (atomic)`);
+              strapi.log.info(`Inventory ${matchedSku}: -${qty} -> ${row?.quantity ?? '?'} (atomic, cart sku=${sku})`);
             } else {
               // Disambiguate: SKU non-tracked (silent skip, comportement avant) vs stock insuffisant (loud)
               const existing = await knex('inventory_items')
-                .where({ sku, active: true })
-                .first('quantity');
+                .where('active', true)
+                .where((qb: any) => {
+                  qb.where('sku', sku).orWhere('sku', 'like', `${sku}-%`);
+                })
+                .first('sku', 'quantity');
               if (existing !== undefined) {
                 strapi.log.warn(
-                  `RACE-02: inventory insuffisant pour SKU "${sku}" (en stock: ${existing.quantity}, ` +
-                  `demande: ${qty}). Order ${order.documentId} paye mais stock non decremente. ` +
-                  `A traiter manuellement (rupture de stock non detectee lors de l'achat).`
+                  `RACE-02: inventory insuffisant pour SKU "${sku}" -> trouve "${existing.sku}" ` +
+                  `(en stock: ${existing.quantity}, demande: ${qty}). Order ${order.documentId} ` +
+                  `paye mais stock non decremente. A traiter manuellement (rupture de stock non detectee lors de l'achat).`
                 );
               }
             }

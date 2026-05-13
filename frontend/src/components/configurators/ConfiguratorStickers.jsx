@@ -177,8 +177,15 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   const handleAddToCart = () => {
     if (!canAddToCart) return;
+    // INVENTORY-A1 (2026-05-13) : SKU deterministe pour permettre au backend
+    // (order.ts ligne 1364, `item.sku || item.slug`) de decrementer la
+    // bonne entree d'inventaire. L'admin peut creer des inventory items
+    // avec ces SKUs (ou avec un suffixe -NNN auto-genere : le backend
+    // gere les deux via exact match + prefix fallback).
+    const cartSku = `sticker-${finish || 'clear'}-${shape || 'diecut'}-${size || 'std'}`;
     addToCart({
       productId: 'sticker-custom',
+      sku: cartSku,
       productName: tx({ fr: 'Sticker Custom', en: 'Custom Sticker', es: 'Sticker Personalizado' }),
       finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn }),
       shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn }),

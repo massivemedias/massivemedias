@@ -196,8 +196,18 @@ function ConfiguratorFineArt() {
 
   const handleAddToCart = () => {
     if (!priceInfo || !canAddToCart) return;
+    // INVENTORY-A1 (2026-05-13) : SKU deterministe pour permettre au backend
+    // (order.ts ligne 1364, `item.sku || item.slug`) de decrementer le
+    // papier/consommable correspondant. Le SKU inclut le tier (qualite
+    // papier), le format et l'option cadre. L'admin peut creer un
+    // inventory item par combinaison ou utiliser le suffixe -NNN auto-genere
+    // (le backend gere les deux via exact match + prefix fallback).
+    const cartSku = withFrame
+      ? `fine-art-${tier}-${format}-frame-${frameColor}`
+      : `fine-art-${tier}-${format}`;
     addToCart({
       productId: 'fine-art-print',
+      sku: cartSku,
       productName: tx({ fr: 'Impression Fine Art', en: 'Fine Art Print', es: 'Impresion Fine Art' }),
       finish: tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
       shape: withFrame

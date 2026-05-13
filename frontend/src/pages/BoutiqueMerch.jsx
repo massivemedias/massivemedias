@@ -109,8 +109,17 @@ function MerchPage({ config, type }) {
 
   const handleAddToCart = () => {
     if (blockIfMerchPaused(tx)) return;
+    // INVENTORY-A1 (2026-05-13) : `sku` est requis par la boucle de
+    // decrement inventaire dans order.ts (ligne 1364, `item.sku || item.slug`).
+    // Avant ce fix, `sku` etait undefined sur tous les items merch -> la
+    // boucle faisait `continue` -> l'inventaire n'etait JAMAIS decremente.
+    // On utilise la meme cle que `productId` (deja deterministe par
+    // type/couleur/taille) pour que l'admin puisse creer/lier des inventory
+    // items avec ce SKU base (le backend gere aussi le suffixe -NNN auto).
+    const cartSku = `merch-${type}-${selectedColor}-${selectedSize}`;
     addToCart({
-      productId: `merch-${type}-${selectedColor}-${selectedSize}`,
+      productId: cartSku,
+      sku: cartSku,
       productName: productLabel,
       finish: colorObj.name,
       shape: null,
