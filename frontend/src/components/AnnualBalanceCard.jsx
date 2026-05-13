@@ -93,6 +93,19 @@ function AnnualBalanceCard() {
     const t = yearData?.totals || {};
     // Helper local : valeur numerique safe (evite NaN dans le CSV).
     const num = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
+    // CSV-FIX-A8 (2026-05-13) : `fmt()` partage produit "215,12" via
+    // `.toLocaleString('fr-CA')`. Injecte cru dans un CSV separe par virgules,
+    // un seul montant casse plusieurs colonnes (`215,12,10,75` = 4 colonnes
+    // pour 2 valeurs). On bascule sur un formateur CSV local qui produit
+    // "215.12" (point decimal, 2 decimales) -> parsage correct dans Excel,
+    // Google Sheets, et re-import dans le systeme. `fmt()` reste utilise pour
+    // l'UI (sections graphique/cartes au-dessous, hors export). Les cles
+    // (tps/tvq/revenueTps/revenueTvq) sont deja agregees server-side par
+    // expense.yearSummary -> aucune correction de cle necessaire ici.
+    const csvNum = (v) => {
+      const n = typeof v === 'number' ? v : parseFloat(v);
+      return Number.isFinite(n) ? n.toFixed(2) : '0.00';
+    };
     const lines = [
       `Massive Medias - Bilan annuel ${year}`,
       `NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001`,
@@ -106,17 +119,17 @@ function AnnualBalanceCard() {
       ...months.map(([key, m]) => {
         const safeM = m || {};
         const balance = num(safeM.revenue) - num(safeM.deductible);
-        return `${mNames[parseInt(key) - 1]},${fmt(safeM.revenue)},${fmt(safeM.expenses)},${fmt(safeM.tps)},${fmt(safeM.tvq)},${fmt(safeM.deductible)},${fmt(balance)}`;
+        return `${mNames[parseInt(key) - 1]},${csvNum(safeM.revenue)},${csvNum(safeM.expenses)},${csvNum(safeM.tps)},${csvNum(safeM.tvq)},${csvNum(safeM.deductible)},${csvNum(balance)}`;
       }),
-      `Total,${fmt(t.revenue)},${fmt(t.expenses)},${fmt(t.tps)},${fmt(t.tvq)},${fmt(t.deductible)},${fmt(num(t.revenue) - num(t.deductible))}`,
+      `Total,${csvNum(t.revenue)},${csvNum(t.expenses)},${csvNum(t.tps)},${csvNum(t.tvq)},${csvNum(t.deductible)},${csvNum(num(t.revenue) - num(t.deductible))}`,
       '',
       'Taxes',
       `,TPS (5%),TVQ (9.975%)`,
-      `Percue sur ventes,${fmt(t.revenueTps)},${fmt(t.revenueTvq)}`,
-      `Payee sur achats,${fmt(t.tps)},${fmt(t.tvq)}`,
-      `Net a remettre,${fmt(num(t.revenueTps) - num(t.tps))},${fmt(num(t.revenueTvq) - num(t.tvq))}`,
+      `Percue sur ventes,${csvNum(t.revenueTps)},${csvNum(t.revenueTvq)}`,
+      `Payee sur achats,${csvNum(t.tps)},${csvNum(t.tvq)}`,
+      `Net a remettre,${csvNum(num(t.revenueTps) - num(t.tps))},${csvNum(num(t.revenueTvq) - num(t.tvq))}`,
       '',
-      `Depenses deductibles (HT - apres CTI/RTI),${fmt(t.deductible)}`,
+      `Depenses deductibles (HT - apres CTI/RTI),${csvNum(t.deductible)}`,
       // FIX-MANUAL-EXPORT (23 avril 2026) : breakdown explicite des sources
       // de revenus pour transparence comptable. Inclut les commandes manuelles
       // (B2B, prepaid Interac/Square/comptant, et liens Stripe payes). Si les
@@ -124,8 +137,8 @@ function AnnualBalanceCard() {
       // regression sur l'export existant.
       '',
       'Source des revenus',
-      `Commandes web (Stripe checkout),${fmt(t.revenueWeb)},${num(t.webCount)} commande${num(t.webCount) > 1 ? 's' : ''}`,
-      `Commandes manuelles (B2B / prepaid),${fmt(t.revenueManual)},${num(t.manualCount)} commande${num(t.manualCount) > 1 ? 's' : ''}`,
+      `Commandes web (Stripe checkout),${csvNum(t.revenueWeb)},${num(t.webCount)} commande${num(t.webCount) > 1 ? 's' : ''}`,
+      `Commandes manuelles (B2B / prepaid),${csvNum(t.revenueManual)},${num(t.manualCount)} commande${num(t.manualCount) > 1 ? 's' : ''}`,
     ];
     downloadCSV(`massive-bilan-${year}.csv`, lines.join('\n'));
   };
