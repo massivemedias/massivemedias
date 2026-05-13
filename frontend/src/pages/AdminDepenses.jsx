@@ -565,12 +565,34 @@ function AdminDepenses() {
         <div className="flex gap-2">
           <button
             onClick={() => {
+              // CSV-FIX-A8 (2026-05-13) : 2 bugs corriges
+              //   1. Cles taxes : `e.tps`/`e.tvq` n'existent pas dans le
+              //      schema (champs `tpsAmount`/`tvqAmount`). Avant ce fix,
+              //      tous les CSV affichaient TPS=0,00 TVQ=0,00 et un Total
+              //      egal au Montant HT -> impact comptable direct.
+              //   2. Formatage francais (`fmt()` -> "215,12" via toLocaleString
+              //      'fr-CA') casse les colonnes CSV (`215,12,10,75,21,46` =
+              //      6 colonnes pour 3 valeurs). On bascule sur un formateur
+              //      CSV local qui produit "215.12" (point decimal, sans
+              //      separateur de milliers) -> parsage correct dans Excel,
+              //      Google Sheets, et import-back dans le systeme.
+              const csvNum = (v) => {
+                const n = typeof v === 'number' ? v : parseFloat(v);
+                return Number.isFinite(n) ? n.toFixed(2) : '0.00';
+              };
               const lines = [
                 'Massive Medias - Depenses',
                 `NEQ: 2269057891 | TPS: 732457635RT0001 | TVQ: 4012577678TQ0001`,
                 '',
                 'Date,Description,Categorie,Montant HT,TPS,TVQ,Total',
-                ...items.map(e => `${e.date},"${(e.description || '').replace(/"/g, '""')}",${e.category},${fmt(e.amount)},${fmt(e.tps || 0)},${fmt(e.tvq || 0)},${fmt((e.amount || 0) + (e.tps || 0) + (e.tvq || 0))}`),
+                ...items.map(e => {
+                  const amount = parseFloat(e.amount) || 0;
+                  const tps = parseFloat(e.tpsAmount) || 0;
+                  const tvq = parseFloat(e.tvqAmount) || 0;
+                  const total = amount + tps + tvq;
+                  const desc = String(e.description || '').replace(/"/g, '""');
+                  return `${e.date},"${desc}",${e.category},${csvNum(amount)},${csvNum(tps)},${csvNum(tvq)},${csvNum(total)}`;
+                }),
               ];
               downloadCSV(`massive-depenses-${new Date().toISOString().slice(0, 10)}.csv`, lines.join('\n'));
             }}
