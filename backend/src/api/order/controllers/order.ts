@@ -54,6 +54,7 @@ import {
 } from '../../../utils/pricing-config';
 import { requireAdminAuth, requireUserAuth } from '../../../utils/auth';
 import { dispatchWebhook } from '../../../utils/webhook';
+import { nextInvoiceNumber } from '../../../utils/invoice-counter';
 
 const getStripe = () => {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -1186,23 +1187,12 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
       if (orders.length > 0) {
         const order = orders[0] as any;
-        // Generer le numero de facture sequentiel MM-AAAA-XXXX
+        // A6 (2026-05-13) : generation ATOMIQUE via invoice_counters
+        // (cf. backend/src/utils/invoice-counter.ts). Plus de race condition
+        // entre 2 webhooks Stripe paralleles.
         let invoiceNumber = '';
         try {
-          const now = new Date();
-          const year = now.getFullYear();
-          const prefix = `MM-${year}-`;
-          const existingOrders = await strapi.documents('api::order.order').findMany({
-            filters: { invoiceNumber: { $startsWith: prefix } },
-            sort: { invoiceNumber: 'desc' },
-            limit: 1,
-          });
-          let seq = 1;
-          if (existingOrders.length > 0 && (existingOrders[0] as any).invoiceNumber) {
-            const lastNum = (existingOrders[0] as any).invoiceNumber.replace(prefix, '');
-            seq = (parseInt(lastNum, 10) || 0) + 1;
-          }
-          invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+          invoiceNumber = await nextInvoiceNumber();
         } catch (invoiceErr) {
           strapi.log.warn('Erreur generation numero facture:', invoiceErr);
           invoiceNumber = `MM-${new Date().getFullYear()}-0000`;
@@ -2071,107 +2061,45 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
       // 3. Numero de facture sequentiel MM-AAAA-XXXX (meme logique que webhook)
       //
-      // FIX-UNIQUE-RACE (27 avril 2026) : retry loop pour resister aux race
-      // conditions du compteur. Le pattern findMany sort:desc + 1 N'EST PAS
-      // atomic - si 2 manualCreate tournent en parallele (admin double-click,
-      // 2 onglets, retry reseau), les 2 calculs voient le meme lastSeq et
-      // generent le MEME invoiceNumber -> 2e crash sur unique constraint.
-      // Le client recoit alors "This attribute must be unique" sans contexte.
+      // A6 (2026-05-13) : remplacement de la retry-loop par un appel atomique
+      // au helper nextInvoiceNumber() (cf. backend/src/utils/invoice-counter.ts).
+      // Le compteur centralise (table invoice_counters) garantit qu'aucun
+      // deux callers ne recoivent le meme numero, donc plus de collision
+      // UNIQUE possible -> plus besoin de retry. Si l'INSERT echoue pour
+      // une AUTRE raison (companyName unique orphelin, validation), on remonte
+      // l'erreur telle quelle comme avant.
       //
-      // Solution : on tente jusqu'a MAX_INVOICE_RETRIES fois, en bumpant le
-      // seq a chaque tentative. Au 1er essai on prend lastSeq+1, au 2e
-      // lastSeq+2, etc. On loggue chaque collision pour pouvoir auditer la
-      // frequence. 5 retries couvrent meme le pire cas realiste.
-      const year = new Date().getFullYear();
-      const prefix = `MM-${year}-`;
-      const MAX_INVOICE_RETRIES = 5;
-
       // FIX-LEGACY : si invoiceDate fourni (YYYY-MM-DD), on l'utilise pour le champ `date`
       // qui apparait sur la facture PDF. Sinon, date du jour.
       const resolvedInvoiceDate = invoiceDate
         ? String(invoiceDate).slice(0, 10)
         : new Date().toISOString().slice(0, 10);
 
-      let invoice: any = null;
-      let invoiceNumber = '';
-      let attempt = 0;
-      let lastInvoiceErr: any = null;
-
-      while (attempt < MAX_INVOICE_RETRIES) {
-        attempt++;
-        // Re-lire le compteur a CHAQUE tentative : si la 1ere a echoue parce
-        // qu'un autre handler a insere notre numero, son insert est maintenant
-        // visible et notre prochain calcul donnera lastSeq+1 frais.
-        const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
-          filters: { invoiceNumber: { $startsWith: prefix } } as any,
-          sort: { invoiceNumber: 'desc' } as any,
-          limit: 1,
-        });
-        let seq = 1;
-        if (lastInvoice.length > 0 && (lastInvoice[0] as any).invoiceNumber) {
-          const lastNum = (lastInvoice[0] as any).invoiceNumber.replace(prefix, '');
-          seq = (parseInt(lastNum, 10) || 0) + 1;
-        }
-        // Si on est en retry (attempt > 1), on ajoute (attempt-1) pour s'eloigner
-        // du seq qui a deja collisione. Sans ce bump, on relit la meme valeur
-        // et on retombe sur le meme conflit.
-        const candidateSeq = seq + (attempt - 1);
-        invoiceNumber = `${prefix}${String(candidateSeq).padStart(4, '0')}`;
-
-        try {
-          invoice = await strapi.documents('api::invoice.invoice').create({
-            data: {
-              invoiceNumber,
-              date: resolvedInvoiceDate,
-              customerName,
-              companyName: cleanCompanyName || null,
-              customerEmail: ensureCustomerEmail(customerEmail, customerName),
-              customerPhone: customerPhone || null,
-              items,
-              subtotal,
-              tps,
-              tvq,
-              total,
-              // FIX-PREPAID : invoice flip aussi a paid si commande deja reglee hors-ligne.
-              status: prepaid ? 'paid' : 'draft',
-              paymentStatus: prepaid ? 'paid' : 'pending',
-              ...(prepaid ? { paidAt: new Date().toISOString() } : {}),
-              lang,
-              notes: composedNotes,
-              order: { connect: [order.documentId] },
-              client: clientDocId ? { connect: [clientDocId] } : undefined,
-            } as any,
-          });
-          // Succes : on tracke l'invoice et on sort de la boucle.
-          created.invoiceDocId = invoice.documentId;
-          break;
-        } catch (invoiceErr: any) {
-          lastInvoiceErr = invoiceErr;
-          const parsed = parseUniqueViolation(invoiceErr);
-          // Si c'est une collision sur invoiceNumber, on retry avec un seq bumpe.
-          if (isUniqueViolation(invoiceErr) && (parsed.field === 'invoiceNumber' || parsed.field === null)) {
-            strapi.log.warn(
-              `[manualCreate] Collision invoiceNumber=${invoiceNumber} (tentative ${attempt}/${MAX_INVOICE_RETRIES}). `
-              + `Detail: ${parsed.raw.slice(0, 200)}`
-            );
-            continue;
-          }
-          // Autre type d'erreur (companyName unique orphelin, validation, etc.) :
-          // on remonte tout de suite, le retry n'aiderait pas.
-          throw invoiceErr;
-        }
-      }
-
-      if (!invoice) {
-        // Toutes les tentatives ont echoue sur invoiceNumber. Tres rare en pratique
-        // (5 collisions consecutives = des dizaines de manualCreate paralleles).
-        const parsed = parseUniqueViolation(lastInvoiceErr);
-        strapi.log.error(
-          `[manualCreate] ECHEC genese invoiceNumber apres ${MAX_INVOICE_RETRIES} tentatives. `
-          + `Dernier essai: ${invoiceNumber}. Field=${parsed.field}, raw=${parsed.raw.slice(0, 200)}`
-        );
-        throw lastInvoiceErr || new Error(`Impossible de generer un numero de facture unique apres ${MAX_INVOICE_RETRIES} tentatives.`);
-      }
+      const invoiceNumber = await nextInvoiceNumber();
+      const invoice: any = await strapi.documents('api::invoice.invoice').create({
+        data: {
+          invoiceNumber,
+          date: resolvedInvoiceDate,
+          customerName,
+          companyName: cleanCompanyName || null,
+          customerEmail: ensureCustomerEmail(customerEmail, customerName),
+          customerPhone: customerPhone || null,
+          items,
+          subtotal,
+          tps,
+          tvq,
+          total,
+          // FIX-PREPAID : invoice flip aussi a paid si commande deja reglee hors-ligne.
+          status: prepaid ? 'paid' : 'draft',
+          paymentStatus: prepaid ? 'paid' : 'pending',
+          ...(prepaid ? { paidAt: new Date().toISOString() } : {}),
+          lang,
+          notes: composedNotes,
+          order: { connect: [order.documentId] },
+          client: clientDocId ? { connect: [clientDocId] } : undefined,
+        } as any,
+      });
+      created.invoiceDocId = invoice.documentId;
 
       // 5. Stripe Payment Link : line_items detailles (sous-total + TPS + TVQ + shipping)
       // pour que le client VOIE le breakdown des taxes sur la page de paiement Stripe.
@@ -2485,76 +2413,38 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
       // 4. Si pas d'invoice (cas tres rare : ancienne commande importee, ou
       //    creation interrompue avant l'invoice), on en cree une minimale.
-      //    FIX-STRIPE-UNIQUE (28 avril 2026) : retry loop identique a celui de
-      //    manualCreate pour resister aux race conditions du compteur. Sans ce
-      //    retry, l'erreur "invoiceNumber must be unique" pouvait remonter
-      //    jusqu'au frontend et etre confondue avec une erreur Stripe.
+      //
+      // A6 (2026-05-13) : retry-loop supprimee, le helper nextInvoiceNumber()
+      // (table invoice_counters) garantit l'unicite atomique du numero. Plus
+      // de collision possible meme sous concurrence. Les autres unique
+      // violations (companyName orphelin, etc.) remontent telles quelles.
       if (!invoice) {
-        const year = new Date().getFullYear();
-        const prefix = `MM-${year}-`;
-        const MAX_INVOICE_RETRIES = 5;
         const subtotalDollars = ((order as any).subtotal || 0) / 100;
         const tpsDollars = ((order as any).tps || 0) / 100;
         const tvqDollars = ((order as any).tvq || 0) / 100;
         const totalDollars = ((order as any).total || 0) / 100;
+        const fallbackInvoiceNumber = await nextInvoiceNumber();
 
-        let attempt = 0;
-        let lastInvoiceErr: any = null;
-        while (attempt < MAX_INVOICE_RETRIES) {
-          attempt++;
-          // Re-lire le compteur a CHAQUE tentative : si la 1ere a echoue parce
-          // qu'un autre handler a insere notre numero, son insert est maintenant
-          // visible et notre prochain calcul donnera lastSeq+1 frais.
-          const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
-            filters: { invoiceNumber: { $startsWith: prefix } } as any,
-            sort: { invoiceNumber: 'desc' } as any,
-            limit: 1,
-          });
-          let seq = 1;
-          if (lastInvoice.length > 0 && (lastInvoice[0] as any).invoiceNumber) {
-            const lastNum = (lastInvoice[0] as any).invoiceNumber.replace(prefix, '');
-            seq = (parseInt(lastNum, 10) || 0) + 1;
-          }
-          // Bump (attempt - 1) si on est en retry, pour s'eloigner d'un seq
-          // deja collisione au tour precedent.
-          const candidateSeq = seq + (attempt - 1);
-          const fallbackInvoiceNumber = `${prefix}${String(candidateSeq).padStart(4, '0')}`;
-          try {
-            invoice = await strapi.documents('api::invoice.invoice').create({
-              data: {
-                invoiceNumber: fallbackInvoiceNumber,
-                date: new Date().toISOString().slice(0, 10),
-                customerName: (order as any).customerName,
-                companyName: (order as any).companyName || null,
-                customerEmail: (order as any).customerEmail || null,
-                customerPhone: (order as any).customerPhone || null,
-                items: (order as any).items || [],
-                subtotal: subtotalDollars,
-                tps: tpsDollars,
-                tvq: tvqDollars,
-                total: totalDollars,
-                status: 'draft',
-                paymentStatus: 'pending',
-                lang: 'fr',
-                order: { connect: [documentId] },
-              } as any,
-            });
-            strapi.log.warn(`[regenerateStripeLink] Order ${documentId} avait pas d'invoice, cree ${fallbackInvoiceNumber} (tentative ${attempt})`);
-            break;
-          } catch (invErr: any) {
-            lastInvoiceErr = invErr;
-            const parsed = parseUniqueViolation(invErr);
-            if (isUniqueViolation(invErr) && (parsed.field === 'invoiceNumber' || parsed.field === null)) {
-              strapi.log.warn(`[regenerateStripeLink] Collision invoiceNumber=${fallbackInvoiceNumber} (tentative ${attempt}/${MAX_INVOICE_RETRIES}) - retry avec seq bumpe`);
-              continue;
-            }
-            // Autre erreur (companyName orphan unique, validation, etc.) : on remonte.
-            throw invErr;
-          }
-        }
-        if (!invoice) {
-          throw lastInvoiceErr || new Error(`Impossible de generer une invoice fallback apres ${MAX_INVOICE_RETRIES} tentatives.`);
-        }
+        invoice = await strapi.documents('api::invoice.invoice').create({
+          data: {
+            invoiceNumber: fallbackInvoiceNumber,
+            date: new Date().toISOString().slice(0, 10),
+            customerName: (order as any).customerName,
+            companyName: (order as any).companyName || null,
+            customerEmail: (order as any).customerEmail || null,
+            customerPhone: (order as any).customerPhone || null,
+            items: (order as any).items || [],
+            subtotal: subtotalDollars,
+            tps: tpsDollars,
+            tvq: tvqDollars,
+            total: totalDollars,
+            status: 'draft',
+            paymentStatus: 'pending',
+            lang: 'fr',
+            order: { connect: [documentId] },
+          } as any,
+        });
+        strapi.log.warn(`[regenerateStripeLink] Order ${documentId} avait pas d'invoice, cree ${fallbackInvoiceNumber}`);
       }
 
       const invoiceNumber = (invoice as any).invoiceNumber;
@@ -3646,20 +3536,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           } as any,
         });
 
-        // Numero de facture sequentiel
+        // A6 (2026-05-13) : generation atomique via invoice_counters.
         const year = new Date(data.invoiceDate).getFullYear();
-        const prefix = `MM-${year}-`;
-        const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
-          filters: { invoiceNumber: { $startsWith: prefix } } as any,
-          sort: { invoiceNumber: 'desc' } as any,
-          limit: 1,
-        });
-        let seq = 1;
-        if (lastInvoice.length > 0 && (lastInvoice[0] as any).invoiceNumber) {
-          const lastNum = (lastInvoice[0] as any).invoiceNumber.replace(prefix, '');
-          seq = (parseInt(lastNum, 10) || 0) + 1;
-        }
-        const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+        const invoiceNumber = await nextInvoiceNumber(year);
 
         // Create invoice
         const invoice = await strapi.documents('api::invoice.invoice').create({
@@ -4104,20 +3983,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
 
       // Aussi envoyer la confirmation au client
       try {
-        // Generer invoiceNumber si manquant
+        // A6 (2026-05-13) : generation atomique via invoice_counters
+        // si l'order n'a pas encore de numero.
         if (!order.invoiceNumber) {
-          const year = new Date().getFullYear();
-          const prefix = `MM-${year}-`;
-          const existingOrders = await strapi.documents('api::order.order').findMany({
-            filters: { invoiceNumber: { $startsWith: prefix } },
-            sort: { invoiceNumber: 'desc' },
-            limit: 1,
-          });
-          let seq = 1;
-          if (existingOrders.length > 0 && (existingOrders[0] as any).invoiceNumber) {
-            seq = (parseInt((existingOrders[0] as any).invoiceNumber.replace(prefix, ''), 10) || 0) + 1;
-          }
-          const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+          const invoiceNumber = await nextInvoiceNumber();
           await strapi.documents('api::order.order').update({
             documentId: order.documentId,
             data: { invoiceNumber } as any,
@@ -4498,21 +4367,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       updateData.invoiceNumber = invoiceNumber.trim();
       assignedInvoice = invoiceNumber.trim();
     } else if (autoInvoice && newStatus === 'paid' && !(order as any).invoiceNumber) {
-      // Auto-generate next sequential MM-YYYY-NNNN
+      // A6 (2026-05-13) : generation atomique via invoice_counters.
       try {
-        const year = new Date().getFullYear();
-        const prefix = `MM-${year}-`;
-        const existing = await strapi.documents('api::order.order').findMany({
-          filters: { invoiceNumber: { $startsWith: prefix } } as any,
-          sort: { invoiceNumber: 'desc' } as any,
-          limit: 1,
-        });
-        let seq = 1;
-        if (existing.length > 0 && (existing[0] as any).invoiceNumber) {
-          const lastNum = (existing[0] as any).invoiceNumber.replace(prefix, '');
-          seq = (parseInt(lastNum, 10) || 0) + 1;
-        }
-        assignedInvoice = `${prefix}${String(seq).padStart(4, '0')}`;
+        assignedInvoice = await nextInvoiceNumber();
         updateData.invoiceNumber = assignedInvoice;
       } catch (e) {
         strapi.log.warn('Auto invoice generation failed:', e);
@@ -5940,22 +5797,10 @@ ${allUrls
         }
 
         // ---- Same logic as the webhook: generate invoice + update order + emails ----
+        // A6 (2026-05-13) : generation atomique via invoice_counters.
         let invoiceNumber = '';
         try {
-          const now = new Date();
-          const year = now.getFullYear();
-          const prefix = `MM-${year}-`;
-          const existingOrders = await strapi.documents('api::order.order').findMany({
-            filters: { invoiceNumber: { $startsWith: prefix } } as any,
-            sort: { invoiceNumber: 'desc' } as any,
-            limit: 1,
-          });
-          let seq = 1;
-          if (existingOrders.length > 0 && (existingOrders[0] as any).invoiceNumber) {
-            const lastNum = (existingOrders[0] as any).invoiceNumber.replace(prefix, '');
-            seq = (parseInt(lastNum, 10) || 0) + 1;
-          }
-          invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+          invoiceNumber = await nextInvoiceNumber();
         } catch (invoiceErr) {
           strapi.log.warn('Erreur generation numero facture (reconcile):', invoiceErr);
           invoiceNumber = `MM-${new Date().getFullYear()}-0000`;
