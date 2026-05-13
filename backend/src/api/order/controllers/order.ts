@@ -4394,6 +4394,62 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return ctx.notFound('Commande introuvable');
     }
 
+    // SEC-A5 (2026-05-13) : machine d'etat stricte. Avant ce fix, admin
+    // pouvait passer 'refunded' -> 'paid', 'delivered' -> 'draft', etc.,
+    // toute combinaison etait acceptee. Risque d'abus (rejouer un refund)
+    // et d'erreur humaine silencieuse (degrader une commande livree).
+    //
+    // Transitions autorisees (alignees sur le STATUS_FLOW de AdminOrders.jsx,
+    // avec ajout de 'pending' depuis draft pour la fonction "Convertir en
+    // commande" sur les quotes, et 'refunded' depuis tout post-paid pour
+    // permettre les remboursements a n'importe quel stade).
+    //
+    // Le webhook Stripe (payment_intent.succeeded -> 'paid') NE PASSE PAS
+    // par updateStatus : il appelle strapi.documents('order').update()
+    // directement. Donc cette state machine n'affecte pas le flux webhook.
+    //
+    // Override admin : body.force === true bypass la machine d'etat avec
+    // un log warn pour audit. A reserver aux corrections exceptionnelles
+    // (ex: erreur de saisie a corriger, support qui doit annuler un statut
+    // applique par erreur).
+    const STATUS_TRANSITIONS: Record<string, string[]> = {
+      draft:      ['pending', 'paid', 'cancelled'],
+      pending:    ['paid', 'cancelled'],
+      paid:       ['processing', 'ready', 'shipped', 'cancelled', 'refunded'],
+      processing: ['ready', 'shipped', 'cancelled', 'refunded'],
+      ready:      ['delivered', 'shipped', 'refunded'],
+      shipped:    ['delivered', 'refunded'],
+      delivered:  [], // etat final
+      cancelled:  [], // etat final
+      refunded:   [], // etat final
+    };
+
+    const currentStatus = String((order as any).status || 'draft');
+    const isNoOp = currentStatus === newStatus;
+    const allowedNext = STATUS_TRANSITIONS[currentStatus] || [];
+    const isAllowed = allowedNext.includes(newStatus);
+    const isForced = body.force === true;
+
+    if (!isNoOp && !isAllowed && !isForced) {
+      const allowedList = allowedNext.length > 0 ? allowedNext.join(', ') : '(etat final, aucune transition)';
+      return ctx.badRequest(
+        `Transition de statut invalide : impossible de passer de '${currentStatus}' a '${newStatus}'. `
+        + `Transitions autorisees depuis '${currentStatus}' : ${allowedList}. `
+        + `Si correction admin volontaire, ajouter { "force": true } au body.`,
+      );
+    }
+
+    if (isForced && !isNoOp && !isAllowed) {
+      const adminMethod = (ctx.state as any)?.adminAuthMethod
+        || (ctx.state as any)?.user?.authMethod
+        || 'unknown';
+      strapi.log.warn(
+        `[updateStatus] FORCE override : order ${order.documentId} transition manuelle `
+        + `'${currentStatus}' -> '${newStatus}' (normalement interdite par la state machine). `
+        + `Auth method: ${adminMethod}. invoiceNumber=${(order as any).invoiceNumber || 'null'}.`,
+      );
+    }
+
     // Compute updateData: status + optional invoice number (manual or auto-generated)
     const updateData: any = { status: newStatus };
     let assignedInvoice: string | null = null;
