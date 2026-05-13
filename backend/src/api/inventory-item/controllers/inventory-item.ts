@@ -367,103 +367,140 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
     if (!(await requireAdminAuth(ctx))) return;
     const { items, expense } = ctx.request.body as any;
 
-    if ((!items || !Array.isArray(items) || items.length === 0) && !expense) {
+    // A12 (2026-05-13) : on accepte 2 formes pour la depense
+    //   - `expense`  (singular)  : appelants legacy / une seule depense
+    //   - `expenses` (plural)    : facture detaillee avec N depenses (par item)
+    // -> permet au frontend de faire 1 SEUL appel atomique au lieu de N
+    // appels successifs non-coordonnes (cf. AdminDepenses.jsx).
+    const expensesInput: any[] = Array.isArray((ctx.request.body as any).expenses)
+      ? (ctx.request.body as any).expenses
+      : (expense ? [expense] : []);
+
+    if ((!items || !Array.isArray(items) || items.length === 0) && expensesInput.length === 0) {
       return ctx.badRequest('Au moins un item ou une depense est requis');
     }
 
     const VALID_CATEGORIES = ['textile', 'frame', 'accessory', 'sticker', 'print', 'merch', 'equipment', 'flyer', 'business-card', 'web', 'design', 'photo', 'video', 'consulting', 'hosting', 'other'];
-    const results: any[] = [];
+    const EXPENSE_CATS = ['consommables', 'materiel', 'shipping', 'software', 'marketing', 'equipment', 'taxes', 'other'];
 
-    for (const item of items) {
-      if (!item.nameFr || !item.category) continue;
-      if (!VALID_CATEGORIES.includes(item.category)) item.category = 'other';
+    // A12 (2026-05-13) : tout le flux est enveloppe dans une transaction DB.
+    // Si une seule operation echoue (validation, contrainte unique, etc.),
+    // strapi.db.transaction rollback automatiquement TOUT - aucun item ne
+    // reste oprhelin, aucune depense partielle. L'erreur remonte au caller
+    // qui peut afficher un toast clair sans craindre de polluer la BDD.
+    //
+    // Le contexte de transaction est propage automatiquement aux appels
+    // strapi.documents.* via AsyncLocalStorage (cf.
+    // @strapi/database/transaction-context). Aucun argument explicite a passer.
+    try {
+      const txResult = await strapi.db.transaction(async () => {
+        const results: any[] = [];
+        const expenseResults: any[] = [];
 
-      // Mode explicite du frontend:
-      // - 'create': forcer la creation d'un nouvel item (aucun fuzzy match)
-      // - 'link':   lier a un item existant (priorite a linkedInventoryId, sinon fuzzy match par nom)
-      // - undefined (legacy): comportement historique = fuzzy match par nom
-      const matchMode = item.matchMode || 'link';
-      let existing = null;
+        for (const item of (items as any[] || [])) {
+          if (!item.nameFr || !item.category) continue;
+          if (!VALID_CATEGORIES.includes(item.category)) item.category = 'other';
 
-      if (matchMode === 'create') {
-        // L'utilisateur a explicitement demande "Creer nouveau": on saute tout matching
-        existing = null;
-      } else {
-        // matchMode === 'link' ou legacy
-        if (item.linkedInventoryId) {
-          existing = await strapi.documents('api::inventory-item.inventory-item').findOne({
-            documentId: item.linkedInventoryId,
-          });
+          // Mode explicite du frontend:
+          // - 'create': forcer la creation d'un nouvel item (aucun fuzzy match)
+          // - 'link':   lier a un item existant (priorite a linkedInventoryId, sinon fuzzy match par nom)
+          // - undefined (legacy): comportement historique = fuzzy match par nom
+          const matchMode = item.matchMode || 'link';
+          let existing: any = null;
+
+          if (matchMode === 'create') {
+            existing = null;
+          } else {
+            if (item.linkedInventoryId) {
+              existing = await strapi.documents('api::inventory-item.inventory-item').findOne({
+                documentId: item.linkedInventoryId,
+              });
+            }
+            if (!existing && item.sku) {
+              existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+                filters: { sku: item.sku },
+              });
+            }
+            if (!existing && item.nameFr) {
+              existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
+                filters: { nameFr: { $containsi: item.nameFr } },
+              });
+            }
+          }
+
+          if (existing) {
+            const updated = await strapi.documents('api::inventory-item.inventory-item').update({
+              documentId: existing.documentId,
+              data: {
+                quantity: (existing.quantity || 0) + (item.quantity || 0),
+                costPrice: item.costPrice || existing.costPrice,
+                notes: item.notes ? `${existing.notes || ''}\n${item.notes}`.trim() : existing.notes,
+              },
+            });
+            results.push({ action: 'updated', item: updated });
+          } else {
+            const created = await strapi.documents('api::inventory-item.inventory-item').create({
+              data: {
+                nameFr: item.nameFr,
+                nameEn: item.nameEn || item.nameFr,
+                sku: item.sku || '',
+                category: item.category,
+                variant: item.variant || '',
+                quantity: item.quantity || 0,
+                reserved: 0,
+                lowStockThreshold: item.lowStockThreshold || 5,
+                costPrice: item.costPrice || 0,
+                location: item.location || '',
+                notes: item.notes || '',
+                active: true,
+              },
+            });
+            results.push({ action: 'created', item: created });
+          }
         }
-        if (!existing && item.sku) {
-          existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
-            filters: { sku: item.sku },
-          });
-        }
-        if (!existing && item.nameFr) {
-          // Fallback fuzzy match par nom
-          existing = await strapi.documents('api::inventory-item.inventory-item').findFirst({
-            filters: { nameFr: { $containsi: item.nameFr } },
-          });
-        }
-      }
 
-      if (existing) {
-        // Ajouter au stock existant
-        const updated = await strapi.documents('api::inventory-item.inventory-item').update({
-          documentId: existing.documentId,
-          data: {
-            quantity: (existing.quantity || 0) + (item.quantity || 0),
-            costPrice: item.costPrice || existing.costPrice,
-            notes: item.notes ? `${existing.notes || ''}\n${item.notes}`.trim() : existing.notes,
-          },
-        });
-        results.push({ action: 'updated', item: updated });
-      } else {
-        // Creer un nouvel item
-        const created = await strapi.documents('api::inventory-item.inventory-item').create({
-          data: {
-            nameFr: item.nameFr,
-            nameEn: item.nameEn || item.nameFr,
-            sku: item.sku || '',
-            category: item.category,
-            variant: item.variant || '',
-            quantity: item.quantity || 0,
-            reserved: 0,
-            lowStockThreshold: item.lowStockThreshold || 5,
-            costPrice: item.costPrice || 0,
-            location: item.location || '',
-            notes: item.notes || '',
-            active: true,
-          },
-        });
-        results.push({ action: 'created', item: created });
-      }
-    }
+        // Creer toutes les depenses associees (1 ou N) dans la meme txn.
+        for (const exp of expensesInput) {
+          if (!exp || !exp.amount) continue;
+          const created = await strapi.documents('api::expense.expense').create({
+            data: {
+              description: exp.description || 'Import facture',
+              amount: parseFloat(exp.amount) || 0,
+              category: EXPENSE_CATS.includes(exp.category) ? exp.category : 'materiel',
+              date: exp.date || new Date().toISOString().split('T')[0],
+              vendor: exp.vendor || '',
+              receiptNumber: exp.receiptNumber || '',
+              receiptUrl: exp.receiptUrl || '',
+              taxDeductible: exp.taxDeductible !== false,
+              tpsAmount: parseFloat(exp.tpsAmount) || 0,
+              tvqAmount: parseFloat(exp.tvqAmount) || 0,
+              notes: exp.notes || '',
+            },
+          });
+          expenseResults.push(created);
+        }
 
-    // Creer la depense associee
-    let expenseResult = null;
-    if (expense && expense.amount) {
-      const EXPENSE_CATS = ['consommables', 'materiel', 'shipping', 'software', 'marketing', 'equipment', 'taxes', 'other'];
-      expenseResult = await strapi.documents('api::expense.expense').create({
-        data: {
-          description: expense.description || 'Import facture',
-          amount: parseFloat(expense.amount) || 0,
-          category: EXPENSE_CATS.includes(expense.category) ? expense.category : 'materiel',
-          date: expense.date || new Date().toISOString().split('T')[0],
-          vendor: expense.vendor || '',
-          receiptNumber: expense.receiptNumber || '',
-          receiptUrl: expense.receiptUrl || '',
-          taxDeductible: expense.taxDeductible !== false,
-          tpsAmount: parseFloat(expense.tpsAmount) || 0,
-          tvqAmount: parseFloat(expense.tvqAmount) || 0,
-          notes: expense.notes || '',
-        },
+        return { items: results, expenses: expenseResults };
       });
-    }
 
-    strapi.log.info(`Import facture: ${results.length} items, depense: ${expense?.amount || 0}$`);
-    ctx.body = { data: { items: results, expense: expenseResult } };
+      const totalExpense = expensesInput.reduce((s: number, e: any) => s + (parseFloat(e?.amount) || 0), 0);
+      strapi.log.info(`Import facture: ${txResult.items.length} items, ${txResult.expenses.length} depense(s) total ${totalExpense.toFixed(2)}$`);
+
+      // Backward compat : champ `expense` singulier = la premiere depense
+      // creee (ou null), en plus du nouveau champ `expenses` plural.
+      ctx.body = {
+        data: {
+          items: txResult.items,
+          expense: txResult.expenses[0] || null,
+          expenses: txResult.expenses,
+        },
+      };
+    } catch (err: any) {
+      strapi.log.error(`Import facture ECHEC (rollback complet): ${err?.message || err}`);
+      return ctx.badRequest(
+        `Echec de l'import : ${err?.message || 'erreur inconnue'}. Aucune donnee n'a ete sauvegardee.`
+      );
+    }
   },
 
   /**

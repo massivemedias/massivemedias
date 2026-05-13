@@ -345,13 +345,14 @@ function AdminDepenses() {
         notes: 'Import automatique',
       }];
 
-      // Envoyer: premier appel avec inventaire + premiere depense, puis les depenses supplementaires
-      for (let idx = 0; idx < expenseList.length; idx++) {
-        await api.post('/inventory-items/import-invoice', {
-          items: idx === 0 ? inventoryItemsPayload : [], // inventaire seulement sur le premier
-          expense: expenseList[idx],
-        });
-      }
+      // A12 (2026-05-13) : UN SEUL appel atomique. Le backend wrap items +
+      // expenses dans une transaction DB : tout passe ou tout rollback. Avant
+      // ce fix on bouclait N appels successifs -> si l'appel 3 plantait,
+      // les appels 1-2 etaient commit (inventaire + depenses partielles).
+      await api.post('/inventory-items/import-invoice', {
+        items: inventoryItemsPayload,
+        expenses: expenseList,
+      });
 
       const created = inventoryItemsPayload.length;
       const totalAmount = expenseList.reduce((s, e) => s + e.amount, 0).toFixed(2);
