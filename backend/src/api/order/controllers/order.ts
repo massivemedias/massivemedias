@@ -1378,7 +1378,15 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           const knex = (strapi.db as any).connection;
           const orderItems: any[] = Array.isArray(order.items) ? order.items : [];
           for (const item of orderItems) {
-            const qty = item.quantity || 1;
+            const rawQty = Number(item.quantity);
+            // M2 (2026-05-13) : garde-fou qty negative/non-numerique.
+            // Avant ce guard, un item.quantity = -3 aurait fait :
+            //   andWhere('quantity', '>=', -3) -> match toujours vrai
+            //   knex.raw('quantity - ?', [-3]) -> quantity + 3 -> AUGMENTE
+            //     l'inventaire au lieu de le decrementer ! Tres difficile
+            //     a detecter en BDD (les stocks gonflent silencieusement).
+            // Fallback a 1 (cas legacy ou quantity absent du panier).
+            const qty = Number.isFinite(rawQty) && rawQty > 0 ? Math.floor(rawQty) : 1;
             const sku = item.sku || item.slug;
             if (!sku) continue;
 

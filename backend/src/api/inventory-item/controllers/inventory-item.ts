@@ -176,9 +176,20 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
       return ctx.notFound('Inventory item not found');
     }
 
+    // M2 (2026-05-13) : garde-fou contre stock negatif. Le schema impose
+    // maintenant `min: 0` cote API Strapi, mais on plafonne aussi a 0 ici
+    // pour rejet propre cote serveur (au lieu de laisser remonter une
+    // erreur de validation cryptique cote frontend). Sanitize aussi les
+    // valeurs non-numeriques en 0.
+    const sanitizeNonNegativeInt = (v: any): number => {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return 0;
+      return Math.max(0, Math.floor(n));
+    };
+
     const updateData: any = {};
-    if (quantity !== undefined) updateData.quantity = quantity;
-    if (reserved !== undefined) updateData.reserved = reserved;
+    if (quantity !== undefined) updateData.quantity = sanitizeNonNegativeInt(quantity);
+    if (reserved !== undefined) updateData.reserved = sanitizeNonNegativeInt(reserved);
     if (notes !== undefined) updateData.notes = notes;
     if (nameFr) updateData.nameFr = nameFr;
     if (nameEn) updateData.nameEn = nameEn;
@@ -282,19 +293,27 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
       return itemName === newName;
     });
 
+    // M2 (2026-05-13) : sanitize quantity contre les valeurs negatives /
+    // non-numeriques. createItem est appele depuis le UI admin et via
+    // /inventory-items/create (script import-redriver-invoice.mjs par
+    // exemple) : un payload pourri ne doit pas pouvoir creer un stock < 0.
+    const rawQty = Number(quantity);
+    const safeQty = Number.isFinite(rawQty) && rawQty > 0 ? Math.floor(rawQty) : 0;
+
     if (duplicate) {
       // Merge: ajouter la quantite au stock existant
+      const newQty = Math.max(0, (duplicate.quantity || 0) + safeQty);
       const updated = await strapi.documents('api::inventory-item.inventory-item').update({
         documentId: duplicate.documentId,
         data: {
-          quantity: (duplicate.quantity || 0) + (quantity || 0),
+          quantity: newQty,
           costPrice: costPrice || duplicate.costPrice,
           location: location || duplicate.location,
           notes: notes ? `${duplicate.notes || ''}\n${notes}`.trim() : duplicate.notes,
         },
         populate: ['image', 'product'],
       });
-      strapi.log.info(`Inventory item merged: ${duplicate.sku} - ${nameFr} (+${quantity || 0} = ${updated.quantity})`);
+      strapi.log.info(`Inventory item merged: ${duplicate.sku} - ${nameFr} (+${safeQty} = ${updated.quantity})`);
       ctx.body = { data: updated, merged: true };
       return;
     }
@@ -326,7 +345,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
         finitionPapier: finitionPapier || null,
         fx: fx || null,
         taillePapier: taillePapier || null,
-        quantity: quantity || 0,
+        quantity: safeQty,
         reserved: 0,
         lowStockThreshold: lowStockThreshold || 5,
         costPrice: costPrice || 0,
@@ -428,11 +447,20 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
             }
           }
 
+          // M2 (2026-05-13) : sanitize item.quantity contre les valeurs
+          // negatives / non-numeriques. Un item importe avec quantity=-5
+          // soustrairait au stock existant -> stock negatif possible.
+          const incomingQty = Number(item.quantity);
+          const safeIncomingQty = Number.isFinite(incomingQty) && incomingQty > 0
+            ? Math.floor(incomingQty)
+            : 0;
+
           if (existing) {
+            const newQty = Math.max(0, (existing.quantity || 0) + safeIncomingQty);
             const updated = await strapi.documents('api::inventory-item.inventory-item').update({
               documentId: existing.documentId,
               data: {
-                quantity: (existing.quantity || 0) + (item.quantity || 0),
+                quantity: newQty,
                 costPrice: item.costPrice || existing.costPrice,
                 notes: item.notes ? `${existing.notes || ''}\n${item.notes}`.trim() : existing.notes,
               },
@@ -446,7 +474,7 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
                 sku: item.sku || '',
                 category: item.category,
                 variant: item.variant || '',
-                quantity: item.quantity || 0,
+                quantity: safeIncomingQty,
                 reserved: 0,
                 lowStockThreshold: item.lowStockThreshold || 5,
                 costPrice: item.costPrice || 0,
