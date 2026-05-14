@@ -114,6 +114,12 @@ const RESERVED_SUBDOMAINS = new Set([
 ]);
 
 function getSubdomainSlug() {
+  // SSR-SAFE (2026-05-14) : guard typeof window. Avant ce fix, cette
+  // fonction etait appelee a la phase RENDER de App.jsx (ligne 163) et
+  // Header.jsx (ligne 11) -> ReferenceError en Node (SSR / prerender) ->
+  // crash silencieux du build CI. La fonction rootUrl ligne 138-139 ci-
+  // dessous avait deja le bon pattern, on l'aligne ici aussi.
+  if (typeof window === 'undefined') return null;
   const host = window.location.hostname;
   // Localhost / 127.* / *.local : pas de wildcard SaaS (dev mode)
   if (/^(localhost|127\.|192\.168\.|10\.)/.test(host) || host.endsWith('.local')) {
