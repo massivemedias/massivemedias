@@ -44,8 +44,11 @@ function Login() {
   const [resetSent, setResetSent] = useState(false);
   const [passwordUpdated, setPasswordUpdated] = useState(false);
 
-  // Detect if we arrived with a recovery hash - must be checked BEFORE session redirect
+  // SSR-SAFE (2026-05-14) : lazy initializer protege contre evaluation en
+  // environnement Node (SSR / prerendering). Sans ce guard, `window` n'est
+  // pas defini au build/render serveur -> ReferenceError -> 500.
   const [isRecoveryFlow, setIsRecoveryFlow] = useState(() => {
+    if (typeof window === 'undefined') return false;
     return window.location.hash.includes('type=recovery');
   });
 

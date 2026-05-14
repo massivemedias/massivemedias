@@ -113,17 +113,23 @@ api.interceptors.response.use(
       // refresh a throw : on traite comme expiration definitive ci-dessous.
     }
 
+    // SSR-SAFE (2026-05-14) : double protection. (1) typeof window guard
+    // pour eviter ReferenceError si jamais ce code s'execute en Node (SSR,
+    // build prerender). (2) try/catch pour le cas browser ou sessionStorage
+    // est indisponible (mode prive Safari, quota plein, etc.).
     // Refresh a echoue : session vraiment morte. Signale aux contextes UI.
-    try {
-      sessionStorage.setItem('auth_expired_flag', '1');
-    } catch {
-      // sessionStorage indisponible (mode prive Safari, quota) : tant pis,
-      // l'utilisateur verra juste la page Login sans message specifique.
-    }
-    try {
-      window.dispatchEvent(new CustomEvent('auth:expired'));
-    } catch {
-      // dispatchEvent ne peut pas vraiment fail dans un navigateur normal.
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('auth_expired_flag', '1');
+      } catch {
+        // sessionStorage indisponible : tant pis, l'utilisateur verra juste
+        // la page Login sans message specifique.
+      }
+      try {
+        window.dispatchEvent(new CustomEvent('auth:expired'));
+      } catch {
+        // dispatchEvent ne peut pas vraiment fail dans un navigateur normal.
+      }
     }
     return Promise.reject(error);
   },
