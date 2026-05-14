@@ -137,9 +137,51 @@ export default factories.createCoreController('api::contact-submission.contact-s
       return ctx.badRequest('Name, email and message are required');
     }
 
-    // Anti-spam: bloquer les messages avec liens suspects
-    const spamPatterns = [/turbojot/i, /sign up for free/i, /give it a try/i, /\$[\d.]+ per submission/i];
-    if (spamPatterns.some(p => p.test(message))) {
+    // Anti-spam (2026-05-14) : filtre enrichi pour bloquer les bots SEO /
+    // guest post / link building qui inondent le formulaire. Tout match
+    // -> fake success (status 200 + id placeholder) pour ne pas alerter
+    // le bot, mais AUCUNE creation DB et AUCUN auto-reply envoye.
+    //
+    // 3 niveaux de check :
+    //   1. Patterns historiques (turbojot, "give it a try", etc.)
+    //   2. Plus de 3 URLs dans le message (signal fort de spam SEO)
+    //   3. Mots-cles typiques bots SEO (SEO consultant, backlinks, etc.)
+    //
+    // Le `nom` et `entreprise` sont scannes aussi pour les patterns 1+3
+    // (les spammers mettent souvent leur "company" = "Acme SEO Agency").
+    const allText = `${nom || ''} ${entreprise || ''} ${message || ''}`;
+
+    const legacyPatterns = [
+      /turbojot/i,
+      /sign up for free/i,
+      /give it a try/i,
+      /\$[\d.]+ per submission/i,
+    ];
+
+    const seoSpamPatterns = [
+      /\bSEO\s+(consultant|services?|expert|specialist|agency|company|firm|professional)\b/i,
+      /\bguest\s+post(s|ing)?\b/i,
+      /\b(quality|premium|high[\s-]?quality|do[\s-]?follow|niche|targeted)\s+backlinks?\b/i,
+      /\bbacklinks?\s+(service|package|opportunity|opportunities|strategy)\b/i,
+      /\blink\s+building\b/i,
+      /\bpage\s+(one|1|first)\s+of\s+google\b/i,
+      /\b(rank(ing)?|increase\s+traffic)\s+(higher|first|#1|on\s+google)\b/i,
+      /\bdomain\s+authority\b/i,
+      /\bget\s+more\s+(traffic|customers|leads)\s+from\s+google\b/i,
+      /\bwhite[\s-]?hat\s+SEO\b/i,
+    ];
+
+    const urlCount = (message.match(/https?:\/\/\S+/gi) || []).length;
+
+    if (
+      legacyPatterns.some((p) => p.test(allText)) ||
+      seoSpamPatterns.some((p) => p.test(allText)) ||
+      urlCount > 3
+    ) {
+      strapi.log.info(
+        `[contact spam] dropped silently from ${email || '(no email)'} ` +
+        `(urlCount=${urlCount}, nom="${(nom || '').slice(0, 40)}")`,
+      );
       ctx.body = { success: true, id: 'ok' }; // fake success
       return;
     }
