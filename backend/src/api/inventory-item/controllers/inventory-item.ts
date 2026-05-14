@@ -104,9 +104,15 @@ export async function runExplicitReclassificationApril2026(strapi: any): Promise
 export default factories.createCoreController('api::inventory-item.inventory-item', ({ strapi }) => ({
   async lowStock(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
+    // M3 (2026-05-13) : `limit: -1` bypass la pagination par defaut Strapi
+    // (25 en v5). Avant ce fix, l'alerte stock faible ne scannait que les
+    // 25 premiers items actifs -> si l'inventaire depasse 25 SKUs (cas
+    // reel avec >100 SKUs), les items en rupture au-dela du 25e etaient
+    // invisibles dans le dashboard admin "Stock faible".
     const items = await strapi.documents('api::inventory-item.inventory-item').findMany({
       filters: { active: true },
       populate: ['image', 'product'],
+      limit: -1,
     });
 
     const lowStockItems = items.filter(
@@ -118,10 +124,15 @@ export default factories.createCoreController('api::inventory-item.inventory-ite
 
   async dashboard(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
+    // M3 (2026-05-13) : meme fix que lowStock - `limit: -1` pour scanner
+    // TOUT l'inventaire actif. Le summary (total / lowStock / outOfStock /
+    // totalValue) doit refleter TOUS les items, pas seulement la 1ere page.
+    // Sinon `totalValue` est tronquee silencieusement aux 25 premiers items.
     const items = await strapi.documents('api::inventory-item.inventory-item').findMany({
       filters: { active: true },
       populate: ['image', 'product'],
       sort: 'category',
+      limit: -1,
     });
 
     const summary = {
