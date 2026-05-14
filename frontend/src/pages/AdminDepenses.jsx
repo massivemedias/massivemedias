@@ -97,7 +97,16 @@ const INVENTORY_CATEGORY_LABELS = {
 const emptyForm = {
   description: '', amount: '', category: 'consommables', date: new Date().toISOString().split('T')[0],
   vendor: '', receiptNumber: '', receiptUrl: '', tpsAmount: '', tvqAmount: '', notes: '',
+  // M7 (2026-05-13) : quantite reelle d'unites pour l'auto-sync inventaire.
+  // Visible UNIQUEMENT quand la categorie est physique (materiel/equipment/
+  // consommables). Vide -> fallback a 1 (retrocompat). 0 -> opt-out explicite.
+  inventoryQuantity: '',
 };
+
+// Categories qui declenchent l'auto-sync inventaire dans handleCreate. Liste
+// extraite ici comme constante module-level pour pouvoir l'utiliser cote UI
+// (rendu conditionnel du champ inventoryQuantity).
+const PHYSICAL_CATEGORIES = ['materiel', 'equipment', 'consommables'];
 
 function AdminDepenses() {
   const { tx, lang } = useLang();
@@ -451,25 +460,41 @@ function AdminDepenses() {
       };
       await createExpense(payload);
 
-      // Auto-sync inventaire pour les achats de materiel/consommables/equipment
-      const physicalCategories = ['materiel', 'equipment', 'consommables'];
-      if (physicalCategories.includes(formData.category)) {
-        try {
-          // Mapper la categorie depense vers la categorie inventaire
-          const catMap = { materiel: 'equipment', equipment: 'equipment', consommables: 'accessory' };
-          await api.post('/inventory-items/import-invoice', {
-            items: [{
-              nameFr: formData.description,
-              nameEn: formData.description,
-              category: catMap[formData.category] || 'other',
-              quantity: 1,
-              costPrice: normalizedAmount,
-              notes: `Achat ${formData.vendor || ''} ${formData.date} - ${formData.receiptNumber || ''}`.trim(),
-              matchMode: 'link',
-            }],
-          });
-        } catch (invErr) {
-          console.warn('Auto-sync inventaire echoue (non-bloquant):', invErr);
+      // M7 (2026-05-13) : auto-sync inventaire avec la VRAIE quantite saisie
+      // par l'admin (formData.inventoryQuantity) au lieu du quantity=1 en dur.
+      // Avant ce fix : acheter 100 sticker sheets ajoutait "1 sticker sheet"
+      // a l'inventaire avec un costPrice egal au total facture (= surestime
+      // x100 le cout unitaire) -> calculs de marge faux + stock fictif.
+      //
+      // Regles :
+      //   - vide ('') -> fallback a 1 (retrocompat avec l'ancien comportement)
+      //   - 0 -> opt-out explicite : on skip l'auto-sync (admin ne veut rien
+      //     toucher dans l'inventaire pour cet achat)
+      //   - N > 0 -> on cree/merge avec quantity=N et costPrice=montant/N
+      //     (= cout unitaire reel)
+      if (PHYSICAL_CATEGORIES.includes(formData.category)) {
+        const rawQty = parseInt(formData.inventoryQuantity, 10);
+        const inventoryQty = Number.isFinite(rawQty) && rawQty >= 0
+          ? rawQty
+          : 1; // fallback retrocompat si vide / non-numerique
+        if (inventoryQty > 0) {
+          try {
+            const catMap = { materiel: 'equipment', equipment: 'equipment', consommables: 'accessory' };
+            const unitCost = Math.round((normalizedAmount / inventoryQty) * 100) / 100;
+            await api.post('/inventory-items/import-invoice', {
+              items: [{
+                nameFr: formData.description,
+                nameEn: formData.description,
+                category: catMap[formData.category] || 'other',
+                quantity: inventoryQty,
+                costPrice: unitCost,
+                notes: `Achat ${formData.vendor || ''} ${formData.date} - ${formData.receiptNumber || ''} (qty=${inventoryQty} @ ${unitCost}$/u)`.trim(),
+                matchMode: 'link',
+              }],
+            });
+          } catch (invErr) {
+            console.warn('Auto-sync inventaire echoue (non-bloquant):', invErr);
+          }
         }
       }
 
@@ -1038,6 +1063,34 @@ function AdminDepenses() {
               <textarea value={formData.notes} onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))}
                 placeholder={tx({ fr: 'Notes', en: 'Notes', es: 'Notas' })} rows={1} className="input-field text-sm resize-none" />
             </div>
+
+            {/* M7 : champ quantite inventaire, conditionnel aux categories
+                physiques. Vide = 1 (retrocompat), 0 = skip auto-sync,
+                N > 0 = stock decremente + costPrice unitaire calcule. */}
+            {PHYSICAL_CATEGORIES.includes(formData.category) && (
+              <div className="flex items-center gap-3">
+                <label className="text-xs text-grey-muted whitespace-nowrap">
+                  {tx({
+                    fr: 'Qté pour inventaire',
+                    en: 'Qty for inventory',
+                    es: 'Cant. para inventario',
+                  })}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={formData.inventoryQuantity}
+                  onChange={(e) => setFormData(p => ({ ...p, inventoryQuantity: e.target.value }))}
+                  placeholder={tx({
+                    fr: 'Combien d\'unités? (vide=1, 0=ne pas synchroniser)',
+                    en: 'How many units? (empty=1, 0=skip sync)',
+                    es: '¿Cuántas unidades? (vacio=1, 0=omitir sync)',
+                  })}
+                  className="input-field text-sm flex-1"
+                />
+              </div>
+            )}
             <div className="flex items-center gap-4 flex-wrap">
               {/* Receipt upload */}
               <input type="file" ref={fileInputRef} onChange={handleReceiptUpload} accept="image/*,.pdf" className="hidden" />
