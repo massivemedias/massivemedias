@@ -223,9 +223,15 @@ export default {
       const sceneVariants = SCENE_PROMPTS[scene] || SCENE_PROMPTS.living_room;
       const sceneDesc = sceneVariants[Math.floor(Math.random() * sceneVariants.length)];
 
+      // MOCKUP-NO-MAT-2026-05-14 : description du cadre explicitement
+      // SANS passe-partout / mat blanc interne. Gemini par defaut ajoute
+      // un cadre + un mat blanc large = effet "cadre dans un cadre" non
+      // desire. On force "no mat, edge-to-edge artwork" + on decrit le
+      // cadre comme une simple moulure mince qui entoure directement
+      // l'oeuvre.
       const frameDesc = frameColor === 'white'
-        ? 'an elegant thin white wooden frame with a subtle shadow'
-        : 'a sleek thin black wooden frame with a subtle shadow';
+        ? 'a minimalist thin white wooden frame, edge-to-edge with the artwork, NO white mat, NO passepartout, NO inner border - the frame is just a thin wooden border directly around the artwork'
+        : 'a minimalist thin black wooden frame, edge-to-edge with the artwork, NO white mat, NO passepartout, NO inner border - the frame is just a thin wooden border directly around the artwork';
 
       const prompt = [
         `Generate a photorealistic interior design photograph showing this artwork displayed in ${frameDesc},`,
@@ -234,6 +240,7 @@ export default {
         `Shoot as a CLOSE-UP of the wall and frame - the frame and artwork are the hero of the shot.`,
         `Only show a small portion of the room around the frame for context (a sliver of furniture, a plant edge, part of a shelf).`,
         `The artwork MUST be clearly visible, sharp, and undistorted inside the frame - it is the absolute focal point.`,
+        `CRITICAL - NO MATTING: The artwork must fill the ENTIRE interior of the frame edge-to-edge. Do NOT add any white mat, passepartout, decorative inset, or inner white border between the artwork and the wooden frame. The artwork touches the inner edge of the wooden frame directly. Think modern poster frame, NOT museum-style matted print.`,
         `The frame should be well-lit with warm natural lighting creating soft shadows on the wall.`,
         `Camera angle: straight-on, slightly below eye level, tight crop on the frame.`,
         `Style: professional interior design photography, warm cozy ambiance, gallery-quality close-up.`,
