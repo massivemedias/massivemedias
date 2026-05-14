@@ -1378,6 +1378,14 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           const knex = (strapi.db as any).connection;
           const orderItems: any[] = Array.isArray(order.items) ? order.items : [];
           for (const item of orderItems) {
+            // SERVICE-LINES-2026-05-14 : skip explicite des lignes service /
+            // temps / forfait. Ces items n'ont pas de stock physique a
+            // decrementer. Le flag `isService: true` est pose par
+            // CreateManualOrderModal cote frontend. Defense en profondeur :
+            // meme si quelqu'un met un sku par erreur sur un service, on
+            // skip d'abord sur isService.
+            if (item.isService === true) continue;
+
             const rawQty = Number(item.quantity);
             // M2 (2026-05-13) : garde-fou qty negative/non-numerique.
             // Avant ce guard, un item.quantity = -3 aurait fait :

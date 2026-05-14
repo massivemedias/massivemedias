@@ -24,7 +24,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   // Note: le champ "lineTotal" est le prix TOTAL de la ligne (pas un prix unitaire).
   // Le calcul ne multiplie plus par quantity - la quantity sert uniquement de
   // descriptif ("100x Stickers") sur la facture et le paiement Stripe.
-  const [items, setItems] = useState([{ description: '', quantity: 1, lineTotal: '' }]);
+  const [items, setItems] = useState([{ description: '', quantity: 1, lineTotal: '', isService: false }]);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -86,7 +86,17 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   };
 
   const addItem = () => {
-    setItems(prev => [...prev, { description: '', quantity: 1, lineTotal: '' }]);
+    setItems(prev => [...prev, { description: '', quantity: 1, lineTotal: '', isService: false }]);
+  };
+
+  // SERVICE-LINES-2026-05-14 : ajout d'une ligne explicite SERVICE / temps.
+  // Le flag isService:true est propage dans le payload puis lu par le webhook
+  // backend pour SKIPPER le decrement inventaire (cf. order.ts dans la
+  // boucle decrement post-paiement). Permet de facturer du temps de dev,
+  // des heures de consultation, etc., sans crasher la sync inventaire.
+  // Description placeholder different pour aider l'admin.
+  const addServiceItem = () => {
+    setItems(prev => [...prev, { description: '', quantity: 1, lineTotal: '', isService: true }]);
   };
 
   const removeItem = (idx) => {
@@ -97,6 +107,7 @@ function CreateManualOrderModal({ onClose, onCreated }) {
     description: String(it.description || '').trim(),
     quantity: parseInt(it.quantity, 10) || 0,
     lineTotal: parseFloat(String(it.lineTotal).replace(',', '.')) || 0,
+    isService: it.isService === true,
   }));
 
   // IMPORTANT: on NE multiplie PAS par quantity. La somme des "Prix total" saisis
@@ -144,11 +155,14 @@ function CreateManualOrderModal({ onClose, onCreated }) {
     // Payload vers le backend: on envoie `lineTotal` (nouveau champ clair) ET
     // `unitPrice` calcule = lineTotal / quantity pour compat avec le rendu existant
     // des factures ("100 x 0.85$ = 85$") sans casser les templates PDF.
+    // SERVICE-LINES-2026-05-14 : flag `isService` propage au backend pour
+    // skipper le decrement inventaire sur les lignes service/temps.
     const payloadItems = validItems.map(it => ({
       description: it.description,
       quantity: it.quantity,
       unitPrice: it.quantity > 0 ? Math.round((it.lineTotal / it.quantity) * 100) / 100 : it.lineTotal,
       lineTotal: it.lineTotal,
+      isService: it.isService === true,
     }));
 
     setLoading(true);
@@ -578,15 +592,40 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   <label className="text-[13px] text-grey-muted uppercase tracking-wider">
                     {tx({ fr: 'Lignes de facture', en: 'Invoice lines', es: 'Lineas de factura' })} *
                   </label>
-                  <button
-                    type="button"
-                    onClick={addItem}
-                    className="flex items-center gap-1 px-2 py-1 rounded-md text-accent text-[11px] font-semibold transition-colors border"
-                    style={{ background: 'var(--bg-glass)', borderColor: 'var(--bg-input-border)' }}
-                  >
-                    <Plus size={12} />
-                    {tx({ fr: 'Ajouter', en: 'Add', es: 'Anadir' })}
-                  </button>
+                  {/* SERVICE-LINES-2026-05-14 : 2 boutons distincts.
+                      "Produit" = ligne classique (decrement inventaire si SKU
+                      matche un item d'inventaire).
+                      "Service" = ligne temps/forfait/heures (isService: true
+                      -> backend skip inventaire). */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={addItem}
+                      className="flex items-center gap-1 px-2 py-1 rounded-md text-accent text-[11px] font-semibold transition-colors border"
+                      style={{ background: 'var(--bg-glass)', borderColor: 'var(--bg-input-border)' }}
+                      title={tx({
+                        fr: 'Ligne produit physique (decremente l\'inventaire si SKU match)',
+                        en: 'Physical product line (decrements inventory if SKU matches)',
+                        es: 'Linea de producto fisico',
+                      })}
+                    >
+                      <Plus size={12} />
+                      {tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addServiceItem}
+                      className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors border bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20"
+                      title={tx({
+                        fr: 'Service / temps / forfait (n\'affecte PAS l\'inventaire)',
+                        en: 'Service / time / flat fee (does NOT affect inventory)',
+                        es: 'Servicio / tiempo / forfait (NO afecta el inventario)',
+                      })}
+                    >
+                      <Plus size={12} />
+                      {tx({ fr: 'Service', en: 'Service', es: 'Servicio' })}
+                    </button>
+                  </div>
                 </div>
                 {/* Colonnes headers pour clarifier Quantite vs Prix total */}
                 <div className="grid grid-cols-[1fr_70px_90px_32px] gap-2 mb-1 px-0.5">
@@ -604,14 +643,26 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                 <div className="space-y-2">
                   {items.map((it, idx) => (
                     <div key={idx} className="grid grid-cols-[1fr_70px_90px_32px] gap-2 items-start">
-                      <input
-                        type="text"
-                        value={it.description}
-                        onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                        placeholder={tx({ fr: '100x Stickers Standard', en: '100x Standard Stickers', es: '100x Stickers Standard' })}
-                        className="rounded-lg text-sm px-3 py-2 outline-none border focus:border-accent"
-                        style={inputBg}
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={it.description}
+                          onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                          placeholder={it.isService
+                            ? tx({ fr: 'Developpement web - 10 heures', en: 'Web development - 10 hours', es: 'Desarrollo web - 10 horas' })
+                            : tx({ fr: '100x Stickers Standard', en: '100x Standard Stickers', es: '100x Stickers Standard' })}
+                          className={`w-full rounded-lg text-sm py-2 outline-none border focus:border-accent ${it.isService ? 'px-3 pr-16' : 'px-3'}`}
+                          style={inputBg}
+                        />
+                        {it.isService && (
+                          <span
+                            className="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider bg-blue-500/20 text-blue-400 pointer-events-none"
+                            title={tx({ fr: 'Ligne service - inventaire ignore', en: 'Service line - inventory skipped', es: 'Linea servicio - inventario ignorado' })}
+                          >
+                            {tx({ fr: 'Service', en: 'Service', es: 'Servicio' })}
+                          </span>
+                        )}
+                      </div>
                       <input
                         type="number"
                         min="1"

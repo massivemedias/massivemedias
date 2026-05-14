@@ -265,9 +265,15 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
     // Commandes e-commerce : productName
     // Commandes manuelles : description (saisi par l'admin dans CreateManualOrderModal)
     // Items CMS legacy : name / title
+    // SERVICE-LINES-2026-05-14 : si l'item est marque isService:true (cree
+    // via le bouton "Service" dans CreateManualOrderModal), on prefix avec
+    // un tag discret pour distinguer du produit physique sur la facture
+    // client. Aide les comptables/clients a savoir si la ligne est du
+    // temps/forfait vs un bien tangible.
     const name = item.productName || item.description || item.name || item.title || 'Produit';
     const details = [item.size, item.finish, item.shape].filter(Boolean).join(' / ');
-    const fullName = details ? `${name}\n${details}` : name;
+    const baseName = details ? `${name}\n${details}` : name;
+    const fullName = item.isService === true ? `[Service] ${baseName}` : baseName;
     const qty = Number(item.quantity) || 1;
 
     // Resolution prix unitaire : unitPrice direct > lineTotal/qty > totalPrice/qty
