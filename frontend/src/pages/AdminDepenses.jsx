@@ -139,6 +139,12 @@ function AdminDepenses() {
   const [dragging, setDragging] = useState(false);
   const [uploadingInvoice, setUploadingInvoice] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState('');
+
+  // A11 (2026-05-13) : state UI pour afficher les erreurs des CRUD
+  // (fetch, create, update, delete, upload). Avant, ces operations
+  // avaient des `catch { /* silent */ }` -> aucun feedback a l'admin.
+  // Auto-clear apres 5s pour ne pas polluer l'UI en cas d'erreur ponctuelle.
+  const [actionError, setActionError] = useState('');
   const invoiceInputRef = useRef(null);
 
   // Inventory items (pour le fuzzy matching sur l'import de facture)
@@ -154,6 +160,14 @@ function AdminDepenses() {
     return () => clearTimeout(t);
   }, [search]);
 
+  // Auto-clear l'erreur d'action apres 5s pour ne pas figer le banner
+  // si l'admin retente et reussit ensuite.
+  useEffect(() => {
+    if (!actionError) return;
+    const t = setTimeout(() => setActionError(''), 5000);
+    return () => clearTimeout(t);
+  }, [actionError]);
+
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
@@ -164,7 +178,14 @@ function AdminDepenses() {
       setItems(data.data);
       setSummary(data.summary);
       setMeta(data.meta);
-    } catch { /* silent */ } finally { setLoading(false); }
+    } catch (err) {
+      console.error('fetchItems echoue:', err);
+      setActionError(tx({
+        fr: 'Echec du chargement des depenses. Verifie ta connexion et reessaie.',
+        en: 'Failed to load expenses. Check your connection and try again.',
+        es: 'Error al cargar gastos. Verifica tu conexion e intenta de nuevo.',
+      }));
+    } finally { setLoading(false); }
   }, [meta.page, filterCat, searchDebounce]);
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
@@ -177,7 +198,14 @@ function AdminDepenses() {
     try {
       const result = await uploadFile(file);
       setFormData(p => ({ ...p, receiptUrl: result.url }));
-    } catch { /* silent */ } finally { setUploadingReceipt(false); }
+    } catch (err) {
+      console.error('Upload recu (create) echoue:', err);
+      setActionError(tx({
+        fr: 'Echec de l\'upload du recu. Reessaie ou choisis un autre fichier.',
+        en: 'Receipt upload failed. Try again or choose another file.',
+        es: 'Error al subir el recibo. Intenta de nuevo o elige otro archivo.',
+      }));
+    } finally { setUploadingReceipt(false); }
   };
 
   // Receipt upload for edit form
@@ -188,7 +216,14 @@ function AdminDepenses() {
     try {
       const result = await uploadFile(file);
       setEditData(p => ({ ...p, receiptUrl: result.url }));
-    } catch { /* silent */ } finally { setUploadingEditReceipt(false); }
+    } catch (err) {
+      console.error('Upload recu (edit) echoue:', err);
+      setActionError(tx({
+        fr: 'Echec de l\'upload du recu. Reessaie ou choisis un autre fichier.',
+        en: 'Receipt upload failed. Try again or choose another file.',
+        es: 'Error al subir el recibo. Intenta de nuevo o elige otro archivo.',
+      }));
+    } finally { setUploadingEditReceipt(false); }
   };
 
   // Enrichit chaque ligne parsee avec:
@@ -364,11 +399,16 @@ function AdminDepenses() {
 
       setInvoiceData(null);
       fetchItems();
-      // Re-fetch l'inventaire pour avoir les quantites a jour pour les prochains imports
+      // Re-fetch l'inventaire pour avoir les quantites a jour pour les prochains imports.
+      // Non-critique : si ca foire, l'import principal a deja reussi (importSuccess
+      // affiche), on log juste un warn pour que l'admin sache si jamais le matching
+      // des prochains imports semble bizarre.
       try {
         const { data: invData } = await api.get('/inventory-items/dashboard');
         setInventoryItems(invData.data || []);
-      } catch { /* silent */ }
+      } catch (invRefreshErr) {
+        console.warn('Post-import inventory refresh failed (non-bloquant):', invRefreshErr);
+      }
     } catch (err) {
       console.error('Erreur import:', err);
       setParseError(tx({ fr: 'Erreur lors de l\'import. Reessayez.', en: 'Import error. Try again.', es: 'Error de importacion.' }));
@@ -436,7 +476,14 @@ function AdminDepenses() {
       setShowForm(false);
       setFormData({ ...emptyForm });
       fetchItems();
-    } catch { /* silent */ } finally { setSaving(false); }
+    } catch (err) {
+      console.error('Create depense echoue:', err);
+      setActionError(tx({
+        fr: 'Echec de la creation de la depense. Verifie ta connexion et reessaie.',
+        en: 'Failed to create expense. Check your connection and try again.',
+        es: 'Error al crear el gasto. Verifica tu conexion e intenta de nuevo.',
+      }));
+    } finally { setSaving(false); }
   };
 
   const toggleExpand = (id) => {
@@ -492,7 +539,14 @@ function AdminDepenses() {
       setItems(prev => prev.map(i => i.documentId === documentId ? { ...i, ...data.data } : i));
       setEditingId(null);
       fetchItems(); // refresh summary too
-    } catch { /* silent */ } finally { setUpdatingId(null); }
+    } catch (err) {
+      console.error('Update depense echoue:', err);
+      setActionError(tx({
+        fr: 'Echec de la mise a jour. Tes modifications n\'ont pas ete sauvegardees.',
+        en: 'Update failed. Your changes have not been saved.',
+        es: 'Error al actualizar. Tus cambios no se han guardado.',
+      }));
+    } finally { setUpdatingId(null); }
   };
 
   const handleDelete = async (documentId) => {
@@ -503,7 +557,14 @@ function AdminDepenses() {
       setExpandedId(null);
       setConfirmDeleteId(null);
       fetchItems(); // refresh summary
-    } catch { /* silent */ } finally { setDeletingId(null); }
+    } catch (err) {
+      console.error('Delete depense echoue:', err);
+      setActionError(tx({
+        fr: 'Echec de la suppression. La depense est toujours presente.',
+        en: 'Delete failed. The expense is still present.',
+        es: 'Error al eliminar. El gasto sigue presente.',
+      }));
+    } finally { setDeletingId(null); }
   };
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
@@ -529,6 +590,22 @@ function AdminDepenses() {
 
   return (
     <div className="space-y-6">
+      {/* A11 (2026-05-13) : banner d'erreur pour les CRUD/upload. Auto-clear
+          apres 5s via useEffect [actionError]. Cliquable pour fermeture
+          manuelle si l'admin veut le degager plus tot. */}
+      {actionError && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-3 rounded-lg bg-red-500/10 shadow-sm flex items-start justify-between gap-3 cursor-pointer"
+          onClick={() => setActionError('')}
+          title={tx({ fr: 'Cliquer pour fermer', en: 'Click to dismiss', es: 'Clic para cerrar' })}
+        >
+          <p className="text-red-400 text-sm">{actionError}</p>
+          <span className="text-red-400/60 text-xs">x</span>
+        </motion.div>
+      )}
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {summaryCards.map((card, i) => {
