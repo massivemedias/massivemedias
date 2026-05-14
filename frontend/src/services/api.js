@@ -57,6 +57,78 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// AUTH-EXPIRED-A10 (2026-05-13) : intercepteur 401 minimaliste avec
+// auto-refresh du token Supabase. Resout A10 (UX cassee a l'expiration
+// du JWT 1h).
+//
+// Garde-fous DURS contre les faux-positifs (cause de la purge nucleaire
+// precedente) :
+//   1. `_authRetry` flag sur config -> empeche la boucle infinie si la
+//      requete re-retry retombe sur 401.
+//   2. On NE FIRE PAS l'event auth:expired si pas de session locale au
+//      moment du 401 (cas "pas connecte du tout" = comportement normal,
+//      l'admin n'a pas a etre redirige vers /login alors qu'il n'avait
+//      jamais essaye de s'y connecter).
+//   3. On tente un `refreshSession()` AVANT de declarer la session morte.
+//      Supabase auto-rotate normalement, mais si une rotation a foire,
+//      cette tentative explicite recupere souvent un nouveau token sans
+//      logout visible pour l'utilisateur. La requete originale est retentee.
+//   4. Le dispatch d'event auth:expired est unique : on set un flag
+//      sessionStorage `auth_expired_flag` avant le dispatch ; la page
+//      Login.jsx le lit a l'affichage pour montrer le message.
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const status = error?.response?.status;
+    const cfg = error?.config;
+    if (status !== 401 || !cfg || cfg._authRetry || !supabase) {
+      return Promise.reject(error);
+    }
+    cfg._authRetry = true;
+
+    // Etat de session au moment du 401 : si on n'avait pas de session,
+    // le 401 est attendu (caller anonyme) -> on laisse passer en silence.
+    let hadSession = false;
+    try {
+      const { data } = await supabase.auth.getSession();
+      hadSession = !!data?.session?.access_token;
+    } catch {
+      hadSession = false;
+    }
+    if (!hadSession) {
+      return Promise.reject(error);
+    }
+
+    // On avait une session ET le serveur dit 401 -> token probablement
+    // expire. Tentative d'auto-refresh avant de declarer la session morte.
+    try {
+      const { data: refreshed, error: refreshErr } = await supabase.auth.refreshSession();
+      const newToken = refreshed?.session?.access_token;
+      if (!refreshErr && newToken) {
+        cfg.headers = cfg.headers || {};
+        cfg.headers.Authorization = `Bearer ${newToken}`;
+        return api(cfg);
+      }
+    } catch {
+      // refresh a throw : on traite comme expiration definitive ci-dessous.
+    }
+
+    // Refresh a echoue : session vraiment morte. Signale aux contextes UI.
+    try {
+      sessionStorage.setItem('auth_expired_flag', '1');
+    } catch {
+      // sessionStorage indisponible (mode prive Safari, quota) : tant pis,
+      // l'utilisateur verra juste la page Login sans message specifique.
+    }
+    try {
+      window.dispatchEvent(new CustomEvent('auth:expired'));
+    } catch {
+      // dispatchEvent ne peut pas vraiment fail dans un navigateur normal.
+    }
+    return Promise.reject(error);
+  },
+);
+
 // Stub no-op pour compat avec NotificationContext.jsx + Account.jsx qui
 // importent isServerDown de ce module. Avant le purge, cette fonction
 // retournait true pendant 60s apres une serie d'erreurs reseau pour eviter

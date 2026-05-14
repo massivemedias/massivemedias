@@ -78,6 +78,27 @@ function Login() {
     }
   }, [passwordRecovery]);
 
+  // AUTH-EXPIRED-A10 (2026-05-13) : flag pose par l'intercepteur axios
+  // (services/api.js) quand un 401 a force la deconnexion. Affiche un
+  // message clair "session expiree" sur la page Login plutot que de
+  // laisser l'utilisateur deviner pourquoi il a ete redirige.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('auth_expired_flag') === '1') {
+        sessionStorage.removeItem('auth_expired_flag');
+        setError(tx({
+          fr: 'Votre session a expire. Veuillez vous reconnecter.',
+          en: 'Your session has expired. Please log in again.',
+          es: 'Tu sesion ha expirado. Por favor inicia sesion de nuevo.',
+        }));
+      }
+    } catch {
+      // sessionStorage indisponible (Safari prive, quota) -> pas de message,
+      // mais l'utilisateur est quand meme sur la page Login.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Detect recovery tokens or errors in URL hash
   useEffect(() => {
     const hash = window.location.hash;

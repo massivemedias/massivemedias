@@ -68,21 +68,9 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // OPTION NUCLEAIRE : listener 'auth:expired' neutralise.
-  // Les faux-positifs 401 deconnectaient l'admin instantanement apres signIn.
-  // On garde l'ecoute pour tracer dans la console, mais on NE TOUCHE PLUS a
-  // la session : pas de signOut, pas de setUser(null). La session Supabase
-  // reste active. L'intercepteur axios ne dispatch plus cet event non plus
-  // (voir services/api.js), donc ce listener ne devrait plus fire - mais on
-  // le garde comme filet de securite tant qu'une autre partie du code pourrait
-  // le dispatcher.
-  useEffect(() => {
-    const onExpired = () => {
-      console.error('[auth] 401 Intercepte - Auto-logout desactive pour la stabilite');
-    };
-    window.addEventListener('auth:expired', onExpired);
-    return () => window.removeEventListener('auth:expired', onExpired);
-  }, []);
+  // Placeholder : le listener `auth:expired` est defini PLUS BAS dans ce
+  // fichier (apres la definition de `signOut` pour eviter une TDZ sur la
+  // dep array). Cf. useEffect avec ref AUTH-EXPIRED-A10.
 
   const signUp = useCallback(async (email, password, fullName, referredBy) => {
     if (!supabase) return { error: { message: 'Supabase not configured' } };
@@ -199,6 +187,33 @@ export function AuthProvider({ children }) {
       }
     }
   }, []);
+
+  // AUTH-EXPIRED-A10 (2026-05-13) : listener auth:expired reactive.
+  // Avant : neutralise a cause de faux-positifs 401 qui deconnectaient
+  // l'admin instantanement apres signIn. Maintenant : l'intercepteur
+  // axios (services/api.js) verifie qu'on avait une session ET tente un
+  // refreshSession AVANT de dispatch -> le seul cas qui arrive ici est
+  // une vraie expiration (refresh_token aussi expire / revoke).
+  //
+  // On dedup via le flag `firing` au cas ou plusieurs requetes 401
+  // simultanees dispatchent l'event en parallele - on ne veut pas
+  // appeler signOut plusieurs fois.
+  //
+  // Place APRES la definition de signOut (sinon TDZ sur la dep array).
+  useEffect(() => {
+    let firing = false;
+    const onExpired = async () => {
+      if (firing) return;
+      firing = true;
+      try {
+        await signOut('/login');
+      } catch (e) {
+        console.warn('[auth] signOut after auth:expired failed:', e);
+      }
+    };
+    window.addEventListener('auth:expired', onExpired);
+    return () => window.removeEventListener('auth:expired', onExpired);
+  }, [signOut]);
 
   const resetPassword = useCallback(async (email) => {
     if (!supabase) return { error: { message: 'Supabase not configured' } };
