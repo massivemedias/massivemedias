@@ -210,12 +210,23 @@ export default factories.createCoreController('api::contact-submission.contact-s
         },
       });
 
-      // Notifier l'admin par email (avec le nouveau champ fileLink inclus)
+      // CONTACT-EMAIL-2026-05-14 : notifier l'admin par email avec le contenu
+      // complet du message (Nom, Email, Entreprise, Message). La fonction
+      // sendNewContactNotificationEmail lit `ADMIN_EMAILS` (pluriel) en
+      // priorite et envoie a TOUS les destinataires configures. Log error
+      // (pas warn) si l'envoi echoue pour visibilite max.
       sendNewContactNotificationEmail({
         nom, email, telephone, entreprise, service, budget, urgence, message,
         fileLink: cleanFileLink,
+      }).then((ok) => {
+        if (!ok) {
+          strapi.log.error(
+            `[contact-submission] Email admin NON envoye pour submission ${submission.documentId} ` +
+            `de ${email}. Verifier la BDD via panneau admin pour ne pas perdre le lead.`,
+          );
+        }
       }).catch(err => {
-        strapi.log.warn('Email notification contact non envoye:', err);
+        strapi.log.error(`[contact-submission] Email admin a throw: ${err?.message || err}`);
       });
 
       // FIX-PREMIUM-FORM : auto-reply au prospect (accuse de reception

@@ -1181,14 +1181,20 @@ interface NewContactData {
 function buildNewContactNotificationHtml(data: NewContactData): string {
   const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto' });
 
+  // CONTACT-EMAIL-2026-05-14 : escape de tous les champs user-input dans le
+  // HTML pour eviter qu'un caractere `<` ou `&` casse le rendu Gmail (en
+  // particulier le bloc Message qui contient du texte libre du visiteur).
+  // Le `${data.message}` brut precedent fonctionnait dans 99% des cas mais
+  // un visiteur qui tape `<3 votre site` voyait le `<3` interprete comme
+  // debut de tag et le reste de son message disparaissait du rendu admin.
   const detailRows = [
-    { label: 'Nom', value: data.nom },
-    { label: 'Courriel', value: data.email },
-    data.telephone ? { label: 'Telephone', value: data.telephone } : null,
-    data.entreprise ? { label: 'Entreprise', value: data.entreprise } : null,
-    data.service ? { label: 'Service', value: data.service } : null,
-    data.budget ? { label: 'Budget', value: data.budget } : null,
-    data.urgence ? { label: 'Urgence', value: data.urgence } : null,
+    { label: 'Nom', value: escapeHtmlAttr(String(data.nom || '')) },
+    { label: 'Courriel', value: escapeHtmlAttr(String(data.email || '')) },
+    data.telephone ? { label: 'Telephone', value: escapeHtmlAttr(String(data.telephone)) } : null,
+    data.entreprise ? { label: 'Entreprise', value: escapeHtmlAttr(String(data.entreprise)) } : null,
+    data.service ? { label: 'Service', value: escapeHtmlAttr(String(data.service)) } : null,
+    data.budget ? { label: 'Budget', value: escapeHtmlAttr(String(data.budget)) } : null,
+    data.urgence ? { label: 'Urgence', value: escapeHtmlAttr(String(data.urgence)) } : null,
     { label: 'Date', value: date },
   ].filter(Boolean);
 
@@ -1257,7 +1263,7 @@ function buildNewContactNotificationHtml(data: NewContactData): string {
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;border-left:3px solid #FF52A0;">
         <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
-        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.message}</p>
+        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtmlAttr(String(data.message || ''))}</p>
       </td></tr>
     </table>
 
@@ -1278,22 +1284,54 @@ function buildNewContactNotificationHtml(data: NewContactData): string {
 
 export async function sendNewContactNotificationEmail(data: NewContactData): Promise<boolean> {
   const resend = getResend();
-  if (!resend) return false;
+  if (!resend) {
+    console.error('[email] sendNewContactNotificationEmail: Resend non configure (RESEND_API_KEY absent) - admin NE RECEVRA PAS la notification. Verifier en BDD via /admin/contact-submissions.');
+    return false;
+  }
 
   const sender = getSender();
-  const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+
+  // CONTACT-EMAIL-2026-05-14 : resolution des destinataires admin avec support
+  // de `ADMIN_EMAILS` (pluriel, comma-separated, meme env var que celle
+  // utilisee par utils/auth.requireAdminAuth). Fallback en cascade :
+  //   1. ADMIN_EMAILS = "a@x.com,b@x.com" -> notifie les 2 (Resend accepte array)
+  //   2. ADMIN_EMAIL  = "a@x.com" (legacy singulier) -> notifie 1
+  //   3. defaut hardcode "massivemedias@gmail.com"
+  // Cette resolution evite le bug ou un admin avait config `ADMIN_EMAILS`
+  // sur Render mais l'email partait quand meme vers la valeur par defaut
+  // (ou n'arrivait pas si la default est rejetee).
+  const adminEmailsRaw = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+  const recipients = adminEmailsRaw
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => /@/.test(s));
+  if (recipients.length === 0) {
+    console.error('[email] sendNewContactNotificationEmail: aucun destinataire admin valide dans ADMIN_EMAILS / ADMIN_EMAIL.');
+    return false;
+  }
 
   try {
     await resend.emails.send({
       ...sender,
-      to: adminEmail,
+      to: recipients,
+      // `replyTo` permet a l'admin de cliquer "Reply" dans son client mail
+      // et de repondre directement au prospect, au lieu de repondre au
+      // sender Massive. Massive gain UX critique.
+      replyTo: data.email,
       subject: `[MESSAGE] ${data.nom} - ${data.service || 'Contact'}`,
       html: buildNewContactNotificationHtml(data),
     });
-    console.log('[email] Notification contact envoyee pour', data.email);
+    console.log(`[email] Notification contact envoyee a [${recipients.join(', ')}] pour ${data.email}`);
     return true;
-  } catch (err) {
-    console.error('[email] Erreur notification contact:', err);
+  } catch (err: any) {
+    // Log ERROR (pas warn) pour visibilite max dans Render dashboard. Inclut
+    // le contenu du message pour que l'admin puisse au moins recuperer
+    // l'info dans les logs si Resend est down.
+    console.error(
+      `[email] ECHEC notification contact pour ${data.email}: ${err?.message || err}. ` +
+      `Destinataires tentes: [${recipients.join(', ')}]. ` +
+      `Message original (premier 500c): "${String(data.message || '').slice(0, 500).replace(/\n/g, ' ')}"`,
+    );
     return false;
   }
 }
