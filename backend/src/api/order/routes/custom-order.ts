@@ -153,6 +153,17 @@ export default {
       },
     },
     {
+      // ITEMS-EDIT-2026-05-14 : permet a l'admin de modifier les lignes
+      // d'une commande deja creee (description, qty, prix, isService).
+      // Recompute subtotal/tps/tvq/total. Pas de regeneration Stripe.
+      method: 'PUT',
+      path: '/orders/:documentId/items',
+      handler: 'order.updateItems',
+      config: {
+        auth: false,
+      },
+    },
+    {
       method: 'PUT',
       path: '/orders/:documentId/tracking',
       handler: 'order.addTracking',

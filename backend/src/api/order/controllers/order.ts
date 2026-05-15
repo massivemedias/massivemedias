@@ -4959,6 +4959,132 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     }
   },
 
+  /**
+   * PUT /orders/:documentId/items
+   *
+   * ITEMS-EDIT-2026-05-14 : edition des lignes d'une commande deja creee.
+   * Permet de :
+   *  - ajouter/supprimer des lignes (produit ou service)
+   *  - modifier description, quantite, lineTotal, isService par ligne
+   *  - recalculer automatiquement subtotal, TPS (5%), TVQ (9.975%), total
+   *
+   * Body : {
+   *   items: Array<{
+   *     description: string (required, non-empty)
+   *     quantity: number (>= 1)
+   *     unitPrice?: number (optionnel, calcule comme lineTotal/quantity si absent)
+   *     lineTotal: number (>= 0)
+   *     isService?: boolean (true = pas de decrement inventaire)
+   *     // Autres champs pass-through (productName, size, finish, image, etc.)
+   *     // pour conserver les details des items e-commerce existants.
+   *   }>,
+   *   shipping?: number (en dollars, optionnel - 0 si absent)
+   * }
+   *
+   * Note : ne regenere PAS le Stripe Payment Link (volontaire - l'admin
+   * doit le faire explicitement via /regenerate-stripe-link s'il a modifie
+   * le total d'une commande pas encore payee). Ne touche pas a l'invoice
+   * non plus - juste l'order. Pour resynchroniser l'invoice, regenere
+   * le PDF cote client (deja base sur order.items).
+   */
+  async updateItems(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const { documentId } = ctx.params;
+    const body = ctx.request.body as any;
+
+    if (!Array.isArray(body?.items) || body.items.length === 0) {
+      return ctx.badRequest('items[] requis et non vide');
+    }
+
+    const toNum = (v: any) => {
+      const n = typeof v === 'string' ? parseFloat(v.replace(',', '.')) : Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    // Normalise + valide chaque item. On preserve les champs pass-through
+    // (productName, size, finish, image, uploadedFiles, etc.) pour ne pas
+    // casser le rendu des commandes e-commerce existantes.
+    const items: any[] = [];
+    for (const raw of body.items) {
+      const description = String(raw?.description || raw?.productName || '').trim();
+      if (!description) continue; // skip lignes vides
+      const rawQty = Number(raw?.quantity);
+      const quantity = Number.isFinite(rawQty) && rawQty >= 1 ? Math.floor(rawQty) : 1;
+      const lineTotal = toNum(raw?.lineTotal);
+      if (lineTotal < 0) {
+        return ctx.badRequest(`lineTotal negatif refuse pour "${description}"`);
+      }
+      const unitPrice = raw?.unitPrice != null
+        ? toNum(raw.unitPrice)
+        : (quantity > 0 ? Math.round((lineTotal / quantity) * 100) / 100 : lineTotal);
+
+      // Pass-through des autres champs (preserve e-commerce metadata)
+      const preserved: any = {};
+      const passthroughKeys = ['productName', 'size', 'finish', 'shape', 'image',
+        'uploadedFiles', 'notes', 'sku', 'slug', 'packDetails', 'packComposition'];
+      for (const k of passthroughKeys) {
+        if (raw[k] !== undefined) preserved[k] = raw[k];
+      }
+
+      items.push({
+        ...preserved,
+        description,
+        quantity,
+        unitPrice,
+        lineTotal,
+        totalPrice: lineTotal, // alias pour rendu legacy
+        isService: raw?.isService === true,
+      });
+    }
+
+    if (items.length === 0) {
+      return ctx.badRequest('aucune ligne valide (description requise sur chaque ligne)');
+    }
+
+    const subtotalDollars = items.reduce((s, it) => s + it.lineTotal, 0);
+    const shippingDollars = toNum(body?.shipping);
+    // Taxes QC standard - recalculees sur le subtotal post-edit.
+    const tpsDollars = Math.round(subtotalDollars * 0.05 * 100) / 100;
+    const tvqDollars = Math.round(subtotalDollars * 0.09975 * 100) / 100;
+    const totalDollars = Math.round((subtotalDollars + shippingDollars + tpsDollars + tvqDollars) * 100) / 100;
+
+    if (totalDollars <= 0) {
+      return ctx.badRequest('Total recalcule 0 ou negatif - verifier les lignes');
+    }
+
+    const order = await strapi.documents('api::order.order').findFirst({
+      filters: { documentId },
+    }) as any;
+    if (!order) return ctx.notFound('Commande introuvable');
+
+    try {
+      // Order schema stocke subtotal/total/shipping/tps/tvq en CENTS (integer).
+      const updated = await strapi.documents('api::order.order').update({
+        documentId,
+        data: {
+          items,
+          subtotal: Math.round(subtotalDollars * 100),
+          shipping: Math.round(shippingDollars * 100),
+          tps: Math.round(tpsDollars * 100),
+          tvq: Math.round(tvqDollars * 100),
+          total: Math.round(totalDollars * 100),
+        } as any,
+      });
+
+      strapi.log.info(
+        `[updateItems] Order ${documentId} : ${items.length} lignes, ` +
+        `subtotal=${subtotalDollars.toFixed(2)}$ TPS=${tpsDollars.toFixed(2)}$ ` +
+        `TVQ=${tvqDollars.toFixed(2)}$ shipping=${shippingDollars.toFixed(2)}$ total=${totalDollars.toFixed(2)}$. ` +
+        `Status=${(order as any).status}, paid=${!!(order as any).paidAt}`
+      );
+
+      ctx.body = { data: updated };
+    } catch (err: any) {
+      strapi.log.error(`[updateItems] Erreur sur ${documentId}: ${err?.message || err}`);
+      ctx.throw(500, err?.message || 'Erreur de mise a jour des items');
+    }
+  },
+
   // GET /orders/:documentId/tracking - Recupere le statut de livraison via le provider
   // (mock intelligent par defaut, branchement futur 17Track/Shippo via TRACKING_API_KEY).
   // Retourne aussi un `suggestStatusChange` si l'etat propose un changement automatique

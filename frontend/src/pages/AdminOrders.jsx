@@ -5,15 +5,16 @@ import {
   Clock, Truck, Package, CreditCard, CheckCircle, XCircle,
   RotateCcw, Loader2, ExternalLink, MapPin, Save, Image,
   FileText, ChevronLeft, ChevronRight, Phone, Mail, Hash, Palette,
-  Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark, Copy,
+  Download, Receipt, Trash2, Send, AlertTriangle, Pencil, Plus, Landmark, Copy, Edit3,
   TrendingUp, TrendingDown, Inbox, Sparkles, List, LayoutDashboard, Zap, User,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink, getQuotes, createQuote } from '../services/adminService';
+import { getOrders, getOrderStats, getAdminMoneyBoard, updateOrderStatus, updateOrderNotes, updateOrderTracking, deleteOrder, getPrivateSales, deletePrivateSale, resendPrivateSaleEmail, sendOrderInvoice, getOrderTracking, getBillingSettings, regenerateStripeLink, getQuotes, createQuote, updateOrderItems } from '../services/adminService';
 import { useNotifications } from '../contexts/NotificationContext';
 import { generateInvoicePDF } from '../utils/generateInvoice';
 import EditOrderTotalModal from '../components/EditOrderTotalModal';
 import EditOrderBillingModal from '../components/EditOrderBillingModal';
+import EditOrderItemsModal from '../components/EditOrderItemsModal';
 import CreateManualOrderModal from '../components/CreateManualOrderModal';
 import QuoteCreateModal from '../components/QuoteCreateModal';
 import StatusChangeModal from '../components/StatusChangeModal';
@@ -541,6 +542,8 @@ function AdminOrders() {
   const [editTotalOrder, setEditTotalOrder] = useState(null);
   // Modal d'edition des infos client/facturation (override checkout, regen PDF)
   const [editBillingOrder, setEditBillingOrder] = useState(null);
+  // ITEMS-EDIT-2026-05-14 : modal d'edition des lignes (items) d'une commande
+  const [editItemsOrder, setEditItemsOrder] = useState(null);
   const onOrderTotalUpdated = useCallback((updatedOrder) => {
     // Mise a jour optimiste locale: remplace la commande dans l'etat sans refetch complet
     if (!updatedOrder) return;
@@ -2218,9 +2221,28 @@ function AdminOrders() {
 
                           {/* Items - avec images bien visibles */}
                           <div>
-                            <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider mb-3">
-                              {tx({ fr: 'Articles commandés', en: 'Ordered items', es: 'Articulos pedidos' })} ({items.length})
-                            </h4>
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-xs font-semibold text-grey-muted uppercase tracking-wider">
+                                {tx({ fr: 'Articles commandés', en: 'Ordered items', es: 'Articulos pedidos' })} ({items.length})
+                              </h4>
+                              {/* ITEMS-EDIT-2026-05-14 : bouton modifier les lignes
+                                  d'une commande (description, qty, prix, ajouter/
+                                  supprimer lignes Produit ou Service). Recalcul
+                                  auto des taxes cote backend. */}
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setEditItemsOrder(order); }}
+                                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors border bg-accent/10 text-accent border-accent/30 hover:bg-accent/20"
+                                title={tx({
+                                  fr: 'Modifier les lignes de cette commande (description, quantite, prix, services)',
+                                  en: 'Edit invoice lines (description, qty, price, services)',
+                                  es: 'Editar lineas de factura',
+                                })}
+                              >
+                                <Edit3 size={11} />
+                                {tx({ fr: 'Modifier', en: 'Edit', es: 'Editar' })}
+                              </button>
+                            </div>
                             <div className="space-y-3">
                               {items.map((item, idx) => {
                                 const files = Array.isArray(item.uploadedFiles) ? item.uploadedFiles : [];
@@ -2234,7 +2256,18 @@ function AdminOrders() {
                                       <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start gap-2">
                                           <div>
-                                            <p className="text-base font-semibold text-heading">{item.productName || tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}</p>
+                                            <p className="text-base font-semibold text-heading">
+                                              {item.isService === true && (
+                                                <span className="inline-block mr-1.5 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider bg-blue-500/20 text-blue-400 align-middle">
+                                                  {tx({ fr: 'Service', en: 'Service', es: 'Servicio' })}
+                                                </span>
+                                              )}
+                                              {/* ITEMS-EDIT-2026-05-14 : fallback sur item.description pour
+                                                  les commandes manuelles (CreateManualOrderModal) qui
+                                                  stockent le nom dans `description` et pas `productName`.
+                                                  Avant ce fix, ces lignes affichaient juste "Produit". */}
+                                              {item.productName || item.description || tx({ fr: 'Produit', en: 'Product', es: 'Producto' })}
+                                            </p>
                                             <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
                                               {item.size && <span className="text-xs text-grey-muted bg-glass px-2 py-0.5 rounded">{item.size}</span>}
                                               {item.finish && <span className="text-xs text-grey-muted bg-glass px-2 py-0.5 rounded">{item.finish}</span>}
@@ -3145,6 +3178,23 @@ function AdminOrders() {
             setOrders(prev => prev.map(o =>
               o.documentId === updated.documentId ? { ...o, ...updated } : o
             ));
+          }}
+        />
+      )}
+
+      {/* ITEMS-EDIT-2026-05-14 : modal d'edition des LIGNES (items) de la
+          commande. Recalcule subtotal/TPS/TVQ/total cote backend. */}
+      {editItemsOrder && (
+        <EditOrderItemsModal
+          order={editItemsOrder}
+          onClose={() => setEditItemsOrder(null)}
+          onSaved={(updated) => {
+            // Optimistic update : injecte les nouveaux totaux + items dans le state
+            if (updated) {
+              setOrders(prev => prev.map(o =>
+                o.documentId === updated.documentId ? { ...o, ...updated } : o
+              ));
+            }
           }}
         />
       )}

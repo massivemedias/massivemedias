@@ -190,6 +190,13 @@ export const updateOrderTracking = (documentId, trackingNumber, carrier) => api.
 // /Phone/companyName/shippingAddress.
 export const updateOrderBilling = (documentId, payload) => api.put(`/orders/${documentId}/billing`, payload);
 
+// ITEMS-EDIT-2026-05-14 : modifier les lignes d'une commande deja creee.
+// Le backend recalcule subtotal/TPS/TVQ/total automatiquement.
+// items = Array<{ description, quantity, lineTotal, isService?, unitPrice?, productName?, ... }>
+// shipping = montant en dollars (default 0)
+export const updateOrderItems = (documentId, items, shipping = 0) =>
+  api.put(`/orders/${documentId}/items`, { items, shipping });
+
 /**
  * Interroge le provider de tracking (mock intelligent / 17Track / Shippo).
  * Retourne { status, statusLabel, events[], delivered, deliveredAt, suggestStatusChange }.
