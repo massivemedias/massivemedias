@@ -415,12 +415,23 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
     y += boxH + 4;
   }
 
-  // ==================== MODALITES DE PAIEMENT (B2B / factures non payees) ====================
-  // Affichee sur toutes les factures NON-payees pour donner au client les options
-  // de paiement alternatives au Stripe Payment Link (qui est affiche juste au-dessus).
-  // Inclut : Interac e-Transfer + depot direct si coordonnees bancaires configurees
-  // dans /billing-settings.
-  if (!isReceipt && !isPaid) {
+  // ==================== MODALITES DE PAIEMENT ====================
+  // PAYMENT-TERMS-2026-05-14 : affichee sur TOUTES les factures (paid ou
+  // non), uniquement masquee sur les recus (post-purchase, type='receipt').
+  // Raison : les clients B2B (ex: La Presse) paient hors-Stripe par
+  // Interac/depot direct, l'admin marque la commande "paid" apres reception
+  // -> la facture doit toujours documenter les modalites de paiement pour
+  // audit comptable et clarte cote client. Avant ce fix, la section etait
+  // cachee des que la commande passait en status paid -> les clients qui
+  // recevaient une facture deja marquee paid ne voyaient pas comment ils
+  // etaient censes payer.
+  //
+  // Affichage souple des champs banque : on montre la ligne "Depot direct"
+  // tant qu'au moins le bankName est present, et on omet les sous-champs
+  // (transit/institution/compte) qui sont vides. Permet d'avoir une
+  // information partielle si l'admin a rempli /admin/billing-settings
+  // progressivement.
+  if (!isReceipt) {
     y += 8;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
@@ -445,21 +456,27 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
       y += 5;
     }
 
-    // Depot direct : tous les champs banque doivent etre renseignes pour etre affiche
-    if (paymentInfo.bankName && paymentInfo.transit && paymentInfo.institution && paymentInfo.account) {
+    // Depot direct : ligne flexible. Affichee tant qu'au moins le bankName
+    // est renseigne. Les sous-champs (transit/institution/compte) sont
+    // omis individuellement s'ils sont vides. Avant ce fix, si UN des 4
+    // champs manquait, la ligne entiere disparaissait silencieusement.
+    if (paymentInfo.bankName) {
       doc.setFont('helvetica', 'bold');
       doc.text('Depot direct : ', margin, y);
       doc.setFont('helvetica', 'normal');
-      doc.text(
-        `${paymentInfo.bankName}  |  Transit: ${paymentInfo.transit}  |  Inst: ${paymentInfo.institution}  |  Compte: ${paymentInfo.account}`,
-        margin + 28, y,
-      );
+      const bankParts = [paymentInfo.bankName];
+      if (paymentInfo.transit)      bankParts.push(`Transit: ${paymentInfo.transit}`);
+      if (paymentInfo.institution)  bankParts.push(`Inst: ${paymentInfo.institution}`);
+      if (paymentInfo.account)      bankParts.push(`Compte: ${paymentInfo.account}`);
+      doc.text(bankParts.join('  |  '), margin + 28, y);
       y += 5;
       if (paymentInfo.accountHolder) {
         doc.setFontSize(7.5);
         doc.setTextColor(...greyText);
         doc.text(`Titulaire : ${paymentInfo.accountHolder}`, margin + 28, y);
         y += 5;
+        doc.setFontSize(8.5);
+        doc.setTextColor(...darkText);
       }
     }
 
