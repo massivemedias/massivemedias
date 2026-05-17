@@ -15,6 +15,13 @@ export async function getProducts(category = null) {
       'populate': 'images',
       'filters[active][$eq]': true,
       'sort': 'sortOrder:asc',
+      // AUDIT-PAGINATION (14 mai 2026) : sans pagination explicite, Strapi
+      // v5 applique son `defaultLimit: 25` (cf. backend/config/api.ts) ->
+      // au-dela de 25 produits actifs, les suivants etaient invisibles en
+      // boutique (troncature silencieuse, meme classe de bug que le
+      // catalogue artiste). pageSize 100 = maxLimit configure (page-based,
+      // valide en REST v5 contrairement a limit:-1 qui plante).
+      'pagination[pageSize]': 100,
     };
     if (category) {
       params['filters[category][$eq]'] = category;

@@ -25,9 +25,15 @@ function News() {
           params: {
             'sort': 'createdAt:desc',
             'populate': 'coverImage',
+            // AUDIT-PAGINATION (14 mai 2026) : sans ce param, Strapi v5
+            // applique defaultLimit:25 -> au-dela de 25 articles, les plus
+            // anciens disparaissaient silencieusement. pageSize 100 =
+            // maxLimit (page-based, valide REST v5 ; PAS limit:-1 qui
+            // plante avec maxLimit configure).
+            'pagination[pageSize]': 100,
           },
         });
-        setArticles(data.data || []);
+        setArticles(Array.isArray(data?.data) ? data.data : []);
       } catch (err) {
         console.error('Failed to fetch news:', err);
       } finally {
