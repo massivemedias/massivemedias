@@ -178,6 +178,19 @@ function buildArtistFromCMS(cms) {
       image: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : p.image || '',
       fullImage: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : p.fullImage || '',
     })),
+    // FIX-ARTIST-CATALOG (14 mai 2026) : buildArtistFromCMS OMETTAIT
+    // `stickers` et `merch`. Consequence : dans le merge de artistRaw,
+    // `cms.stickers` etait undefined -> mergeList(undefined, local.stickers)
+    // -> retournait UNIQUEMENT les stickers locaux (artists.js). Pour un
+    // artiste comme Psyqueen dont les stickers sont en CMS mais PAS dans
+    // artists.js -> stickers invisibles en production.
+    // Les stickers JSON embarquent deja leur `image` (pas de media relation
+    // dediee dans le schema, contrairement a printImages) -> pass-through.
+    // `merch` n'existe pas dans le schema CMS (concept local-only) : on
+    // l'expose quand meme s'il est present pour robustesse future, sinon
+    // le mergeList cote artistRaw retombe correctement sur local.merch.
+    stickers: Array.isArray(cms.stickers) ? cms.stickers : [],
+    merch: Array.isArray(cms.merch) ? cms.merch : [],
   };
 }
 

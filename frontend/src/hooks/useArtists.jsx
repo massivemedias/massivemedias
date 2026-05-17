@@ -18,10 +18,22 @@ export function ArtistsProvider({ children }) {
     let cancelled = false;
     async function fetchArtists() {
       try {
+        // FIX-ARTIST-CATALOG (14 mai 2026) :
+        //  1. `printImages` ajoute au populate : sans ca, cms.printImages
+        //     etait undefined cote ArtisteDetail.buildArtistFromCMS, donc
+        //     chaque print retombait sur son `p.image` JSON brut (souvent
+        //     vide/relatif pour les oeuvres uploadees via le CMS) ->
+        //     catalogue tronque / vignettes manquantes (cas Adrift Vision).
+        //  2. pagination pageSize 50 -> -1 (limite levee, equivalent Strapi
+        //     "tout retourner") : aucun artiste ne doit etre coupe meme si
+        //     le CMS depasse 50 entrees (test artists, doublons, etc.).
+        //     Les `stickers`/`prints` sont des champs JSON retournes en
+        //     entier par item (pas de pagination interne), donc cette
+        //     limite ne concernait QUE le nombre d'artistes.
         const { data } = await apiPublic.get('/artists', {
           params: {
-            populate: ['avatar', 'heroImage'],
-            pagination: { pageSize: 50 },
+            populate: ['avatar', 'heroImage', 'printImages'],
+            pagination: { limit: -1 },
           },
         });
         if (!cancelled && data?.data) {
