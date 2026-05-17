@@ -162,36 +162,60 @@ function frameCoordsFor(sceneKey, frameColor, orientation) {
 }
 
 function buildArtistFromCMS(cms) {
-  if (!cms) return null;
-  return {
-    slug: cms.slug,
-    name: cms.name,
-    tagline: { fr: cms.taglineFr || '', en: cms.taglineEn || '' },
-    bio: { fr: cms.bioFr || '', en: cms.bioEn || '' },
-    demarche: (cms.demarcheFr || cms.demarcheEn) ? { fr: cms.demarcheFr || [], en: cms.demarcheEn || [] } : null,
-    avatar: mediaUrl(cms.avatar),
-    heroImage: mediaUrl(cms.heroImage),
-    socials: cms.socials || {},
-    pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 } },
-    prints: (cms.prints || []).map((p, i) => ({
-      ...p,
-      image: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : p.image || '',
-      fullImage: cms.printImages?.[i] ? mediaUrl(cms.printImages[i]) : p.fullImage || '',
-    })),
-    // FIX-ARTIST-CATALOG (14 mai 2026) : buildArtistFromCMS OMETTAIT
-    // `stickers` et `merch`. Consequence : dans le merge de artistRaw,
-    // `cms.stickers` etait undefined -> mergeList(undefined, local.stickers)
-    // -> retournait UNIQUEMENT les stickers locaux (artists.js). Pour un
-    // artiste comme Psyqueen dont les stickers sont en CMS mais PAS dans
-    // artists.js -> stickers invisibles en production.
-    // Les stickers JSON embarquent deja leur `image` (pas de media relation
-    // dediee dans le schema, contrairement a printImages) -> pass-through.
-    // `merch` n'existe pas dans le schema CMS (concept local-only) : on
-    // l'expose quand meme s'il est present pour robustesse future, sinon
-    // le mergeList cote artistRaw retombe correctement sur local.merch.
-    stickers: Array.isArray(cms.stickers) ? cms.stickers : [],
-    merch: Array.isArray(cms.merch) ? cms.merch : [],
-  };
+  if (!cms || typeof cms !== 'object') return null;
+  try {
+    // HOTFIX-ARTIST-REGRESSION (14 mai 2026) : blindage total. Tout acces
+    // a une liste passe par Array.isArray AVANT .map (un `(cms.prints||[])
+    // .map` plante avec TypeError si cms.prints est un objet, une string,
+    // ou la forme Strapi v4 { data: [...] }). En Strapi v5 les champs
+    // `type: json` reviennent en valeur brute (pas de wrapper .data), mais
+    // on tolere quand meme la forme .data au cas ou (proxy/cache legacy).
+    const asArray = (v) => {
+      if (Array.isArray(v)) return v;
+      // Tolerance forme Strapi v4 relationnelle { data: [...] }
+      if (v && typeof v === 'object' && Array.isArray(v.data)) return v.data;
+      return [];
+    };
+
+    const cmsPrints = asArray(cms.prints);
+    const cmsPrintImages = asArray(cms.printImages);
+
+    return {
+      slug: cms.slug || '',
+      name: cms.name || '',
+      tagline: { fr: cms.taglineFr || '', en: cms.taglineEn || '' },
+      bio: { fr: cms.bioFr || '', en: cms.bioEn || '' },
+      demarche: (cms.demarcheFr || cms.demarcheEn) ? { fr: cms.demarcheFr || [], en: cms.demarcheEn || [] } : null,
+      avatar: mediaUrl(cms.avatar),
+      heroImage: mediaUrl(cms.heroImage),
+      socials: (cms.socials && typeof cms.socials === 'object') ? cms.socials : {},
+      pricing: (cms.pricing && typeof cms.pricing === 'object')
+        ? cms.pricing
+        : { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 } },
+      prints: cmsPrints.map((p, i) => {
+        const safeP = (p && typeof p === 'object') ? p : {};
+        return {
+          ...safeP,
+          image: cmsPrintImages[i] ? mediaUrl(cmsPrintImages[i]) : safeP.image || '',
+          fullImage: cmsPrintImages[i] ? mediaUrl(cmsPrintImages[i]) : safeP.fullImage || '',
+        };
+      }),
+      // FIX-ARTIST-CATALOG (14 mai 2026) : buildArtistFromCMS OMETTAIT
+      // `stickers`/`merch` -> mergeList(undefined, local.stickers) ne
+      // retournait que le local (vide pour Psyqueen) -> stickers invisibles.
+      // asArray() tolere null/undefined/objet/forme .data sans throw.
+      stickers: asArray(cms.stickers),
+      merch: asArray(cms.merch),
+    };
+  } catch (e) {
+    // BLINDAGE ABSOLU : si un artiste a une donnee CMS corrompue, on NE
+    // DOIT PAS faire planter le useMemo (ce qui crasherait toute la page
+    // ArtisteDetail via l'ErrorBoundary). On log et on retourne null ->
+    // le caller retombe sur les donnees locales artists.js.
+    // eslint-disable-next-line no-console
+    console.warn(`[buildArtistFromCMS] parsing CMS echoue pour "${cms?.slug || '?'}":`, e?.message || e);
+    return null;
+  }
 }
 
 function ArtisteDetail({ subdomainSlug }) {
@@ -209,18 +233,27 @@ function ArtisteDetail({ subdomainSlug }) {
     if (!cmsArtist && !local) return null;
     if (!cmsArtist) return local;
     const cms = buildArtistFromCMS(cmsArtist);
+    // HOTFIX-ARTIST-REGRESSION (14 mai 2026) : buildArtistFromCMS peut
+    // desormais retourner null (catch sur donnee CMS corrompue). Sans ce
+    // guard, le code plus bas (`cms.tagline.fr`, `cms.bio.en`,
+    // `cms.pricing.studio`...) levait un TypeError "Cannot read properties
+    // of null" -> crash du useMemo -> ErrorBoundary -> page "introuvable".
+    // Si le parsing CMS echoue, on retombe proprement sur le local
+    // (ou null si pas de local -> fallback gere par le caller).
+    if (!cms) return local;
     if (!local) return cms;
-    // Local = base, CMS = override pour les champs simples, ajout pour les listes
+    // Local = base, CMS = override pour les champs simples, ajout pour les listes.
+    // Blindage : chaque entree peut etre null/non-objet sans casser le merge.
     const mergeList = (cmsList, localList) => {
-      const cms2 = Array.isArray(cmsList) ? cmsList : [];
-      const local2 = Array.isArray(localList) ? localList : [];
+      const cms2 = (Array.isArray(cmsList) ? cmsList : []).filter(p => p && typeof p === 'object');
+      const local2 = (Array.isArray(localList) ? localList : []).filter(p => p && typeof p === 'object');
       if (cms2.length === 0) return local2;
       if (local2.length === 0) return cms2;
       // Merger: CMS ecrase le local pour les memes IDs
       const cmsMap = {};
-      cms2.forEach(p => { if (p.id) cmsMap[p.id] = p; });
+      cms2.forEach(p => { if (p && p.id) cmsMap[p.id] = p; });
       const merged = local2.map(p => {
-        if (p.id && cmsMap[p.id]) {
+        if (p && p.id && cmsMap[p.id]) {
           // CMS override le local (pour customPrice, unique, etc.)
           const { image: cmsImg, fullImage: cmsFull, ...cmsRest } = cmsMap[p.id];
           return { ...p, ...cmsRest, image: cmsImg || p.image, fullImage: cmsFull || p.fullImage };
@@ -228,8 +261,8 @@ function ArtisteDetail({ subdomainSlug }) {
         return p;
       });
       // Ajouter les prints CMS qui n'existent pas en local
-      const localIds = new Set(local2.map(p => p.id));
-      const newFromCms = cms2.filter(p => !localIds.has(p.id));
+      const localIds = new Set(local2.map(p => p.id).filter(Boolean));
+      const newFromCms = cms2.filter(p => p.id && !localIds.has(p.id));
       return [...merged, ...newFromCms];
     };
     return {

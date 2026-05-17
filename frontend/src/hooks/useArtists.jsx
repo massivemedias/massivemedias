@@ -18,33 +18,55 @@ export function ArtistsProvider({ children }) {
     let cancelled = false;
     async function fetchArtists() {
       try {
-        // FIX-ARTIST-CATALOG (14 mai 2026) :
-        //  1. `printImages` ajoute au populate : sans ca, cms.printImages
-        //     etait undefined cote ArtisteDetail.buildArtistFromCMS, donc
-        //     chaque print retombait sur son `p.image` JSON brut (souvent
-        //     vide/relatif pour les oeuvres uploadees via le CMS) ->
-        //     catalogue tronque / vignettes manquantes (cas Adrift Vision).
-        //  2. pagination pageSize 50 -> -1 (limite levee, equivalent Strapi
-        //     "tout retourner") : aucun artiste ne doit etre coupe meme si
-        //     le CMS depasse 50 entrees (test artists, doublons, etc.).
-        //     Les `stickers`/`prints` sont des champs JSON retournes en
-        //     entier par item (pas de pagination interne), donc cette
-        //     limite ne concernait QUE le nombre d'artistes.
+        // HOTFIX-ARTIST-REGRESSION (14 mai 2026) :
+        // Le commit precedent passait `pagination: { limit: -1 }`. Or
+        // backend/config/api.ts impose `maxLimit: 100`. En Strapi v5 REST,
+        // `pagination[limit]=-1` AVEC un maxLimit configure est invalide :
+        // Strapi clamp/rejette -> reponse /artists cassee -> seul un sous-
+        // ensemble (Adrift) parsait -> TOUS les autres artistes disparus
+        // de /artistes ET /artistes/:slug renvoyait "introuvable".
+        //
+        // On REVIENT a la config PROUVEE fonctionnelle : pagination
+        // page-based `pageSize` (Strapi v5 la gere proprement, 200 < pas
+        // de souci car withCount + maxLimit clamp a 100 max items/page
+        // mais 200 force juste le pageSize demande tant que <= maxLimit ;
+        // on met 100 = maxLimit pour etre dans la fenetre valide ET
+        // couvrir largement les ~10-15 artistes reels). `printImages`
+        // RETIRE du populate : c'etait un enrichissement secondaire non
+        // essentiel (les prints ont deja leur `image` dans le JSON), il
+        // alourdissait la reponse et n'est pas requis pour reparer la
+        // regression. Le vrai fix stickers reste dans buildArtistFromCMS
+        // (exception-safe, conserve).
         const { data } = await apiPublic.get('/artists', {
           params: {
-            populate: ['avatar', 'heroImage', 'printImages'],
-            pagination: { limit: -1 },
+            populate: ['avatar', 'heroImage'],
+            pagination: { pageSize: 100 },
           },
         });
-        if (!cancelled && data?.data) {
+        // Guard blinde : data.data doit etre un tableau. Chaque entree
+        // est parsee individuellement - une entree corrompue ne doit
+        // JAMAIS faire planter la construction de toute la map.
+        const list = Array.isArray(data?.data) ? data.data : [];
+        if (!cancelled && list.length > 0) {
           const map = {};
-          for (const a of data.data) {
-            if (a.slug) map[a.slug] = a;
+          for (const a of list) {
+            try {
+              if (a && typeof a === 'object' && a.slug) {
+                map[a.slug] = a;
+              }
+            } catch (perItemErr) {
+              // Entree artiste corrompue -> on skip, on garde les autres
+              // eslint-disable-next-line no-console
+              console.warn('[useArtists] entree artiste ignoree:', perItemErr);
+            }
           }
-          setArtists(map);
+          if (Object.keys(map).length > 0) setArtists(map);
         }
-      } catch {
-        // CMS indisponible - on utilise les donnees locales
+      } catch (err) {
+        // CMS indisponible / reponse invalide - on log pour diagnostic
+        // mais on ne crash pas : le frontend gere artists=null gracieusement.
+        // eslint-disable-next-line no-console
+        console.warn('[useArtists] fetch /artists echoue:', err?.message || err);
       }
       if (!cancelled) setLoading(false);
     }
