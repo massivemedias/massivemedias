@@ -296,9 +296,20 @@ function AdminMessages() {
   const toggleExpand = (item) => {
     if (expandedId === item._uid) { setExpandedId(null); return; }
     setExpandedId(item._uid);
-    // Auto-mark as read when expanded
+    // FIX-CANDIDATURE-READ (14 mai 2026) : auto-mark a l'ouverture.
+    // BUG : on envoyait 'read' pour TOUS les types. Or le schema backend
+    // artist-submission (candidatures) a l'enum
+    // [new, reviewing, accepted, rejected, archived] - PAS de 'read'.
+    // updateArtistStatus(documentId, 'read') -> rejet validation 400 ->
+    // catch -> ROLLBACK dans handleStatusChange -> la candidature restait
+    // "Nouveau" pour toujours meme apres lecture (cf. bug Guillaume Brame).
+    // Pour une candidature, "ouverte/lue par l'admin" == "en cours de
+    // revue" -> 'reviewing' (transition valide new->reviewing dans
+    // ARTIST_FLOW, semantiquement correcte). Contact et artist-msg
+    // gardent 'read' (present dans leurs enums respectifs).
     if (item.status === 'new') {
-      handleStatusChange(item, 'read');
+      const targetStatus = item._type === 'candidature' ? 'reviewing' : 'read';
+      handleStatusChange(item, targetStatus);
     }
   };
 
