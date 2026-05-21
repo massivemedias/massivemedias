@@ -12,7 +12,7 @@ import { formatPrice, money } from '../../utils/formatCurrency';
 
 const MIN_TOTAL = 25; // Minimum d'impression
 
-function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }) {
+function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [], onThumbnailPreview }) {
   const { tx } = useLang();
   const { addToCart } = useCart();
   const { artistSlug: loggedArtistSlug } = useUserRole();
@@ -183,7 +183,15 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [] }
                   src={s.image}
                   alt={title}
                   className={`w-14 h-14 rounded-lg object-contain cursor-pointer transition-all ${previewSticker?.id === s.id ? 'ring-2 ring-accent' : 'hover:ring-1 hover:ring-white/30'}`}
-                  onClick={() => setPreviewSticker(s)}
+                  title={tx({ fr: 'Cliquer pour agrandir', en: 'Click to enlarge', es: 'Clic para ampliar' })}
+                  onClick={() => {
+                    // STICKER-PREVIEW (14 mai 2026) : met a jour le mini-
+                    // apercu interne (ring + bloc 112px) ET remonte au
+                    // parent (ArtisteDetail) pour afficher le sticker en
+                    // GRAND dans la zone de preview principale.
+                    setPreviewSticker(s);
+                    onThumbnailPreview?.(s);
+                  }}
                 />
               </div>
               <span className={`flex-1 text-sm font-medium truncate ${isSelected ? 'text-heading' : 'text-grey-muted'}`}>

@@ -324,6 +324,12 @@ function ArtisteDetail({ subdomainSlug }) {
   const [printFrameColor, setPrintFrameColor] = useState('black');
   const [galleryView, setGalleryView] = useState('grid');
   const [selectedSticker, setSelectedSticker] = useState(null);
+  // STICKER-PREVIEW (14 mai 2026) : sticker affiche en GRAND dans la zone
+  // de preview principale du configurateur. Distinct de `selectedSticker`
+  // (qui sert d'ancre au pack builder - le changer reinitialiserait le
+  // pack). null = on affiche selectedSticker par defaut. Mis a jour quand
+  // l'utilisateur clique une vignette dans ConfiguratorArtistSticker.
+  const [stickerPreview, setStickerPreview] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
   const [lightbox, setLightbox] = useState(null);
   const [mockupSlideIdx, setMockupSlideIdx] = useState(0);
@@ -533,6 +539,10 @@ function ArtisteDetail({ subdomainSlug }) {
 
   const handleSelectSticker = (sticker) => {
     setSelectedSticker(sticker);
+    // Reset le preview override : ouvrir un nouveau sticker depuis la
+    // galerie doit l'afficher en grand, pas garder une vignette stale
+    // cliquee dans un pack precedent.
+    setStickerPreview(null);
     setTimeout(() => {
       stickerConfiguratorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -984,15 +994,21 @@ function ArtisteDetail({ subdomainSlug }) {
               {tx({ fr: 'Configurez votre sticker', en: 'Configure Your Sticker', es: 'Configura tu sticker' })}
             </h2>
 
+            {(() => {
+              // STICKER-PREVIEW (14 mai 2026) : le sticker affiche en grand
+              // = la vignette cliquee dans le pack builder (stickerPreview)
+              // sinon le sticker d'ancrage (selectedSticker).
+              const displayedSticker = stickerPreview || selectedSticker;
+              return (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
-              {/* Preview */}
+              {/* Preview principal - affiche displayedSticker en grand */}
               <div
                 className="relative rounded-2xl overflow-hidden aspect-square cursor-pointer group flex items-center justify-center p-6"
-                onClick={() => setLightbox({ type: 'sticker', index: artist.stickers.findIndex(s => s.id === selectedSticker.id) })}
+                onClick={() => setLightbox({ type: 'sticker', index: artist.stickers.findIndex(s => s.id === displayedSticker.id) })}
               >
                 <img loading="lazy"
-                  src={selectedSticker.image}
-                  alt={tx({ fr: selectedSticker.titleFr, en: selectedSticker.titleEn, es: selectedSticker.titleEs || selectedSticker.titleEn })}
+                  src={displayedSticker.image}
+                  alt={tx({ fr: displayedSticker.titleFr, en: displayedSticker.titleEn, es: displayedSticker.titleEs || displayedSticker.titleEn })}
                   className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 sticker-diecut"
                 />
                 <div className="absolute inset-0 pointer-events-none md:bg-black/0 md:group-hover:bg-black/20 transition-colors duration-300 md:flex md:items-center md:justify-center">
@@ -1006,9 +1022,12 @@ function ArtisteDetail({ subdomainSlug }) {
                   artist={artist}
                   selectedSticker={selectedSticker}
                   allStickers={artist.stickers || []}
+                  onThumbnailPreview={setStickerPreview}
                 />
               </div>
             </div>
+              );
+            })()}
           </motion.div>
         )}
 
