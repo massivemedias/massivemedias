@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node ../scripts/generate-sitemap.mjs || echo '[prebuild] sitemap generation echoue, build continue avec sitemap existant'",
     "build": "vite build && cp dist/index.html dist/404.html && find dist -name '*.wasm' -size +20M -delete",
     "lint": "eslint .",
     "preview": "vite preview"

@@ -44,9 +44,9 @@ export function getOrganizationSchema() {
 
 export function getLocalBusinessSchema(lang) {
   const descMap = {
-    fr: 'Massive Medias - Imprimeur a Montreal. Impression fine art, stickers personnalises die-cut, sublimation textile, design graphique, developpement web et webmastering. Studio de production creative au Mile-End. Print Montreal, stickers Montreal.',
-    en: 'Massive Medias - Printer in Montreal. Fine art printing, custom die-cut stickers, textile sublimation, graphic design, web development and webmastering. Creative production studio in Mile-End. Print Montreal, stickers Montreal.',
-    es: 'Massive Medias - Impresor en Montreal. Impresion fine art, stickers personalizados troquelados, sublimacion textil, diseno grafico, desarrollo web y webmastering. Estudio de produccion creativa en Mile-End.',
+    fr: 'Massive Medias - Imprimeur a Montreal. Impression fine art, stickers personnalises die-cut, sublimation textile, design graphique, developpement web et webmastering. Atelier prive au Mile-End sur rendez-vous uniquement. Print Montreal, stickers Montreal.',
+    en: 'Massive Medias - Printer in Montreal. Fine art printing, custom die-cut stickers, textile sublimation, graphic design, web development and webmastering. Private studio in Mile-End, by appointment only. Print Montreal, stickers Montreal.',
+    es: 'Massive Medias - Impresor en Montreal. Impresion fine art, stickers personalizados troquelados, sublimacion textil, diseno grafico, desarrollo web y webmastering. Atelier privado en Mile-End, solo con cita previa.',
   };
   return {
     '@context': 'https://schema.org',
@@ -90,12 +90,20 @@ export function getLocalBusinessSchema(lang) {
       'SEO',
       'Webmastering',
     ],
+    // SEO-APPOINTMENT (14 mai 2026) : atelier prive sur rendez-vous
+    // UNIQUEMENT. Avant on annonçait Lun-Ven 09:00-18:00 = Google
+    // affichait ces heures comme horaires walk-in = signal trompeur
+    // (clients arrivant a froid). Maintenant on signale explicitement
+    // "by appointment only" + publicAccess:false. A combiner avec le
+    // setting GBP "Sur rendez-vous uniquement" cote Google Business
+    // Profile (a faire dans l'admin GBP, pas via le code).
+    publicAccess: false,
     openingHoursSpecification: [
       {
         '@type': 'OpeningHoursSpecification',
-        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-        opens: '09:00',
-        closes: '18:00',
+        '@id': `${SITE_URL}/#opening-by-appointment`,
+        name: 'Sur rendez-vous uniquement',
+        description: 'Atelier prive accessible uniquement sur rendez-vous. Contactez-nous par email ou telephone pour planifier une visite.',
       },
     ],
     knowsLanguage: ['fr', 'en', 'es'],
