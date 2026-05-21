@@ -180,6 +180,17 @@ export const updateOrderStatus = (documentId, status, opts = {}) => {
   if (typeof opts.sendEmail === 'boolean') payload.sendEmail = opts.sendEmail;
   if (opts.invoiceNumber) payload.invoiceNumber = opts.invoiceNumber;
   if (typeof opts.autoInvoice === 'boolean') payload.autoInvoice = opts.autoInvoice;
+  // ADMIN-FORCE-STATUS (14 mai 2026) : `force: true` permet a l'admin de
+  // contourner la machine d'etat backend (A5) qui interdit normalement
+  // certaines transitions (ex: paid -> pending). adminService.js est
+  // exclusivement admin-only, donc tous les appelants sont des admins
+  // legitimes. Cote backend, `force` est INERTE sur une transition deja
+  // valide (le warn d'audit ne se declenche QUE sur une transition
+  // reellement illegale) -> aucun spam de logs sur les changements
+  // normaux, mais l'admin n'est plus jamais bloque. Les transitions
+  // anormales restent tracees dans les logs Render via le warn
+  // `[updateStatus] FORCE override` pour l'audit.
+  payload.force = true;
   return api.put(`/orders/${documentId}/status`, payload);
 };
 export const updateOrderNotes = (documentId, notes) => api.put(`/orders/${documentId}/notes`, { notes });
