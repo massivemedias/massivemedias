@@ -218,6 +218,14 @@ function buildArtistFromCMS(cms) {
   }
 }
 
+// SOUS-DOMAINE (mai 2026) : normalise un slug pour une comparaison
+// tolerante aux tirets. 'adrift-vision' et 'adriftvision' donnent tous
+// deux 'adriftvision' -> un sous-domaine sans tiret retrouve quand meme
+// son artiste CMS. Logique alignee avec normSlug() du Cloudflare Worker.
+function normSlug(s) {
+  return String(s || '').toLowerCase().replace(/-/g, '');
+}
+
 function ArtisteDetail({ subdomainSlug }) {
   const { slug: routeSlug } = useParams();
   const slug = subdomainSlug || routeSlug;
@@ -229,7 +237,10 @@ function ArtisteDetail({ subdomainSlug }) {
   const artistRaw = useMemo(() => {
     const local = artistsData[slug] || null;
     const cmsArr = !cmsArtists ? [] : Array.isArray(cmsArtists) ? cmsArtists : Object.values(cmsArtists);
-    const cmsArtist = cmsArr.find(a => a.slug === slug);
+    // Match exact du slug d'abord, sinon match tolerant aux tirets (pour
+    // les sous-domaines sans tiret, ex: adriftvision -> adrift-vision).
+    const cmsArtist = cmsArr.find(a => a.slug === slug)
+      || cmsArr.find(a => normSlug(a.slug) === normSlug(slug));
     if (!cmsArtist && !local) return null;
     if (!cmsArtist) return local;
     const cms = buildArtistFromCMS(cmsArtist);
@@ -306,11 +317,15 @@ function ArtisteDetail({ subdomainSlug }) {
   // Charger les renames et hero depuis le backend (visible par tous)
   const [artistData, setArtistData] = useState({ itemRenames: {}, heroImageId: null });
   useEffect(() => {
-    if (!slug) return;
-    api.get(`/user-roles/artist-data/${slug}`)
+    // Sur un sous-domaine, `slug` est le label du sous-domaine (ex:
+    // adriftvision). On interroge le backend avec le VRAI slug CMS resolu
+    // (ex: adrift-vision), avec le slug d'URL en fallback.
+    const effectiveSlug = artistRaw?.slug || slug;
+    if (!effectiveSlug) return;
+    api.get(`/user-roles/artist-data/${effectiveSlug}`)
       .then(res => setArtistData(res.data?.data || { itemRenames: {}, heroImageId: null }))
       .catch(() => {});
-  }, [slug]);
+  }, [artistRaw?.slug, slug]);
 
   // Override hero: backend > user_metadata > default
   const heroOverrideId = artistData.heroImageId || user?.user_metadata?.artist_hero_image;

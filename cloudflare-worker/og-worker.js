@@ -18,19 +18,72 @@
 const SITE_URL = 'https://massivemedias.com';
 const DEFAULT_OG_IMAGE = 'https://massivemedias.com/og-image.jpg';
 
-const ARTISTS = {
-  'adrift': { name: 'Adrift Vision', taglineFr: 'Art numerique & univers immersifs', taglineEn: 'Digital Art & Immersive Worlds' },
-  'maudite-machine': { name: 'Maudite Machine', taglineFr: 'Musique electronique & culture visuelle', taglineEn: 'Electronic Music & Visual Culture' },
-  'mok': { name: 'Mok', taglineFr: 'Photographie urbaine & lumiere', taglineEn: 'Urban Photography & Light' },
-  'quentin-delobel': { name: 'Quentin Delobel', taglineFr: 'Photographie - lumiere, contrastes & intimite', taglineEn: 'Photography - Light, Contrasts & Intimacy' },
-  'no-pixl': { name: 'No Pixl', taglineFr: 'Photographie evenementielle & paysages', taglineEn: 'Event Photography & Landscapes' },
-  'cornelia-rose': { name: 'Cornelia Rose', taglineFr: 'Art visionnaire & body painting', taglineEn: 'Visionary Art & Body Painting' },
-  'eric-sanchez': { name: 'Eric Sanchez', taglineFr: 'Photographie musicale & portrait', taglineEn: 'Music Photography & Portrait' },
-  'psyqu33n': { name: 'Psyqu33n', taglineFr: 'Ombre & lumiere - art visionnaire', taglineEn: 'Shadow & Light - Visionary Art' },
-};
+// --- Artistes depuis le CMS (Strapi) ---
+// Aucune liste hardcodee : la source de verite est la base de donnees.
+// Un artiste ajoute dans le CMS devient routable immediatement, sans
+// toucher a ce Worker.
+const CMS_API = 'https://massivemedias-api.onrender.com/api';
+const ARTISTS_CACHE_TTL = 600000; // 10 min
+const artistsCache = { data: null, ts: 0 };
 
-// Sous-domaines reserves qui ne doivent PAS rediriger (services internes)
-const RESERVED_SUBDOMAINS = new Set(['www', 'api', 'admin', 'mm-admin', 'cms', 'mail', 'dev', 'staging', 'preview']);
+// Normalise un slug pour une comparaison tolerante aux tirets :
+// 'adrift-vision' et 'adriftvision' deviennent tous deux 'adriftvision'.
+function normSlug(s) {
+  return String(s || '').toLowerCase().replace(/-/g, '');
+}
+
+// Recupere la liste des artistes depuis le CMS, avec cache memoire (TTL
+// 10 min, au niveau de l'isolat Worker - meme pattern que le cache IG).
+// En cas d'echec CMS : retourne le cache perime s'il existe, sinon [].
+// Le sous-domaine continue de fonctionner meme CMS down (le SPA recharge
+// les donnees cote client) - seules les meta SEO server-side degradent.
+async function getArtists() {
+  if (artistsCache.data && Date.now() - artistsCache.ts < ARTISTS_CACHE_TTL) {
+    return artistsCache.data;
+  }
+  let signal;
+  try { signal = AbortSignal.timeout(5000); } catch (_) { signal = undefined; }
+  try {
+    const resp = await fetch(`${CMS_API}/artists?pagination[pageSize]=100`, {
+      headers: { Accept: 'application/json' },
+      signal,
+    });
+    if (!resp.ok) throw new Error(`CMS ${resp.status}`);
+    const json = await resp.json();
+    const list = Array.isArray(json && json.data) ? json.data : [];
+    const artists = list
+      .filter((a) => a && a.slug)
+      .map((a) => ({
+        slug: String(a.slug),
+        name: a.name || a.slug,
+        taglineFr: a.taglineFr || '',
+        taglineEn: a.taglineEn || '',
+      }));
+    if (artists.length > 0) {
+      artistsCache.data = artists;
+      artistsCache.ts = Date.now();
+      return artists;
+    }
+    return artistsCache.data || [];
+  } catch (_) {
+    return artistsCache.data || [];
+  }
+}
+
+// Resout un label de sous-domaine vers un artiste CMS.
+// Match exact du slug d'abord, puis match en ignorant les tirets.
+function resolveArtist(subdomain, artists) {
+  if (!subdomain || !Array.isArray(artists)) return null;
+  const sub = String(subdomain).toLowerCase();
+  const exact = artists.find((a) => String(a.slug).toLowerCase() === sub);
+  if (exact) return exact;
+  const n = normSlug(sub);
+  return artists.find((a) => normSlug(a.slug) === n) || null;
+}
+
+// Sous-domaines reserves qui ne sont JAMAIS traites comme un artiste
+// (services internes). Garde aligne avec RESERVED_SUBDOMAINS de frontend/src/App.jsx.
+const RESERVED_SUBDOMAINS = new Set(['www', 'api', 'admin', 'mm-admin', 'cms', 'mail', 'dev', 'staging', 'preview', 'm']);
 
 // --- SEO Meta par route ---
 
@@ -141,12 +194,11 @@ function getMetaForPath(pathname) {
   const artistMatch = path.match(/^\/artistes\/([a-z0-9-]+)$/);
   if (artistMatch) {
     const slug = artistMatch[1];
-    const artist = ARTISTS[slug];
-    const artistName = artist ? artist.name : slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const artistName = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     return {
       title: `${artistName} | Massive Medias - Prints & Oeuvres`,
       description: `Decouvrez les oeuvres de ${artistName} sur Massive Medias. Prints fine art disponibles en plusieurs formats.`,
-      ogImage: artist ? `${SITE_URL}/images/og/og-${slug}.jpg` : DEFAULT_OG_IMAGE,
+      ogImage: `${SITE_URL}/images/og/og-${slug}.jpg`,
       canonicalUrl: `${SITE_URL}/artistes/${slug}`,
     };
   }
@@ -339,11 +391,19 @@ function getSubdomain(hostname) {
   return null;
 }
 
-function buildOGPage(slug, artist) {
-  const ogImage = `${SITE_URL}/images/og/og-${slug}.jpg`;
+function buildOGPage(subdomain, artist) {
+  // artist peut etre null (sous-domaine sans correspondance CMS) : on
+  // genere alors des meta generiques derivees du label de sous-domaine.
+  artist = artist || {
+    slug: subdomain,
+    name: subdomain.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+    taglineFr: 'Artiste sur Massive Medias',
+    taglineEn: 'Artist on Massive Medias',
+  };
+  const ogImage = `${SITE_URL}/images/og/og-${artist.slug}.jpg`;
   const title = `${artist.name} - ${artist.taglineFr} | Massive`;
   const description = `Decouvrez les oeuvres de ${artist.name} sur Massive. Tirages fine art disponibles en ligne. ${artist.taglineEn}.`;
-  const url = `https://${slug}.massivemedias.com`;
+  const url = `https://${subdomain}.massivemedias.com`;
 
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -475,6 +535,68 @@ function corsHeaders() {
   };
 }
 
+// Meta SEO pour une page artiste servie sur son sous-domaine.
+// Option B : canonical -> massivemedias.com/artistes/<slug> pour
+// consolider le referencement (pas de contenu duplique entre le
+// sous-domaine et la page /artistes/ deja indexee).
+function buildArtistMeta(artist) {
+  const slug = artist.slug;
+  const tagline = artist.taglineFr || 'Prints fine art disponibles en ligne.';
+  return {
+    title: `${artist.name} | Massive Medias - Prints & Oeuvres`,
+    description: `Decouvrez les oeuvres de ${artist.name} sur Massive Medias. ${tagline}`,
+    ogImage: `${SITE_URL}/images/og/og-${slug}.jpg`,
+    canonicalUrl: `${SITE_URL}/artistes/${slug}`,
+  };
+}
+
+// Proxy une requete vers Cloudflare Pages (origine du SPA) et, sur les
+// pages HTML, injecte les meta SEO fournies. Partage par le domaine
+// principal et les sous-domaines artistes : aucune redirection visible,
+// l'URL reste celle demandee par le visiteur.
+async function proxyAndInject(request, url, meta) {
+  const originUrl = new URL(url.toString());
+  originUrl.hostname = 'massivemedias.pages.dev';
+
+  let originResponse = await fetch(originUrl.toString(), {
+    headers: request.headers,
+  });
+
+  // SPA-FALLBACK : Cloudflare Pages ignore les regles _redirects
+  // "/* /index.html 200" sur un fetch interne depuis un Worker. Sans ce
+  // fallback, /boutique/web, /artistes/mok, etc. renvoient 404 a Google.
+  // Fix : sur une 404 d'une requete HTML, on re-fetch /index.html en 200 ;
+  // le React Router prend le relais cote client. Les vrais 404 (assets
+  // manquants) gardent leur 404 (ils ne matchent pas isHtmlRequest).
+  if (originResponse.status === 404 && isHtmlRequest(request, url)) {
+    const fallback = await fetch('https://massivemedias.pages.dev/index.html', {
+      headers: request.headers,
+    });
+    if (fallback.ok) {
+      originResponse = new Response(fallback.body, {
+        status: 200,
+        headers: fallback.headers,
+      });
+    }
+  }
+
+  // Injection meta uniquement sur les pages HTML.
+  if (isHtmlRequest(request, url)) {
+    // Ne JAMAIS cacher le HTML (sinon l'edge Cloudflare sert un vieil
+    // index.html et les nouvelles features n'apparaissent pas).
+    const noCacheHeaders = {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    };
+    const response = new Response(originResponse.body, originResponse);
+    Object.entries(noCacheHeaders).forEach(([k, v]) => response.headers.set(k, v));
+    return meta ? injectMeta(response, meta) : response;
+  }
+
+  return originResponse;
+}
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
@@ -501,96 +623,37 @@ export default {
       });
     }
 
-    // Only intercept crawlers on artist subdomains
-    const artistData = ARTISTS[subdomain] || null;
-
-    if (subdomain && artistData && isCrawler(userAgent)) {
-      const html = buildOGPage(subdomain, artistData);
-      return new Response(html, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      });
-    }
-
-    // Artist subdomain for real users: redirect to main site artist page
-    if (subdomain && artistData) {
-      const targetUrl = `${SITE_URL}/artistes/${subdomain}${url.pathname === '/' ? '' : url.pathname}${url.search}`;
-      return Response.redirect(targetUrl, 302);
-    }
-
-    // Fallback: tout sous-domaine non-reserve redirige vers /artistes/:slug
-    // Le site principal gere le 404 si l'artiste n'existe pas dans artists.js/CMS
-    // Evite le 404 GitHub Pages si un artiste est ajoute sans mise a jour du Worker
+    // --- Sous-domaine artiste ---
+    // Tout sous-domaine non-reserve est traite comme un artiste. La liste
+    // vient du CMS (getArtists), jamais d'une map hardcodee : un artiste
+    // ajoute en base est routable sans toucher a ce Worker.
     if (subdomain && !RESERVED_SUBDOMAINS.has(subdomain)) {
+      // Assets (.js/.css/.png...) : proxy direct, pas besoin du CMS.
+      if (!isHtmlRequest(request, url)) {
+        return proxyAndInject(request, url, null);
+      }
+      // Page HTML : on resout l'artiste depuis le CMS (tolerant aux tirets,
+      // donc 'adriftvision' trouve le slug 'adrift-vision').
+      const artists = await getArtists();
+      const artist = resolveArtist(subdomain, artists);
+
+      // Crawler : page OG dediee (meta propres pour Facebook, Twitter...).
       if (isCrawler(userAgent)) {
-        // Crawler sur subdomain inconnu: generer des meta OG generiques
-        const artistName = subdomain.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        const genericArtist = {
-          name: artistName,
-          taglineFr: 'Artiste sur Massive Medias',
-          taglineEn: 'Artist on Massive Medias',
-        };
-        const html = buildOGPage(subdomain, genericArtist);
-        return new Response(html, {
+        return new Response(buildOGPage(subdomain, artist), {
           headers: { 'Content-Type': 'text/html; charset=utf-8' },
         });
       }
-      const targetUrl = `${SITE_URL}/artistes/${subdomain}${url.pathname === '/' ? '' : url.pathname}${url.search}`;
-      return Response.redirect(targetUrl, 302);
+
+      // Vrai utilisateur : on PROXY le SPA sur le sous-domaine lui-meme,
+      // SANS redirection visible. L'URL reste <slug>.massivemedias.com ;
+      // le frontend (getSubdomainSlug dans App.jsx) detecte le sous-domaine
+      // et rend la page artiste. Le canonical pointe vers la page
+      // /artistes/ (option B SEO : consolidation, pas de duplicate content).
+      const meta = artist ? buildArtistMeta(artist) : null;
+      return proxyAndInject(request, url, meta);
     }
 
-    // --- Main domain: fetch from origin and inject SEO meta ---
-    const originUrl = new URL(url.toString());
-    originUrl.hostname = 'massivemedias.pages.dev';
-
-    let originResponse = await fetch(originUrl.toString(), {
-      headers: request.headers,
-    });
-
-    // SPA-FALLBACK (9 mai 2026) : Cloudflare Pages ignore les regles
-    // _redirects "/* /index.html 200" quand le request vient d'un Worker
-    // fetch interne. Resultat : tous les chemins type /boutique/web,
-    // /artistes/mok, etc. retournent 404 a Google et aux acces directs
-    // (5 pages 404 dans GSC, perte SEO massive).
-    // Fix : si la response originale est 404 ET que c'est une request
-    // HTML (pas un asset .js/.css/.png), on re-fetch /index.html depuis
-    // pages.dev et on serve avec status 200. Le SPA React Router prend
-    // le relais cote client et affiche la bonne page.
-    // Les vrais 404 (assets manquants) gardent leur 404 vu qu'ils ne
-    // matchent pas isHtmlRequest().
-    if (originResponse.status === 404 && isHtmlRequest(request, url)) {
-      const fallbackUrl = `https://massivemedias.pages.dev/index.html`;
-      const fallback = await fetch(fallbackUrl, { headers: request.headers });
-      if (fallback.ok) {
-        // Reconstruit une response avec status 200 au lieu de 404 - critique
-        // pour que Google ne marque pas la page comme erreur d'indexation.
-        originResponse = new Response(fallback.body, {
-          status: 200,
-          headers: fallback.headers,
-        });
-      }
-    }
-
-    // Only inject meta on HTML pages
-    if (isHtmlRequest(request, url)) {
-      const meta = getMetaForPath(url.pathname);
-      // IMPORTANT: ne JAMAIS cacher le HTML (sinon l'ancien index.html est servi
-      // par Cloudflare edge et les nouveaux onglets/features n'apparaissent pas)
-      const noCacheHeaders = {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      };
-      if (meta) {
-        const response = new Response(originResponse.body, originResponse);
-        Object.entries(noCacheHeaders).forEach(([k, v]) => response.headers.set(k, v));
-        return injectMeta(response, meta);
-      }
-      // HTML sans meta SEO specifique: retourner avec no-cache aussi
-      const response = new Response(originResponse.body, originResponse);
-      Object.entries(noCacheHeaders).forEach(([k, v]) => response.headers.set(k, v));
-      return response;
-    }
-
-    return originResponse;
+    // --- Domaine principal : proxy + injection des meta SEO par route ---
+    return proxyAndInject(request, url, getMetaForPath(url.pathname));
   },
 };
