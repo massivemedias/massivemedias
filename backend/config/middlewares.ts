@@ -25,25 +25,34 @@ const config: Core.Config.Middlewares = [
   },
   {
     name: 'strapi::cors',
-    // SEC-05: whitelist explicite des sous-domaines artistes au lieu d'un
-    // regex /\.massivemedias\.com$/ qui acceptait n'importe quel sous-domaine
-    // (risque si un slug inactif pointe vers un tiers via subdomain takeover).
-    // Ajouter un nouvel artiste = ajouter son slug ici ET dans Cloudflare DNS
-    // + Worker route. Liste maintenue a la main, source de verite = le code.
+    // SUBDOMAIN-MULTITENANCY (mai 2026) : on remplace le whitelist hardcode
+    // des sous-domaines artistes par un check dynamique. Tout origin
+    // https://*.massivemedias.com est accepte.
+    //
+    // Le risque SEC-05 (subdomain takeover via CNAME dangling vers un tiers)
+    // ne s'applique plus dans l'archi actuelle : le DNS wildcard pointe vers
+    // Cloudflare proxy, qui route via le Worker `artist-proxy` vers pages.dev.
+    // Il n'y a aucun CNAME per-artiste vers une plateforme tierce -> impossible
+    // de prendre le contrele d'un sous-domaine inactif.
+    //
+    // Avantage : ajouter un artiste dans le CMS suffit, plus aucune modif
+    // de CORS / DNS / Worker requise (le wildcard DNS + Worker font le reste).
     config: {
-      origin: [
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'https://massivemedias.com',
-        'https://www.massivemedias.com',
-        'https://psyqu33n.massivemedias.com',
-        'https://mok.massivemedias.com',
-        'https://ginkoink.massivemedias.com',
-        'https://myriamrivest.massivemedias.com',
-        'https://derekgrandsaert.massivemedias.com',
-        process.env.RENDER_EXTERNAL_URL || 'https://massivemedias-api.onrender.com',
-      ],
+      origin: (ctx: any) => {
+        const o = ctx.get('origin') || '';
+        const exact = new Set([
+          'http://localhost:3000',
+          'http://localhost:5173',
+          'http://localhost:5174',
+          'https://massivemedias.com',
+          'https://www.massivemedias.com',
+          process.env.RENDER_EXTERNAL_URL || 'https://massivemedias-api.onrender.com',
+        ]);
+        if (exact.has(o)) return o;
+        // Tout sous-domaine de massivemedias.com (multi-tenancy artistes).
+        if (/^https:\/\/[a-z0-9-]+\.massivemedias\.com$/i.test(o)) return o;
+        return false;
+      },
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
     },
