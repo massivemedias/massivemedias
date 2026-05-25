@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn, Send, LogIn, MessageCircle, LayoutGrid, Grid3X3, List, Loader2, Home } from 'lucide-react';
+import { ArrowRight, MessageSquare, ChevronDown, ChevronLeft, ChevronRight, CheckCircle, Image, ExternalLink, X, ZoomIn, Send, LogIn, MessageCircle, LayoutGrid, Grid3X3, List, Loader2, Home, Globe, Copy } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getArtistSchema } from '../components/seo/schemas';
 import ArtistPrintCard from '../components/ArtistPrintCard';
@@ -224,6 +224,57 @@ function buildArtistFromCMS(cms) {
 // son artiste CMS. Logique alignee avec normSlug() du Cloudflare Worker.
 function normSlug(s) {
   return String(s || '').toLowerCase().replace(/-/g, '');
+}
+
+// SUBDOMAIN-PILL (mai 2026) : URL "vanity" de l'artiste pour partage
+// social. Priorite a un champ CMS `subdomain` si present (forward-compat
+// avec une multi-tenancy explicite), sinon slug sans tirets - convention
+// par defaut alignee avec la tolerance aux tirets du Cloudflare Worker.
+function getArtistSubdomainHost(artist) {
+  if (!artist) return '';
+  const sub = (artist.subdomain && String(artist.subdomain).trim())
+    || normSlug(artist.slug || '');
+  return sub ? `${sub}.massivemedias.com` : '';
+}
+
+function ArtistSubdomainPill({ artist }) {
+  const [copied, setCopied] = useState(false);
+  const host = getArtistSubdomainHost(artist);
+  if (!host) return null;
+  const url = `https://${host}`;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (_) {
+      /* clipboard API indispo : on ignore, le lien <a> reste copiable a la main */
+    }
+  };
+
+  return (
+    <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 rounded-full bg-white/5 border border-white/10 text-sm">
+      <Globe size={14} className="text-accent shrink-0" />
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-heading hover:text-accent transition-colors font-mono tracking-tight"
+      >
+        {host}
+      </a>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="text-grey-muted hover:text-accent transition-colors shrink-0"
+        title="Copier l'URL"
+        aria-label="Copier l'URL"
+      >
+        {copied ? <CheckCircle size={14} /> : <Copy size={14} />}
+      </button>
+    </div>
+  );
 }
 
 function ArtisteDetail({ subdomainSlug }) {
@@ -705,6 +756,9 @@ function ArtisteDetail({ subdomainSlug }) {
               <p className="text-xl md:text-2xl text-grey-light mb-4">
                 {tagline}
               </p>
+
+              <ArtistSubdomainPill artist={artist} />
+
               <p className="text-sm text-grey-muted mb-8">
                 {tx({
                   fr: `${artist.prints.length} oeuvres disponibles · Tirages à partir de ${minPrice}$`,
