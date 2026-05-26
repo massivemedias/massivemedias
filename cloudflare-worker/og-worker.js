@@ -591,7 +591,29 @@ async function proxyAndInject(request, url, meta) {
     };
     const response = new Response(originResponse.body, originResponse);
     Object.entries(noCacheHeaders).forEach(([k, v]) => response.headers.set(k, v));
-    return meta ? injectMeta(response, meta) : response;
+
+    if (!meta) return response;
+
+    // Skip l'injection HTMLRewriter si le snapshot est deja prerendered
+    // (marqueur <meta name="x-prerendered"> ecrit par
+    // frontend/scripts/prerender.mjs apres vite build). Le snapshot contient
+    // deja les vraies meta SEO de la page (title, description, canonical, OG,
+    // generes par react-helmet-async cote browser au build). Les ecraser avec
+    // une version generique calculee a la volee regresserait l'indexation.
+    const bodyText = await response.text();
+    if (bodyText.includes('name="x-prerendered"')) {
+      return new Response(bodyText, {
+        status: response.status,
+        headers: response.headers,
+      });
+    }
+    return injectMeta(
+      new Response(bodyText, {
+        status: response.status,
+        headers: response.headers,
+      }),
+      meta,
+    );
   }
 
   return originResponse;

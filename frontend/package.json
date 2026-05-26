@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node ../scripts/generate-sitemap.mjs || echo '[prebuild] sitemap generation echoue, build continue avec sitemap existant'",
-    "build": "vite build && cp dist/index.html dist/404.html && find dist -name '*.wasm' -size +20M -delete",
+    "prebuild": "node ./scripts/generate-sitemap.mjs || echo '[prebuild] sitemap generation echoue, build continue avec sitemap existant'",
+    "build": "vite build && find dist -name '*.wasm' -size +20M -delete && cp dist/index.html dist/404.html && node ./scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -42,7 +42,9 @@
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "postcss": "^8.5.6",
+    "puppeteer": "^25.0.4",
     "sharp": "^0.34.5",
+    "sirv": "^3.0.2",
     "vite": "^7.3.1"
   }
 }
