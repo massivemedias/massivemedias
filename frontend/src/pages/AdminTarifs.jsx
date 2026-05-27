@@ -1,11 +1,12 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText, Loader2, Image, CreditCard } from 'lucide-react';
+import { DollarSign, Copy, Check, Download, Printer, Users, BarChart3, Sticker, Shirt, Palette, Globe, FileText, Loader2, Image, CreditCard, Database } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { artistPrinterTiers, artistFormats } from '../data/artistPricing';
 import { useArtists } from '../hooks/useArtists';
+import { useProductPricing } from '../hooks/useProductPricing';
 // FIX-PRICING-TIERS (27 avril 2026) : import depuis SSOT au lieu de hardcoder
 // les arrays. STICKER_GRID expose 3 paliers (standard/medium/large) - cette
 // page admin affiche le palier 'standard' par defaut + une note pour rappeler
@@ -130,6 +131,15 @@ function AdminTarifs() {
   // STRAPI-ONLY (11 mai 2026) : lit le CMS. artistsData reste comme nom
   // de variable pour eviter de refactorer les usages downstream.
   const artistsData = cmsArtists || {};
+
+  // AFFICHES STANDARD (chantier feat/affiches-standard-et-audit-tarifs) :
+  // Seule section de la page admin qui lit ses prix DEPUIS Strapi via
+  // useProductPricing. Les autres sections (Fine Art, Stickers, etc.)
+  // restent hardcoded en attendant l'audit/migration globale (etape 6).
+  // Si fetch echoue : message inline "donnees indisponibles", aucun
+  // fallback hardcoded (sinon on recreerait la divergence Fine Art).
+  const { pricingData: afficheData, loading: afficheLoading } = useProductPricing('affiche-standard');
+  const afficheStandardPaliers = afficheData?.afficheStandardPaliers || null;
 
   // --- Copier texte artiste ---
   const handleCopy = () => {
@@ -386,6 +396,19 @@ function AdminTarifs() {
   // --- PDF tous les tarifs ---
   const [allPdfLoading, setAllPdfLoading] = useState(false);
   const handleDownloadAllPDF = () => {
+    // AFFICHES STANDARD : la 1ere section du PDF lit ses prix depuis Strapi.
+    // Si le fetch n'est pas encore termine ou a echoue, on refuse de generer
+    // le PDF plutot que de produire un document partiel (sans la section
+    // Affiches Standard ou avec un tableau vide). L'utilisateur retente
+    // dans quelques secondes une fois afficheStandardPaliers charge.
+    if (!afficheStandardPaliers) {
+      alert(tx({
+        fr: 'Donnees Affiches Standard indisponibles. PDF non genere, reessayez dans quelques secondes.',
+        en: 'Standard Posters data unavailable. PDF not generated, retry in a few seconds.',
+        es: 'Datos Carteles Estandar no disponibles. PDF no generado, reintente en unos segundos.',
+      }));
+      return;
+    }
     setAllPdfLoading(true);
     try {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
@@ -446,14 +469,50 @@ function AdminTarifs() {
         y = doc.lastAutoTable.finalY + 8;
       };
 
-      // --- Fine Art Prints ---
-      sectionTitle(tx({ fr: 'Impression Fine Art', en: 'Fine Art Printing', es: 'Impresion Fine Art' }));
-      addTable(
-        ['Format', 'Studio (4 encres)', tx({ fr: 'Musee (12 encres)', en: 'Museum (12 inks)', es: 'Museo (12 tintas)' }), 'Frame'],
-        SERVICE_PRICES.map(p => [p.format, p.studio ? `${p.studio}$` : 'N/A', `${p.museum}$`, p.frame ? `+${p.frame}$` : 'N/A'])
-      );
+      // --- Affiches Standard (1ere position, lit Strapi) ---
+      sectionTitle(tx({ fr: 'Affiches Standard', en: 'Standard Posters', es: 'Carteles Estandar' }));
+      // Sous-titre court (gris)
+      doc.setFontSize(7);
+      doc.setTextColor(...grey);
+      doc.text(tx({
+        fr: 'Impression couleur sur papier matte ou semi-glace, tarifs degressifs par quantite.',
+        en: 'Color printing on matte or semi-gloss paper, tiered pricing by quantity.',
+        es: 'Impresion a color en papel mate o semi-brillante, precios escalonados por cantidad.',
+      }), margin, y);
+      y += 4.5;
+      // Tableau Format x Paliers
+      {
+        const palierCols = [1, 5, 10, 25, 50, 100];
+        const formats = ['A4', 'A3', 'A3+'];
+        addTable(
+          ['Format', ...palierCols.map(p => `${p}u`)],
+          formats.map(fmt => {
+            const fmtPaliers = afficheStandardPaliers[fmt] || {};
+            return [
+              fmt,
+              ...palierCols.map(p => {
+                // Strapi v5 sterilise les cles JSON en string : on tente les
+                // deux (cle numerique ou string) pour etre defensif.
+                const price = fmtPaliers[p] ?? fmtPaliers[String(p)];
+                return typeof price === 'number' ? `${price}$` : '-';
+              }),
+            ];
+          })
+        );
+      }
+      // Note italique sous le tableau
+      doc.setFontSize(6.5);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(...grey);
+      doc.text(tx({
+        fr: 'Volumes superieurs a 100 unites ou format A2 (18 x 24 po) et plus : sur soumission.',
+        en: 'Volumes above 100 units or A2 format (18 x 24 in) and larger: on request.',
+        es: 'Volumenes superiores a 100 unidades o formato A2 (18 x 24 in) y mayores: bajo cotizacion.',
+      }), margin, y);
+      doc.setFont('helvetica', 'normal');
+      y += 6;
 
-      // --- Stickers ---
+      // --- Stickers (2eme position) ---
       sectionTitle('Stickers');
       addTable(
         [tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' }), 'Standard', '$/unit', 'FX (Holo/Prisme)', '$/unit'],
@@ -461,6 +520,13 @@ function AdminTarifs() {
           const h = STICKER_FX[i];
           return [`${s.qty}`, `${s.price}$`, `${s.unit.toFixed(2)}$`, `${h.price}$`, `${h.unit.toFixed(2)}$`];
         })
+      );
+
+      // --- Fine Art Prints (3eme position) ---
+      sectionTitle(tx({ fr: 'Impression Fine Art', en: 'Fine Art Printing', es: 'Impresion Fine Art' }));
+      addTable(
+        ['Format', 'Studio (4 encres)', tx({ fr: 'Musee (12 encres)', en: 'Museum (12 inks)', es: 'Museo (12 tintas)' }), 'Frame'],
+        SERVICE_PRICES.map(p => [p.format, p.studio ? `${p.studio}$` : 'N/A', `${p.museum}$`, p.frame ? `+${p.frame}$` : 'N/A'])
       );
 
       // --- Flyers ---
@@ -835,6 +901,88 @@ function AdminTarifs() {
       {/* SECTION 2: TOUS LES TARIFS SERVICES */}
       {/* ========================================= */}
       <div>
+          {/* Affiches Standard - PREMIERE position (chantier
+              feat/affiches-standard-et-audit-tarifs). Seule section qui
+              lit ses prix depuis Strapi (badge "Strapi" pour signaler).
+              Loading state : skeleton ; erreur : message inline. AUCUN
+              fallback hardcoded volontaire pour eviter de re-creer la
+              divergence des autres sections (a regler en etape 6 audit). */}
+          <SectionCard icon={Printer} iconColor="text-fuchsia-400"
+            title={
+              <span className="flex items-center gap-2">
+                {tx({ fr: 'Affiches Standard', en: 'Standard Posters', es: 'Carteles Estandar' })}
+                <span
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-normal bg-purple-500/15 text-purple-300 normal-case tracking-normal"
+                  title={tx({
+                    fr: 'Donnees lues depuis Strapi CMS (product affiche-standard, pricingData.afficheStandardPaliers)',
+                    en: 'Data fetched from Strapi CMS (affiche-standard product)',
+                    es: 'Datos leidos desde Strapi CMS',
+                  })}
+                >
+                  <Database size={9} /> Strapi
+                </span>
+              </span>
+            }
+            subtitle={tx({
+              fr: 'Impression couleur sur papier matte ou semi-glace, tarifs degressifs par quantite',
+              en: 'Color printing on matte or semi-gloss paper, tiered pricing by quantity',
+              es: 'Impresion a color en papel mate o semi-brillante, precios escalonados por cantidad',
+            })}>
+            {(() => {
+              if (afficheLoading) {
+                // Skeleton : 4 lignes pulse (header + 3 formats)
+                return (
+                  <div className="space-y-2">
+                    <div className="h-7 bg-white/5 rounded animate-pulse" />
+                    <div className="h-9 bg-white/5 rounded animate-pulse" />
+                    <div className="h-9 bg-white/5 rounded animate-pulse" />
+                    <div className="h-9 bg-white/5 rounded animate-pulse" />
+                  </div>
+                );
+              }
+              if (!afficheStandardPaliers) {
+                return (
+                  <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-xs text-red-300">
+                    {tx({
+                      fr: 'Donnees indisponibles. Verifier que le product "affiche-standard" existe dans Strapi avec un pricingData.afficheStandardPaliers valide (voir docs/runbooks/seed-affiche-standard.md).',
+                      en: 'Data unavailable. Verify that the "affiche-standard" product exists in Strapi with a valid pricingData.afficheStandardPaliers (see docs/runbooks/seed-affiche-standard.md).',
+                      es: 'Datos no disponibles. Verifique que el product "affiche-standard" existe en Strapi con pricingData.afficheStandardPaliers valido.',
+                    })}
+                  </div>
+                );
+              }
+              const formats = ['A4', 'A3', 'A3+'];
+              const palierCols = [1, 5, 10, 25, 50, 100];
+              return (
+                <DataTable headers={[
+                  { label: L.format },
+                  ...palierCols.map(p => ({ label: `${p}u` })),
+                ]}>
+                  {formats.map(fmt => {
+                    const fmtPaliers = afficheStandardPaliers[fmt] || {};
+                    return (
+                      <tr key={fmt} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
+                        <Td center={false} className="text-heading font-medium">{fmt}</Td>
+                        {palierCols.map(p => {
+                          // Strapi v5 sterilise les cles JSON en string, on tente
+                          // les deux pour etre defensif (cle numerique ou string).
+                          const price = fmtPaliers[p] ?? fmtPaliers[String(p)];
+                          return (
+                            <Td key={p} className="text-heading font-semibold">
+                              {typeof price === 'number'
+                                ? `${price}$`
+                                : <span className="text-grey-muted">-</span>}
+                            </Td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </DataTable>
+              );
+            })()}
+          </SectionCard>
+
           {/* Prints */}
           <SectionCard icon={Printer} iconColor="text-blue-400"
             title="Prints Fine Art"
