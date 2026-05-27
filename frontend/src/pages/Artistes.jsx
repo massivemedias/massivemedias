@@ -144,9 +144,9 @@ function Artistes() {
 
             <p className="text-base md:text-lg text-grey-light max-w-2xl leading-relaxed mb-4">
               {tx({
-                fr: "Ces artistes travaillent avec Massive pour imprimer, distribuer et promouvoir leur travail. Chaque print et sticker que vous voyez ici est produit dans notre studio au Mile-End.",
-                en: 'These artists work with Massive to print, distribute and promote their work. Every print and sticker you see here is produced in our Mile-End studio.',
-                es: 'Estos artistas trabajan con Massive para imprimir, distribuir y promover su trabajo. Cada print y sticker que ves aquí es producido en nuestro estudio del Mile-End.',
+                fr: "Ces artistes travaillent avec Massive pour imprimer, distribuer et promouvoir leur travail. Chaque print et sticker que vous voyez ici est produit dans notre studio au Plateau Mont-Royal.",
+                en: 'These artists work with Massive to print, distribute and promote their work. Every print and sticker you see here is produced in our Plateau Mont-Royal studio.',
+                es: 'Estos artistas trabajan con Massive para imprimir, distribuir y promover su trabajo. Cada print y sticker que ves aquí es producido en nuestro estudio del Plateau Mont-Royal.',
               })}
             </p>
 

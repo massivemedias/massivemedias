@@ -13,7 +13,7 @@ function ServiceFlyers() {
     { icon: FileText, fr: 'Papier souple cartonné', en: 'Soft cardstock', es: 'Cartulina flexible' },
     { icon: Shield, fr: 'Optimisé pour la distribution', en: 'Optimized for distribution', es: 'Optimizado para distribución' },
     { icon: Sparkles, fr: 'Production locale', en: 'Local production', es: 'Produccion local' },
-    { icon: Truck, fr: 'Pick-up gratuit Mile-End', en: 'Free pick-up Mile-End', es: 'Recogida gratis Mile-End' },
+    { icon: Truck, fr: 'Pick-up gratuit Plateau Mont-Royal', en: 'Free pick-up Plateau Mont-Royal', es: 'Recogida gratis Plateau Mont-Royal' },
   ];
 
   // CONTENT-DISTRIBUTION (3 mai 2026) : description ajoutee pour clarifier
@@ -33,7 +33,7 @@ function ServiceFlyers() {
       descEs: 'Impresos en papel cartulina flexible, optimizado para distribución a gran volumen. A diferencia de las series Studio y Museo que utilizan papeles de arte rígidos para exhibición decorativa, este material está diseñado para ser manipulado y distribuido eficientemente.',
     },
     { icon: Shield, fr: 'Impression pro', en: 'Pro printing', es: 'Impresion profesional', descFr: 'Imprimante professionnelle 12 couleurs pigmentees. Couleurs vibrantes et precises meme pour les flyers.', descEn: 'Professional 12-color pigmented printer. Vibrant and precise colors even for flyers.', descEs: 'Impresora profesional de 12 colores pigmentados. Colores vibrantes y precisos incluso para flyers.' },
-    { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio rapido', descFr: 'Production locale Mile-End. Service express disponible sur demande.', descEn: 'Local production Mile-End. Express service available on request.', descEs: 'Produccion local Mile-End. Servicio express disponible bajo pedido.' },
+    { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio rapido', descFr: 'Production locale Plateau Mont-Royal. Service express disponible sur demande.', descEn: 'Local production Plateau Mont-Royal. Express service available on request.', descEs: 'Produccion local Plateau Mont-Royal. Servicio express disponible bajo pedido.' },
   ];
 
   // HIDE-BUSINESS-CARDS (29 avril 2026) : tile cartes d'affaires retiree.

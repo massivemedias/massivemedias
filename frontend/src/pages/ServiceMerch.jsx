@@ -19,7 +19,7 @@ function ServiceMerch() {
 
   const features = [
     { icon: Shirt, fr: 'Impression permanente', en: 'Permanent print', es: 'Impresi\u00f3n permanente', descFr: 'La sublimation transf\u00e8re l\'encre directement dans la fibre. Pas de texture en relief, pas de craquement apr\u00e8s lavage.', descEn: 'Sublimation transfers ink directly into the fiber. No raised texture, no cracking after washing.', descEs: 'La sublimaci\u00f3n transfiere la tinta directamente a la fibra. Sin textura en relieve, sin agrietamiento tras el lavado.' },
-    { icon: Shield, fr: 'Qualit\u00e9 durable', en: 'Lasting quality', es: 'Calidad duradera', descFr: 'Couleurs vibrantes qui ne s\'effacent pas au lavage. R\u00e9sultat professionnel garanti pour votre merch.', descEn: 'Vibrant colors that don\'t fade in the wash. Guaranteed professional result for your merch.', descEs: 'Colores vibrantes que no se desvanecen con el lavado. Resultado profesional garantizado para tu merch.' },
+    { icon: Shield, fr: 'Qualit\u00e9 durable', en: 'Lasting quality', es: 'Calidad duradera', descFr: 'Couleurs vibrantes qui ne s\'effacent pas au lavage. R\u00e9sultat professionnel pour votre merch.', descEn: 'Vibrant colors that don\'t fade in the wash. Professional result for your merch.', descEs: 'Colores vibrantes que no se desvanecen con el lavado. Resultado profesional para tu merch.' },
     { icon: Sparkles, fr: 'Polyvalence', en: 'Versatility', es: 'Versatilidad', descFr: 'T-shirts, hoodies, mugs, thermos, tapis de souris et plus. Tout votre merch en un seul endroit.', descEn: 'T-shirts, hoodies, mugs, tumblers, mousepads and more. All your merch in one place.', descEs: 'Camisetas, hoodies, tazas, termos, alfombrillas y m\u00e1s. Todo tu merch en un solo lugar.' },
   ];
 
@@ -42,8 +42,8 @@ function ServiceMerch() {
       startingPrice={15}
       pageTitle={{ fr: 'Sublimation Textile Montréal - T-Shirts, Hoodies, Mugs | Massive', en: 'Textile Sublimation Montreal - T-Shirts, Hoodies, Mugs | Massive', es: 'Sublimacion Textil Montreal - Camisetas, Hoodies, Tazas | Massive' }}
       metaDescription={{
-        fr: 'Sublimation textile à Montréal. T-shirts, hoodies, long sleeves, mugs, tote bags. Impression all-over permanente. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Mile-End.',
-        en: 'Textile sublimation in Montreal. T-shirts, hoodies, long sleeves, mugs, tote bags. Permanent all-over printing. Artist and corporate merch. From 1 unit. Local production Mile-End.',
+        fr: 'Sublimation textile à Montréal. T-shirts, hoodies, long sleeves, mugs, tote bags. Impression all-over permanente. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Plateau Mont-Royal.',
+        en: 'Textile sublimation in Montreal. T-shirts, hoodies, long sleeves, mugs, tote bags. Permanent all-over printing. Artist and corporate merch. From 1 unit. Local production Plateau Mont-Royal.',
         es: 'Camisetas, hoodies, tazas en sublimaci\u00f3n. Impresi\u00f3n permanente. Merch de artista personalizado. Montreal.',
       }}
       productTitle={{ fr: 'Sublimation & Merch', en: 'Sublimation & Merch', es: 'Sublimaci\u00f3n y Merch' }}

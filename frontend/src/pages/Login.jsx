@@ -738,9 +738,9 @@ function Login() {
               <div className="mt-8 pt-6 border-t border-purple-main/10">
                 <p className="text-grey-muted text-xs text-center">
                   {tx({
-                    fr: 'Impression locale à Montréal - Pick-up gratuit Mile-End',
-                    en: 'Local printing in Montreal - Free Mile-End pickup',
-                    es: 'Impresion local en Montreal - Recogida gratis Mile-End',
+                    fr: 'Impression locale à Montréal - Pick-up gratuit Plateau Mont-Royal',
+                    en: 'Local printing in Montreal - Free Plateau Mont-Royal pickup',
+                    es: 'Impresion local en Montreal - Recogida gratis Plateau Mont-Royal',
                   })}
                 </p>
               </div>

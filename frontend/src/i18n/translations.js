@@ -25,7 +25,7 @@ const translations = {
       navTitle: 'Navigation',
       servicesTitle: 'Services',
       contactTitle: 'Contact',
-      mileEnd: 'Mile-End, Montréal',
+      mileEnd: 'Plateau Mont-Royal, Montréal',
       byAppointment: 'Sur rendez-vous',
       copyright: 'Massive. Tous droits réservés. NEQ 2269057891',
     },
@@ -48,7 +48,7 @@ const translations = {
         // + "prints" + "fine art" en debut de title pour maximiser le poids des
         // termes a haute intention d'achat locale.
         title: 'Imprimeur Montréal | Stickers, Prints & Fine Art | Massive Medias',
-        description: 'Service d\'impression sur mesure à Montréal. Spécialiste en stickers personnalisés, fine art, merch et impressions grand format pour artistes et entreprises. Production locale Mile-End, livraison rapide.',
+        description: 'Service d\'impression sur mesure à Montréal. Spécialiste en stickers personnalisés, fine art, merch et impressions grand format pour artistes et entreprises. Production locale Plateau Mont-Royal, livraison rapide.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -105,7 +105,7 @@ const translations = {
       advantages: [
         {
           title: 'Livraison locale gratuite',
-          description: 'Basé dans le Mile-End à Montréal. Pick-up ou livraison locale, zéro frais de shipping, zéro délai postal.',
+          description: 'Basé dans le Plateau Mont-Royal à Montréal. Pick-up ou livraison locale, zéro frais de shipping, zéro délai postal.',
         },
         {
           title: 'Qualité professionnelle',
@@ -147,18 +147,18 @@ const translations = {
     aboutPage: {
       seo: {
         title: 'À propos | Massive - Studio créatif Montréal',
-        description: 'Découvrez Massive, studio de production créative fondé à Montréal. Notre équipe, notre espace au Mile-End et notre histoire. Impression, design et web.',
+        description: 'Découvrez Massive, studio de production créative fondé à Montréal. Notre équipe, notre espace au Plateau Mont-Royal et notre histoire. Impression, design et web.',
       },
       hero: {
         title: 'À propos',
-        subtitle: 'Un studio créatif ancré dans le Mile-End, au cœur de la scène artistique montréalaise.',
+        subtitle: 'Un studio créatif ancré dans le Plateau Mont-Royal, au cœur de la scène artistique montréalaise.',
       },
       history: {
         title: "L'histoire",
         paragraphs: [
-          "Massive est un studio de production créative établi dans le Mile-End, au cœur de l'écosystème artistique montréalais. D'abord axé sur le développement web et le design graphique dès 2022, le studio s'est élargi en 2024 avec l'impression fine art, les stickers et la sublimation textile.",
+          "Massive est un studio de production créative établi dans le Plateau Mont-Royal, au cœur de l'écosystème artistique montréalais. D'abord axé sur le développement web et le design graphique dès 2022, le studio s'est élargi en 2024 avec l'impression fine art, les stickers et la sublimation textile.",
           "L'entreprise offre quatre services intégrés destinés aux artistes visuels, photographes, musiciens et créateurs indépendants : impressions fine art, stickers personnalisés, design graphique et développement web.",
-          "Notre philosophie : offrir un service local, personnalisé et de qualité professionnelle, sans les délais et les complications des services en ligne. Pas de shipping, pas d'attente. Pick-up au Mile-End ou livraison locale.",
+          "Notre philosophie : offrir un service local, personnalisé et de qualité professionnelle, sans les délais et les complications des services en ligne. Pas de shipping, pas d'attente. Pick-up au Plateau Mont-Royal ou livraison locale.",
         ],
       },
       timeline: {
@@ -199,7 +199,7 @@ const translations = {
         ],
       },
       space: {
-        location: 'Mile-End, Montréal',
+        location: 'Plateau Mont-Royal, Montréal',
         title: "L'espace Age of Union",
         description: "On opere depuis le 5338 rue Marquette dans le Plateau Mont-Royal. Pick-up disponible sur rendez-vous.",
       },
@@ -232,7 +232,7 @@ const translations = {
       },
       info: {
         title: 'Coordonnées',
-        location: 'Mile-End, Montréal, QC',
+        location: 'Plateau Mont-Royal, Montréal, QC',
         byAppointment: 'Sur rendez-vous',
         social: 'Réseaux sociaux',
       },
@@ -388,7 +388,7 @@ const translations = {
       navTitle: 'Navigation',
       servicesTitle: 'Services',
       contactTitle: 'Contact',
-      mileEnd: 'Mile-End, Montreal',
+      mileEnd: 'Plateau Mont-Royal, Montreal',
       byAppointment: 'By appointment',
       copyright: 'Massive. All rights reserved. NEQ 2269057891',
     },
@@ -408,7 +408,7 @@ const translations = {
     home: {
       seo: {
         title: 'Montreal Printer | Stickers, Prints & Fine Art | Massive Medias',
-        description: 'Custom printing service in Montreal. Specialists in custom stickers, fine art, merch and large format printing for artists and businesses. Local Mile-End production, fast delivery.',
+        description: 'Custom printing service in Montreal. Specialists in custom stickers, fine art, merch and large format printing for artists and businesses. Local Plateau Mont-Royal production, fast delivery.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -465,7 +465,7 @@ const translations = {
       advantages: [
         {
           title: 'Free Local Delivery',
-          description: 'Based in Mile-End, Montreal. Pick-up or local delivery, zero shipping fees, zero postal delays.',
+          description: 'Based in Plateau Mont-Royal, Montreal. Pick-up or local delivery, zero shipping fees, zero postal delays.',
         },
         {
           title: 'Professional Quality',
@@ -507,18 +507,18 @@ const translations = {
     aboutPage: {
       seo: {
         title: 'About | Massive - Creative Studio Montreal',
-        description: 'Discover Massive, creative production studio in Montreal. Our team, our Mile-End space and our story. Printing, design and web.',
+        description: 'Discover Massive, creative production studio in Montreal. Our team, our Plateau Mont-Royal space and our story. Printing, design and web.',
       },
       hero: {
         title: 'About',
-        subtitle: "A creative studio rooted in Mile-End, at the heart of Montreal's artistic scene.",
+        subtitle: "A creative studio rooted in Plateau Mont-Royal, at the heart of Montreal's artistic scene.",
       },
       history: {
         title: 'Our Story',
         paragraphs: [
-          "Massive is a creative production studio based in Mile-End, at the heart of Montreal's artistic ecosystem. Starting with web development and graphic design in 2022, the studio expanded in 2024 with fine art printing, stickers and textile sublimation.",
+          "Massive is a creative production studio based in Plateau Mont-Royal, at the heart of Montreal's artistic ecosystem. Starting with web development and graphic design in 2022, the studio expanded in 2024 with fine art printing, stickers and textile sublimation.",
           'The company offers four integrated services for visual artists, photographers, musicians and independent creators: fine art printing, custom stickers, graphic design and web development.',
-          "Our philosophy: offer local, personalized, professional-quality service without the delays and complications of online services. No shipping, no waiting. Pick-up in Mile-End or local delivery.",
+          "Our philosophy: offer local, personalized, professional-quality service without the delays and complications of online services. No shipping, no waiting. Pick-up in Plateau Mont-Royal or local delivery.",
         ],
       },
       timeline: {
@@ -559,7 +559,7 @@ const translations = {
         ],
       },
       space: {
-        location: 'Mile-End, Montreal',
+        location: 'Plateau Mont-Royal, Montreal',
         title: 'The Age of Union Space',
         description: "We operate from 5338 rue Marquette in the Plateau Mont-Royal. Pick-up available by appointment.",
       },
@@ -592,7 +592,7 @@ const translations = {
       },
       info: {
         title: 'Contact Info',
-        location: 'Mile-End, Montreal, QC',
+        location: 'Plateau Mont-Royal, Montreal, QC',
         byAppointment: 'By appointment',
         social: 'Social Media',
       },
@@ -748,7 +748,7 @@ const translations = {
       navTitle: 'Navegación',
       servicesTitle: 'Servicios',
       contactTitle: 'Contacto',
-      mileEnd: 'Mile-End, Montreal',
+      mileEnd: 'Plateau Mont-Royal, Montreal',
       byAppointment: 'Con cita previa',
       copyright: 'Massive. Todos los derechos reservados. NEQ 2269057891',
     },
@@ -768,7 +768,7 @@ const translations = {
     home: {
       seo: {
         title: 'Imprenta Montreal | Stickers, Prints & Fine Art | Massive Medias',
-        description: 'Servicio de impresión personalizada en Montreal. Especialistas en stickers personalizados, fine art, merch e impresión gran formato para artistas y empresas. Producción local Mile-End, entrega rápida.',
+        description: 'Servicio de impresión personalizada en Montreal. Especialistas en stickers personalizados, fine art, merch e impresión gran formato para artistas y empresas. Producción local Plateau Mont-Royal, entrega rápida.',
       },
       hero: {
         tagline: 'Create. Print. Repeat.',
@@ -825,7 +825,7 @@ const translations = {
       advantages: [
         {
           title: 'Entrega local gratuita',
-          description: 'Ubicados en Mile-End, Montreal. Recogida o entrega local, sin gastos de envío, sin demoras postales.',
+          description: 'Ubicados en Plateau Mont-Royal, Montreal. Recogida o entrega local, sin gastos de envío, sin demoras postales.',
         },
         {
           title: 'Calidad profesional',
@@ -867,18 +867,18 @@ const translations = {
     aboutPage: {
       seo: {
         title: 'Nosotros | Massive - Estudio creativo Montreal',
-        description: 'Descubre Massive, estudio de produccion creativa en Montreal. Nuestro equipo, nuestro espacio en Mile-End y nuestra historia. Impresion, diseno y web.',
+        description: 'Descubre Massive, estudio de produccion creativa en Montreal. Nuestro equipo, nuestro espacio en Plateau Mont-Royal y nuestra historia. Impresion, diseno y web.',
       },
       hero: {
         title: 'Nosotros',
-        subtitle: 'Un estudio creativo arraigado en Mile-End, en el corazón de la escena artística de Montreal.',
+        subtitle: 'Un estudio creativo arraigado en Plateau Mont-Royal, en el corazón de la escena artística de Montreal.',
       },
       history: {
         title: 'Nuestra historia',
         paragraphs: [
-          'Massive es un estudio de producción creativa ubicado en Mile-End, en el corazón del ecosistema artístico de Montreal. Inicialmente enfocado en desarrollo web y diseño gráfico desde 2022, el estudio se expandió en 2024 con impresión fine art, stickers y sublimación textil.',
+          'Massive es un estudio de producción creativa ubicado en Plateau Mont-Royal, en el corazón del ecosistema artístico de Montreal. Inicialmente enfocado en desarrollo web y diseño gráfico desde 2022, el estudio se expandió en 2024 con impresión fine art, stickers y sublimación textil.',
           'La empresa ofrece cuatro servicios integrados para artistas visuales, fotógrafos, músicos y creadores independientes: impresión fine art, stickers personalizados, diseño gráfico y desarrollo web.',
-          'Nuestra filosofía: ofrecer un servicio local, personalizado y de calidad profesional, sin las demoras y complicaciones de los servicios en línea. Sin envíos, sin esperas. Recogida en Mile-End o entrega local.',
+          'Nuestra filosofía: ofrecer un servicio local, personalizado y de calidad profesional, sin las demoras y complicaciones de los servicios en línea. Sin envíos, sin esperas. Recogida en Plateau Mont-Royal o entrega local.',
         ],
       },
       timeline: {
@@ -919,7 +919,7 @@ const translations = {
         ],
       },
       space: {
-        location: 'Mile-End, Montreal',
+        location: 'Plateau Mont-Royal, Montreal',
         title: 'El espacio Age of Union',
         description: 'Operamos desde el 5338 rue Marquette en el Plateau Mont-Royal. Recogida disponible con cita previa.',
       },
@@ -952,7 +952,7 @@ const translations = {
       },
       info: {
         title: 'Datos de contacto',
-        location: 'Mile-End, Montreal, QC',
+        location: 'Plateau Mont-Royal, Montreal, QC',
         byAppointment: 'Con cita previa',
         social: 'Redes sociales',
       },

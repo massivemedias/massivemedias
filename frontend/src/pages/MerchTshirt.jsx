@@ -55,9 +55,9 @@ function MerchTshirt() {
       <SEO
         title={tx({ fr: 'T-Shirt Sublimation Montréal | Massive', en: 'Sublimation T-Shirt Montreal | Massive', es: 'Camiseta Sublimacion Montreal | Massive' })}
         description={tx({
-          fr: 'T-Shirt sublimation Massive à Montréal. 10 couleurs, tailles S à 3XL. Impression full-color permanente. Production locale Mile-End.',
-          en: 'Sublimation T-Shirt by Massive in Montreal. 10 colors, sizes S to 3XL. Permanent full-color print. Local production Mile-End.',
-          es: 'Camiseta sublimacion de Massive en Montreal. 10 colores, tallas S a 3XL. Impresion full-color permanente. Produccion local Mile-End.',
+          fr: 'T-Shirt sublimation Massive à Montréal. 10 couleurs, tailles S à 3XL. Impression full-color permanente. Production locale Plateau Mont-Royal.',
+          en: 'Sublimation T-Shirt by Massive in Montreal. 10 colors, sizes S to 3XL. Permanent full-color print. Local production Plateau Mont-Royal.',
+          es: 'Camiseta sublimacion de Massive en Montreal. 10 colores, tallas S a 3XL. Impresion full-color permanente. Produccion local Plateau Mont-Royal.',
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },

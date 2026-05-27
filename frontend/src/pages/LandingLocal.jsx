@@ -88,7 +88,7 @@ function LandingLocal() {
         <div className="absolute inset-0 z-0">
           <img
             src={thumb(page.heroImage)}
-            alt={`${page.keyword} - Massive Medias studio Mile-End Montréal`}
+            alt={`${page.keyword} - Massive Medias studio Plateau Mont-Royal Montréal`}
             className="w-full h-full object-cover opacity-30 blur-sm"
             loading="eager"
             fetchpriority="high"
@@ -249,9 +249,9 @@ function LandingLocal() {
           </h2>
           <p className="text-grey-light text-base sm:text-lg max-w-xl mx-auto mb-8">
             {tx({
-              fr: 'Réponse en moins de 24h. Devis gratuit. Production locale au Mile-End, Montréal.',
-              en: 'Response within 24h. Free quote. Local Mile-End production, Montreal.',
-              es: 'Respuesta en menos de 24h. Cotización gratis. Producción local Mile-End, Montreal.',
+              fr: 'Réponse en moins de 24h. Devis gratuit. Production locale au Plateau Mont-Royal, Montréal.',
+              en: 'Response within 24h. Free quote. Local Plateau Mont-Royal production, Montreal.',
+              es: 'Respuesta en menos de 24h. Cotización gratis. Producción local Plateau Mont-Royal, Montreal.',
             })}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">

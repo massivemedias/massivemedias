@@ -123,11 +123,11 @@ const servicesData = {
       { q: 'Quel format de fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum) en TIFF, PNG ou JPEG. On peut aussi travailler à partir de fichiers PSD ou PDF.' },
       { q: 'Offrez-vous l\'encadrement?', a: 'Oui, on propose l\'encadrement sur demande. 20$ pour A6 et A4, 30$ pour A3, 35$ pour A3+ et 45$ pour A2. Cadres noirs ou blancs disponibles.' },
       { q: 'Quel est le délai de production?', a: 'Le délai varie selon le type de tirage et la quantité. Contactez-nous pour un estimé.' },
-      { q: 'Peut-on récupérer sur place?', a: 'Oui! Pick-up gratuit au Mile-End. On offre aussi la livraison locale à Montréal.' },
+      { q: 'Peut-on récupérer sur place?', a: 'Oui! Pick-up gratuit au Plateau Mont-Royal. On offre aussi la livraison locale à Montréal.' },
     ],
     seo: {
       title: 'Impression Affiches, Posters & Fine Art Montréal | Massive Medias',
-      description: 'Impression d\'affiches, posters et tirages fine art qualité galerie à Montréal. Hahnemühle 12 couleurs, papier épais, encres pigmentaires. Studio créatif au Mile-End, soumission rapide, livraison locale dispo. Qualité premium garantie.',
+      description: 'Impression d\'affiches, posters et tirages fine art qualité galerie à Montréal. Papier Photo Rag, encres pigmentaires 12 couleurs, papier épais. Studio créatif au Plateau Mont-Royal, soumission rapide, livraison locale dispo. Qualité premium.',
     },
   },
 
@@ -271,7 +271,7 @@ const servicesData = {
     ],
     seo: {
       title: 'Impression Stickers & Autocollants Vinyle Montréal | Massive Medias',
-      description: 'Impression de stickers et autocollants vinyle premium à Montréal. Die-cut sur mesure, holographique, matte, glossy, transparent. Qualité premium, soumission rapide en 24h. Studio créatif au Mile-End, dès 25 unités.',
+      description: 'Impression de stickers et autocollants vinyle premium à Montréal. Die-cut sur mesure, holographique, matte, glossy, transparent. Qualité premium, soumission rapide en 24h. Studio créatif au Plateau Mont-Royal, dès 25 unités.',
     },
   },
 
@@ -329,7 +329,7 @@ const servicesData = {
     ],
     seo: {
       title: 'Sublimation & Merch Montréal | T-Shirts, Hoodies, Mugs - Massive',
-      description: 'Sublimation textile sur mesure à Montréal. T-shirts, hoodies, long sleeves, sacs bananes, mugs, thermos. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Mile-End.',
+      description: 'Sublimation textile sur mesure à Montréal. T-shirts, hoodies, long sleeves, sacs bananes, mugs, thermos. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Plateau Mont-Royal.',
     },
   },
 
@@ -405,7 +405,7 @@ const servicesData = {
     ],
     seo: {
       title: 'Design Graphique Montréal | Logos, Identité Visuelle & Affiches - Massive',
-      description: 'Design graphique professionnel à Montréal. Logos, identités visuelles, affiches, pochettes d\'album, packaging. Création sur mesure. Studio créatif Mile-End.',
+      description: 'Design graphique professionnel à Montréal. Logos, identités visuelles, affiches, pochettes d\'album, packaging. Création sur mesure. Studio créatif Plateau Mont-Royal.',
     },
   },
 
@@ -593,7 +593,7 @@ const servicesData = {
     ],
     seo: {
       title: 'Agence Web & Création Site Internet Montréal | Massive Medias',
-      description: 'Agence web et création de site internet sur mesure à Montréal. Sites vitrines, e-commerce, applications, SEO et référencement local. React, Next.js, WordPress, Shopify. Qualité premium, soumission rapide. Studio créatif au Mile-End.',
+      description: 'Agence web et création de site internet sur mesure à Montréal. Sites vitrines, e-commerce, applications, SEO et référencement local. React, Next.js, WordPress, Shopify. Qualité premium, soumission rapide. Studio créatif au Plateau Mont-Royal.',
     },
   },
 };

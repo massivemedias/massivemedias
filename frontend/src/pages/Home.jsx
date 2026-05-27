@@ -10,10 +10,6 @@ import {
   DollarSign,
   Music,
   Quote,
-  Shield,
-  Heart,
-  Clock,
-  MapPin,
   ShoppingBag,
 } from 'lucide-react';
 import { useArtists } from '../hooks/useArtists';
@@ -361,7 +357,7 @@ function Home() {
               <Link to={`/artistes/${work.artistSlug}`} className="group relative block rounded-lg overflow-hidden aspect-square">
                 <img
                   src={work.image}
-                  alt={`${work.titleFr || work.titleEn} - Tirage fine art de ${work.artistName}, imprimé à Montréal sur papier Hahnemühle`}
+                  alt={`${work.titleFr || work.titleEn} - Tirage fine art de ${work.artistName}, imprimé à Montréal sur papier coton fine art`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />
@@ -398,50 +394,9 @@ function Home() {
           <Counter end={100} suffix="%" label={t('home.stats.local')} />
           <div className="text-center p-6">
             <div className="text-5xl md:text-6xl font-heading font-bold text-gradient mb-2 hero-title">100%</div>
-            <div className="text-grey-light text-lg">{tx({ fr: 'Qualité garantie', en: 'Guaranteed quality', es: 'Calidad garantizada' })}</div>
+            <div className="text-grey-light text-lg">{tx({ fr: 'Qualité professionnelle', en: 'Professional quality', es: 'Calidad profesional' })}</div>
           </div>
         </div>
-      </section>
-
-      {/* ============ LA PROMESSE MASSIVE ============ */}
-      <section className="section-container !py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {[
-              { icon: Shield, fr: 'La promesse Massive', en: 'The Massive Promise', es: 'La promesa Massive', descFr: 'Satisfaction garantie ou on refait', descEn: 'Satisfaction guaranteed or we redo it', descEs: 'Satisfaccion garantizada o lo rehacemos' },
-              { icon: MapPin, fr: 'Imprimé à Montréal', en: 'Printed in Montreal', es: 'Impreso en Montreal', descFr: 'Production 100% locale, Mile-End', descEn: '100% local production, Mile-End', descEs: 'Producción 100% local, Mile-End' },
-              { icon: Clock, fr: 'Production locale', en: 'Local production', es: 'Produccion local', descFr: 'Fabriqué à Montréal, Mile-End', descEn: 'Made in Montreal, Mile-End', descEs: 'Hecho en Montreal, Mile-End' },
-              { icon: Heart, fr: 'Proof systématique', en: 'Always with proof', es: 'Prueba sistemática', descFr: 'Validation digitale avant impression', descEn: 'Digital validation before printing', descEs: 'Validación digital antes de imprimir' },
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  className="text-center"
-                >
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center icon-bg">
-                    <Icon size={22} className="text-accent" />
-                  </div>
-                  <h3 className="text-heading font-heading font-bold text-sm mb-1">
-                    {tx({ fr: item.fr, en: item.en, es: item.es })}
-                  </h3>
-                  <p className="text-grey-muted text-xs">
-                    {tx({ fr: item.descFr, en: item.descEn, es: item.descEs })}
-                  </p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
       </section>
 
       {/* ============ AVANTAGES ============ */}
