@@ -134,6 +134,13 @@ function ConfiguratorFineArt() {
   const [notes, setNotes] = useState('');
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  // CLICKABLE-PREVIEW : ref vers FileUpload pour pouvoir declencher le
+  // file picker depuis un clic sur la zone placeholder (mockup-massive-print)
+  // ci-dessous. Pattern identique a ConfiguratorStickers (VERSION FINALE
+  // GELEE du 12 mai 2026, regles dures : cursor:pointer seul, pas d'overlay).
+  const fileUploadRef = useRef(null);
+  const openFilePicker = () => fileUploadRef.current?.openPicker?.();
+
   // AFFICHES STANDARD : fetch direct via API (useProductPricing accepte un slug
   // et retourne pricingData). useProduct (ligne au-dessus) reste null car le
   // ProductsProvider est encore desactive, mais useProductPricing fonctionne
@@ -367,6 +374,7 @@ function ConfiguratorFineArt() {
               gap visible a droite quand la colonne droite est plus haute. */}
           <div className="relative overflow-hidden w-full mb-3">
             <FileUpload
+              ref={fileUploadRef}
               files={uploadedFiles}
               onFilesChange={setUploadedFiles}
               label={tx({ fr: 'Votre fichier', en: 'Your file', es: 'Tu archivo' })}
@@ -407,7 +415,23 @@ function ConfiguratorFineArt() {
               />
             </div>
           ) : (
-            <div className="relative w-full rounded-xl shadow-lg bg-black/10 overflow-hidden">
+            // CLICKABLE-PREVIEW (cf. ConfiguratorStickers VERSION FINALE GELEE
+            // du 12 mai 2026) : zone placeholder entiere cliquable pour
+            // declencher le file picker. REGLES DURES : cursor:pointer seul,
+            // aucun overlay sombre / icone / texte / flou / assombrissement
+            // au hover. Accessibilite preservee (role/tabIndex/aria-label/
+            // clavier Enter+Space). Quand previewImage existe (branche au-
+            // dessus), le carrousel garde son comportement actuel (clic =
+            // lightbox via onClickImage) ; pour changer une image deja
+            // uploadee, l'utilisateur passe par le bouton FileUpload en haut.
+            <div
+              className="relative w-full rounded-xl shadow-lg bg-black/10 overflow-hidden cursor-pointer"
+              onClick={openFilePicker}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFilePicker(); } }}
+              role="button"
+              tabIndex={0}
+              aria-label={tx({ fr: 'Televerser une image', en: 'Upload an image', es: 'Subir una imagen' })}
+            >
               <img
                 src="/images/thumbs/mockup-massive-print.webp"
                 alt=""
