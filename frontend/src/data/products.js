@@ -578,3 +578,80 @@ export const webFaq = {
     { q: '¿Puedo ver ejemplos de sus trabajos?', a: '¡Sí! Nuestro portafolio incluye proyectos como la Ciudad de Montreal, La Presse, Maudite Machine, y varios sitios para artistas y comercios locales.' },
   ],
 };
+
+// =======================================================
+// AFFICHES STANDARD - Paliers degressifs par quantite
+// =======================================================
+// Categorie volume / evenementiel, distincte des Series Studio + Musee
+// (qui restent a l'unite pour les pieces uniques fine art).
+// Source de verite : product Strapi `affiche-standard`, champ
+// `pricingData.afficheStandardPaliers`. A fetcher via useProductPricing
+// dans le composant qui appelle ce helper, puis passer en argument.
+// Le helper lui-meme ne fait AUCUN fetch : tout reste pur, testable.
+
+/**
+ * Retourne le prix unitaire d'une affiche pour un format et une quantite,
+ * selon le palier le plus eleve <= qty.
+ *
+ * Exemple avec paliers A3 = { "1":15, "5":12, "10":8, "25":5, "50":4, "100":3.5 } :
+ *   - qty=1  -> palier 1   -> 15
+ *   - qty=7  -> palier 5   -> 12
+ *   - qty=17 -> palier 10  -> 8
+ *   - qty=25 -> palier 25  -> 5
+ *   - qty=500 -> palier 100 -> 3.5
+ *
+ * @param {string} format - "A4" | "A3" | "A3+" (cle dans paliers)
+ * @param {number} qty - entier strictement positif
+ * @param {object} paliers - objet { [format]: { [palier]: prix } }
+ *                           ou les cles palier sont des strings numeriques
+ * @returns {number | null} prix unitaire en CAD, ou null si invalide
+ */
+export function getAffichePrice(format, qty, paliers) {
+  // Validation paliers : doit etre un objet non-null
+  if (!paliers || typeof paliers !== 'object' || Array.isArray(paliers)) {
+    return null;
+  }
+  // Validation format : string non-vide
+  if (typeof format !== 'string' || format.length === 0) {
+    return null;
+  }
+  // Validation qty : entier strictement positif et fini
+  if (
+    typeof qty !== 'number' ||
+    !Number.isFinite(qty) ||
+    !Number.isInteger(qty) ||
+    qty <= 0
+  ) {
+    return null;
+  }
+  // Lookup paliers du format
+  const formatPaliers = paliers[format];
+  if (!formatPaliers || typeof formatPaliers !== 'object' || Array.isArray(formatPaliers)) {
+    return null;
+  }
+  // Extraire les paliers valides (cles parseables en entier > 0, valeurs > 0 finies)
+  const validPaliers = Object.entries(formatPaliers)
+    .map(([k, v]) => [Number(k), v])
+    .filter(
+      ([k, v]) =>
+        Number.isInteger(k) &&
+        k > 0 &&
+        typeof v === 'number' &&
+        Number.isFinite(v) &&
+        v > 0
+    )
+    .sort((a, b) => a[0] - b[0]);
+  if (validPaliers.length === 0) {
+    return null;
+  }
+  // Trouver le palier le plus eleve <= qty
+  let selectedPrice = null;
+  for (const [palier, price] of validPaliers) {
+    if (palier <= qty) {
+      selectedPrice = price;
+    } else {
+      break;
+    }
+  }
+  return selectedPrice;
+}
