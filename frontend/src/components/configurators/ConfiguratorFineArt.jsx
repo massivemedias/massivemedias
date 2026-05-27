@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useLang } from '../../i18n/LanguageContext';
 import { useProduct } from '../../hooks/useProducts';
+import { useProductPricing } from '../../hooks/useProductPricing';
 import FileUpload from '../FileUpload';
 // CACHE-BUST (11 mai 2026) : rename PrintPreviewCarousel -> PrintPreviewCarouselV2
 // pour forcer Cloudflare a MISS son cache CDN agressif qui servait l'ancien
@@ -15,7 +16,25 @@ import PrintPreviewCarousel from '../PrintPreviewCarouselV2';
 import {
   fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
+  getAffichePrice,
 } from '../../data/products';
+
+// AFFICHES STANDARD (chantier feat/affiches-standard-et-audit-tarifs) :
+// 3e tier "affiche-standard" a cote de Studio/Musee, avec paliers degressifs.
+// Les paliers sont fetches depuis Strapi (product slug "affiche-standard"),
+// le calcul prix utilise getAffichePrice(format, qty, paliers).
+// Mapping IDs : les formats du configurateur sont en minuscules (a4, a3, a3plus)
+// mais les cles paliers dans Strapi sont en majuscules (A4, A3, A3+).
+const FORMAT_ID_TO_PALIER_KEY = { a4: 'A4', a3: 'A3', a3plus: 'A3+' };
+const AFFICHE_STANDARD_TIER = {
+  id: 'affiche-standard',
+  labelFr: 'Affiches Standard',
+  labelEn: 'Standard Posters',
+  labelEs: 'Carteles Estandar',
+  descFr: 'Volume / evenementiel',
+  descEn: 'Volume / events',
+  descEs: 'Volumen / eventos',
+};
 
 function FramePreview({ image, withFrame, frameColor, format, formats, tx, isLandscape, onClickImage }) {
   const fmt = formats.find(f => f.id === format);
@@ -115,12 +134,80 @@ function ConfiguratorFineArt() {
   const [notes, setNotes] = useState('');
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  // AFFICHES STANDARD : fetch direct via API (useProductPricing accepte un slug
+  // et retourne pricingData). useProduct (ligne au-dessus) reste null car le
+  // ProductsProvider est encore desactive, mais useProductPricing fonctionne
+  // independamment et est deja prouve fonctionnel pour les autres consumers.
+  const { pricingData: afficheData } = useProductPricing('affiche-standard');
+  const afficheStandardPaliers = afficheData?.afficheStandardPaliers || null;
+
+  // Liste des 3 tiers (Studio + Musee + Affiches Standard) construite localement.
+  // On ne touche pas fineArtPrinterTiers (data store) : c'est utilise ailleurs.
+  const allTiers = [...fineArtPrinterTiers, AFFICHE_STANDARD_TIER];
+  const isAfficheStandard = tier === 'affiche-standard';
+
+  // Reset qty=1 quand on quitte Affiches Standard (Studio/Musee n'utilisent
+  // pas le degressif, donc qty>1 n'a pas de sens commercial pour eux).
+  useEffect(() => {
+    if (!isAfficheStandard) setQuantity(1);
+  }, [isAfficheStandard]);
+
+  // Forcer withFrame=false en mode Affiches Standard (l'option Cadre est
+  // exclusive aux Series Studio/Musee, pas pour les commandes en volume).
+  useEffect(() => {
+    if (isAfficheStandard && withFrame) setWithFrame(false);
+  }, [isAfficheStandard, withFrame]);
+
+  // Auto-switch vers un format compatible si on entre en Affiches Standard
+  // avec un format non supporte (postcard/a2/sq*) : fallback sur A3.
+  useEffect(() => {
+    if (isAfficheStandard && !FORMAT_ID_TO_PALIER_KEY[format]) {
+      setFormat('a3');
+    }
+  }, [isAfficheStandard, format]);
+
   // PRIX-HARDCODE : lookup strict dans pricingData.FINE_ART_GRID via defaultGetPrice.
   const getFineArtPrice = defaultGetPrice;
 
-  const priceInfo = getFineArtPrice(tier, format, withFrame);
-  const tierLabel = fineArtPrinterTiers.find(t => t.id === tier);
+  // Branche le calcul de prix selon le tier :
+  //   - studio/museum -> getFineArtPrice (existant, a l'unite + cadre optionnel)
+  //   - affiche-standard -> getAffichePrice(format, qty, paliers) du helper
+  //     unit-teste a l'etape 3 (51 tests verts)
+  const affichePriceUnit = isAfficheStandard
+    ? getAffichePrice(FORMAT_ID_TO_PALIER_KEY[format] || null, quantity, afficheStandardPaliers)
+    : null;
+  const priceInfo = isAfficheStandard
+    ? (affichePriceUnit != null ? { price: affichePriceUnit } : null)
+    : getFineArtPrice(tier, format, withFrame);
+
+  const tierLabel = allTiers.find(t => t.id === tier);
   const formatLabel = fineArtFormats.find(f => f.id === format);
+
+  // Info palier (actuel + prochain) pour l'affichage UX en mode Affiches
+  // Standard. Calcule a partir du JSON paliers, sans recoder la logique de
+  // lookup : on parcourt la meme liste triee que getAffichePrice utilise.
+  const palierInfo = (() => {
+    if (!isAfficheStandard) return null;
+    const palierKey = FORMAT_ID_TO_PALIER_KEY[format];
+    const formatPaliers = palierKey ? afficheStandardPaliers?.[palierKey] : null;
+    if (!formatPaliers || typeof formatPaliers !== 'object') return null;
+    const sorted = Object.entries(formatPaliers)
+      .map(([k, v]) => [Number(k), v])
+      .filter(([k, v]) => Number.isInteger(k) && k > 0 && typeof v === 'number' && v > 0)
+      .sort((a, b) => a[0] - b[0]);
+    if (sorted.length === 0) return null;
+    let current = null;
+    let next = null;
+    for (let i = 0; i < sorted.length; i++) {
+      if (sorted[i][0] <= quantity) {
+        current = { qty: sorted[i][0], unit: sorted[i][1] };
+        next = sorted[i + 1] ? { qty: sorted[i + 1][0], unit: sorted[i + 1][1] } : null;
+      }
+    }
+    if (!current) return null;
+    const nextSaving = next ? next.qty * (current.unit - next.unit) : null;
+    return { current, next, nextSaving };
+  })();
 
   // Images uploadees (filtrer que les images)
   const imageFiles = useMemo(() => uploadedFiles.filter(f => f.mime?.startsWith('image/')), [uploadedFiles]);
@@ -196,6 +283,43 @@ function ConfiguratorFineArt() {
 
   const handleAddToCart = () => {
     if (!priceInfo || !canAddToCart) return;
+
+    // Edge case : si l'utilisateur efface l'input qty et clique "Ajouter au
+    // panier" sans avoir blur (le onBlur normalement clamp a 1), quantity
+    // peut etre 0. Sans cette protection, totalPrice serait 0$ envoye au
+    // panier (Studio/Musee qui ont priceInfo non-null avec qty=0). Clamp
+    // defensif a 1 minimum, utilise pour les deux branches ci-dessous.
+    const safeQty = Math.max(1, quantity || 1);
+
+    // AFFICHES STANDARD : branche dediee. SKU sans cadre (pas d'option en
+    // mode volume), productName/finish distincts, et metadata palierApplique
+    // pour audit posterieur (analytics + verification ad hoc cote admin).
+    if (isAfficheStandard) {
+      const cartSku = `affiche-standard-${format}`;
+      addToCart({
+        productId: 'affiche-standard',
+        sku: cartSku,
+        productName: tx({ fr: 'Affiche Standard', en: 'Standard Poster', es: 'Cartel Estandar' }),
+        finish: tx({ fr: 'Affiches Standard', en: 'Standard Posters', es: 'Carteles Estandar' }),
+        shape: null,
+        size: formatLabel?.label,
+        quantity: safeQty,
+        unitPrice: priceInfo.price,
+        totalPrice: priceInfo.price * safeQty,
+        image: fineArtImages[0],
+        uploadedFiles,
+        notes,
+        meta: {
+          palierApplique: palierInfo?.current?.qty || null,
+          prixUnitairePalier: priceInfo.price,
+        },
+      });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+      return;
+    }
+
+    // STUDIO / MUSEE (existant, inchange).
     // INVENTORY-A1 (2026-05-13) : SKU deterministe pour permettre au backend
     // (order.ts ligne 1364, `item.sku || item.slug`) de decrementer le
     // papier/consommable correspondant. Le SKU inclut le tier (qualite
@@ -218,9 +342,9 @@ function ConfiguratorFineArt() {
           })
         : null,
       size: formatLabel?.label,
-      quantity,
+      quantity: safeQty,
       unitPrice: priceInfo.price,
-      totalPrice: priceInfo.price * quantity,
+      totalPrice: priceInfo.price * safeQty,
       image: fineArtImages[0],
       uploadedFiles,
       notes,
@@ -307,17 +431,20 @@ function ConfiguratorFineArt() {
             {tx({ fr: 'Qualite', en: 'Quality', es: 'Calidad' })}
           </label>
           <div className="flex gap-2">
-            {fineArtPrinterTiers.map(t => (
+            {allTiers.map(t => (
               <button
                 key={t.id}
                 onClick={() => {
                   setTier(t.id);
-                  const curFmt = fineArtFormats.find(f => f.id === format);
-                  const price = t.id === 'museum' ? curFmt?.museumPrice : curFmt?.studioPrice;
-                  // Fallback TOUJOURS vers a4 (portrait par defaut), peu importe
-                  // l'aspect de l'image. L'utilisateur choisit explicitement
-                  // s'il veut un format carre.
-                  if (price == null) setFormat('a4');
+                  // Si on switch vers Studio/Musee avec un format invisible
+                  // pour ce tier (A2 Studio = null par ex.), fallback A4.
+                  // Le cas affiche-standard est gere par un useEffect dedie
+                  // qui force a3 si le format n'est pas dans {a4,a3,a3plus}.
+                  if (t.id !== 'affiche-standard') {
+                    const curFmt = fineArtFormats.find(f => f.id === format);
+                    const price = t.id === 'museum' ? curFmt?.museumPrice : curFmt?.studioPrice;
+                    if (price == null) setFormat('a4');
+                  }
                 }}
                 className={`flex-1 py-3 px-4 rounded-lg text-base font-semibold transition-all border-2 ${tier === t.id
                   ? 'border-accent bg-accent/10 text-accent'
@@ -352,8 +479,46 @@ function ConfiguratorFineArt() {
           </label>
           <div className="grid grid-cols-5 gap-1.5">
             {visibleFormats.map(f => {
-              const price = tier === 'museum' ? f.museumPrice : f.studioPrice;
-              const isAvailable = price != null;
+              // Calcul prix + disponibilite selon tier.
+              // - studio/museum : prix unitaire fixe lu dans fineArtFormats
+              // - affiche-standard : prix unitaire du palier COURANT (lookup
+              //   getAffichePrice avec quantity actuelle), seulement pour
+              //   A4/A3/A3+. Autres formats (postcard/a2/sq*) -> grises avec
+              //   tooltip explicite pour rediriger vers la bonne categorie.
+              let price = null;
+              let isAvailable = false;
+              let disabledTooltip = null;
+              if (isAfficheStandard) {
+                const palierKey = FORMAT_ID_TO_PALIER_KEY[f.id];
+                if (palierKey) {
+                  price = getAffichePrice(palierKey, quantity, afficheStandardPaliers);
+                  isAvailable = price != null;
+                } else {
+                  isAvailable = false;
+                  if (f.id === 'postcard') {
+                    disabledTooltip = tx({
+                      fr: 'A6 disponible dans la categorie Flyers',
+                      en: 'A6 available in Flyers category',
+                      es: 'A6 disponible en la categoria Flyers',
+                    });
+                  } else if (f.id === 'a2') {
+                    disabledTooltip = tx({
+                      fr: 'Sur soumission, contactez-nous',
+                      en: 'On request, contact us',
+                      es: 'A pedido, contactenos',
+                    });
+                  } else {
+                    disabledTooltip = tx({
+                      fr: 'Format non disponible en Affiches Standard',
+                      en: 'Format not available in Standard Posters',
+                      es: 'Formato no disponible en Carteles Estandar',
+                    });
+                  }
+                }
+              } else {
+                price = tier === 'museum' ? f.museumPrice : f.studioPrice;
+                isAvailable = price != null;
+              }
               const scale = 2.8;
               const rectH = Math.max(24, Math.round((f.h || 11) * scale));
               const rectW = Math.max(16, Math.round((f.w || 8.5) * scale));
@@ -362,7 +527,7 @@ function ConfiguratorFineArt() {
                   key={f.id}
                   onClick={() => isAvailable && setFormat(f.id)}
                   disabled={!isAvailable}
-                  title={f.typeName || f.label}
+                  title={disabledTooltip || f.typeName || f.label}
                   className={`flex flex-col items-center justify-center py-2.5 px-1 rounded-lg transition-all border-2 ${
                     !isAvailable
                       ? 'opacity-25 cursor-not-allowed border-transparent bg-white/3'
@@ -386,7 +551,7 @@ function ConfiguratorFineArt() {
                     </span>
                   )}
                   <span className={`text-sm font-semibold ${format === f.id ? 'text-accent' : 'text-grey-muted'}`}>
-                    {isAvailable ? `${price}$` : 'N/A'}
+                    {isAvailable ? (isAfficheStandard ? `${price}$/u` : `${price}$`) : 'N/A'}
                   </span>
                 </button>
               );
@@ -397,25 +562,53 @@ function ConfiguratorFineArt() {
         {/* Cadre - case a cocher + couleurs. Position : APRES Format pour
             respecter la hierarchie logique de selection (la presence d'un
             cadre depend du format choisi - certains formats n'ont pas de
-            prix de cadre). */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={withFrame} onChange={(e) => setWithFrame(e.target.checked)} className="sr-only" />
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
-              {withFrame && <Check size={12} className="text-white" />}
-            </div>
-            <span className="text-heading text-base font-semibold">{tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}</span>
-            <span className="text-accent text-sm font-semibold">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
-          </label>
-          {withFrame && (
-            <div className="flex gap-1.5">
-              <button onClick={() => setFrameColor('black')}
-                className={`w-6 h-6 rounded-full bg-black border-2 transition-all ${frameColor === 'black' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
-              <button onClick={() => setFrameColor('white')}
-                className={`w-6 h-6 rounded-full bg-white border-2 transition-all ${frameColor === 'white' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
-            </div>
-          )}
-        </div>
+            prix de cadre).
+            AFFICHES STANDARD : option Cadre cachee (pas pertinent en volume,
+            le state withFrame est force a false par useEffect plus haut). */}
+        {!isAfficheStandard && (
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={withFrame} onChange={(e) => setWithFrame(e.target.checked)} className="sr-only" />
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${withFrame ? 'bg-accent border-accent' : 'border-grey-muted/50'}`}>
+                {withFrame && <Check size={12} className="text-white" />}
+              </div>
+              <span className="text-heading text-base font-semibold">{tx({ fr: 'Cadre', en: 'Frame', es: 'Marco' })}</span>
+              <span className="text-accent text-sm font-semibold">+{fineArtFramePriceByFormat[format] || fineArtFramePrice}$</span>
+            </label>
+            {withFrame && (
+              <div className="flex gap-1.5">
+                <button onClick={() => setFrameColor('black')}
+                  className={`w-6 h-6 rounded-full bg-black border-2 transition-all ${frameColor === 'black' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
+                <button onClick={() => setFrameColor('white')}
+                  className={`w-6 h-6 rounded-full bg-white border-2 transition-all ${frameColor === 'white' ? 'border-accent scale-110' : 'border-grey-muted/30'}`} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AFFICHES STANDARD : affichage du palier actif + prochain palier.
+            Visible uniquement en mode affiche-standard, sous l'emplacement du
+            Cadre (cache). Calcul issu de palierInfo (current + next + saving). */}
+        {isAfficheStandard && palierInfo && (
+          <div className="rounded-lg bg-accent/5 border border-accent/20 px-3 py-2.5">
+            <p className="text-heading text-sm font-semibold">
+              {tx({
+                fr: `${quantity} unite${quantity > 1 ? 's' : ''} a ${palierInfo.current.unit}$/u = ${quantity * palierInfo.current.unit}$`,
+                en: `${quantity} unit${quantity > 1 ? 's' : ''} at ${palierInfo.current.unit}$/u = ${quantity * palierInfo.current.unit}$`,
+                es: `${quantity} unidad${quantity > 1 ? 'es' : ''} a ${palierInfo.current.unit}$/u = ${quantity * palierInfo.current.unit}$`,
+              })}
+            </p>
+            {palierInfo.next && (
+              <p className="text-grey-muted text-xs mt-1">
+                {tx({
+                  fr: `Prochain palier : ${palierInfo.next.qty} unites a ${palierInfo.next.unit}$/u (economie de ${palierInfo.nextSaving}$)`,
+                  en: `Next tier: ${palierInfo.next.qty} units at ${palierInfo.next.unit}$/u (save ${palierInfo.nextSaving}$)`,
+                  es: `Proximo nivel: ${palierInfo.next.qty} unidades a ${palierInfo.next.unit}$/u (ahorro ${palierInfo.nextSaving}$)`,
+                })}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Notes */}
         <textarea
@@ -442,7 +635,27 @@ function ConfiguratorFineArt() {
             </div>
             <div className="flex items-center gap-2">
               <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-lg border border-white/10 text-heading font-bold text-base flex items-center justify-center hover:border-accent/50">-</button>
-              <span className="text-heading font-bold text-base w-6 text-center">{quantity}</span>
+              {/* Input clavier editable : pattern hybride [-] [input] [+].
+                  Utile en mode Affiches Standard pour aller a 100 sans 99 clics.
+                  type="text" + inputMode="numeric" : clavier numerique mobile,
+                  sans les spinners HTML5 natifs (peu esthetiques sur w-14).
+                  Regex onChange ne laisse passer que les chiffres. Vide
+                  temporaire autorise pendant l'edition, clamp a 1 au blur
+                  si vide ou < 1. */}
+              <input
+                type="text"
+                inputMode="numeric"
+                value={quantity || ''}
+                onChange={(e) => {
+                  const cleaned = e.target.value.replace(/[^0-9]/g, '');
+                  setQuantity(cleaned === '' ? 0 : parseInt(cleaned, 10));
+                }}
+                onBlur={() => {
+                  if (!quantity || quantity < 1) setQuantity(1);
+                }}
+                aria-label={tx({ fr: 'Quantite', en: 'Quantity', es: 'Cantidad' })}
+                className="w-14 h-9 rounded-lg border border-white/10 bg-transparent text-heading font-bold text-base text-center focus:border-accent/50 focus:outline-none"
+              />
               <button onClick={() => setQuantity(q => q + 1)} className="w-9 h-9 rounded-lg border border-white/10 text-heading font-bold text-base flex items-center justify-center hover:border-accent/50">+</button>
             </div>
             <button onClick={handleAddToCart} disabled={!canAddToCart} className={`btn-primary justify-center text-base py-2.5 px-6 ${!canAddToCart ? 'opacity-40 cursor-not-allowed' : ''}`}>
