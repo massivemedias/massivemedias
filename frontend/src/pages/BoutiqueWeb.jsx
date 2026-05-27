@@ -34,8 +34,8 @@ function BoutiqueWeb() {
       startingPrice={85}
       pageTitle={{ fr: 'Développement Web Montréal - Sites, E-Commerce, SEO | Massive', en: 'Web Development Montreal - Sites, E-Commerce, SEO | Massive', es: 'Desarrollo Web Montreal - Sitios, E-Commerce, SEO | Massive' }}
       metaDescription={{
-        fr: 'Développement web professionnel à Montréal. Sites vitrines, e-commerce, landing pages, SEO. React, WordPress, Shopify. 15+ ans d\'expérience. Studio Mile-End.',
-        en: 'Professional web development in Montreal. Showcase sites, e-commerce, landing pages, SEO. React, WordPress, Shopify. 15+ years experience. Mile-End studio.',
+        fr: 'Développement web professionnel à Montréal. Sites vitrines, e-commerce, landing pages, SEO. React, WordPress, Shopify. 15+ ans d\'expérience. Studio Plateau Mont-Royal.',
+        en: 'Professional web development in Montreal. Showcase sites, e-commerce, landing pages, SEO. React, WordPress, Shopify. 15+ years experience. Plateau Mont-Royal studio.',
         es: 'Sitios vitrina, e-commerce, landing pages. React, WordPress, Shopify. 15+ a\u00f1os de experiencia. Montreal.',
       }}
       productTitle={{ fr: 'D\u00e9veloppement Web', en: 'Web Development', es: 'Desarrollo Web' }}

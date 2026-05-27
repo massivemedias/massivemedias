@@ -21,7 +21,7 @@ function BoutiqueFineArt() {
     { icon: Printer, fr: 'Qualit\u00e9 galerie', en: 'Gallery quality', es: 'Calidad galer\u00eda' },
     { icon: Shield, fr: 'Conservation 100+ ans', en: '100+ year conservation', es: 'Conservaci\u00f3n 100+ a\u00f1os' },
     { icon: Sparkles, fr: 'Calibration ICC', en: 'ICC calibration', es: 'Calibraci\u00f3n ICC' },
-    { icon: Truck, fr: 'Pick-up gratuit Mile-End', en: 'Free pick-up Mile-End', es: 'Recogida gratis Mile-End' },
+    { icon: Truck, fr: 'Pick-up gratuit Plateau Mont-Royal', en: 'Free pick-up Plateau Mont-Royal', es: 'Recogida gratis Plateau Mont-Royal' },
   ];
 
   const features = [

@@ -1,7 +1,7 @@
 /**
  * landingPages (8 mai 2026) - data centralisee des 5 landing pages SEO
  * local. Chaque page cible UN keyword precis a haute intention d'achat
- * locale + une zone geographique (Montreal, Mile-End, Quebec).
+ * locale + une zone geographique (Montreal, Plateau Mont-Royal, Quebec).
  *
  * Strategie SEO :
  *   - Title : 50-60 chars, keyword en debut + marque a la fin
@@ -27,7 +27,7 @@ export const LANDING_PAGES = {
     sections: [
       {
         h2: 'Tous les services d\'impression sous le même toit',
-        body: 'Stickers die-cut sur vinyle imperméable, tirages fine art sur papier Hahnemühle 308gsm avec encres pigmentaires 12 couleurs, sublimation textile sur t-shirts/hoodies/tote bags, flyers et cartes d\'affaires en quantités flexibles, design graphique sur mesure et développement web. Une seule équipe, un seul interlocuteur, zéro intermédiaire.',
+        body: 'Stickers die-cut sur vinyle imperméable, tirages fine art sur papier coton fine art 308gsm avec encres pigmentaires 12 couleurs, sublimation textile sur t-shirts/hoodies/tote bags, flyers et cartes d\'affaires en quantités flexibles, design graphique sur mesure et développement web. Une seule équipe, un seul interlocuteur, zéro intermédiaire.',
       },
       {
         h2: 'Pourquoi imprimer sur le Plateau plutôt qu\'en ligne ailleurs',
@@ -35,7 +35,7 @@ export const LANDING_PAGES = {
       },
       {
         h2: 'Production locale, encres premium, finitions soignées',
-        body: 'Notre équipement : imprimante pigmentaire 12 couleurs Epson SureColor (pour fine art), plotter de découpe Roland (pour stickers die-cut), presse à sublimation Geo Knight (pour textile). Pas d\'externalisation : tout sort du studio Plateau Mont-Royal. Garantie satisfaction ou réimpression gratuite.',
+        body: 'Notre équipement : imprimante pigmentaire 12 couleurs professionnelle (pour fine art), plotter de découpe de précision (pour stickers die-cut), presse à sublimation professionnelle (pour textile). Pas d\'externalisation : tout sort du studio Plateau Mont-Royal.',
       },
     ],
     faq: [
@@ -69,13 +69,13 @@ export const LANDING_PAGES = {
     keyword: 'Stickers personnalisés Montréal',
     geo: 'Montréal, QC',
     title: 'Stickers Personnalisés Montréal | Die-Cut Vinyle Premium | Massive Medias',
-    description: 'Stickers personnalisés à Montréal : die-cut vinyle imperméable, finitions holographique, glossy, matte, broken glass. Production locale Mile-End, livraison rapide, dès 25 unités.',
+    description: 'Stickers personnalisés à Montréal : die-cut vinyle imperméable, finitions holographique, glossy, matte, broken glass. Production locale Plateau Mont-Royal, livraison rapide, dès 25 unités.',
     h1: 'Stickers personnalisés à Montréal',
-    intro: 'Massive Medias imprime des stickers personnalisés à Montréal sur vinyle imperméable haute qualité, avec découpe die-cut sur mesure pour chaque forme. Holographique, glossy, matte, broken glass : 4 finitions premium pour faire ressortir tes designs. Production locale au Mile-End, délai 24-48h pour les commandes standard, dès 25 stickers.',
+    intro: 'Massive Medias imprime des stickers personnalisés à Montréal sur vinyle imperméable haute qualité, avec découpe die-cut sur mesure pour chaque forme. Holographique, glossy, matte, broken glass : 4 finitions premium pour faire ressortir tes designs. Production locale au Plateau Mont-Royal, délai 24-48h pour les commandes standard, dès 25 stickers.',
     sections: [
       {
         h2: 'Vinyle imperméable, résistant aux UV et aux rayures',
-        body: 'On utilise du vinyle adhésif premium 80-100 microns, garanti 3-5 ans en extérieur (résistance UV, eau salée, lavages auto). Adhésif removable disponible sur demande pour les applications temporaires (vitrines, événements). Test de tenue garanti sur tous nos lots.',
+        body: 'On utilise du vinyle adhésif premium 80-100 microns, tenue 3 à 5 ans en extérieur (résistance UV, eau salée, lavages auto). Adhésif removable disponible sur demande pour les applications temporaires (vitrines, événements).',
       },
       {
         h2: '4 finitions premium pour démarquer ta marque',
@@ -83,7 +83,7 @@ export const LANDING_PAGES = {
       },
       {
         h2: 'Die-cut sur mesure : ta forme, pas un rectangle',
-        body: 'Notre plotter Roland découpe avec une précision de 0.1mm. N\'importe quelle forme : logo, mascotte, lettrage, illustration complexe. On extrait automatiquement le contour ou tu nous fournis ton tracé vectoriel. Aucun supplément pour les formes complexes.',
+        body: 'Notre plotter de découpe travaille avec une précision de 0.1mm. N\'importe quelle forme : logo, mascotte, lettrage, illustration complexe. On extrait automatiquement le contour ou tu nous fournis ton tracé vectoriel. Aucun supplément pour les formes complexes.',
       },
     ],
     faq: [
@@ -93,7 +93,7 @@ export const LANDING_PAGES = {
       },
       {
         q: 'Mes stickers vont-ils tenir dehors sous la neige et la pluie ?',
-        a: 'Oui. Le vinyle qu\'on utilise est imperméable et résiste aux UV, à l\'eau salée et aux variations de température (-30°C à +60°C). Tenue garantie 3 à 5 ans en extérieur selon l\'exposition.',
+        a: 'Oui. Le vinyle qu\'on utilise est imperméable et résiste aux UV, à l\'eau salée et aux variations de température (-30°C à +60°C). Tenue 3 à 5 ans en extérieur selon l\'exposition.',
       },
       {
         q: 'Combien de temps pour recevoir mes stickers ?',
@@ -115,18 +115,18 @@ export const LANDING_PAGES = {
   'print-fine-art-quebec': {
     keyword: 'Print fine art Québec',
     geo: 'Province de Québec',
-    title: 'Print Fine Art Québec | Hahnemühle, Encres Pigmentaires 12 Couleurs | Massive',
-    description: 'Tirages fine art au Québec sur papier Hahnemühle 308gsm, encres pigmentaires Epson 12 couleurs. Formats A6 à A2, éditions limitées, livraison provinciale. Studio Montréal Mile-End.',
+    title: 'Print Fine Art Québec | Photo Rag 308gsm, Encres Pigmentaires 12 Couleurs | Massive',
+    description: 'Tirages fine art au Québec sur papier Photo Rag 308gsm, encres pigmentaires 12 couleurs. Formats A6 à A2, éditions limitées, livraison provinciale. Studio Montréal Plateau Mont-Royal.',
     h1: 'Print fine art au Québec',
-    intro: 'Tirages fine art galerie qualité musée, imprimés à Montréal et expédiés partout au Québec. Papier Hahnemühle Photo Rag 308gsm (le standard mondial des galeries d\'art), encres pigmentaires Epson UltraChrome 12 couleurs (longévité 200+ ans en archivage). Formats A6 (10×15cm) jusqu\'à A2 (42×60cm). Éditions ouvertes ou limitées numérotées, signées par l\'artiste.',
+    intro: 'Tirages fine art galerie qualité musée, imprimés à Montréal et expédiés partout au Québec. Papier Photo Rag 308gsm (le standard mondial des galeries d\'art), encres pigmentaires 12 couleurs (longévité 200+ ans en archivage). Formats A6 (10×15cm) jusqu\'à A2 (42×60cm). Éditions ouvertes ou limitées numérotées, signées par l\'artiste.',
     sections: [
       {
-        h2: 'Papier Hahnemühle Photo Rag 308gsm, le choix des galeries',
-        body: 'Le papier Hahnemühle Photo Rag 308gsm est utilisé par les plus grandes galeries du monde (Tate Modern, MoMA, Guggenheim) pour son rendu doux et naturel des couleurs, sa résistance à la lumière et son toucher cotton premium. Surface mate sans reflet, blanc ivoire chaud. Pas de surface plastique ni de glossy artificiel.',
+        h2: 'Papier Photo Rag 308gsm, le choix des galeries',
+        body: 'Le papier Photo Rag 308gsm est utilisé par les plus grandes galeries du monde (Tate Modern, MoMA, Guggenheim) pour son rendu doux et naturel des couleurs, sa résistance à la lumière et son toucher cotton premium. Surface mate sans reflet, blanc ivoire chaud. Pas de surface plastique ni de glossy artificiel.',
       },
       {
         h2: 'Encres pigmentaires 12 couleurs, longévité 200+ ans',
-        body: 'Notre Epson SureColor utilise 12 cartouches d\'encres pigmentaires (vs 4-6 dans une imprimante grand public). Résultat : gamut couleur 30% plus large, transitions plus douces, noirs plus profonds. Tests Wilhelm Imaging Research : longévité 200+ ans en conditions d\'archivage standard (lumière ambiante, encadrement sous verre).',
+        body: 'Notre imprimante pigmentaire utilise 12 cartouches d\'encres pigmentaires (vs 4-6 dans une imprimante grand public). Résultat : gamut couleur 30% plus large, transitions plus douces, noirs plus profonds. Tests Wilhelm Imaging Research : longévité 200+ ans en conditions d\'archivage standard (lumière ambiante, encadrement sous verre).',
       },
       {
         h2: 'Éditions limitées numérotées et signées',
@@ -162,9 +162,9 @@ export const LANDING_PAGES = {
     keyword: 'Sublimation textile Montréal',
     geo: 'Montréal, QC',
     title: 'Sublimation Textile Montréal | T-shirts, Hoodies All-Over | Massive Medias',
-    description: 'Sublimation textile à Montréal : t-shirts, hoodies, long sleeves all-over ou placement. Production locale Mile-End, dès 1 pièce, qualité durable lavable. Devis gratuit en 24h.',
+    description: 'Sublimation textile à Montréal : t-shirts, hoodies, long sleeves all-over ou placement. Production locale Plateau Mont-Royal, dès 1 pièce, qualité durable lavable. Devis gratuit en 24h.',
     h1: 'Sublimation textile à Montréal',
-    intro: 'Sublimation textile sur t-shirts, hoodies, long sleeves et tote bags, imprimée à Montréal au Mile-End. Technique haut de gamme qui INCRUSTE l\'encre dans la fibre du tissu (vs simple impression en surface) : aucune perte de couleur après lavage, toucher zéro relief, durée de vie identique au tissu lui-même. Impression all-over (tout le vêtement) ou placement (zone localisée).',
+    intro: 'Sublimation textile sur t-shirts, hoodies, long sleeves et tote bags, imprimée à Montréal au Plateau Mont-Royal. Technique haut de gamme qui INCRUSTE l\'encre dans la fibre du tissu (vs simple impression en surface) : aucune perte de couleur après lavage, toucher zéro relief, durée de vie identique au tissu lui-même. Impression all-over (tout le vêtement) ou placement (zone localisée).',
     sections: [
       {
         h2: 'Sublimation vs sérigraphie vs DTG : laquelle choisir ?',
@@ -175,8 +175,8 @@ export const LANDING_PAGES = {
         body: 'All-over (tout le vêtement imprimé devant/derrière/manches) : effet streetwear premium, idéal pour les marques fashion. Placement (zone localisée poitrine/dos) : 60% moins cher, parfait pour les logos et événements. On t\'aide à choisir selon ton design et ton budget.',
       },
       {
-        h2: 'Production locale Mile-End, dès 1 pièce',
-        body: 'Notre presse à sublimation Geo Knight permet de produire à partir de 1 unité (vs 50+ chez les sérigraphes). Idéal pour les samples, les drops limités, les commandes prototype. Réassorts rapides : tu peux commander 10 t-shirts mardi, 50 le vendredi suivant, sans setup fee répété.',
+        h2: 'Production locale Plateau Mont-Royal, dès 1 pièce',
+        body: 'Notre presse à sublimation professionnelle permet de produire à partir de 1 unité (vs 50+ chez les sérigraphes). Idéal pour les samples, les drops limités, les commandes prototype. Réassorts rapides : tu peux commander 10 t-shirts mardi, 50 le vendredi suivant, sans setup fee répété.',
       },
     ],
     faq: [
@@ -209,9 +209,9 @@ export const LANDING_PAGES = {
     keyword: 'Impression flyers Montréal',
     geo: 'Montréal, QC',
     title: 'Impression Flyers Montréal | Cartes d\'affaires, Affiches Événementielles',
-    description: 'Impression flyers et cartes d\'affaires à Montréal : papier 14pt à 24pt Soft Touch, recto-verso inclus. Production rapide Mile-End, dès 100 unités. Idéal événements, campagnes, commerces.',
+    description: 'Impression flyers et cartes d\'affaires à Montréal : papier 14pt à 24pt Soft Touch, recto-verso inclus. Production rapide Plateau Mont-Royal, dès 100 unités. Idéal événements, campagnes, commerces.',
     h1: 'Impression flyers et cartes d\'affaires à Montréal',
-    intro: 'Impression de flyers, cartes d\'affaires et affiches événementielles à Montréal au Mile-End. Papiers premium de 14pt (standard) à 24pt Soft Touch (luxe), finitions UV/mat/lustre, recto-verso inclus. Production locale rapide (3-5 jours ouvrables), dès 100 unités. Idéal pour les événements DJ, vernissages d\'art, commerces, soirées électroniques, salons et conférences.',
+    intro: 'Impression de flyers, cartes d\'affaires et affiches événementielles à Montréal au Plateau Mont-Royal. Papiers premium de 14pt (standard) à 24pt Soft Touch (luxe), finitions UV/mat/lustre, recto-verso inclus. Production locale rapide (3-5 jours ouvrables), dès 100 unités. Idéal pour les événements DJ, vernissages d\'art, commerces, soirées électroniques, salons et conférences.',
     sections: [
       {
         h2: 'Papiers premium pour des flyers qui ne finissent pas à la poubelle',
@@ -223,7 +223,7 @@ export const LANDING_PAGES = {
       },
       {
         h2: 'Idéal pour événements, vernissages et campagnes locales',
-        body: 'On a imprimé pour des soirées techno au Stereo, des vernissages à la Galerie Pangée, des campagnes électorales municipales, des grand-ouvertures de cafés Mile-End. Production rapide compatible avec les délais serrés des événements (3-5 jours, parfois 48h en rush).',
+        body: 'On a imprimé pour des soirées techno au Stereo, des vernissages à la Galerie Pangée, des campagnes électorales municipales, des grand-ouvertures de cafés Plateau Mont-Royal. Production rapide compatible avec les délais serrés des événements (3-5 jours, parfois 48h en rush).',
       },
     ],
     faq: [

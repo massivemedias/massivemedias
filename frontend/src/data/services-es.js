@@ -113,11 +113,11 @@ const servicesDataEs = {
       { q: '¿Qué formato de archivo debo proporcionar?', a: 'Idealmente un archivo de alta resolución (300 DPI mínimo) en TIFF, PNG o JPEG. También podemos trabajar con archivos PSD o PDF.' },
       { q: '¿Ofrecen enmarcado?', a: '¡Sí, ofrecemos enmarcado bajo pedido a partir de $30. Marcos negros, blancos o madera natural disponibles.' },
       { q: '¿Cuál es el tiempo de producción?', a: 'Generalmente 24 a 48 horas para impresiones estándar. Pedidos en volumen o gran formato pueden requerir de 3 a 5 días.' },
-      { q: '¿Se puede recoger en persona?', a: '¡Sí! Recogida gratuita en Mile-End. También ofrecemos entrega local en Montreal.' },
+      { q: '¿Se puede recoger en persona?', a: '¡Sí! Recogida gratuita en Plateau Mont-Royal. También ofrecemos entrega local en Montreal.' },
     ],
     seo: {
       title: 'Impresion Afiches, Posters & Fine Art Montreal | Massive Medias',
-      description: 'Impresion premium de afiches, posters y tirajes fine art en Montreal. Papel Hahnemuhle, tintas pigmentarias 12 colores, calidad galeria. Estudio creativo Mile-End, cotizacion rapida, envio local disponible. Calidad premium garantizada.',
+      description: 'Impresion premium de afiches, posters y tirajes fine art en Montreal. Papel Photo Rag, tintas pigmentarias 12 colores, calidad galeria. Estudio creativo en Plateau Mont-Royal, cotizacion rapida, envio local disponible. Calidad premium.',
     },
   },
 
@@ -254,7 +254,7 @@ const servicesDataEs = {
     ],
     seo: {
       title: 'Impresion Stickers & Adhesivos Vinilo Montreal | Massive Medias',
-      description: 'Impresion de stickers y adhesivos de vinilo premium en Montreal. Troquelados a medida, holografico, mate, brillante, transparente. Calidad premium, cotizacion rapida en 24h. Estudio creativo Mile-End, desde 25 unidades.',
+      description: 'Impresion de stickers y adhesivos de vinilo premium en Montreal. Troquelados a medida, holografico, mate, brillante, transparente. Calidad premium, cotizacion rapida en 24h. Estudio creativo Plateau Mont-Royal, desde 25 unidades.',
     },
   },
 
@@ -312,7 +312,7 @@ const servicesDataEs = {
     ],
     seo: {
       title: 'Sublimacion & Merch Montreal | Camisetas, Hoodies, Tazas - Massive',
-      description: 'Sublimacion textil personalizada en Montreal. Camisetas, hoodies, long sleeves, rinoneras, tazas, termos. Merch de artista y corporativo. Desde 1 unidad. Produccion local Mile-End.',
+      description: 'Sublimacion textil personalizada en Montreal. Camisetas, hoodies, long sleeves, rinoneras, tazas, termos. Merch de artista y corporativo. Desde 1 unidad. Produccion local Plateau Mont-Royal.',
     },
   },
 
@@ -388,7 +388,7 @@ const servicesDataEs = {
     ],
     seo: {
       title: 'Diseno Grafico Montreal | Logos, Identidad Visual & Afiches - Massive',
-      description: 'Diseno grafico profesional en Montreal. Logos, identidades visuales, afiches, portadas de album, packaging. Creacion a medida. Estudio creativo Mile-End.',
+      description: 'Diseno grafico profesional en Montreal. Logos, identidades visuales, afiches, portadas de album, packaging. Creacion a medida. Estudio creativo Plateau Mont-Royal.',
     },
   },
 
@@ -567,7 +567,7 @@ const servicesDataEs = {
     ],
     seo: {
       title: 'Agencia Web & Creacion de Sitios Web Montreal | Massive Medias',
-      description: 'Agencia web y creacion de sitios web a medida en Montreal. Sitios vitrina, e-commerce, aplicaciones, SEO local y posicionamiento. React, Next.js, WordPress, Shopify. Calidad premium, cotizacion rapida. Estudio creativo Mile-End.',
+      description: 'Agencia web y creacion de sitios web a medida en Montreal. Sitios vitrina, e-commerce, aplicaciones, SEO local y posicionamiento. React, Next.js, WordPress, Shopify. Calidad premium, cotizacion rapida. Estudio creativo Plateau Mont-Royal.',
     },
   },
 };

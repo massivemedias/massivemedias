@@ -189,9 +189,9 @@ export const stickerFaq = {
     { q: 'Quel est le délai de production?', a: 'Le délai de production varie selon la complexité et la quantité. Contactez-nous pour un estimé. Nous vous confirmerons le délai exact lors de la validation de votre commande.' },
     { q: 'Peut-on commander une forme totalement custom?', a: 'Oui! L\'option die-cut permet de découper vos stickers selon n\'importe quelle forme. Le contour suit exactement votre design.' },
     { q: 'Quelle est la qualité du vinyle?', a: 'Nous utilisons du vinyle professionnel avec lamination intégrée. Résistant à l\'eau, aux UV et aux rayures. Durée de vie extérieure de 3-5 ans.' },
-    { q: 'La livraison est-elle disponible?', a: 'Livraison locale gratuite à Montréal (Mile-End et environs). Envoi postal disponible partout au Canada.' },
+    { q: 'La livraison est-elle disponible?', a: 'Livraison locale gratuite à Montréal (Plateau Mont-Royal et environs). Envoi postal disponible partout au Canada.' },
     { q: 'Le design est-il inclus dans le prix?', a: 'Non - vous fournissez votre fichier prêt à imprimer. Si vous avez besoin de création ou d\'adaptation graphique, on offre ce service à part : nous contacter pour devis selon la complexité.' },
-    { q: 'Que se passe-t-il si je ne suis pas satisfait?', a: 'La promesse Massive : si le résultat ne correspond pas à ce qui a été validé, on refait votre commande. On valide toujours un proof numérique avec vous avant production.' },
+    { q: 'Comment validez-vous ma commande avant production ?', a: 'Nous validons toujours un proof numérique avec vous avant de lancer la production. Cela permet de valider les couleurs, le placement et les dimensions sur écran avant impression.' },
     { q: 'Puis-je voir un proof avant impression?', a: 'Oui, nous envoyons toujours un proof numérique par courriel avant de lancer la production. Vous validez les couleurs, la forme et les détails.' },
   ],
   en: [
@@ -199,7 +199,7 @@ export const stickerFaq = {
     { q: 'What is the production time?', a: 'Production in 24 to 72 hours depending on complexity and quantity. We\'ll confirm the exact timeline when validating your order.' },
     { q: 'Can I order a completely custom shape?', a: 'Yes! The die-cut option lets us cut your stickers in any shape. The contour follows your design exactly.' },
     { q: 'What is the vinyl quality?', a: 'We use professional-grade vinyl with integrated lamination. Water, UV, and scratch resistant. Outdoor lifespan of 3-5 years.' },
-    { q: 'Is delivery available?', a: 'Free local delivery in Montreal (Mile-End area). Postal shipping available across Canada.' },
+    { q: 'Is delivery available?', a: 'Free local delivery in Montreal (Plateau Mont-Royal area). Postal shipping available across Canada.' },
     { q: 'Is design included in the price?', a: 'No - you provide your print-ready file. If you need graphic creation or adaptation, we offer it as a separate service: contact us for a quote based on complexity.' },
     { q: 'What if I\'m not satisfied?', a: 'The Massive Promise: if the result doesn\'t match what was validated, we redo your order. We always validate a digital proof with you before production.' },
     { q: 'Can I see a proof before printing?', a: 'Yes, we always send a digital proof by email before starting production. You validate colors, shape and details.' },
@@ -209,7 +209,7 @@ export const stickerFaq = {
     { q: '¿Cuál es el plazo de producción?', a: 'Producción en 24 a 72 horas según la complejidad y cantidad. Confirmaremos el plazo exacto al validar tu pedido.' },
     { q: '¿Puedo pedir una forma totalmente personalizada?', a: '¡Sí! La opción die-cut permite cortar tus stickers en cualquier forma. El contorno sigue exactamente tu diseño.' },
     { q: '¿Cuál es la calidad del vinilo?', a: 'Utilizamos vinilo profesional con laminación integrada. Resistente al agua, a los rayos UV y a las rayaduras. Vida útil exterior de 3 a 5 años.' },
-    { q: '¿Hay entrega disponible?', a: 'Entrega local gratuita en Montreal (Mile-End y alrededores). Envío postal disponible en todo Canadá.' },
+    { q: '¿Hay entrega disponible?', a: 'Entrega local gratuita en Montreal (Plateau Mont-Royal y alrededores). Envío postal disponible en todo Canadá.' },
     { q: '¿El diseño está incluido en el precio?', a: 'No - tú provees tu archivo listo para imprimir. Si necesitas creación o adaptación gráfica, ofrecemos el servicio aparte: contáctanos para cotización según complejidad.' },
     { q: '¿Qué pasa si no estoy satisfecho?', a: 'La promesa Massive: si el resultado no corresponde a lo que fue validado, rehacemos tu pedido. Siempre validamos una prueba digital contigo antes de la producción.' },
     { q: '¿Puedo ver una prueba antes de imprimir?', a: 'Sí, siempre enviamos una prueba digital por correo electrónico antes de iniciar la producción. Validas los colores, la forma y los detalles.' },
@@ -266,7 +266,7 @@ export const fineArtFaq = {
     { q: 'Quelle est la durée de conservation?', a: 'Nos tirages fine art ont une durée de conservation de 100+ ans grâce aux encres pigmentées et papiers d\'archives. C\'est le standard des galeries et musées.' },
     { q: 'Puis-je faire encadrer mon tirage?', a: 'Oui! Cadre noir ou blanc disponible : 20$ pour carte postale et A4, 30$ pour A3, 35$ pour A3+ et 45$ pour A2. Ajoutez-le directement dans le configurateur.' },
     { q: 'Quel fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum). Nous effectuons un soft proofing (prévisualisation numérique) avant impression pour valider les couleurs avec vous.' },
-    { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible à Montréal. Envoi postal avec emballage protection pour le reste du Canada.' },
+    { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Plateau Mont-Royal. Livraison locale disponible à Montréal. Envoi postal avec emballage protection pour le reste du Canada.' },
   ],
   en: [
     { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series uses a 4-color pigment printer, excellent for all uses. The Museum Series uses a 12-color pigment printer for superior quality, perfect for photography and gallery prints.' },
@@ -274,7 +274,7 @@ export const fineArtFaq = {
     { q: 'What is the conservation lifespan?', a: 'Our fine art prints have a 100+ year conservation life thanks to pigmented inks and archival papers. This is the gallery and museum standard.' },
     { q: 'Can I get my print framed?', a: 'Yes! We offer a black or white frame option for an additional $30. You can add it directly in the configurator.' },
     { q: 'What file should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum). We perform soft proofing (digital preview) before printing to validate colors with you.' },
-    { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal. Postal shipping with protective packaging for the rest of Canada.' },
+    { q: 'Is delivery available?', a: 'Free pick-up in Plateau Mont-Royal. Local delivery available in Montreal. Postal shipping with protective packaging for the rest of Canada.' },
   ],
   es: [
     { q: '¿Cuál es la diferencia entre Serie Studio y Serie Museo?', a: 'La Serie Studio utiliza una impresora de 4 tintas pigmentadas, excelente para todos los usos. La Serie Museo utiliza una impresora de 12 tintas pigmentadas para una calidad superior, perfecta para fotografía e impresiones de galería.' },
@@ -282,7 +282,7 @@ export const fineArtFaq = {
     { q: '¿Cuál es la duración de conservación?', a: 'Nuestras impresiones fine art tienen una duración de conservación de más de 100 años gracias a las tintas pigmentadas y papeles de archivo. Es el estándar de galerías y museos.' },
     { q: '¿Puedo enmarcar mi impresión?', a: '¡Sí! Ofrecemos la opción de marco negro o blanco por $30 adicionales. Puedes agregarlo directamente en el configurador.' },
     { q: '¿Qué archivo debo proporcionar?', a: 'Idealmente un archivo de alta resolución (300 DPI mínimo). Realizamos un soft proofing (previsualización digital) antes de imprimir para validar los colores contigo.' },
-    { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Mile-End. Entrega local disponible en Montreal. Envío postal con embalaje protector para el resto de Canadá.' },
+    { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Plateau Mont-Royal. Entrega local disponible en Montreal. Envío postal con embalaje protector para el resto de Canadá.' },
   ],
 };
 
@@ -453,7 +453,7 @@ export const flyerFaq = {
     { q: 'Offrez-vous l\'impression recto-verso?', a: 'Oui! L\'option recto-verso est disponible avec un supplément de 30%. Parfait pour les flyers avec plus d\'informations.' },
     { q: 'Quel est le délai de production?', a: 'Le délai varie selon la quantité. Service express disponible sur demande.' },
     { q: 'Puis-je faire faire le design aussi?', a: 'Oui, notre service de design graphique est disponible en option. Contactez-nous pour un devis incluant la création graphique.' },
-    { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Mile-End. Livraison locale disponible à Montréal. Idéal pour les événements du Plateau et Mile-End.' },
+    { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Plateau Mont-Royal. Livraison locale disponible à Montréal. Idéal pour les événements du Plateau Mont-Royal et alentours.' },
   ],
   en: [
     { q: 'What formats do you offer?', a: 'A6 (4x6"), A5, letter (8.5x11") flyers. Postcards and custom formats available on request.' },
@@ -461,7 +461,7 @@ export const flyerFaq = {
     { q: 'Do you offer double-sided printing?', a: 'Yes! Double-sided option is available with a 30% surcharge. Perfect for flyers with more information.' },
     { q: 'What is the production time?', a: 'Production time varies depending on quantity. Express service available on request.' },
     { q: 'Can you design my flyers too?', a: 'Yes, our graphic design service is available as an option. Contact us for a quote including graphic creation.' },
-    { q: 'Is delivery available?', a: 'Free pick-up in Mile-End. Local delivery available in Montreal. Ideal for Plateau and Mile-End events.' },
+    { q: 'Is delivery available?', a: 'Free pick-up in Plateau Mont-Royal. Local delivery available in Montreal. Ideal for Plateau Mont-Royal and nearby events.' },
   ],
   es: [
     { q: '¿Qué formatos ofrecen?', a: 'Flyers A6 (4x6"), A5, carta (8.5x11"). Postales y formatos personalizados disponibles bajo pedido.' },
@@ -469,7 +469,7 @@ export const flyerFaq = {
     { q: '¿Ofrecen impresión a doble cara?', a: '¡Sí! La opción a doble cara está disponible con un suplemento del 30%. Perfecto para flyers con más información.' },
     { q: '¿Cuál es el plazo de producción?', a: 'El plazo varía según la cantidad. Servicio express disponible bajo pedido.' },
     { q: '¿Pueden hacer el diseño también?', a: 'Sí, nuestro servicio de diseño gráfico está disponible como opción. Contáctanos para un presupuesto que incluya la creación gráfica.' },
-    { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Mile-End. Entrega local disponible en Montreal. Ideal para eventos del Plateau y Mile-End.' },
+    { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Plateau Mont-Royal. Entrega local disponible en Montreal. Ideal para eventos del Plateau Mont-Royal y alrededores.' },
   ],
 };
 

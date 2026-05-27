@@ -620,7 +620,7 @@ function ArtisteDetail({ subdomainSlug }) {
       'Imprimés par Massive, Montréal',
       'Papiers d\'archives, encres pigmentées',
       'Soft proofing et calibration couleurs inclus',
-      'Pick-up gratuit Mile-End ou livraison',
+      'Pick-up gratuit Plateau Mont-Royal ou livraison',
       'Cadre noir ou blanc disponible',
     ],
     en: [
@@ -628,7 +628,7 @@ function ArtisteDetail({ subdomainSlug }) {
       'Printed by Massive, Montreal',
       'Archival papers, pigmented inks',
       'Soft proofing and color calibration included',
-      'Free Mile-End pick-up or delivery',
+      'Free Plateau Mont-Royal pick-up or delivery',
       'Black or white frame available',
     ],
     es: [
@@ -636,7 +636,7 @@ function ArtisteDetail({ subdomainSlug }) {
       'Impresas por Massive, Montreal',
       'Papeles de archivo, tintas pigmentadas',
       'Soft proofing y calibracion de colores incluidos',
-      'Recogida gratuita en Mile-End o envio',
+      'Recogida gratuita en Plateau Mont-Royal o envio',
       'Marco negro o blanco disponible',
     ],
   });
@@ -645,24 +645,24 @@ function ArtisteDetail({ subdomainSlug }) {
     fr: [
       { step: '1', title: 'Choisissez', desc: 'Sélectionnez une oeuvre et configurez votre tirage - série, format et cadre.' },
       { step: '2', title: 'On imprime', desc: 'Impression professionnelle dans nos studios. Soft proofing et contrôle qualité avant envoi.' },
-      { step: '3', title: 'Livraison', desc: 'Pick-up gratuit au Mile-End ou livraison partout dans le monde. Frais de port configurables lors du paiement.' },
+      { step: '3', title: 'Livraison', desc: 'Pick-up gratuit au Plateau Mont-Royal ou livraison partout dans le monde. Frais de port configurables lors du paiement.' },
     ],
     en: [
       { step: '1', title: 'Choose', desc: 'Select an artwork and configure your print - series, format and frame.' },
       { step: '2', title: 'We print', desc: 'Professional printing in our studios. Soft proofing and quality control before shipping.' },
-      { step: '3', title: 'Delivery', desc: 'Free Mile-End pick-up or worldwide shipping. Shipping fees configurable at checkout.' },
+      { step: '3', title: 'Delivery', desc: 'Free Plateau Mont-Royal pick-up or worldwide shipping. Shipping fees configurable at checkout.' },
     ],
     es: [
       { step: '1', title: 'Elige', desc: 'Selecciona una obra y configura tu impresion - serie, formato y marco.' },
       { step: '2', title: 'Imprimimos', desc: 'Impresion profesional en nuestros estudios. Soft proofing y control de calidad antes del envio.' },
-      { step: '3', title: 'Entrega', desc: 'Recogida gratuita en Mile-End o envio a todo el mundo. Gastos de envio configurables en el pago.' },
+      { step: '3', title: 'Entrega', desc: 'Recogida gratuita en Plateau Mont-Royal o envio a todo el mundo. Gastos de envio configurables en el pago.' },
     ],
   });
 
   const equipmentItems = [
     { name: tx({ fr: 'Impression pigmentée 4 couleurs', en: '4-Color Pigment Printing', es: 'Impresion pigmentada 4 colores' }), desc: tx({ fr: 'Qualité décoration - Série Studio', en: 'Decoration quality - Studio Series', es: 'Calidad decoracion - Serie Studio' }) },
     { name: tx({ fr: 'Impression pigmentée 12 couleurs', en: '12-Color Pigment Printing', es: 'Impresion pigmentada 12 colores' }), desc: tx({ fr: 'Qualité galerie - Série Musée', en: 'Gallery quality - Museum Series', es: 'Calidad galeria - Serie Museo' }) },
-    { name: tx({ fr: 'Papiers Fine Art', en: 'Fine Art Papers', es: 'Papeles Fine Art' }), desc: 'Hahnemuhle, Canson, Ilford' },
+    { name: tx({ fr: 'Papiers Fine Art', en: 'Fine Art Papers', es: 'Papeles Fine Art' }), desc: tx({ fr: 'coton, alpha-cellulose, archives', en: 'cotton, alpha-cellulose, archival', es: 'algodon, alfa-celulosa, archivo' }) },
   ];
 
   const faqItems = tx({

@@ -18,7 +18,7 @@ export function getOrganizationSchema() {
     telephone: '+15146531423',
     foundingDate: '2022',
     foundingLocation: 'Montreal, QC, Canada',
-    description: 'Massive Medias - Imprimeur a Montreal specialise en impression fine art, stickers personnalises, sublimation textile, design graphique, developpement web et SEO. Production locale au Mile-End.',
+    description: 'Massive Medias - Imprimeur a Montreal specialise en impression fine art, stickers personnalises, sublimation textile, design graphique, developpement web et SEO. Production locale au Plateau Mont-Royal.',
     knowsLanguage: ['fr', 'en', 'es'],
     sameAs: [
       'https://instagram.com/massivemedias',
@@ -44,9 +44,9 @@ export function getOrganizationSchema() {
 
 export function getLocalBusinessSchema(lang) {
   const descMap = {
-    fr: 'Massive Medias - Imprimeur a Montreal. Impression fine art, stickers personnalises die-cut, sublimation textile, design graphique, developpement web et webmastering. Atelier prive au Mile-End sur rendez-vous uniquement. Print Montreal, stickers Montreal.',
-    en: 'Massive Medias - Printer in Montreal. Fine art printing, custom die-cut stickers, textile sublimation, graphic design, web development and webmastering. Private studio in Mile-End, by appointment only. Print Montreal, stickers Montreal.',
-    es: 'Massive Medias - Impresor en Montreal. Impresion fine art, stickers personalizados troquelados, sublimacion textil, diseno grafico, desarrollo web y webmastering. Atelier privado en Mile-End, solo con cita previa.',
+    fr: 'Massive Medias - Imprimeur a Montreal. Impression fine art, stickers personnalises die-cut, sublimation textile, design graphique, developpement web et webmastering. Atelier prive au Plateau Mont-Royal sur rendez-vous uniquement. Print Montreal, stickers Montreal.',
+    en: 'Massive Medias - Printer in Montreal. Fine art printing, custom die-cut stickers, textile sublimation, graphic design, web development and webmastering. Private studio in Plateau Mont-Royal, by appointment only. Print Montreal, stickers Montreal.',
+    es: 'Massive Medias - Impresor en Montreal. Impresion fine art, stickers personalizados troquelados, sublimacion textil, diseno grafico, desarrollo web y webmastering. Atelier privado en Plateau Mont-Royal, solo con cita previa.',
   };
   return {
     '@context': 'https://schema.org',

@@ -21,9 +21,9 @@ function AnnouncementBar() {
           <div className="flex items-center justify-center gap-3 py-2 px-4 text-center">
             <span className="text-xs font-medium">
               {tx({
-                fr: 'Livraison gratuite Mile-End - Impression fine art à partir de 16$',
-                en: 'Free Mile-End delivery - Fine art prints starting at $16',
-                es: 'Envio gratis Mile-End - Impresiones fine art desde $16',
+                fr: 'Livraison gratuite Plateau Mont-Royal - Impression fine art à partir de 16$',
+                en: 'Free Plateau Mont-Royal delivery - Fine art prints starting at $16',
+                es: 'Envio gratis Plateau Mont-Royal - Impresiones fine art desde $16',
               })}
             </span>
             <Link to="/boutique" className="text-xs font-bold underline underline-offset-2 hover:opacity-80 transition-opacity">
