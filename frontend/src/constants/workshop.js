@@ -1,6 +1,6 @@
 // Constantes centralisees pour l'avis "atelier sur rendez-vous uniquement".
-// Utilise par WorkshopAppointmentBar (bandeau global) et injecte dans les
-// meta descriptions, FAQ, Schema.org JSON-LD, tunnel d'achat et emails.
+// Injecte dans Schema.org JSON-LD, meta descriptions, FAQ, tunnel d'achat,
+// emails, et mentions discretes sur Home + APropos (Contact via i18n).
 // SSOT - ne PAS dupliquer ces strings ailleurs dans le codebase.
 
 export const WORKSHOP_NOTICE = {
