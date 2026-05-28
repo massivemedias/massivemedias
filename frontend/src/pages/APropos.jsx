@@ -184,7 +184,7 @@ function APropos() {
             <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">
                 <MapPin size={20} className="text-accent" />
-                <span className="text-accent font-semibold">
+                <span className="text-white font-semibold">
                   {(content && bl(content, 'aboutSpaceLocation', lang)) || t('aboutPage.space.location')}
                 </span>
               </div>
