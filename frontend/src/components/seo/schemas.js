@@ -1,3 +1,5 @@
+import { WORKSHOP_NOTICE } from '../../constants/workshop';
+
 const SITE_URL = 'https://massivemedias.com';
 
 export function getOrganizationSchema() {
@@ -18,7 +20,7 @@ export function getOrganizationSchema() {
     telephone: '+15146531423',
     foundingDate: '2022',
     foundingLocation: 'Montreal, QC, Canada',
-    description: 'Massive Medias - Imprimeur a Montreal specialise en impression fine art, stickers personnalises, sublimation textile, design graphique, developpement web et SEO. Production locale au Plateau Mont-Royal.',
+    description: `Massive Medias - Imprimeur a Montreal specialise en impression fine art, stickers personnalises, sublimation textile, design graphique, developpement web et SEO. Production locale au Plateau Mont-Royal. ${WORKSHOP_NOTICE.fr}.`,
     knowsLanguage: ['fr', 'en', 'es'],
     sameAs: [
       'https://instagram.com/massivemedias',

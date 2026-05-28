@@ -15,6 +15,7 @@ import {
   longsleeveColors, merchLongSleevePrice, getLongSleeveImage,
 } from '../data/merchData';
 import { formatPrice } from '../utils/formatCurrency';
+import { WORKSHOP_NOTICE_SHORT } from '../constants/workshop';
 
 const merchConfig = {
   tshirt: {
@@ -31,9 +32,9 @@ const merchConfig = {
       es: 'Algodón preencogido, impresión duradera. 10 colores.',
     },
     seoDesc: {
-      fr: 'T-Shirt Massive. 10 couleurs, tailles S à 3XL.',
-      en: 'Massive T-Shirt. 10 colors, sizes S to 3XL.',
-      es: 'Camiseta Massive. 10 colores, tallas S a 3XL.',
+      fr: `T-Shirt Massive. 10 couleurs, tailles S à 3XL. ${WORKSHOP_NOTICE_SHORT.fr}`,
+      en: `Massive T-Shirt. 10 colors, sizes S to 3XL. ${WORKSHOP_NOTICE_SHORT.en}`,
+      es: `Camiseta Massive. 10 colores, tallas S a 3XL. ${WORKSHOP_NOTICE_SHORT.es}`,
     },
   },
   hoodie: {
@@ -50,9 +51,9 @@ const merchConfig = {
       es: 'Forro polar grueso, impresión duradera. 10 colores.',
     },
     seoDesc: {
-      fr: 'Hoodie Massive. 10 couleurs, tailles S à 3XL.',
-      en: 'Massive Hoodie. 10 colors, sizes S to 3XL.',
-      es: 'Sudadera Massive. 10 colores, tallas S a 3XL.',
+      fr: `Hoodie Massive. 10 couleurs, tailles S à 3XL. ${WORKSHOP_NOTICE_SHORT.fr}`,
+      en: `Massive Hoodie. 10 colors, sizes S to 3XL. ${WORKSHOP_NOTICE_SHORT.en}`,
+      es: `Sudadera Massive. 10 colores, tallas S a 3XL. ${WORKSHOP_NOTICE_SHORT.es}`,
     },
   },
   longsleeve: {
@@ -69,9 +70,9 @@ const merchConfig = {
       es: 'Manga larga, impresión duradera. 10 colores.',
     },
     seoDesc: {
-      fr: 'Long Sleeve Massive. 10 couleurs, tailles S à 3XL.',
-      en: 'Massive Long Sleeve. 10 colors, sizes S to 3XL.',
-      es: 'Sudadera manga larga Massive. 10 colores, tallas S a 3XL.',
+      fr: `Long Sleeve Massive. 10 couleurs, tailles S à 3XL. ${WORKSHOP_NOTICE_SHORT.fr}`,
+      en: `Massive Long Sleeve. 10 colors, sizes S to 3XL. ${WORKSHOP_NOTICE_SHORT.en}`,
+      es: `Sudadera manga larga Massive. 10 colores, tallas S a 3XL. ${WORKSHOP_NOTICE_SHORT.es}`,
     },
   },
 };

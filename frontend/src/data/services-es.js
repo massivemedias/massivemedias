@@ -1,5 +1,6 @@
 import { Printer, Sticker, Shirt, Palette, Globe } from 'lucide-react';
 import { thumb, img } from '../utils/paths';
+import { WORKSHOP_NOTICE_SHORT } from '../constants/workshop';
 
 const servicesDataEs = {
   'prints': {
@@ -113,11 +114,11 @@ const servicesDataEs = {
       { q: '¿Qué formato de archivo debo proporcionar?', a: 'Idealmente un archivo de alta resolución (300 DPI mínimo) en TIFF, PNG o JPEG. También podemos trabajar con archivos PSD o PDF.' },
       { q: '¿Ofrecen enmarcado?', a: '¡Sí, ofrecemos enmarcado bajo pedido a partir de $30. Marcos negros, blancos o madera natural disponibles.' },
       { q: '¿Cuál es el tiempo de producción?', a: 'Generalmente 24 a 48 horas para impresiones estándar. Pedidos en volumen o gran formato pueden requerir de 3 a 5 días.' },
-      { q: '¿Se puede recoger en persona?', a: '¡Sí! Recogida gratuita en Plateau Mont-Royal. También ofrecemos entrega local en Montreal.' },
+      { q: '¿Se puede recoger en persona?', a: '¡Sí! Recogida gratuita en Plateau Mont-Royal con cita previa. También ofrecemos entrega local en Montreal.' },
     ],
     seo: {
       title: 'Impresion Afiches, Posters & Fine Art Montreal | Massive Medias',
-      description: 'Impresion premium de afiches, posters y tirajes fine art en Montreal. Papel Photo Rag, tintas pigmentarias 12 colores, calidad galeria. Estudio creativo en Plateau Mont-Royal, cotizacion rapida, envio local disponible. Calidad premium.',
+      description: `Impresion premium de afiches y tirajes fine art en Montreal. Papel Photo Rag, 12 tintas pigmentarias. Calidad galeria. Estudio Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.es}`,
     },
   },
 
@@ -254,7 +255,7 @@ const servicesDataEs = {
     ],
     seo: {
       title: 'Impresion Stickers & Adhesivos Vinilo Montreal | Massive Medias',
-      description: 'Impresion de stickers y adhesivos de vinilo premium en Montreal. Troquelados a medida, holografico, mate, brillante, transparente. Calidad premium, cotizacion rapida en 24h. Estudio creativo Plateau Mont-Royal, desde 25 unidades.',
+      description: `Stickers vinilo premium en Montreal. Troquelados, holografico, mate, brillante, transparente. Desde 25 unidades. Estudio Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.es}`,
     },
   },
 
@@ -312,7 +313,7 @@ const servicesDataEs = {
     ],
     seo: {
       title: 'Sublimacion & Merch Montreal | Camisetas, Hoodies, Tazas - Massive',
-      description: 'Sublimacion textil personalizada en Montreal. Camisetas, hoodies, long sleeves, rinoneras, tazas, termos. Merch de artista y corporativo. Desde 1 unidad. Produccion local Plateau Mont-Royal.',
+      description: `Sublimacion textil en Montreal. Camisetas, hoodies, tazas, tote bags. Merch de artista y corporativo. Estudio Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.es}`,
     },
   },
 
@@ -388,7 +389,7 @@ const servicesDataEs = {
     ],
     seo: {
       title: 'Diseno Grafico Montreal | Logos, Identidad Visual & Afiches - Massive',
-      description: 'Diseno grafico profesional en Montreal. Logos, identidades visuales, afiches, portadas de album, packaging. Creacion a medida. Estudio creativo Plateau Mont-Royal.',
+      description: `Diseno grafico profesional en Montreal. Logos, identidades visuales, afiches, packaging. Estudio Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.es}`,
     },
   },
 
@@ -567,7 +568,7 @@ const servicesDataEs = {
     ],
     seo: {
       title: 'Agencia Web & Creacion de Sitios Web Montreal | Massive Medias',
-      description: 'Agencia web y creacion de sitios web a medida en Montreal. Sitios vitrina, e-commerce, aplicaciones, SEO local y posicionamiento. React, Next.js, WordPress, Shopify. Calidad premium, cotizacion rapida. Estudio creativo Plateau Mont-Royal.',
+      description: `Agencia web en Montreal. Sitios vitrina, e-commerce, aplicaciones, SEO local. React. Estudio Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.es}`,
     },
   },
 };

@@ -266,7 +266,7 @@ export const fineArtFaq = {
     { q: 'Quelle est la durée de conservation?', a: 'Nos tirages fine art ont une durée de conservation de 100+ ans grâce aux encres pigmentées et papiers d\'archives. C\'est le standard des galeries et musées.' },
     { q: 'Puis-je faire encadrer mon tirage?', a: 'Oui! Cadre noir ou blanc disponible : 20$ pour carte postale et A4, 30$ pour A3, 35$ pour A3+ et 45$ pour A2. Ajoutez-le directement dans le configurateur.' },
     { q: 'Quel fichier dois-je fournir?', a: 'Idéalement un fichier haute résolution (300 DPI minimum). Nous effectuons un soft proofing (prévisualisation numérique) avant impression pour valider les couleurs avec vous.' },
-    { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Plateau Mont-Royal. Livraison locale disponible à Montréal. Envoi postal avec emballage protection pour le reste du Canada.' },
+    { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Plateau Mont-Royal sur rendez-vous uniquement. Livraison locale disponible à Montréal. Envoi postal avec emballage protection pour le reste du Canada.' },
   ],
   en: [
     { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series uses a 4-color pigment printer, excellent for all uses. The Museum Series uses a 12-color pigment printer for superior quality, perfect for photography and gallery prints.' },
@@ -274,7 +274,7 @@ export const fineArtFaq = {
     { q: 'What is the conservation lifespan?', a: 'Our fine art prints have a 100+ year conservation life thanks to pigmented inks and archival papers. This is the gallery and museum standard.' },
     { q: 'Can I get my print framed?', a: 'Yes! We offer a black or white frame option for an additional $30. You can add it directly in the configurator.' },
     { q: 'What file should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum). We perform soft proofing (digital preview) before printing to validate colors with you.' },
-    { q: 'Is delivery available?', a: 'Free pick-up in Plateau Mont-Royal. Local delivery available in Montreal. Postal shipping with protective packaging for the rest of Canada.' },
+    { q: 'Is delivery available?', a: 'Free pick-up in Plateau Mont-Royal by appointment only. Local delivery available in Montreal. Postal shipping with protective packaging for the rest of Canada.' },
   ],
   es: [
     { q: '¿Cuál es la diferencia entre Serie Studio y Serie Museo?', a: 'La Serie Studio utiliza una impresora de 4 tintas pigmentadas, excelente para todos los usos. La Serie Museo utiliza una impresora de 12 tintas pigmentadas para una calidad superior, perfecta para fotografía e impresiones de galería.' },
@@ -282,7 +282,7 @@ export const fineArtFaq = {
     { q: '¿Cuál es la duración de conservación?', a: 'Nuestras impresiones fine art tienen una duración de conservación de más de 100 años gracias a las tintas pigmentadas y papeles de archivo. Es el estándar de galerías y museos.' },
     { q: '¿Puedo enmarcar mi impresión?', a: '¡Sí! Ofrecemos la opción de marco negro o blanco por $30 adicionales. Puedes agregarlo directamente en el configurador.' },
     { q: '¿Qué archivo debo proporcionar?', a: 'Idealmente un archivo de alta resolución (300 DPI mínimo). Realizamos un soft proofing (previsualización digital) antes de imprimir para validar los colores contigo.' },
-    { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Plateau Mont-Royal. Entrega local disponible en Montreal. Envío postal con embalaje protector para el resto de Canadá.' },
+    { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Plateau Mont-Royal con cita previa. Entrega local disponible en Montreal. Envío postal con embalaje protector para el resto de Canadá.' },
   ],
 };
 
@@ -453,7 +453,7 @@ export const flyerFaq = {
     { q: 'Offrez-vous l\'impression recto-verso?', a: 'Oui! L\'option recto-verso est disponible avec un supplément de 30%. Parfait pour les flyers avec plus d\'informations.' },
     { q: 'Quel est le délai de production?', a: 'Le délai varie selon la quantité. Service express disponible sur demande.' },
     { q: 'Puis-je faire faire le design aussi?', a: 'Oui, notre service de design graphique est disponible en option. Contactez-nous pour un devis incluant la création graphique.' },
-    { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Plateau Mont-Royal. Livraison locale disponible à Montréal. Idéal pour les événements du Plateau Mont-Royal et alentours.' },
+    { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Plateau Mont-Royal sur rendez-vous uniquement. Livraison locale disponible à Montréal. Idéal pour les événements du Plateau Mont-Royal et alentours.' },
   ],
   en: [
     { q: 'What formats do you offer?', a: 'A6 (4x6"), A5, letter (8.5x11") flyers. Postcards and custom formats available on request.' },
@@ -461,7 +461,7 @@ export const flyerFaq = {
     { q: 'Do you offer double-sided printing?', a: 'Yes! Double-sided option is available with a 30% surcharge. Perfect for flyers with more information.' },
     { q: 'What is the production time?', a: 'Production time varies depending on quantity. Express service available on request.' },
     { q: 'Can you design my flyers too?', a: 'Yes, our graphic design service is available as an option. Contact us for a quote including graphic creation.' },
-    { q: 'Is delivery available?', a: 'Free pick-up in Plateau Mont-Royal. Local delivery available in Montreal. Ideal for Plateau Mont-Royal and nearby events.' },
+    { q: 'Is delivery available?', a: 'Free pick-up in Plateau Mont-Royal by appointment only. Local delivery available in Montreal. Ideal for Plateau Mont-Royal and nearby events.' },
   ],
   es: [
     { q: '¿Qué formatos ofrecen?', a: 'Flyers A6 (4x6"), A5, carta (8.5x11"). Postales y formatos personalizados disponibles bajo pedido.' },
@@ -469,7 +469,7 @@ export const flyerFaq = {
     { q: '¿Ofrecen impresión a doble cara?', a: '¡Sí! La opción a doble cara está disponible con un suplemento del 30%. Perfecto para flyers con más información.' },
     { q: '¿Cuál es el plazo de producción?', a: 'El plazo varía según la cantidad. Servicio express disponible bajo pedido.' },
     { q: '¿Pueden hacer el diseño también?', a: 'Sí, nuestro servicio de diseño gráfico está disponible como opción. Contáctanos para un presupuesto que incluya la creación gráfica.' },
-    { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Plateau Mont-Royal. Entrega local disponible en Montreal. Ideal para eventos del Plateau Mont-Royal y alrededores.' },
+    { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Plateau Mont-Royal con cita previa. Entrega local disponible en Montreal. Ideal para eventos del Plateau Mont-Royal y alrededores.' },
   ],
 };
 

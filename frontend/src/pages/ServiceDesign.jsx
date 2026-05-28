@@ -4,6 +4,7 @@ import ConfiguratorDesign from '../components/configurators/ConfiguratorDesign';
 import { useProduct } from '../hooks/useProducts';
 import { mediaUrl } from '../utils/cms';
 import { designImages, designFaq as defaultFaq } from '../data/products';
+import { WORKSHOP_NOTICE_SHORT } from '../constants/workshop';
 
 function ServiceDesign() {
   const cmsProduct = useProduct('design');
@@ -34,9 +35,9 @@ function ServiceDesign() {
       startingPrice={85}
       pageTitle={{ fr: 'Design Graphique Montréal - Logos, Affiches, Identité | Massive', en: 'Graphic Design Montreal - Logos, Posters, Identity | Massive', es: 'Diseno Grafico Montreal - Logos, Afiches, Identidad | Massive' }}
       metaDescription={{
-        fr: 'Design graphique professionnel à Montréal. Logos, identités visuelles, affiches, pochettes album, packaging. Création sur mesure. Studio créatif Plateau Mont-Royal. Depuis 2022.',
-        en: 'Professional graphic design in Montreal. Logos, visual identities, posters, album covers, packaging. Custom creation. Plateau Mont-Royal creative studio. Since 2022.',
-        es: 'Logos, identidades visuales, afiches, portadas de \u00e1lbum. Dise\u00f1o gr\u00e1fico profesional. Montreal.',
+        fr: `Design graphique professionnel à Montréal. Logos, identités visuelles, affiches, packaging. Studio créatif Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.fr}`,
+        en: `Professional graphic design in Montreal. Logos, visual identities, posters, packaging. Custom creation. Plateau Mont-Royal studio. ${WORKSHOP_NOTICE_SHORT.en}`,
+        es: `Logos, identidades visuales, afiches, portadas de \u00e1lbum. Dise\u00f1o gr\u00e1fico profesional. Montreal. ${WORKSHOP_NOTICE_SHORT.es}`,
       }}
       productTitle={{ fr: 'Design Graphique', en: 'Graphic Design', es: 'Dise\u00f1o Gr\u00e1fico' }}
       productSubtitle={{

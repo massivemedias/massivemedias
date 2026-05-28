@@ -81,7 +81,7 @@ function Header() {
   return (
     <>
       {/* ── Header ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 transition-colors duration-300 header-bg">
+      <header className="fixed top-12 sm:top-9 left-0 right-0 z-50 transition-colors duration-300 header-bg">
         <nav className="mx-4 lg:mx-6 py-2">
           <div className="flex items-center justify-between">
             {/* Logo */}
