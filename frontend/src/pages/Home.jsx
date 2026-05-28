@@ -11,6 +11,7 @@ import {
   Music,
   Quote,
   ShoppingBag,
+  Calendar,
 } from 'lucide-react';
 import { useArtists } from '../hooks/useArtists';
 import ServiceCard from '../components/ServiceCard';
@@ -25,6 +26,7 @@ import { useSiteContent } from '../hooks/useSiteContent';
 import { bl, mediaUrl } from '../utils/cms';
 import { getIcon } from '../utils/iconMap';
 import api from '../services/api';
+import { WORKSHOP_ADDRESS_FULL } from '../constants/workshop';
 
 // Fallback icons & data if CMS not available
 const fallbackServiceIcons = ['Printer', 'Sticker', 'Shirt', 'Palette', 'Globe'];
@@ -250,6 +252,20 @@ function Home() {
                 {(content && bl(content, 'heroCta2', lang)) || t('home.hero.cta2')}
               </Link>
             </motion.div>
+
+            {/* RDV-NOTICE (28 mai 2026) : ligne discrete sous CTA hero pour
+                signaler atelier sur RDV sans encart criard. text-xs gris
+                muet, Calendar 12px, animate opacity 0.75 pour rester lisible
+                sur fond hero-aurora. */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.75 }}
+              transition={{ delay: 1.2, duration: 0.5 }}
+              className="mt-8 text-xs text-grey-muted flex items-center justify-center gap-1.5"
+            >
+              <Calendar size={12} className="opacity-50 flex-shrink-0" aria-hidden="true" />
+              <span>{tx(WORKSHOP_ADDRESS_FULL)}</span>
+            </motion.p>
 
           </motion.div>
         </div>

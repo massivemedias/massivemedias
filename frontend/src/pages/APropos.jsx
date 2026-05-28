@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { MapPin } from 'lucide-react';
+import { MapPin, Calendar } from 'lucide-react';
 import { thumb } from '../utils/paths';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { bl, mediaUrl } from '../utils/cms';
+import { WORKSHOP_NOTICE } from '../constants/workshop';
 
 function APropos() {
   const { t, lang, tx } = useLang();
@@ -187,6 +188,13 @@ function APropos() {
                   {(content && bl(content, 'aboutSpaceLocation', lang)) || t('aboutPage.space.location')}
                 </span>
               </div>
+              {/* RDV-NOTICE (28 mai 2026) : ligne discrete sous MapPin
+                  location, avant le H2. text-xs grey-light pour contraste
+                  sur overlay sombre, Calendar 12px opacity 50. */}
+              <p className="text-xs text-grey-light opacity-70 flex items-center gap-1.5 mb-4 -mt-1">
+                <Calendar size={12} className="opacity-50 flex-shrink-0" aria-hidden="true" />
+                <span>{tx(WORKSHOP_NOTICE)}</span>
+              </p>
               <h2 className="text-3xl md:text-4xl font-heading font-bold text-heading mb-4">
                 {t('aboutPage.space.title')}
               </h2>
