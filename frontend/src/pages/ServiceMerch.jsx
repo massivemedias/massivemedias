@@ -5,6 +5,7 @@ import MerchPauseBanner from '../components/MerchPauseBanner';
 import { useProduct } from '../hooks/useProducts';
 import { mediaUrl } from '../utils/cms';
 import { sublimationImages, sublimationFaq as defaultFaq } from '../data/products';
+import { WORKSHOP_NOTICE_SHORT } from '../constants/workshop';
 
 function ServiceMerch() {
   const cmsProduct = useProduct('sublimation');
@@ -42,9 +43,9 @@ function ServiceMerch() {
       startingPrice={15}
       pageTitle={{ fr: 'Sublimation Textile Montréal - T-Shirts, Hoodies, Mugs | Massive', en: 'Textile Sublimation Montreal - T-Shirts, Hoodies, Mugs | Massive', es: 'Sublimacion Textil Montreal - Camisetas, Hoodies, Tazas | Massive' }}
       metaDescription={{
-        fr: 'Sublimation textile à Montréal. T-shirts, hoodies, long sleeves, mugs, tote bags. Impression all-over permanente. Merch d\'artiste et corporatif. À partir d\'1 unité. Production locale Plateau Mont-Royal.',
-        en: 'Textile sublimation in Montreal. T-shirts, hoodies, long sleeves, mugs, tote bags. Permanent all-over printing. Artist and corporate merch. From 1 unit. Local production Plateau Mont-Royal.',
-        es: 'Camisetas, hoodies, tazas en sublimaci\u00f3n. Impresi\u00f3n permanente. Merch de artista personalizado. Montreal.',
+        fr: `Sublimation textile à Montréal. T-shirts, hoodies, mugs, tote bags. Impression all-over permanente. Merch artiste et corporatif. Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.fr}`,
+        en: `Textile sublimation Montreal. T-shirts, hoodies, mugs, tote bags. Permanent all-over printing. Artist and corporate merch. Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.en}`,
+        es: `Camisetas, hoodies, tazas en sublimaci\u00f3n. Impresi\u00f3n permanente. Merch de artista personalizado. Montreal. ${WORKSHOP_NOTICE_SHORT.es}`,
       }}
       productTitle={{ fr: 'Sublimation & Merch', en: 'Sublimation & Merch', es: 'Sublimaci\u00f3n y Merch' }}
       productSubtitle={{

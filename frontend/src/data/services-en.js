@@ -1,5 +1,6 @@
 import { Printer, Sticker, Shirt, Palette, Globe } from 'lucide-react';
 import { thumb, img } from '../utils/paths';
+import { WORKSHOP_NOTICE_SHORT } from '../constants/workshop';
 
 const servicesDataEn = {
   'prints': {
@@ -113,11 +114,11 @@ const servicesDataEn = {
       { q: 'What file format should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum) in TIFF, PNG or JPEG. We can also work from PSD or PDF files.' },
       { q: 'Do you offer framing?', a: 'Yes, we offer framing on request starting at $30. Black, white or natural wood frames available.' },
       { q: 'What is the production time?', a: 'Generally 24 to 48 hours for standard prints. Volume orders or large format may require 3 to 5 days.' },
-      { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Plateau Mont-Royal. We also offer local delivery in Montreal.' },
+      { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Plateau Mont-Royal by appointment only. We also offer local delivery in Montreal.' },
     ],
     seo: {
       title: 'Poster, Event & Fine Art Printing Montreal | Massive Medias',
-      description: 'Premium poster, event and fine art printing in Montreal. Photo Rag paper, 12-color pigment inks, gallery quality. Plateau Mont-Royal creative studio, fast quote, local delivery available. Premium quality.',
+      description: `Premium poster and fine art printing in Montreal. Photo Rag, 12-color pigment inks, gallery quality. Plateau Mont-Royal studio. ${WORKSHOP_NOTICE_SHORT.en}`,
     },
   },
 
@@ -254,7 +255,7 @@ const servicesDataEn = {
     ],
     seo: {
       title: 'Premium Vinyl Sticker & Decal Printing Montreal | Massive Medias',
-      description: 'Premium vinyl sticker and decal printing in Montreal. Custom die-cut, holographic, matte, glossy, clear. Premium quality, 24h fast quote. Plateau Mont-Royal creative studio, from 25 units.',
+      description: `Premium vinyl sticker printing Montreal. Custom die-cut, holographic, matte, glossy, clear. From 25 units. Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.en}`,
     },
   },
 
@@ -312,7 +313,7 @@ const servicesDataEn = {
     ],
     seo: {
       title: 'Sublimation & Merch Montreal | T-Shirts, Hoodies, Mugs - Massive',
-      description: 'Custom textile sublimation in Montreal. T-shirts, hoodies, long sleeves, fanny packs, mugs, tumblers. Artist and corporate merch. From 1 unit. Local production in Plateau Mont-Royal.',
+      description: `Custom textile sublimation in Montreal. T-shirts, hoodies, mugs, tote bags. Artist and corporate merch. Plateau Mont-Royal production. ${WORKSHOP_NOTICE_SHORT.en}`,
     },
   },
 
@@ -388,7 +389,7 @@ const servicesDataEn = {
     ],
     seo: {
       title: 'Graphic Design Montreal | Logos, Branding & Posters - Massive',
-      description: 'Professional graphic design in Montreal. Logos, visual identities, posters, album covers, packaging. Custom creation. Plateau Mont-Royal creative studio.',
+      description: `Professional graphic design in Montreal. Logos, visual identities, posters, packaging. Custom creation. Plateau Mont-Royal studio. ${WORKSHOP_NOTICE_SHORT.en}`,
     },
   },
 
@@ -567,7 +568,7 @@ const servicesDataEn = {
     ],
     seo: {
       title: 'Web Agency & Custom Website Design Montreal | Massive Medias',
-      description: 'Web agency and custom website design in Montreal. Showcase sites, e-commerce, web apps, local SEO and search ranking. React, Next.js, WordPress, Shopify. Premium quality, fast quote. Plateau Mont-Royal creative studio.',
+      description: `Web agency in Montreal. Showcase sites, e-commerce, web apps, local SEO. React. Plateau Mont-Royal studio. ${WORKSHOP_NOTICE_SHORT.en}`,
     },
   },
 };

@@ -10,6 +10,7 @@ import artistsData from '../data/artistPricing';
 import { useArtists } from '../hooks/useArtists';
 import { img } from '../utils/paths';
 import { formatPrice } from '../utils/formatCurrency';
+import { WORKSHOP_NOTICE_SHORT } from '../constants/workshop';
 
 // Maudite Machine (Massive) en premier
 const artistOrder = ['cornelia-rose', 'psyqu33n', 'no-pixl', 'maudite-machine', 'adrift', 'quentin-delobel', 'mok'];
@@ -193,9 +194,9 @@ function Shop() {
             es: 'Fine Art Prints Montreal - Impresiones Calidad Galeria | Massive',
           })}
           description={tx({
-            fr: 'Achetez des tirages fine art par des artistes de Montréal. Impression 12 encres pigmentées sur papier coton fine art. Qualité musée, livraison locale.',
-            en: 'Buy fine art prints from Montreal artists. 12 pigmented ink printing on cotton fine art paper. Museum quality, local delivery.',
-            es: 'Compra impresiones fine art de artistas de Montreal. Impresion 12 tintas pigmentadas en papel coton fine art. Calidad museo, entrega local.',
+            fr: `Tirages fine art par artistes de Montréal. Impression 12 encres pigmentées sur papier coton fine art. Qualité musée, livraison locale. ${WORKSHOP_NOTICE_SHORT.fr}`,
+            en: `Buy fine art prints from Montreal artists. 12 pigmented ink printing on cotton fine art paper. Museum quality, local delivery. ${WORKSHOP_NOTICE_SHORT.en}`,
+            es: `Compra impresiones fine art de artistas de Montreal. Impresion 12 tintas pigmentadas en papel coton fine art. Calidad museo, entrega local. ${WORKSHOP_NOTICE_SHORT.es}`,
           })}
           breadcrumbs={[
             { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
@@ -304,9 +305,9 @@ function Shop() {
           es: 'Tienda Massive Montreal - Prints, Stickers & Diseno | Massive',
         })}
         description={tx({
-          fr: 'Boutique en ligne Massive à Montréal. Tirages fine art, stickers die-cut, design graphique et développement web. Production locale Plateau Mont-Royal, livraison rapide.',
-          en: 'Massive online shop in Montreal. Fine art prints, die-cut stickers, graphic design and web development. Local production Plateau Mont-Royal, fast delivery.',
-          es: 'Tienda en linea Massive en Montreal. Impresiones fine art, stickers die-cut, diseno grafico y desarrollo web. Produccion local Plateau Mont-Royal, entrega rapida.',
+          fr: `Tirages et merch Massive à Montréal. Fine art, stickers die-cut, design graphique, web. Production Plateau Mont-Royal, livraison rapide. ${WORKSHOP_NOTICE_SHORT.fr}`,
+          en: `Massive prints and merch in Montreal. Fine art prints, die-cut stickers, graphic design, web. Local Plateau Mont-Royal production, fast delivery. ${WORKSHOP_NOTICE_SHORT.en}`,
+          es: `Impresiones y merch Massive en Montreal. Fine art, stickers die-cut, diseno grafico, web. Produccion local Plateau Mont-Royal, entrega rapida. ${WORKSHOP_NOTICE_SHORT.es}`,
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },

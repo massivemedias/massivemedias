@@ -7,6 +7,7 @@ import { useProduct } from '../hooks/useProducts';
 import { mediaUrl } from '../utils/cms';
 import { useLang } from '../i18n/LanguageContext';
 import { fineArtImages, fineArtFaq as defaultFineArtFaq, flyerImages, flyerFaq as defaultFlyerFaq } from '../data/products';
+import { WORKSHOP_NOTICE_SHORT } from '../constants/workshop';
 
 function ServiceFineArt() {
   const [tab, setTab] = useState('fineart');
@@ -59,9 +60,9 @@ function ServiceFineArt() {
       startingPrice={20}
       pageTitle={{ fr: 'Tirages Fine Art Montréal - Impression 12 Encres | Massive', en: 'Fine Art Prints Montreal - 12 Ink Printing | Massive', es: 'Impresiones Fine Art Montreal - 12 Tintas | Massive' }}
       metaDescription={{
-        fr: 'Tirages fine art et flyers. Impression professionnelle 12 couleurs. Qualit\u00e9 galerie.',
-        en: 'Fine art prints and flyers. Professional 12-color printing. Gallery quality.',
-        es: 'Impresiones fine art y flyers. Impresi\u00f3n profesional 12 colores. Calidad galer\u00eda.',
+        fr: `Tirages fine art et flyers. Impression professionnelle 12 couleurs. Qualit\u00e9 galerie. ${WORKSHOP_NOTICE_SHORT.fr}`,
+        en: `Fine art prints and flyers. Professional 12-color printing. Gallery quality. ${WORKSHOP_NOTICE_SHORT.en}`,
+        es: `Impresiones fine art y flyers. Impresi\u00f3n profesional 12 colores. Calidad galer\u00eda. ${WORKSHOP_NOTICE_SHORT.es}`,
       }}
       productTitle={{ fr: 'Prints', en: 'Prints', es: 'Prints' }}
       productSubtitle={{

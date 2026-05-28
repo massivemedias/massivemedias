@@ -4,6 +4,7 @@ import ConfiguratorWeb from '../components/configurators/ConfiguratorWeb';
 import { useProduct } from '../hooks/useProducts';
 import { mediaUrl } from '../utils/cms';
 import { webImages, webFaq as defaultFaq } from '../data/products';
+import { WORKSHOP_NOTICE_SHORT } from '../constants/workshop';
 
 function ServiceWeb() {
   const cmsProduct = useProduct('web');
@@ -34,9 +35,9 @@ function ServiceWeb() {
       startingPrice={85}
       pageTitle={{ fr: 'Développement Web Montréal - Sites, E-Commerce, SEO | Massive', en: 'Web Development Montreal - Sites, E-Commerce, SEO | Massive', es: 'Desarrollo Web Montreal - Sitios, E-Commerce, SEO | Massive' }}
       metaDescription={{
-        fr: 'Développement web professionnel à Montréal. Sites vitrines, e-commerce, landing pages, SEO. React, WordPress, Shopify. 15+ ans d\'expérience. Studio Plateau Mont-Royal.',
-        en: 'Professional web development in Montreal. Showcase sites, e-commerce, landing pages, SEO. React, WordPress, Shopify. 15+ years experience. Plateau Mont-Royal studio.',
-        es: 'Sitios vitrina, e-commerce, landing pages. React, WordPress, Shopify. 15+ a\u00f1os de experiencia. Montreal.',
+        fr: `Développement web professionnel à Montréal. Sites vitrines, e-commerce, landing pages, SEO. React. Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.fr}`,
+        en: `Professional web development Montreal. Showcase sites, e-commerce, landing pages, SEO. React. Plateau Mont-Royal studio. ${WORKSHOP_NOTICE_SHORT.en}`,
+        es: `Sitios vitrina, e-commerce, landing pages. React, WordPress, Shopify. 15+ a\u00f1os de experiencia. Montreal. ${WORKSHOP_NOTICE_SHORT.es}`,
       }}
       productTitle={{ fr: 'D\u00e9veloppement Web', en: 'Web Development', es: 'Desarrollo Web' }}
       productSubtitle={{

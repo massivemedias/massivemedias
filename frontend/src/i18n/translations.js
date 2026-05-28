@@ -228,7 +228,7 @@ const translations = {
       },
       hero: {
         title: 'Contact',
-        subtitle: 'Un projet en tête? Une question sur nos services? Envoie-nous un message et on te revient rapidement.',
+        subtitle: 'Un projet en tête? Une question sur nos services? Atelier sur rendez-vous uniquement, aucune visite spontanée. Envoie-nous un message et on te revient rapidement.',
       },
       info: {
         title: 'Coordonnées',
@@ -588,7 +588,7 @@ const translations = {
       },
       hero: {
         title: 'Contact',
-        subtitle: "Have a project in mind? A question about our services? Send us a message and we'll get back to you quickly.",
+        subtitle: "Have a project in mind? A question about our services? Workshop by appointment only, no walk-ins. Send us a message and we'll get back to you quickly.",
       },
       info: {
         title: 'Contact Info',
@@ -948,7 +948,7 @@ const translations = {
       },
       hero: {
         title: 'Contacto',
-        subtitle: '¿Tienes un proyecto en mente? ¿Una pregunta sobre nuestros servicios? Envíanos un mensaje y te respondemos rápidamente.',
+        subtitle: '¿Tienes un proyecto en mente? ¿Una pregunta sobre nuestros servicios? Taller solo con cita previa, sin visitas sin cita. Envíanos un mensaje y te respondemos rápidamente.',
       },
       info: {
         title: 'Datos de contacto',
