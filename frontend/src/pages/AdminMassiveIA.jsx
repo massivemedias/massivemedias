@@ -1769,6 +1769,13 @@ function QRCodeTab() {
   const [statsLoading, setStatsLoading] = useState(false);
   const [statsError, setStatsError] = useState('');
 
+  // Envoi du rapport par courriel (Chantier 5). Destinataire par defaut =
+  // clientEmail du QR ouvert, modifiable a la volee.
+  const [reportEmail, setReportEmail] = useState('');
+  const [reportSending, setReportSending] = useState(false);
+  const [reportStatus, setReportStatus] = useState(''); // '' | 'success' | 'error'
+  const [reportMsg, setReportMsg] = useState('');
+
   // REGLE METIER: si logo present, force EC = 'H'. L'etat ecLevel reste utilisable
   // par l'utilisateur pour son choix initial, mais effectiveEC prend le dessus pour
   // la generation. Affichage informe aussi l'utilisateur que l'override est actif.
@@ -1845,15 +1852,18 @@ function QRCodeTab() {
   // "Voir les stats" : point d'entree. On appelle l'endpoint enrichi (Chantier 2)
   // et on ouvre un panneau. Le rendu detaille (graphes) est le Chantier 4 ; ici
   // on affiche un apercu minimal + un marqueur "vue detaillee a venir".
-  const openStats = useCallback(async (documentId) => {
-    if (statsOpenId === documentId) { setStatsOpenId(''); return; } // toggle ferme
-    setStatsOpenId(documentId);
+  const openStats = useCallback(async (q) => {
+    if (statsOpenId === q.documentId) { setStatsOpenId(''); return; } // toggle ferme
+    setStatsOpenId(q.documentId);
     setEditingId('');
     setStatsData(null);
     setStatsError('');
+    setReportEmail(q.clientEmail || ''); // pre-remplit avec le courriel client du QR
+    setReportStatus('');
+    setReportMsg('');
     setStatsLoading(true);
     try {
-      const res = await api.get(`/qr-codes/${documentId}/scans`);
+      const res = await api.get(`/qr-codes/${q.documentId}/scans`);
       setStatsData(res.data || null);
     } catch (err) {
       console.error('openStats error:', err);
@@ -1862,6 +1872,31 @@ function QRCodeTab() {
       setStatsLoading(false);
     }
   }, [statsOpenId]);
+
+  // Envoi du rapport par courriel. Valide l'adresse cote client avant l'appel
+  // (feedback immediat), le backend revalide et envoie via Resend.
+  const sendReport = useCallback(async (documentId) => {
+    const email = reportEmail.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setReportStatus('error');
+      setReportMsg('Adresse courriel invalide.');
+      return;
+    }
+    setReportSending(true);
+    setReportStatus('');
+    setReportMsg('');
+    try {
+      const res = await api.post(`/qr-codes/${documentId}/send-report`, { email });
+      setReportStatus('success');
+      setReportMsg(`Rapport envoye a ${res.data?.sentTo || email}.`);
+    } catch (err) {
+      console.error('sendReport error:', err);
+      setReportStatus('error');
+      setReportMsg(err?.response?.data?.error?.message || err?.message || 'Echec de l\'envoi du rapport.');
+    } finally {
+      setReportSending(false);
+    }
+  }, [reportEmail]);
 
   // Edition inline : ouvre le panneau pre-rempli avec les valeurs courantes.
   const startEdit = useCallback((q) => {
@@ -2413,7 +2448,7 @@ function QRCodeTab() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1 mt-2">
-                    <button onClick={() => openStats(q.documentId)}
+                    <button onClick={() => openStats(q)}
                       className={`flex-1 py-1.5 rounded text-[10px] flex items-center justify-center gap-1 ${statsOpenId === q.documentId ? 'bg-accent/20 text-accent' : 'bg-black/30 text-grey-muted hover:text-accent hover:bg-black/40'}`}>
                       <BarChart3 size={10} /> Voir les stats
                     </button>
@@ -2491,6 +2526,31 @@ function QRCodeTab() {
                       {!statsLoading && !statsError && statsData && (
                         <QRStatsPanel data={statsData} />
                       )}
+
+                      {/* Envoi du rapport par courriel (Chantier 5) */}
+                      <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
+                        <label className="text-[10px] text-grey-muted flex items-center gap-1.5">
+                          <Mail size={11} className="text-accent" /> Envoyer le rapport a
+                        </label>
+                        <div className="flex gap-2">
+                          <input type="email" value={reportEmail} onChange={(e) => setReportEmail(e.target.value)}
+                            placeholder="client@exemple.com"
+                            className="flex-1 rounded bg-black/40 text-heading text-xs px-2.5 py-1.5 outline-none border border-white/5 focus:border-accent" />
+                          <button onClick={() => sendReport(q.documentId)} disabled={reportSending || !reportEmail.trim()}
+                            className="px-3 py-1.5 rounded bg-accent text-white text-[11px] font-semibold flex items-center gap-1.5 hover:bg-accent/90 disabled:opacity-50">
+                            {reportSending ? <><Loader2 size={11} className="animate-spin" /> Envoi</> : <><Send size={11} /> Envoyer</>}
+                          </button>
+                        </div>
+                        {!q.clientEmail && reportStatus !== 'success' && (
+                          <p className="text-grey-muted text-[9px]">Ce QR n'a pas de courriel client enregistre. Saisis une adresse pour cet envoi, ou ajoute-le via "Editer".</p>
+                        )}
+                        {reportStatus === 'success' && (
+                          <p className="text-green-400 text-[10px] flex items-center gap-1.5"><Check size={10} /> {reportMsg}</p>
+                        )}
+                        {reportStatus === 'error' && (
+                          <p className="text-red-400 text-[10px] flex items-center gap-1.5"><AlertTriangle size={10} /> {reportMsg}</p>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

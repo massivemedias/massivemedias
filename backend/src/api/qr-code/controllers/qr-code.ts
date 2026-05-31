@@ -2,6 +2,7 @@ import { factories } from '@strapi/strapi';
 import crypto from 'crypto';
 import geoip from 'geoip-lite';
 import { requireAdminAuth } from '../../../utils/auth';
+import { sendQrReportEmail } from '../../../utils/email';
 
 /**
  * Resolves an IPv4/IPv6 address to { city, country } using the bundled
@@ -136,6 +137,59 @@ function dayKeyMontreal(value: string | Date): string {
   } catch {
     return '0000-00-00';
   }
+}
+
+/**
+ * Agrege un tableau de rows qr_scan en un objet analytics. SOURCE UNIQUE de
+ * l'agregation : utilise par listScans (drilldown admin) ET par le rapport
+ * courriel (sendReport), pour ne PAS dupliquer la logique. Tout est calcule en
+ * memoire sur la fenetre fournie ; par construction byDay/byHour/byOs/byBrowser
+ * totalisent total, et uniquesEstimes <= total (rows sans ipHash exclues).
+ */
+function buildScanAnalytics(scans: any[]) {
+  const byCity: Record<string, number> = {};
+  const byCountry: Record<string, number> = {};
+  const byDevice: Record<string, number> = { mobile: 0, desktop: 0, tablet: 0, bot: 0, unknown: 0 };
+  const byOs: Record<string, number> = { iOS: 0, Android: 0, autre: 0 };
+  const byBrowser: Record<string, number> = { Safari: 0, Chrome: 0, Firefox: 0, autre: 0 };
+  const byDay: Record<string, number> = {};
+  const byHour: Record<string, number> = {};
+  for (let h = 0; h < 24; h++) byHour[String(h)] = 0;
+  const refererCounts: Record<string, number> = {};
+  const uniqueHashes = new Set<string>();
+  let lastScannedAt: string | null = null;
+
+  for (const s of scans as any[]) {
+    const ua = s.userAgent || '';
+    byCity[s.city || 'Inconnu'] = (byCity[s.city || 'Inconnu'] || 0) + 1;
+    byCountry[s.country || 'XX'] = (byCountry[s.country || 'XX'] || 0) + 1;
+    const device = classifyDevice(ua);
+    byDevice[device] = (byDevice[device] || 0) + 1;
+    const os = classifyOs(ua);
+    byOs[os] = (byOs[os] || 0) + 1;
+    const browser = classifyBrowser(ua);
+    byBrowser[browser] = (byBrowser[browser] || 0) + 1;
+    const dayKey = dayKeyMontreal(s.scannedAt);
+    byDay[dayKey] = (byDay[dayKey] || 0) + 1;
+    const hourKey = String(hourInMontreal(s.scannedAt));
+    byHour[hourKey] = (byHour[hourKey] || 0) + 1;
+    const ref = (s.referer || '').trim();
+    if (ref) refererCounts[ref] = (refererCounts[ref] || 0) + 1;
+    if (s.ipHash) uniqueHashes.add(s.ipHash);
+    if (!lastScannedAt || s.scannedAt > lastScannedAt) lastScannedAt = s.scannedAt;
+  }
+
+  const topReferers = Object.entries(refererCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([referer, count]) => ({ referer, count }));
+
+  return {
+    total: scans.length,
+    uniquesEstimes: uniqueHashes.size,
+    lastScannedAt,
+    byCity, byCountry, byDevice, byOs, byBrowser, byDay, byHour, topReferers,
+  };
 }
 
 /**
@@ -540,55 +594,12 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       limit: 1000,
     });
 
-    // ANALYTICS (3 mai 2026, enrichi 31 mai 2026) : aggregation par ville,
-    // appareil, OS, navigateur, jour, heure, referer + uniques estimes.
-    // TOUT est calcule en memoire a partir de la MEME fenetre de scans (limite
-    // 1000, comportement existant). Consequence voulue : byDay, byHour, byOs et
-    // byBrowser totalisent exactement `total` (= scans.length), et uniques <=
-    // total, par construction. Au-dela de 1000 scans par QR, on pourra basculer
-    // ces agregats en SQL group-by (decision separee, hors de ce chantier).
-    const byCity: Record<string, number> = {};
-    const byCountry: Record<string, number> = {};
-    const byDevice: Record<string, number> = { mobile: 0, desktop: 0, tablet: 0, bot: 0, unknown: 0 };
-    // Pre-remplissage : OS et navigateur partent a 0 sur toutes les categories
-    // connues pour que l'UI ait toujours les memes cles (graphes stables).
-    const byOs: Record<string, number> = { iOS: 0, Android: 0, autre: 0 };
-    const byBrowser: Record<string, number> = { Safari: 0, Chrome: 0, Firefox: 0, autre: 0 };
-    const byDay: Record<string, number> = {}; // 'YYYY-MM-DD' -> count (sparse)
-    // byHour pre-rempli 0..23 pour un graphe de pics complet meme sans scan.
-    const byHour: Record<string, number> = {};
-    for (let h = 0; h < 24; h++) byHour[String(h)] = 0;
-    const refererCounts: Record<string, number> = {};
-    // UNIQUES (Loi 25) : on compte les ip_hash DISTINCTS. Les rows sans hash
-    // (sel absent au moment du scan, ou anciennes rows purgees) sont exclues du
-    // Set -> uniques estimes <= total, jamais au-dessus.
-    const uniqueHashes = new Set<string>();
-    let lastScannedAt: string | null = null;
-
+    // Agregation via le helper partage (SOURCE UNIQUE, reutilisee par le rapport
+    // courriel). enrichedScans reste local : c'est la liste par-scan du drilldown,
+    // pas de l'agregat.
+    const analytics = buildScanAnalytics(scans);
     const enrichedScans = scans.map((s: any) => {
-      const city = s.city || 'Inconnu';
-      const country = s.country || 'XX';
       const ua = s.userAgent || '';
-      const device = classifyDevice(ua);
-      const os = classifyOs(ua);
-      const browser = classifyBrowser(ua);
-      byCity[city] = (byCity[city] || 0) + 1;
-      byCountry[country] = (byCountry[country] || 0) + 1;
-      byDevice[device] = (byDevice[device] || 0) + 1;
-      byOs[os] = (byOs[os] || 0) + 1;
-      byBrowser[browser] = (byBrowser[browser] || 0) + 1;
-
-      const dayKey = dayKeyMontreal(s.scannedAt);
-      byDay[dayKey] = (byDay[dayKey] || 0) + 1;
-      const hourKey = String(hourInMontreal(s.scannedAt));
-      byHour[hourKey] = (byHour[hourKey] || 0) + 1;
-
-      const ref = (s.referer || '').trim();
-      if (ref) refererCounts[ref] = (refererCounts[ref] || 0) + 1;
-
-      if (s.ipHash) uniqueHashes.add(s.ipHash);
-
-      if (!lastScannedAt || s.scannedAt > lastScannedAt) lastScannedAt = s.scannedAt;
       return {
         scannedAt: s.scannedAt,
         ipAddress: s.ipAddress, // conserve pour compat (vide depuis le hash Loi 25)
@@ -596,37 +607,64 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
         referer: s.referer,
         city: s.city || '',
         country: s.country || '',
-        device,
-        os,
-        browser,
+        device: classifyDevice(ua),
+        os: classifyOs(ua),
+        browser: classifyBrowser(ua),
       };
     });
-
-    // Top referers : tries par frequence decroissante, plafonnes a 5 entrees.
-    const topReferers = Object.entries(refererCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([referer, count]) => ({ referer, count }));
 
     ctx.body = {
       qrCode: { shortId: (qr as any).shortId, destinationUrl: (qr as any).destinationUrl },
       scans: enrichedScans,
       total: scans.length,
-      analytics: {
-        total: scans.length,
-        // "uniques estimes" : libelle volontairement prudent (derive de l'IP
-        // hachee, jamais une identite). On ne dit jamais "uniques" tout court.
-        uniquesEstimes: uniqueHashes.size,
-        lastScannedAt,
-        byCity,
-        byCountry,
-        byDevice,
-        byOs,
-        byBrowser,
-        byDay,
-        byHour,
-        topReferers,
-      },
+      analytics,
     };
+  },
+
+  /**
+   * POST /api/qr-codes/:documentId/send-report
+   * Envoie par courriel le rapport de stats du QR.
+   * Destinataire : l'adresse passee dans le body (envoi a la volee), sinon le
+   * clientEmail du QR. Aucune adresse valide -> 400 clair.
+   * Reutilise buildScanAnalytics (meme agregation que listScans) et
+   * sendQrReportEmail (meme pattern Resend que les autres courriels du projet).
+   */
+  async sendReport(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+
+    const { documentId } = ctx.params;
+    const qr = await strapi.documents('api::qr-code.qr-code').findFirst({
+      filters: { documentId } as any,
+    }) as any;
+    if (!qr) return ctx.notFound('QR code not found');
+
+    const body = (ctx.request.body || {}) as any;
+    const rawEmail = (body.email !== undefined && body.email !== null && body.email !== '')
+      ? body.email
+      : qr.clientEmail;
+    const check = normalizeClientEmail(rawEmail);
+    if (!check.ok || !check.email) {
+      return ctx.badRequest('Aucune adresse courriel valide. Renseigne le courriel du client ou passe une adresse dans la requete.');
+    }
+
+    const scans = await strapi.documents('api::qr-scan.qr-scan').findMany({
+      filters: { qrCode: { documentId } } as any,
+      sort: { scannedAt: 'desc' } as any,
+      limit: 1000,
+    });
+    const analytics = buildScanAnalytics(scans);
+
+    const ok = await sendQrReportEmail({
+      qrTitle: qr.title || '',
+      shortId: qr.shortId,
+      destinationUrl: qr.destinationUrl,
+      recipientEmail: check.email,
+      analytics,
+    });
+
+    if (!ok) {
+      return ctx.internalServerError('Le rapport n\'a pas pu etre envoye (Resend non configure ou erreur d\'envoi).');
+    }
+    ctx.body = { success: true, sentTo: check.email, total: analytics.total };
   },
 }));

@@ -7,6 +7,7 @@
  *   PUT    /api/qr-codes/:documentId    -> update title/destination/active/clientEmail
  *   DELETE /api/qr-codes/:documentId    -> delete QR + its scans
  *   GET    /api/qr-codes/:documentId/scans -> drilldown of individual scan events
+ *   POST   /api/qr-codes/:documentId/send-report -> email the stats report to the client
  *
  * Public route:
  *   GET    /qr/:shortId                 -> 302 redirect + fire-and-forget scan log
@@ -42,6 +43,12 @@ export default {
       method: 'GET',
       path: '/qr-codes/:documentId/scans',
       handler: 'qr-code.listScans',
+      config: { auth: false },
+    },
+    {
+      method: 'POST',
+      path: '/qr-codes/:documentId/send-report',
+      handler: 'qr-code.sendReport',
       config: { auth: false },
     },
     {
