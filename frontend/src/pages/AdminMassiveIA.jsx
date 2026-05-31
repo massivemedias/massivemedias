@@ -1555,6 +1555,176 @@ function FieldTip({ text }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Vue stats detaillee d'un QR (Chantier 4)
+// ---------------------------------------------------------------------------
+// Rendu PUR (aucun hook) : recoit la reponse de GET /qr-codes/:id/scans et se
+// contente d'AFFICHER. Toute l'agregation est faite cote serveur (Chantier 2),
+// le frontend ne re-agrege rien. Rendu en barres CSS simples : recharts est
+// present dans le projet (AdminStats) mais on ne l'importe pas ici pour garder
+// ce chunk admin leger ; les volumes affiches sont minuscules.
+function QRStatsPanel({ data }) {
+  const a = (data && data.analytics) || {};
+  const total = a.total ?? data?.total ?? 0;
+  const uniques = a.uniquesEstimes ?? 0;
+
+  const topEntries = (obj, n) => Object.entries(obj || {})
+    .filter(([, v]) => v > 0)
+    .sort((x, y) => y[1] - x[1])
+    .slice(0, n);
+  const maxVal = (obj) => Math.max(1, ...Object.values(obj || {}).map((v) => v || 0));
+
+  const BarRow = ({ label, value, max, accent }) => (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-grey-muted w-16 truncate" title={label}>{label}</span>
+      <div className="flex-1 h-2 rounded-full bg-black/40 overflow-hidden">
+        <div className={`h-full rounded-full ${accent ? 'bg-accent' : 'bg-accent/60'}`}
+          style={{ width: `${Math.round((value / max) * 100)}%` }} />
+      </div>
+      <span className="text-[10px] text-heading font-semibold w-6 text-right">{value}</span>
+    </div>
+  );
+
+  const Section = ({ title, children }) => (
+    <div className="space-y-1.5">
+      <p className="text-[10px] uppercase tracking-wider text-grey-muted font-semibold">{title}</p>
+      {children}
+    </div>
+  );
+
+  const honesty = (
+    <p className="text-[9px] text-grey-muted/70 leading-snug border-t border-white/5 pt-2">
+      Uniques estimes a partir de l'adresse IP hachee, jamais une identite.
+      L'age et le modele exact d'appareil ne sont pas disponibles via un scan de QR.
+    </p>
+  );
+
+  if (total === 0) {
+    return (
+      <div className="space-y-3">
+        <div className="text-center py-6 text-grey-muted text-xs">Aucune donnee pour l'instant.</div>
+        {honesty}
+      </div>
+    );
+  }
+
+  const lastScan = a.lastScannedAt
+    ? new Date(a.lastScannedAt).toLocaleDateString('fr-CA', { year: 'numeric', month: 'short', day: 'numeric' })
+    : null;
+  const dayEntries = Object.entries(a.byDay || {}).sort((x, y) => (x[0] < y[0] ? -1 : 1));
+  const dayMax = maxVal(a.byDay);
+  const hourMax = maxVal(a.byHour);
+  const cityMax = maxVal(a.byCity);
+  const countryMax = maxVal(a.byCountry);
+  const osMax = maxVal(a.byOs);
+  const browserMax = maxVal(a.byBrowser);
+  const cities = topEntries(a.byCity, 6);
+  const countries = topEntries(a.byCountry, 5);
+  const osEntries = topEntries(a.byOs, 5);
+  const browserEntries = topEntries(a.byBrowser, 5);
+  const referers = Array.isArray(a.topReferers) ? a.topReferers : [];
+
+  return (
+    <div className="space-y-4">
+      {/* En-tete */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-lg bg-black/40 p-2 text-center">
+          <p className="text-heading text-lg font-bold leading-none">{total}</p>
+          <p className="text-grey-muted text-[9px] uppercase tracking-wider mt-1">Scans</p>
+        </div>
+        <div className="rounded-lg bg-black/40 p-2 text-center">
+          <p className="text-heading text-lg font-bold leading-none">{uniques}</p>
+          <p className="text-grey-muted text-[9px] uppercase tracking-wider mt-1">Uniques estimes</p>
+        </div>
+        <div className="rounded-lg bg-black/40 p-2 text-center flex flex-col justify-center">
+          <p className="text-heading text-[11px] font-semibold leading-tight">{lastScan || '-'}</p>
+          <p className="text-grey-muted text-[9px] uppercase tracking-wider mt-1">Dernier scan</p>
+        </div>
+      </div>
+
+      {/* Serie temporelle par jour */}
+      <Section title="Scans par jour">
+        {dayEntries.length === 0 ? (
+          <p className="text-[10px] text-grey-muted">Aucune donnee pour l'instant.</p>
+        ) : (
+          <div>
+            <div className="flex items-end gap-0.5 h-20">
+              {dayEntries.map(([day, count]) => (
+                <div key={day} className="flex-1 flex flex-col justify-end"
+                  title={`${day}: ${count} scan${count !== 1 ? 's' : ''}`}>
+                  <div className="w-full rounded-t bg-accent/70"
+                    style={{ height: `${Math.max(4, Math.round((count / dayMax) * 100))}%` }} />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between text-[8px] text-grey-muted mt-1">
+              <span>{dayEntries[0][0]}</span>
+              <span>{dayEntries[dayEntries.length - 1][0]}</span>
+            </div>
+          </div>
+        )}
+      </Section>
+
+      {/* Par heure de la journee */}
+      <Section title="Par heure (fuseau Montreal)">
+        <div className="flex items-end gap-0.5 h-14">
+          {Array.from({ length: 24 }, (_, h) => {
+            const c = (a.byHour || {})[String(h)] || 0;
+            return (
+              <div key={h} className="flex-1 flex flex-col justify-end"
+                title={`${h}h: ${c} scan${c !== 1 ? 's' : ''}`}>
+                <div className="w-full rounded-t bg-accent/50"
+                  style={{ height: `${Math.max(3, Math.round((c / hourMax) * 100))}%` }} />
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex justify-between text-[8px] text-grey-muted mt-1">
+          <span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span>
+        </div>
+      </Section>
+
+      {/* Lieu */}
+      <div className="grid grid-cols-2 gap-3">
+        <Section title="Villes">
+          {cities.length === 0
+            ? <p className="text-[10px] text-grey-muted">Aucune donnee.</p>
+            : cities.map(([k, v]) => <BarRow key={k} label={k} value={v} max={cityMax} />)}
+        </Section>
+        <Section title="Pays">
+          {countries.length === 0
+            ? <p className="text-[10px] text-grey-muted">Aucune donnee.</p>
+            : countries.map(([k, v]) => <BarRow key={k} label={k} value={v} max={countryMax} />)}
+        </Section>
+      </div>
+
+      {/* Appareil */}
+      <div className="grid grid-cols-2 gap-3">
+        <Section title="Systeme">
+          {osEntries.map(([k, v]) => <BarRow key={k} label={k} value={v} max={osMax} accent />)}
+        </Section>
+        <Section title="Navigateur">
+          {browserEntries.map(([k, v]) => <BarRow key={k} label={k} value={v} max={browserMax} accent />)}
+        </Section>
+      </div>
+
+      {/* Provenance (masquee si vide) */}
+      {referers.length > 0 && (
+        <Section title="Provenance">
+          {referers.map((r) => (
+            <div key={r.referer} className="flex items-center justify-between gap-2">
+              <span className="text-[10px] text-grey-muted truncate" title={r.referer}>{r.referer}</span>
+              <span className="text-[10px] text-heading font-semibold flex-shrink-0">{r.count}</span>
+            </div>
+          ))}
+        </Section>
+      )}
+
+      {honesty}
+    </div>
+  );
+}
+
 function QRCodeTab() {
   const [url, setUrl] = useState('https://massivemedias.com');
   const [title, setTitle] = useState('');
@@ -2319,21 +2489,7 @@ function QRCodeTab() {
                       )}
                       {statsError && <p className="text-red-400 text-[10px]">{statsError}</p>}
                       {!statsLoading && !statsError && statsData && (
-                        <div className="space-y-2">
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="rounded-lg bg-black/40 p-2 text-center">
-                              <p className="text-heading text-base font-bold">{statsData.analytics?.total ?? statsData.total ?? 0}</p>
-                              <p className="text-grey-muted text-[9px] uppercase tracking-wider">Scans</p>
-                            </div>
-                            <div className="rounded-lg bg-black/40 p-2 text-center">
-                              <p className="text-heading text-base font-bold">{statsData.analytics?.uniquesEstimes ?? 0}</p>
-                              <p className="text-grey-muted text-[9px] uppercase tracking-wider">Uniques estimes</p>
-                            </div>
-                          </div>
-                          <p className="text-grey-muted text-[10px] flex items-center gap-1.5">
-                            <BarChart3 size={11} className="text-accent" /> Vue detaillee (graphes ville, appareil, heures) a venir.
-                          </p>
-                        </div>
+                        <QRStatsPanel data={statsData} />
                       )}
                     </div>
                   )}
