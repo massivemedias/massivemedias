@@ -34,6 +34,31 @@ function resolveGeo(ip: string): { city: string; country: string } {
 }
 
 /**
+ * Hash d'IP conforme Loi 25 (Quebec). On ne stocke JAMAIS l'IP lisible (ni
+ * complete, ni tronquee). A la place, on garde un SHA-256 de (IP + sel) qui :
+ *   - est stable : la meme IP donne toujours le meme hash -> permet de compter
+ *     les visiteurs uniques (count de hash distincts) sans jamais reidentifier
+ *     la personne.
+ *   - n'est pas reversible : impossible de remonter a l'IP a partir du hash.
+ *   - est inutile sans le sel : le sel (QR_IP_HASH_SALT) reste cote serveur,
+ *     donc meme une fuite de la base ne permet pas un rainbow-table sur l'espace
+ *     des IPv4.
+ *
+ * Si le sel est absent, on retourne '' (chaine vide) : on prefere NE RIEN
+ * stocker plutot que de hacher sans sel (un hash non sale d'une IPv4 est
+ * trivialement cassable par force brute sur 4 milliards de valeurs). Le caller
+ * (redirect) logue alors un avertissement clair.
+ *
+ * La resolution geoip (ville/pays) se fait sur l'IP brute EN MEMOIRE avant cet
+ * appel, puis l'IP brute est jetee : elle n'est jamais persistee.
+ */
+function hashIp(ip: string, salt: string): string {
+  const clean = (ip || '').replace(/^::ffff:/, '').trim();
+  if (!clean || !salt) return '';
+  return crypto.createHash('sha256').update(clean + salt).digest('hex'); // 64 hex
+}
+
+/**
  * Lightweight User-Agent device classifier. We don't need a full UA parser
  * (ua-parser-js etc.) for the scope of "mobile vs desktop vs tablet" buckets
  * in the dashboard - regexes on a few well-known tokens are enough and avoid
@@ -292,7 +317,10 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
     }
 
     // Best-effort scan logging. Does not block the redirect.
-    const ipAddress =
+    // IP-HASH (Loi 25, 31 mai 2026) : ipRaw est l'IP en clair recuperee des
+    // headers. Elle sert UNIQUEMENT en memoire, pour 2 derivations immediates
+    // (geoip + hash sale), puis elle est jetee. Elle n'est JAMAIS persistee.
+    const ipRaw =
       (ctx.request.headers['cf-connecting-ip'] as string)
       || (ctx.request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
       || ctx.ip
@@ -301,14 +329,31 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
     const referer = String(ctx.request.headers['referer'] || '').slice(0, 500);
     // GEOIP (3 mai 2026) : enrichissement local via geoip-lite (MaxMind
     // GeoLite2). Aucune API externe -> pas de latence ajoutee, pas de
-    // rate-limit, pas de probleme GDPR cote IP shipping.
-    const { city, country } = resolveGeo(ipAddress);
+    // rate-limit, pas de probleme GDPR cote IP shipping. Calcule AVANT le
+    // hash, sur l'IP brute en memoire.
+    const { city, country } = resolveGeo(ipRaw);
+
+    // IP-HASH (Loi 25) : on hache l'IP avec un sel serveur. Si le sel est
+    // absent, on NE stocke aucune IP (ni claire ni hachee) et on logue un
+    // avertissement, pour ne jamais persister un hash non sale (cassable par
+    // force brute sur l'espace IPv4).
+    const ipSalt = process.env.QR_IP_HASH_SALT || '';
+    if (!ipSalt) {
+      strapi.log.warn(
+        '[qr] QR_IP_HASH_SALT absent : scan journalise sans hash IP '
+        + '(deduplication des visiteurs uniques desactivee). '
+        + 'Definir QR_IP_HASH_SALT dans les variables d\'environnement pour l\'activer.'
+      );
+    }
+    const ipHash = hashIp(ipRaw, ipSalt);
 
     // Fire-and-forget - do NOT await, do NOT let it block the redirect.
+    // On ecrit ipHash (jamais ipAddress). Le champ ipAddress reste dans le
+    // schema le temps de la migration mais n'est plus alimente.
     strapi.documents('api::qr-scan.qr-scan').create({
       data: {
         scannedAt: new Date(),
-        ipAddress: ipAddress.slice(0, 64),
+        ipHash,
         userAgent,
         referer,
         city,

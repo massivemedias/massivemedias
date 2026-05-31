@@ -5,7 +5,7 @@
     "singularName": "qr-scan",
     "pluralName": "qr-scans",
     "displayName": "QR Scan",
-    "description": "Individual scan events on QR codes"
+    "description": "Individual scan events on QR codes. TODO: retirer ipAddress du schema apres confirmation de la purge en prod (champ conserve uniquement pour la migration Loi 25 feat/qr-ip-hash, plus jamais alimente)."
   },
   "options": {
     "draftAndPublish": false
@@ -16,6 +16,10 @@
       "required": true
     },
     "ipAddress": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "ipHash": {
       "type": "string",
       "maxLength": 64
     },
