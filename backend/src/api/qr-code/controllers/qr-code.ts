@@ -2,6 +2,7 @@ import { factories } from '@strapi/strapi';
 import crypto from 'crypto';
 import geoip from 'geoip-lite';
 import { requireAdminAuth } from '../../../utils/auth';
+import { sendQrReportEmail } from '../../../utils/email';
 
 /**
  * Resolves an IPv4/IPv6 address to { city, country } using the bundled
@@ -34,6 +35,31 @@ function resolveGeo(ip: string): { city: string; country: string } {
 }
 
 /**
+ * Hash d'IP conforme Loi 25 (Quebec). On ne stocke JAMAIS l'IP lisible (ni
+ * complete, ni tronquee). A la place, on garde un SHA-256 de (IP + sel) qui :
+ *   - est stable : la meme IP donne toujours le meme hash -> permet de compter
+ *     les visiteurs uniques (count de hash distincts) sans jamais reidentifier
+ *     la personne.
+ *   - n'est pas reversible : impossible de remonter a l'IP a partir du hash.
+ *   - est inutile sans le sel : le sel (QR_IP_HASH_SALT) reste cote serveur,
+ *     donc meme une fuite de la base ne permet pas un rainbow-table sur l'espace
+ *     des IPv4.
+ *
+ * Si le sel est absent, on retourne '' (chaine vide) : on prefere NE RIEN
+ * stocker plutot que de hacher sans sel (un hash non sale d'une IPv4 est
+ * trivialement cassable par force brute sur 4 milliards de valeurs). Le caller
+ * (redirect) logue alors un avertissement clair.
+ *
+ * La resolution geoip (ville/pays) se fait sur l'IP brute EN MEMOIRE avant cet
+ * appel, puis l'IP brute est jetee : elle n'est jamais persistee.
+ */
+function hashIp(ip: string, salt: string): string {
+  const clean = (ip || '').replace(/^::ffff:/, '').trim();
+  if (!clean || !salt) return '';
+  return crypto.createHash('sha256').update(clean + salt).digest('hex'); // 64 hex
+}
+
+/**
  * Lightweight User-Agent device classifier. We don't need a full UA parser
  * (ua-parser-js etc.) for the scope of "mobile vs desktop vs tablet" buckets
  * in the dashboard - regexes on a few well-known tokens are enough and avoid
@@ -46,6 +72,124 @@ function classifyDevice(ua: string): string {
   if (/mobi|iphone|android|phone|windows phone|blackberry/.test(u)) return 'mobile';
   if (/bot|crawler|spider|slurp|httpclient|axios|curl|wget|postman/.test(u)) return 'bot';
   return 'desktop';
+}
+
+/**
+ * Classifie le systeme d'exploitation a partir du User-Agent. On reste sur les
+ * grandes familles fiables (iOS / Android / autre). Le MODELE exact d'appareil
+ * n'est PAS deductible de facon fiable du UA moderne, on ne l'expose donc jamais.
+ * La categorie 'autre' absorbe desktop (Windows/Mac/Linux), bots et UA inconnus :
+ * aucun scan n'est jamais perdu (somme des OS = total).
+ */
+function classifyOs(ua: string): string {
+  if (!ua) return 'autre';
+  const u = ua.toLowerCase();
+  if (/iphone|ipad|ipod/.test(u)) return 'iOS';
+  if (/android/.test(u)) return 'Android';
+  return 'autre';
+}
+
+/**
+ * Classifie le navigateur a partir du User-Agent. L'ORDRE des tests est
+ * critique : un UA Chrome contient le token "Safari", un UA Edge contient
+ * "Chrome", etc. On teste donc du plus specifique au plus generique :
+ *   Firefox -> Edge(=autre) -> Chrome -> Safari -> autre.
+ * La categorie 'autre' absorbe Edge, Opera, navigateurs in-app et inconnus :
+ * aucun scan n'est jamais perdu (somme des navigateurs = total).
+ */
+function classifyBrowser(ua: string): string {
+  if (!ua) return 'autre';
+  const u = ua.toLowerCase();
+  if (/firefox|fxios/.test(u)) return 'Firefox';
+  if (/edg\//.test(u)) return 'autre'; // Edge contient "chrome", on l'ecarte avant Chrome
+  if (/chrome|crios|chromium/.test(u)) return 'Chrome';
+  if (/safari/.test(u)) return 'Safari'; // un vrai Safari n'a pas de token chrome/crios
+  return 'autre';
+}
+
+/**
+ * Extrait l'heure locale (0-23, fuseau America/Toronto) d'une date de scan.
+ * On passe par Intl.DateTimeFormat pour un decoupage robuste cote fuseau
+ * (evite l'effet "serveur UTC"). Le `% 24` garde-fou neutralise le cas limite
+ * ou certains environnements rendent "24" a minuit.
+ */
+function hourInMontreal(value: string | Date): number {
+  try {
+    const d = value instanceof Date ? value : new Date(value);
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      hour: 'numeric', hour12: false, timeZone: 'America/Toronto',
+    }).formatToParts(d);
+    const h = parseInt((parts.find(p => p.type === 'hour') || { value: '0' }).value, 10);
+    return Number.isFinite(h) ? (h % 24) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Cle de jour locale 'YYYY-MM-DD' (fuseau America/Toronto) pour grouper la
+ * serie temporelle. Le format en-CA donne directement l'ordre ISO triable.
+ */
+function dayKeyMontreal(value: string | Date): string {
+  try {
+    const d = value instanceof Date ? value : new Date(value);
+    return d.toLocaleDateString('en-CA', { timeZone: 'America/Toronto' }); // YYYY-MM-DD
+  } catch {
+    return '0000-00-00';
+  }
+}
+
+/**
+ * Agrege un tableau de rows qr_scan en un objet analytics. SOURCE UNIQUE de
+ * l'agregation : utilise par listScans (drilldown admin) ET par le rapport
+ * courriel (sendReport), pour ne PAS dupliquer la logique. Tout est calcule en
+ * memoire sur la fenetre fournie ; par construction byDay/byHour/byOs/byBrowser
+ * totalisent total, et uniquesEstimes <= total (rows sans ipHash exclues).
+ */
+function buildScanAnalytics(scans: any[]) {
+  const byCity: Record<string, number> = {};
+  const byCountry: Record<string, number> = {};
+  const byDevice: Record<string, number> = { mobile: 0, desktop: 0, tablet: 0, bot: 0, unknown: 0 };
+  const byOs: Record<string, number> = { iOS: 0, Android: 0, autre: 0 };
+  const byBrowser: Record<string, number> = { Safari: 0, Chrome: 0, Firefox: 0, autre: 0 };
+  const byDay: Record<string, number> = {};
+  const byHour: Record<string, number> = {};
+  for (let h = 0; h < 24; h++) byHour[String(h)] = 0;
+  const refererCounts: Record<string, number> = {};
+  const uniqueHashes = new Set<string>();
+  let lastScannedAt: string | null = null;
+
+  for (const s of scans as any[]) {
+    const ua = s.userAgent || '';
+    byCity[s.city || 'Inconnu'] = (byCity[s.city || 'Inconnu'] || 0) + 1;
+    byCountry[s.country || 'XX'] = (byCountry[s.country || 'XX'] || 0) + 1;
+    const device = classifyDevice(ua);
+    byDevice[device] = (byDevice[device] || 0) + 1;
+    const os = classifyOs(ua);
+    byOs[os] = (byOs[os] || 0) + 1;
+    const browser = classifyBrowser(ua);
+    byBrowser[browser] = (byBrowser[browser] || 0) + 1;
+    const dayKey = dayKeyMontreal(s.scannedAt);
+    byDay[dayKey] = (byDay[dayKey] || 0) + 1;
+    const hourKey = String(hourInMontreal(s.scannedAt));
+    byHour[hourKey] = (byHour[hourKey] || 0) + 1;
+    const ref = (s.referer || '').trim();
+    if (ref) refererCounts[ref] = (refererCounts[ref] || 0) + 1;
+    if (s.ipHash) uniqueHashes.add(s.ipHash);
+    if (!lastScannedAt || s.scannedAt > lastScannedAt) lastScannedAt = s.scannedAt;
+  }
+
+  const topReferers = Object.entries(refererCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([referer, count]) => ({ referer, count }));
+
+  return {
+    total: scans.length,
+    uniquesEstimes: uniqueHashes.size,
+    lastScannedAt,
+    byCity, byCountry, byDevice, byOs, byBrowser, byDay, byHour, topReferers,
+  };
 }
 
 /**
@@ -79,6 +223,24 @@ function isSafeHttpUrl(u: string): boolean {
   }
 }
 
+/**
+ * Validateur courriel minimal pour le champ optionnel clientEmail (destinataire
+ * du rapport de stats, cf. chantier rapport courriel). Volontairement simple :
+ * on verifie juste la forme "x@y.z". Une string vide est consideree valide
+ * (le champ est optionnel). Retourne la valeur nettoyee (trim, lowercase) ou
+ * null si invalide.
+ */
+function normalizeClientEmail(value: unknown): { ok: boolean; email: string | null } {
+  if (value === undefined || value === null || value === '') return { ok: true, email: null };
+  if (typeof value !== 'string') return { ok: false, email: null };
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) return { ok: true, email: null };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) || trimmed.length > 200) {
+    return { ok: false, email: null };
+  }
+  return { ok: true, email: trimmed };
+}
+
 // requireAdminAuth importe depuis ../../../utils/auth (SEC-01, 2026-04-18).
 
 export default factories.createCoreController('api::qr-code.qr-code', ({ strapi }) => ({
@@ -93,13 +255,19 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
   async createDynamic(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
 
-    const { destinationUrl, title } = (ctx.request.body || {}) as any;
+    const { destinationUrl, title, clientEmail } = (ctx.request.body || {}) as any;
     if (!destinationUrl || typeof destinationUrl !== 'string') {
       return ctx.badRequest('destinationUrl is required');
     }
     const trimmed = destinationUrl.trim();
     if (!isSafeHttpUrl(trimmed)) {
       return ctx.badRequest('destinationUrl must be a valid http(s) URL');
+    }
+    // clientEmail optionnel : destinataire du futur rapport de stats. Valide
+    // seulement s'il est fourni ; vide/absent est accepte (null en base).
+    const clientEmailCheck = normalizeClientEmail(clientEmail);
+    if (!clientEmailCheck.ok) {
+      return ctx.badRequest('clientEmail must be a valid email address');
     }
 
     // Generate a unique shortId. In the (virtually impossible) case of a collision,
@@ -129,6 +297,7 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
         destinationUrl: trimmed,
         title: (title && typeof title === 'string') ? title.trim().slice(0, 200) : '',
         createdByEmail,
+        clientEmail: clientEmailCheck.email,
         active: true,
       } as any,
     });
@@ -150,8 +319,68 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       destinationUrl: trimmed,
       trackingUrl,
       title: (entity as any).title || '',
+      clientEmail: (entity as any).clientEmail || null,
       createdAt: (entity as any).createdAt,
       scansCount: 0,
+    };
+  },
+
+  /**
+   * PUT /api/qr-codes/:documentId
+   * Met a jour les champs editables d'un QR existant : title, destinationUrl,
+   * active, clientEmail. Le shortId n'est JAMAIS modifiable (le QR est deja
+   * imprime, changer le shortId casserait toutes les redirections existantes).
+   * Tous les champs sont optionnels dans le body : on ne met a jour que ceux
+   * qui sont fournis (patch partiel).
+   */
+  async updateQr(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+
+    const { documentId } = ctx.params;
+    const entity = await strapi.documents('api::qr-code.qr-code').findFirst({
+      filters: { documentId } as any,
+    });
+    if (!entity) return ctx.notFound('QR code not found');
+
+    const body = (ctx.request.body || {}) as any;
+    const data: Record<string, any> = {};
+
+    if (typeof body.title === 'string') {
+      data.title = body.title.trim().slice(0, 200);
+    }
+    if (body.destinationUrl !== undefined) {
+      const trimmed = String(body.destinationUrl).trim();
+      if (!isSafeHttpUrl(trimmed)) {
+        return ctx.badRequest('destinationUrl must be a valid http(s) URL');
+      }
+      data.destinationUrl = trimmed;
+    }
+    if (body.active !== undefined) {
+      data.active = !!body.active;
+    }
+    if (body.clientEmail !== undefined) {
+      const check = normalizeClientEmail(body.clientEmail);
+      if (!check.ok) return ctx.badRequest('clientEmail must be a valid email address');
+      data.clientEmail = check.email; // null vide le champ
+    }
+    // shortId volontairement ignore meme s'il est present dans le body.
+
+    if (Object.keys(data).length === 0) {
+      return ctx.badRequest('No editable field provided');
+    }
+
+    const updated = await strapi.documents('api::qr-code.qr-code').update({
+      documentId,
+      data: data as any,
+    });
+
+    ctx.body = {
+      documentId,
+      shortId: (updated as any).shortId,
+      destinationUrl: (updated as any).destinationUrl,
+      title: (updated as any).title || '',
+      clientEmail: (updated as any).clientEmail || null,
+      active: (updated as any).active !== false,
     };
   },
 
@@ -221,6 +450,7 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
         destinationUrl: c.destinationUrl,
         title: c.title || '',
         createdByEmail: c.createdByEmail || null,
+        clientEmail: c.clientEmail || null,
         createdAt: c.createdAt,
         active: c.active !== false,
         scansCount: agg.count,
@@ -292,7 +522,10 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
     }
 
     // Best-effort scan logging. Does not block the redirect.
-    const ipAddress =
+    // IP-HASH (Loi 25, 31 mai 2026) : ipRaw est l'IP en clair recuperee des
+    // headers. Elle sert UNIQUEMENT en memoire, pour 2 derivations immediates
+    // (geoip + hash sale), puis elle est jetee. Elle n'est JAMAIS persistee.
+    const ipRaw =
       (ctx.request.headers['cf-connecting-ip'] as string)
       || (ctx.request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
       || ctx.ip
@@ -301,14 +534,31 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
     const referer = String(ctx.request.headers['referer'] || '').slice(0, 500);
     // GEOIP (3 mai 2026) : enrichissement local via geoip-lite (MaxMind
     // GeoLite2). Aucune API externe -> pas de latence ajoutee, pas de
-    // rate-limit, pas de probleme GDPR cote IP shipping.
-    const { city, country } = resolveGeo(ipAddress);
+    // rate-limit, pas de probleme GDPR cote IP shipping. Calcule AVANT le
+    // hash, sur l'IP brute en memoire.
+    const { city, country } = resolveGeo(ipRaw);
+
+    // IP-HASH (Loi 25) : on hache l'IP avec un sel serveur. Si le sel est
+    // absent, on NE stocke aucune IP (ni claire ni hachee) et on logue un
+    // avertissement, pour ne jamais persister un hash non sale (cassable par
+    // force brute sur l'espace IPv4).
+    const ipSalt = process.env.QR_IP_HASH_SALT || '';
+    if (!ipSalt) {
+      strapi.log.warn(
+        '[qr] QR_IP_HASH_SALT absent : scan journalise sans hash IP '
+        + '(deduplication des visiteurs uniques desactivee). '
+        + 'Definir QR_IP_HASH_SALT dans les variables d\'environnement pour l\'activer.'
+      );
+    }
+    const ipHash = hashIp(ipRaw, ipSalt);
 
     // Fire-and-forget - do NOT await, do NOT let it block the redirect.
+    // On ecrit ipHash (jamais ipAddress). Le champ ipAddress reste dans le
+    // schema le temps de la migration mais n'est plus alimente.
     strapi.documents('api::qr-scan.qr-scan').create({
       data: {
         scannedAt: new Date(),
-        ipAddress: ipAddress.slice(0, 64),
+        ipHash,
         userAgent,
         referer,
         city,
@@ -344,30 +594,22 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       limit: 1000,
     });
 
-    // ANALYTICS (3 mai 2026) : aggregation par ville + appareil pour la
-    // section "Mes QR" du dashboard. Calcule en memoire (limite 1000 scans
-    // par QR couvre largement les besoins courants ; au-dela on pourra
-    // passer en SQL group-by).
-    const byCity: Record<string, number> = {};
-    const byCountry: Record<string, number> = {};
-    const byDevice: Record<string, number> = { mobile: 0, desktop: 0, tablet: 0, bot: 0, unknown: 0 };
-    let lastScannedAt: string | null = null;
+    // Agregation via le helper partage (SOURCE UNIQUE, reutilisee par le rapport
+    // courriel). enrichedScans reste local : c'est la liste par-scan du drilldown,
+    // pas de l'agregat.
+    const analytics = buildScanAnalytics(scans);
     const enrichedScans = scans.map((s: any) => {
-      const city = s.city || 'Inconnu';
-      const country = s.country || 'XX';
-      const device = classifyDevice(s.userAgent || '');
-      byCity[city] = (byCity[city] || 0) + 1;
-      byCountry[country] = (byCountry[country] || 0) + 1;
-      byDevice[device] = (byDevice[device] || 0) + 1;
-      if (!lastScannedAt || s.scannedAt > lastScannedAt) lastScannedAt = s.scannedAt;
+      const ua = s.userAgent || '';
       return {
         scannedAt: s.scannedAt,
-        ipAddress: s.ipAddress,
+        ipAddress: s.ipAddress, // conserve pour compat (vide depuis le hash Loi 25)
         userAgent: s.userAgent,
         referer: s.referer,
         city: s.city || '',
         country: s.country || '',
-        device,
+        device: classifyDevice(ua),
+        os: classifyOs(ua),
+        browser: classifyBrowser(ua),
       };
     });
 
@@ -375,13 +617,54 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       qrCode: { shortId: (qr as any).shortId, destinationUrl: (qr as any).destinationUrl },
       scans: enrichedScans,
       total: scans.length,
-      analytics: {
-        total: scans.length,
-        lastScannedAt,
-        byCity,
-        byCountry,
-        byDevice,
-      },
+      analytics,
     };
+  },
+
+  /**
+   * POST /api/qr-codes/:documentId/send-report
+   * Envoie par courriel le rapport de stats du QR.
+   * Destinataire : l'adresse passee dans le body (envoi a la volee), sinon le
+   * clientEmail du QR. Aucune adresse valide -> 400 clair.
+   * Reutilise buildScanAnalytics (meme agregation que listScans) et
+   * sendQrReportEmail (meme pattern Resend que les autres courriels du projet).
+   */
+  async sendReport(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+
+    const { documentId } = ctx.params;
+    const qr = await strapi.documents('api::qr-code.qr-code').findFirst({
+      filters: { documentId } as any,
+    }) as any;
+    if (!qr) return ctx.notFound('QR code not found');
+
+    const body = (ctx.request.body || {}) as any;
+    const rawEmail = (body.email !== undefined && body.email !== null && body.email !== '')
+      ? body.email
+      : qr.clientEmail;
+    const check = normalizeClientEmail(rawEmail);
+    if (!check.ok || !check.email) {
+      return ctx.badRequest('Aucune adresse courriel valide. Renseigne le courriel du client ou passe une adresse dans la requete.');
+    }
+
+    const scans = await strapi.documents('api::qr-scan.qr-scan').findMany({
+      filters: { qrCode: { documentId } } as any,
+      sort: { scannedAt: 'desc' } as any,
+      limit: 1000,
+    });
+    const analytics = buildScanAnalytics(scans);
+
+    const ok = await sendQrReportEmail({
+      qrTitle: qr.title || '',
+      shortId: qr.shortId,
+      destinationUrl: qr.destinationUrl,
+      recipientEmail: check.email,
+      analytics,
+    });
+
+    if (!ok) {
+      return ctx.internalServerError('Le rapport n\'a pas pu etre envoye (Resend non configure ou erreur d\'envoi).');
+    }
+    ctx.body = { success: true, sentTo: check.email, total: analytics.total };
   },
 }));

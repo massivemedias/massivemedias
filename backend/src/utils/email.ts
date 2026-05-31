@@ -2216,3 +2216,142 @@ export async function sendArtistWelcomeEmail(data: ArtistWelcomeData): Promise<b
     return false;
   }
 }
+
+// -----------------------------------------------------------
+// Rapport de statistiques QR (envoye a un client)
+// -----------------------------------------------------------
+// Reutilise le pattern standard du fichier : getResend (degrade si pas de cle),
+// getSender (from/replyTo/bcc admin), massiveEmailWrapper (template Massive).
+// L'agregation analytics est calculee cote controller (buildScanAnalytics), ce
+// helper ne fait QUE la mise en page courriel.
+interface QrReportAnalytics {
+  total: number;
+  uniquesEstimes: number;
+  lastScannedAt: string | null;
+  byCity: Record<string, number>;
+  byCountry: Record<string, number>;
+  byOs: Record<string, number>;
+  byBrowser: Record<string, number>;
+  byDay: Record<string, number>;
+  topReferers: { referer: string; count: number }[];
+}
+interface QrReportData {
+  qrTitle: string;
+  shortId: string;
+  destinationUrl: string;
+  recipientEmail: string;
+  analytics: QrReportAnalytics;
+}
+
+function buildQrReportHtml(data: QrReportData): string {
+  const a = data.analytics || ({} as QrReportAnalytics);
+  const fmtDate = (v: string | null) => v
+    ? new Date(v).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Toronto' })
+    : null;
+  // Une cle byDay est DEJA une date locale Montreal 'YYYY-MM-DD'. On la formate
+  // a midi en local, sans re-appliquer de fuseau, sinon un double passage
+  // UTC -> Montreal ferait reculer la date d'un jour.
+  const fmtDayKey = (key: string) => {
+    const [y, m, d] = key.split('-').map(Number);
+    if (!y || !m || !d) return key;
+    return new Date(y, m - 1, d, 12).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  // Periode : du premier au dernier jour ayant un scan (cles byDay).
+  const dayKeysSorted = Object.keys(a.byDay || {}).filter((k) => (a.byDay[k] || 0) > 0).sort();
+  const firstDay = dayKeysSorted.length ? fmtDayKey(dayKeysSorted[0]) : null;
+  const lastDay = dayKeysSorted.length ? fmtDayKey(dayKeysSorted[dayKeysSorted.length - 1]) : fmtDate(a.lastScannedAt);
+
+  const topRows = (obj: Record<string, number>, n: number): [string, number][] => Object.entries(obj || {})
+    .filter(([, v]) => v > 0).sort((x, y) => y[1] - x[1]).slice(0, n) as [string, number][];
+
+  const listBlock = (title: string, rows: [string, number][]) => {
+    if (!rows.length) return '';
+    const items = rows.map(([k, v]) =>
+      `<tr><td style="padding:4px 0;color:#444;font-size:13px;">${k}</td>`
+      + `<td style="padding:4px 0;text-align:right;color:#222;font-size:13px;font-weight:600;">${v}</td></tr>`
+    ).join('');
+    return `
+      <p style="margin:18px 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${title}</p>
+      <table width="100%" cellpadding="0" cellspacing="0">${items}</table>`;
+  };
+
+  const dayRows = Object.entries(a.byDay || {}).filter(([, v]) => v > 0).sort((x, y) => (x[0] < y[0] ? -1 : 1));
+  const dayBlock = dayRows.length ? `
+    <p style="margin:18px 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Scans par jour</p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${dayRows.map(([d, v]) => `<tr><td style="padding:3px 0;color:#444;font-size:13px;">${d}</td><td style="padding:3px 0;text-align:right;color:#222;font-size:13px;font-weight:600;">${v}</td></tr>`).join('')}
+    </table>` : '';
+
+  const referers = Array.isArray(a.topReferers) ? a.topReferers.filter((r) => r.referer) : [];
+  const referBlock = referers.length ? `
+    <p style="margin:18px 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Provenance</p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${referers.map((r) => `<tr><td style="padding:3px 0;color:#444;font-size:13px;word-break:break-all;">${r.referer}</td><td style="padding:3px 0;text-align:right;color:#222;font-size:13px;font-weight:600;">${r.count}</td></tr>`).join('')}
+    </table>` : '';
+
+  const content = `
+    <h1 style="color:#FF52A0;margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">Rapport de statistiques</h1>
+    <h2 style="color:#222;margin:0 0 16px;font-size:18px;">${data.qrTitle || 'QR code'}</h2>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr><td style="padding:12px 16px;background:#f7f7f7;border-radius:8px;">
+        <p style="margin:0;color:#666;font-size:12px;">Code : <strong style="color:#222;font-family:monospace;">/qr/${data.shortId}</strong></p>
+        <p style="margin:6px 0 0;color:#666;font-size:12px;">Destination : <a href="${data.destinationUrl}" style="color:#FF52A0;text-decoration:none;word-break:break-all;">${data.destinationUrl}</a></p>
+        ${firstDay && lastDay ? `<p style="margin:6px 0 0;color:#666;font-size:12px;">Periode : ${firstDay === lastDay ? firstDay : `${firstDay} au ${lastDay}`}</p>` : ''}
+      </td></tr>
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+      <tr>
+        <td style="width:50%;padding:16px;background:rgba(255,82,160,0.06);border-radius:8px 0 0 8px;text-align:center;">
+          <p style="margin:0;color:#FF52A0;font-size:28px;font-weight:800;line-height:1;">${a.total ?? 0}</p>
+          <p style="margin:6px 0 0;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Scans</p>
+        </td>
+        <td style="width:50%;padding:16px;background:#f7f7f7;border-radius:0 8px 8px 0;text-align:center;">
+          <p style="margin:0;color:#222;font-size:28px;font-weight:800;line-height:1;">${a.uniquesEstimes ?? 0}</p>
+          <p style="margin:6px 0 0;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Visiteurs uniques estimes</p>
+        </td>
+      </tr>
+    </table>
+
+    ${listBlock('Villes', topRows(a.byCity, 5))}
+    ${listBlock('Pays', topRows(a.byCountry, 5))}
+    ${listBlock('Systeme', topRows(a.byOs, 5))}
+    ${listBlock('Navigateur', topRows(a.byBrowser, 5))}
+    ${dayBlock}
+    ${referBlock}
+
+    <p style="margin:24px 0 0;padding-top:14px;border-top:1px solid #eee;color:#999;font-size:11px;line-height:1.6;">
+      Les visiteurs uniques sont estimes a partir de l'adresse IP hachee, jamais une identite.
+      L'age et le modele exact d'appareil ne sont pas disponibles via un scan de QR.
+    </p>`;
+
+  return massiveEmailWrapper(content);
+}
+
+export async function sendQrReportEmail(data: QrReportData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('[email] Resend non configure, rapport QR non envoye');
+    return false;
+  }
+  if (!data.recipientEmail || !data.recipientEmail.includes('@')) {
+    console.warn('[email] sendQrReportEmail skip : adresse invalide', data.recipientEmail);
+    return false;
+  }
+  const sender = getSender();
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: data.recipientEmail,
+      subject: `Rapport de statistiques QR - ${data.qrTitle || data.shortId}`,
+      html: buildQrReportHtml(data),
+    });
+    console.log('[email] Rapport QR envoye a', data.recipientEmail);
+    return true;
+  } catch (err: any) {
+    console.error('[email] Erreur envoi rapport QR:', err?.message || err);
+    return false;
+  }
+}
