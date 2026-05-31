@@ -1534,6 +1534,7 @@ function contrastRatio(hexA, hexB) {
 }
 
 const QR_POLARITY_MESSAGE = 'Un QR doit avoir des modules fonces sur fond clair pour rester scannable.';
+const QR_CONTRAST_WARNING = 'Contraste limite. Acceptable a l\'ecran, mais risque sur petit format imprime ou en faible lumiere. Teste le QR imprime avant de lancer un grand tirage.';
 
 // Textes d'infobulles (francais, sans tiret cadratin). Centralises pour rester
 // coherents et faciles a ajuster.
@@ -1750,7 +1751,12 @@ function QRCodeTab() {
   const effectiveBgForPolarity = transparentBg ? '#FFFFFF' : bgColor;
   const qrContrastRatio = contrastRatio(fgColor, effectiveBgForPolarity);
   const polarityInverted = relativeLuminance(fgColor) >= relativeLuminance(effectiveBgForPolarity);
-  const polarityOk = !polarityInverted && qrContrastRatio >= 4.5;
+  // Seuils : 3:1 = lisibilite pratique des scanners QR (moins strict que le
+  // 4.5:1 WCAG texte). Polarite inversee OU contraste < 3:1 -> blocage. Entre
+  // 3:1 et 4.5:1 -> autorise mais avertissement non bloquant. >= 4.5:1 -> RAS.
+  const downloadBlocked = polarityInverted || qrContrastRatio < 3;
+  const contrastWarning = !polarityInverted && qrContrastRatio >= 3 && qrContrastRatio < 4.5;
+  const polarityOk = !downloadBlocked; // "polarityOk" = telechargement autorise
 
   const resetPolarityStandard = useCallback(() => {
     setFgColor('#000000');
@@ -2410,7 +2416,7 @@ function QRCodeTab() {
               {/* Garde-fou polarite : modules fonces sur fond clair + contraste
                   suffisant (WCAG AA 4.5:1). Si non respecte, on avertit ici et
                   on bloque le telechargement (boutons PNG/SVG desactives). */}
-              {!polarityOk ? (
+              {downloadBlocked ? (
                 <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3 space-y-2">
                   <p className="text-red-300 text-xs font-semibold flex items-center gap-1.5">
                     <AlertTriangle size={13} className="flex-shrink-0" />
@@ -2419,11 +2425,25 @@ function QRCodeTab() {
                   <p className="text-grey-muted text-[10px] leading-snug">
                     {polarityInverted
                       ? 'Polarite inversee : les points sont plus clairs que le fond.'
-                      : `Contraste insuffisant (${qrContrastRatio.toFixed(1)}:1, minimum 4.5:1).`}
+                      : `Contraste trop faible (${qrContrastRatio.toFixed(1)}:1, minimum 3:1).`}
                     {' '}Le telechargement est bloque tant que ce n'est pas corrige.
                   </p>
                   <button onClick={resetPolarityStandard}
                     className="px-3 py-1.5 rounded-lg bg-accent text-white text-[11px] font-semibold flex items-center gap-1.5 hover:bg-accent/90 transition-colors">
+                    <RefreshCw size={11} /> Reinitialiser en standard
+                  </button>
+                </div>
+              ) : contrastWarning ? (
+                <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 space-y-2">
+                  <p className="text-amber-300 text-xs font-semibold flex items-center gap-1.5">
+                    <AlertTriangle size={13} className="flex-shrink-0" />
+                    Contraste limite ({qrContrastRatio.toFixed(1)}:1)
+                  </p>
+                  <p className="text-grey-muted text-[10px] leading-snug">
+                    {QR_CONTRAST_WARNING}
+                  </p>
+                  <button onClick={resetPolarityStandard}
+                    className="px-3 py-1.5 rounded-lg bg-black/30 text-grey-muted text-[11px] font-semibold flex items-center gap-1.5 hover:text-heading transition-colors">
                     <RefreshCw size={11} /> Reinitialiser en standard
                   </button>
                 </div>
