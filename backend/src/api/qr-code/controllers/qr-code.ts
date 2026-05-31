@@ -74,6 +74,71 @@ function classifyDevice(ua: string): string {
 }
 
 /**
+ * Classifie le systeme d'exploitation a partir du User-Agent. On reste sur les
+ * grandes familles fiables (iOS / Android / autre). Le MODELE exact d'appareil
+ * n'est PAS deductible de facon fiable du UA moderne, on ne l'expose donc jamais.
+ * La categorie 'autre' absorbe desktop (Windows/Mac/Linux), bots et UA inconnus :
+ * aucun scan n'est jamais perdu (somme des OS = total).
+ */
+function classifyOs(ua: string): string {
+  if (!ua) return 'autre';
+  const u = ua.toLowerCase();
+  if (/iphone|ipad|ipod/.test(u)) return 'iOS';
+  if (/android/.test(u)) return 'Android';
+  return 'autre';
+}
+
+/**
+ * Classifie le navigateur a partir du User-Agent. L'ORDRE des tests est
+ * critique : un UA Chrome contient le token "Safari", un UA Edge contient
+ * "Chrome", etc. On teste donc du plus specifique au plus generique :
+ *   Firefox -> Edge(=autre) -> Chrome -> Safari -> autre.
+ * La categorie 'autre' absorbe Edge, Opera, navigateurs in-app et inconnus :
+ * aucun scan n'est jamais perdu (somme des navigateurs = total).
+ */
+function classifyBrowser(ua: string): string {
+  if (!ua) return 'autre';
+  const u = ua.toLowerCase();
+  if (/firefox|fxios/.test(u)) return 'Firefox';
+  if (/edg\//.test(u)) return 'autre'; // Edge contient "chrome", on l'ecarte avant Chrome
+  if (/chrome|crios|chromium/.test(u)) return 'Chrome';
+  if (/safari/.test(u)) return 'Safari'; // un vrai Safari n'a pas de token chrome/crios
+  return 'autre';
+}
+
+/**
+ * Extrait l'heure locale (0-23, fuseau America/Toronto) d'une date de scan.
+ * On passe par Intl.DateTimeFormat pour un decoupage robuste cote fuseau
+ * (evite l'effet "serveur UTC"). Le `% 24` garde-fou neutralise le cas limite
+ * ou certains environnements rendent "24" a minuit.
+ */
+function hourInMontreal(value: string | Date): number {
+  try {
+    const d = value instanceof Date ? value : new Date(value);
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      hour: 'numeric', hour12: false, timeZone: 'America/Toronto',
+    }).formatToParts(d);
+    const h = parseInt((parts.find(p => p.type === 'hour') || { value: '0' }).value, 10);
+    return Number.isFinite(h) ? (h % 24) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Cle de jour locale 'YYYY-MM-DD' (fuseau America/Toronto) pour grouper la
+ * serie temporelle. Le format en-CA donne directement l'ordre ISO triable.
+ */
+function dayKeyMontreal(value: string | Date): string {
+  try {
+    const d = value instanceof Date ? value : new Date(value);
+    return d.toLocaleDateString('en-CA', { timeZone: 'America/Toronto' }); // YYYY-MM-DD
+  } catch {
+    return '0000-00-00';
+  }
+}
+
+/**
  * Generates a URL-safe short id for the trackable QR redirect endpoint.
  * Uses crypto.randomBytes for unpredictability (prevents enumeration of existing QR codes)
  * and a base62 alphabet so the id is short, case-sensitive, and URL-safe without encoding.
@@ -389,32 +454,73 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       limit: 1000,
     });
 
-    // ANALYTICS (3 mai 2026) : aggregation par ville + appareil pour la
-    // section "Mes QR" du dashboard. Calcule en memoire (limite 1000 scans
-    // par QR couvre largement les besoins courants ; au-dela on pourra
-    // passer en SQL group-by).
+    // ANALYTICS (3 mai 2026, enrichi 31 mai 2026) : aggregation par ville,
+    // appareil, OS, navigateur, jour, heure, referer + uniques estimes.
+    // TOUT est calcule en memoire a partir de la MEME fenetre de scans (limite
+    // 1000, comportement existant). Consequence voulue : byDay, byHour, byOs et
+    // byBrowser totalisent exactement `total` (= scans.length), et uniques <=
+    // total, par construction. Au-dela de 1000 scans par QR, on pourra basculer
+    // ces agregats en SQL group-by (decision separee, hors de ce chantier).
     const byCity: Record<string, number> = {};
     const byCountry: Record<string, number> = {};
     const byDevice: Record<string, number> = { mobile: 0, desktop: 0, tablet: 0, bot: 0, unknown: 0 };
+    // Pre-remplissage : OS et navigateur partent a 0 sur toutes les categories
+    // connues pour que l'UI ait toujours les memes cles (graphes stables).
+    const byOs: Record<string, number> = { iOS: 0, Android: 0, autre: 0 };
+    const byBrowser: Record<string, number> = { Safari: 0, Chrome: 0, Firefox: 0, autre: 0 };
+    const byDay: Record<string, number> = {}; // 'YYYY-MM-DD' -> count (sparse)
+    // byHour pre-rempli 0..23 pour un graphe de pics complet meme sans scan.
+    const byHour: Record<string, number> = {};
+    for (let h = 0; h < 24; h++) byHour[String(h)] = 0;
+    const refererCounts: Record<string, number> = {};
+    // UNIQUES (Loi 25) : on compte les ip_hash DISTINCTS. Les rows sans hash
+    // (sel absent au moment du scan, ou anciennes rows purgees) sont exclues du
+    // Set -> uniques estimes <= total, jamais au-dessus.
+    const uniqueHashes = new Set<string>();
     let lastScannedAt: string | null = null;
+
     const enrichedScans = scans.map((s: any) => {
       const city = s.city || 'Inconnu';
       const country = s.country || 'XX';
-      const device = classifyDevice(s.userAgent || '');
+      const ua = s.userAgent || '';
+      const device = classifyDevice(ua);
+      const os = classifyOs(ua);
+      const browser = classifyBrowser(ua);
       byCity[city] = (byCity[city] || 0) + 1;
       byCountry[country] = (byCountry[country] || 0) + 1;
       byDevice[device] = (byDevice[device] || 0) + 1;
+      byOs[os] = (byOs[os] || 0) + 1;
+      byBrowser[browser] = (byBrowser[browser] || 0) + 1;
+
+      const dayKey = dayKeyMontreal(s.scannedAt);
+      byDay[dayKey] = (byDay[dayKey] || 0) + 1;
+      const hourKey = String(hourInMontreal(s.scannedAt));
+      byHour[hourKey] = (byHour[hourKey] || 0) + 1;
+
+      const ref = (s.referer || '').trim();
+      if (ref) refererCounts[ref] = (refererCounts[ref] || 0) + 1;
+
+      if (s.ipHash) uniqueHashes.add(s.ipHash);
+
       if (!lastScannedAt || s.scannedAt > lastScannedAt) lastScannedAt = s.scannedAt;
       return {
         scannedAt: s.scannedAt,
-        ipAddress: s.ipAddress,
+        ipAddress: s.ipAddress, // conserve pour compat (vide depuis le hash Loi 25)
         userAgent: s.userAgent,
         referer: s.referer,
         city: s.city || '',
         country: s.country || '',
         device,
+        os,
+        browser,
       };
     });
+
+    // Top referers : tries par frequence decroissante, plafonnes a 5 entrees.
+    const topReferers = Object.entries(refererCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([referer, count]) => ({ referer, count }));
 
     ctx.body = {
       qrCode: { shortId: (qr as any).shortId, destinationUrl: (qr as any).destinationUrl },
@@ -422,10 +528,18 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       total: scans.length,
       analytics: {
         total: scans.length,
+        // "uniques estimes" : libelle volontairement prudent (derive de l'IP
+        // hachee, jamais une identite). On ne dit jamais "uniques" tout court.
+        uniquesEstimes: uniqueHashes.size,
         lastScannedAt,
         byCity,
         byCountry,
         byDevice,
+        byOs,
+        byBrowser,
+        byDay,
+        byHour,
+        topReferers,
       },
     };
   },
