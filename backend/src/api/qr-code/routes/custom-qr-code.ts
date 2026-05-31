@@ -4,6 +4,7 @@
  * Admin routes (auth enforced inside each controller via requireAdminAuth):
  *   POST   /api/qr-codes/create         -> create a new dynamic QR
  *   GET    /api/qr-codes/list           -> list with aggregate scan counts
+ *   PUT    /api/qr-codes/:documentId    -> update title/destination/active/clientEmail
  *   DELETE /api/qr-codes/:documentId    -> delete QR + its scans
  *   GET    /api/qr-codes/:documentId/scans -> drilldown of individual scan events
  *
@@ -23,6 +24,12 @@ export default {
       method: 'GET',
       path: '/qr-codes/list',
       handler: 'qr-code.listWithScans',
+      config: { auth: false },
+    },
+    {
+      method: 'PUT',
+      path: '/qr-codes/:documentId',
+      handler: 'qr-code.updateQr',
       config: { auth: false },
     },
     {

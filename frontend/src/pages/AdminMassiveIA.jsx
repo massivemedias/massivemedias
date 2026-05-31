@@ -4,11 +4,13 @@ import {
   MessageSquare, Sparkles, Image, Camera, Send, Plus, Settings2,
   Upload, Download, Loader2, X, AlertCircle, ImageDown, QrCode, Shirt,
   BarChart3, Trash2, ExternalLink, Copy, Check, Megaphone, RefreshCw, Scissors,
+  HelpCircle, Search, Pencil, Power, Mail, AlertTriangle,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { chatStream, generateMockup, checkHealth } from '../services/iaService';
 import MerchMockupTool from '../components/merch/MerchMockupTool';
 import StickerPreviewCanvas from '../components/StickerPreviewCanvas';
+import Tooltip from '../components/Tooltip';
 import api from '../services/api';
 import { getAdminArtistsList, getAdminArtistDetail } from '../services/adminService';
 import artistsHardcoded from '../data/artistPricing';
@@ -1496,6 +1498,62 @@ const QR_DEFAULT_STYLE = 'square';
 const QR_DEFAULT_EC = 'L';
 const QR_EC_WITH_LOGO = 'H';
 
+// ---------------------------------------------------------------------------
+// Polarite QR (lisibilite au scan)
+// ---------------------------------------------------------------------------
+// Un QR doit avoir des modules FONCES sur fond CLAIR, jamais l'inverse, et avec
+// un contraste suffisant. On calcule la luminance relative (formule WCAG) puis
+// le ratio de contraste. Le seuil 4.5:1 (WCAG AA) evite le piege vu en prod :
+// un QR techniquement dark-on-light mais trop peu contraste (gris fonce sur
+// gris clair) qui ne scanne pas de facon fiable.
+function hexToRgb(hex) {
+  const m = String(hex || '').trim().replace('#', '');
+  const full = m.length === 3 ? m.split('').map((c) => c + c).join('') : m;
+  if (full.length !== 6 || /[^0-9a-f]/i.test(full)) return null;
+  return {
+    r: parseInt(full.slice(0, 2), 16),
+    g: parseInt(full.slice(2, 4), 16),
+    b: parseInt(full.slice(4, 6), 16),
+  };
+}
+function relativeLuminance(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return 0;
+  const lin = (v) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * lin(rgb.r) + 0.7152 * lin(rgb.g) + 0.0722 * lin(rgb.b);
+}
+function contrastRatio(hexA, hexB) {
+  const la = relativeLuminance(hexA);
+  const lb = relativeLuminance(hexB);
+  const lighter = Math.max(la, lb);
+  const darker = Math.min(la, lb);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+const QR_POLARITY_MESSAGE = 'Un QR doit avoir des modules fonces sur fond clair pour rester scannable.';
+
+// Textes d'infobulles (francais, sans tiret cadratin). Centralises pour rester
+// coherents et faciles a ajuster.
+const QR_TIPS = {
+  titre: 'Nom interne pour reconnaitre ce QR dans ton tableau de bord. Pas visible par le public.',
+  destination: 'L\'adresse vers laquelle le QR redirige (ex: un compte Instagram, un site). Tu peux la modifier plus tard sans reimprimer le QR.',
+  shortId: 'Le code unique dans l\'URL du QR. Genere automatiquement. Ne plus le changer une fois le QR imprime.',
+  actif: 'Active ou desactive la redirection. Desactive = le QR ne mene plus nulle part, sans le supprimer.',
+  clientEmail: 'L\'adresse a qui envoyer le rapport de statistiques. Optionnel, tu pourras l\'ajouter ou le changer plus tard.',
+};
+
+// Petite icone "?" avec infobulle au survol, reutilise le composant Tooltip.
+function FieldTip({ text }) {
+  return (
+    <Tooltip text={text} position="top">
+      <HelpCircle size={12} className="text-grey-muted hover:text-accent cursor-help" />
+    </Tooltip>
+  );
+}
+
 function QRCodeTab() {
   const [url, setUrl] = useState('https://massivemedias.com');
   const [title, setTitle] = useState('');
@@ -1516,10 +1574,29 @@ function QRCodeTab() {
   const [logoUrl, setLogoUrl] = useState('');
   const canvasRef = useRef(null);
 
+  // Courriel client (destinataire du rapport de stats). Optionnel a la creation.
+  const [clientEmail, setClientEmail] = useState('');
+
   // Mes QR Codes list state
   const [myList, setMyList] = useState([]);
   const [listLoading, setListLoading] = useState(false);
   const [copiedId, setCopiedId] = useState('');
+
+  // Recherche + tri de la liste (cote client, sur myList deja chargee).
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('date'); // 'date' | 'scans'
+
+  // Panneau d'edition inline (toggle actif + champs editables) par QR.
+  const [editingId, setEditingId] = useState(''); // documentId en cours d'edition
+  const [editForm, setEditForm] = useState({ title: '', destinationUrl: '', active: true, clientEmail: '' });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState('');
+
+  // Panneau "Voir les stats" inline (point d'entree ; rendu detaille = Chantier 4).
+  const [statsOpenId, setStatsOpenId] = useState('');
+  const [statsData, setStatsData] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState('');
 
   // REGLE METIER: si logo present, force EC = 'H'. L'etat ecLevel reste utilisable
   // par l'utilisateur pour son choix initial, mais effectiveEC prend le dessus pour
@@ -1544,6 +1621,7 @@ function QRCodeTab() {
       const res = await api.post('/qr-codes/create', {
         destinationUrl: url.trim(),
         title: title.trim() || undefined,
+        clientEmail: clientEmail.trim() || undefined,
       });
       setEncodedUrl(res.data.trackingUrl);
       setCurrentShortId(res.data.shortId);
@@ -1559,7 +1637,7 @@ function QRCodeTab() {
       setCreateLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, title, trackingEnabled]);
+  }, [url, title, clientEmail, trackingEnabled]);
 
   const fetchMyList = useCallback(async () => {
     setListLoading(true);
@@ -1591,6 +1669,93 @@ function QRCodeTab() {
     navigator.clipboard.writeText(fullUrl);
     setCopiedId(shortId);
     setTimeout(() => setCopiedId(''), 1800);
+  }, []);
+
+  // "Voir les stats" : point d'entree. On appelle l'endpoint enrichi (Chantier 2)
+  // et on ouvre un panneau. Le rendu detaille (graphes) est le Chantier 4 ; ici
+  // on affiche un apercu minimal + un marqueur "vue detaillee a venir".
+  const openStats = useCallback(async (documentId) => {
+    if (statsOpenId === documentId) { setStatsOpenId(''); return; } // toggle ferme
+    setStatsOpenId(documentId);
+    setEditingId('');
+    setStatsData(null);
+    setStatsError('');
+    setStatsLoading(true);
+    try {
+      const res = await api.get(`/qr-codes/${documentId}/scans`);
+      setStatsData(res.data || null);
+    } catch (err) {
+      console.error('openStats error:', err);
+      setStatsError(err?.response?.data?.error?.message || err?.message || 'Erreur de chargement des stats');
+    } finally {
+      setStatsLoading(false);
+    }
+  }, [statsOpenId]);
+
+  // Edition inline : ouvre le panneau pre-rempli avec les valeurs courantes.
+  const startEdit = useCallback((q) => {
+    if (editingId === q.documentId) { setEditingId(''); return; } // toggle ferme
+    setStatsOpenId('');
+    setEditError('');
+    setEditForm({
+      title: q.title || '',
+      destinationUrl: q.destinationUrl || '',
+      active: q.active !== false,
+      clientEmail: q.clientEmail || '',
+    });
+    setEditingId(q.documentId);
+  }, [editingId]);
+
+  const saveEdit = useCallback(async (documentId) => {
+    setEditSaving(true);
+    setEditError('');
+    try {
+      await api.put(`/qr-codes/${documentId}`, {
+        title: editForm.title,
+        destinationUrl: editForm.destinationUrl.trim(),
+        active: editForm.active,
+        clientEmail: editForm.clientEmail.trim(), // vide => null cote backend
+      });
+      setEditingId('');
+      fetchMyList();
+    } catch (err) {
+      console.error('saveEdit error:', err);
+      setEditError(err?.response?.data?.error?.message || err?.message || 'Erreur de sauvegarde');
+    } finally {
+      setEditSaving(false);
+    }
+  }, [editForm, fetchMyList]);
+
+  // Liste filtree (recherche titre/destination) + triee (date ou nombre de scans).
+  const filteredSortedList = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    let rows = myList;
+    if (q) {
+      rows = rows.filter((r) =>
+        (r.title || '').toLowerCase().includes(q)
+        || (r.destinationUrl || '').toLowerCase().includes(q)
+      );
+    }
+    const sorted = [...rows];
+    if (sortBy === 'scans') {
+      sorted.sort((a, b) => (b.scansCount || 0) - (a.scansCount || 0));
+    } else {
+      sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+    return sorted;
+  }, [myList, searchQuery, sortBy]);
+
+  // Polarite du QR : fg doit etre plus FONCE que bg, avec contraste >= 4.5:1.
+  // Un fond transparent est traite comme blanc (cas d'usage print/sticker).
+  const effectiveBgForPolarity = transparentBg ? '#FFFFFF' : bgColor;
+  const qrContrastRatio = contrastRatio(fgColor, effectiveBgForPolarity);
+  const polarityInverted = relativeLuminance(fgColor) >= relativeLuminance(effectiveBgForPolarity);
+  const polarityOk = !polarityInverted && qrContrastRatio >= 4.5;
+
+  const resetPolarityStandard = useCallback(() => {
+    setFgColor('#000000');
+    setBgColor('#FFFFFF');
+    setTransparentBg(false);
   }, []);
 
   useEffect(() => {
@@ -1704,6 +1869,7 @@ function QRCodeTab() {
 
   const handleDownloadPNG = () => {
     if (!canvasRef.current) return;
+    if (!polarityOk) { window.alert(QR_POLARITY_MESSAGE); return; }
     const a = document.createElement('a');
     a.href = canvasRef.current.toDataURL('image/png');
     const labelUrl = effectiveUrl.replace(/https?:\/\//, '').replace(/[^a-z0-9]/gi, '-').slice(0, 30);
@@ -1734,6 +1900,7 @@ function QRCodeTab() {
   // Resultat : Illustrator voit un compound path avec N sub-paths discrets,
   // chacun = 1 module net. Pretes pour impression professionnelle.
   const handleDownloadSVG = async () => {
+    if (!polarityOk) { window.alert(QR_POLARITY_MESSAGE); return; }
     try {
       const QRCode = (await import('qrcode')).default;
       const qrData = await QRCode.create(effectiveUrl.trim(), { errorCorrectionLevel: effectiveEC });
@@ -1882,15 +2049,30 @@ function QRCodeTab() {
         {qrTab === 'content' && (
           <div className="rounded-xl bg-black/20 p-4 space-y-4">
             <div>
-              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">URL de destination</label>
+              <label className="text-xs text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                URL de destination
+                <FieldTip text={QR_TIPS.destination} />
+              </label>
               <input type="text" value={url} onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://massivemedias.com"
                 className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent" />
             </div>
             <div>
-              <label className="text-xs text-grey-muted uppercase tracking-wider block mb-1">Titre (optionnel)</label>
+              <label className="text-xs text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                Titre (optionnel)
+                <FieldTip text={QR_TIPS.titre} />
+              </label>
               <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
                 placeholder="Ex: Carte affaires Michael"
+                className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent" />
+            </div>
+            <div>
+              <label className="text-xs text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                Courriel du client (optionnel)
+                <FieldTip text={QR_TIPS.clientEmail} />
+              </label>
+              <input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)}
+                placeholder="client@exemple.com"
                 className="w-full rounded-lg bg-black/30 text-heading text-sm px-3 py-2.5 outline-none border border-white/5 focus:border-accent" />
             </div>
 
@@ -1913,8 +2095,9 @@ function QRCodeTab() {
                     puis redirige vers ta destination. Tu peux voir les stats dans "Mes QR".
                   </p>
                   {trackingEnabled && currentShortId && (
-                    <p className="text-accent text-[10px] mt-1 font-mono">
+                    <p className="text-accent text-[10px] mt-1 font-mono flex items-center gap-1.5">
                       QR cree: /qr/{currentShortId}
+                      <FieldTip text={QR_TIPS.shortId} />
                     </p>
                   )}
                   {trackingEnabled && createLoading && (
@@ -1980,7 +2163,7 @@ function QRCodeTab() {
           </div>
         )}
 
-        {/* Tab: Mes QR Codes (liste + stats) */}
+        {/* Tab: Mes QR Codes (liste + recherche + tri + acces stats/edition) */}
         {qrTab === 'list' && (
           <div className="rounded-xl bg-black/20 p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -1993,13 +2176,40 @@ function QRCodeTab() {
                 {listLoading ? 'Chargement...' : 'Rafraichir'}
               </button>
             </div>
+
+            {/* Recherche (titre ou destination) + tri (date ou scans) */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-grey-muted" />
+                <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Rechercher par titre ou destination"
+                  className="w-full rounded-lg bg-black/30 text-heading text-xs pl-8 pr-3 py-2 outline-none border border-white/5 focus:border-accent" />
+              </div>
+              <div className="flex gap-1 p-0.5 rounded-lg bg-black/30 flex-shrink-0">
+                <button onClick={() => setSortBy('date')}
+                  className={`px-2.5 py-1.5 rounded text-[10px] font-semibold ${sortBy === 'date' ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading'}`}>
+                  Date
+                </button>
+                <button onClick={() => setSortBy('scans')}
+                  className={`px-2.5 py-1.5 rounded text-[10px] font-semibold ${sortBy === 'scans' ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading'}`}>
+                  Scans
+                </button>
+              </div>
+            </div>
+
             {myList.length === 0 && !listLoading && (
               <div className="text-center py-8 text-grey-muted text-xs">
                 Aucun QR tracke encore. Cree-en un dans l'onglet "Contenu" avec le tracking active.
               </div>
             )}
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {myList.map((q) => (
+            {myList.length > 0 && filteredSortedList.length === 0 && (
+              <div className="text-center py-6 text-grey-muted text-xs">
+                Aucun resultat pour cette recherche.
+              </div>
+            )}
+
+            <div className="space-y-2 max-h-[460px] overflow-y-auto">
+              {filteredSortedList.map((q) => (
                 <div key={q.documentId} className="rounded-lg bg-black/30 p-3 border border-white/5 hover:border-accent/30 transition-colors">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="flex-1 min-w-0">
@@ -2011,6 +2221,9 @@ function QRCodeTab() {
                       </a>
                     </div>
                     <div className="flex-shrink-0 flex items-center gap-1">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${q.active ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-grey-muted'}`}>
+                        {q.active ? 'Actif' : 'Inactif'}
+                      </span>
                       <span className="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-bold">
                         {q.scansCount} scan{q.scansCount !== 1 ? 's' : ''}
                       </span>
@@ -2024,9 +2237,19 @@ function QRCodeTab() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1 mt-2">
+                    <button onClick={() => openStats(q.documentId)}
+                      className={`flex-1 py-1.5 rounded text-[10px] flex items-center justify-center gap-1 ${statsOpenId === q.documentId ? 'bg-accent/20 text-accent' : 'bg-black/30 text-grey-muted hover:text-accent hover:bg-black/40'}`}>
+                      <BarChart3 size={10} /> Voir les stats
+                    </button>
+                    <button onClick={() => startEdit(q)}
+                      className={`py-1.5 px-2 rounded text-[10px] flex items-center gap-1 ${editingId === q.documentId ? 'bg-accent/20 text-accent' : 'bg-black/30 text-grey-muted hover:text-accent hover:bg-black/40'}`}
+                      title="Editer">
+                      <Pencil size={10} />
+                    </button>
                     <button onClick={() => copyTrackingUrl(q.shortId)}
-                      className="flex-1 py-1.5 rounded text-[10px] bg-black/30 text-grey-muted hover:text-accent hover:bg-black/40 flex items-center justify-center gap-1">
-                      {copiedId === q.shortId ? <><Check size={10} /> Copie</> : <><Copy size={10} /> URL tracke</>}
+                      className="py-1.5 px-2 rounded text-[10px] bg-black/30 text-grey-muted hover:text-accent hover:bg-black/40 flex items-center gap-1"
+                      title="Copier l'URL tracke">
+                      {copiedId === q.shortId ? <Check size={10} /> : <Copy size={10} />}
                     </button>
                     <a href={q.destinationUrl} target="_blank" rel="noopener noreferrer"
                       className="py-1.5 px-2 rounded text-[10px] bg-black/30 text-grey-muted hover:text-accent hover:bg-black/40 flex items-center gap-1"
@@ -2039,6 +2262,75 @@ function QRCodeTab() {
                       <Trash2 size={10} />
                     </button>
                   </div>
+
+                  {/* Panneau edition inline (toggle actif + champs editables) */}
+                  {editingId === q.documentId && (
+                    <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
+                      <div>
+                        <label className="text-[10px] text-grey-muted flex items-center gap-1.5 mb-1">Titre <FieldTip text={QR_TIPS.titre} /></label>
+                        <input type="text" value={editForm.title} onChange={(e) => setEditForm(f => ({ ...f, title: e.target.value }))}
+                          className="w-full rounded bg-black/40 text-heading text-xs px-2.5 py-1.5 outline-none border border-white/5 focus:border-accent" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-grey-muted flex items-center gap-1.5 mb-1">Destination <FieldTip text={QR_TIPS.destination} /></label>
+                        <input type="text" value={editForm.destinationUrl} onChange={(e) => setEditForm(f => ({ ...f, destinationUrl: e.target.value }))}
+                          className="w-full rounded bg-black/40 text-heading text-xs px-2.5 py-1.5 outline-none border border-white/5 focus:border-accent" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-grey-muted flex items-center gap-1.5 mb-1">Courriel du client <FieldTip text={QR_TIPS.clientEmail} /></label>
+                        <input type="email" value={editForm.clientEmail} onChange={(e) => setEditForm(f => ({ ...f, clientEmail: e.target.value }))}
+                          placeholder="client@exemple.com"
+                          className="w-full rounded bg-black/40 text-heading text-xs px-2.5 py-1.5 outline-none border border-white/5 focus:border-accent" />
+                      </div>
+                      <label className="flex items-center gap-2 cursor-pointer w-fit">
+                        <div className={`w-9 h-5 rounded-full transition-colors flex items-center ${editForm.active ? 'bg-green-500' : 'bg-white/10'}`}
+                          onClick={() => setEditForm(f => ({ ...f, active: !f.active }))}>
+                          <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${editForm.active ? 'translate-x-4 ml-0.5' : 'ml-0.5'}`} />
+                        </div>
+                        <span className="text-[10px] text-grey-muted flex items-center gap-1.5">
+                          {editForm.active ? 'Actif' : 'Inactif'} <FieldTip text={QR_TIPS.actif} />
+                        </span>
+                      </label>
+                      {editError && <p className="text-red-400 text-[10px]">{editError}</p>}
+                      <div className="flex gap-2 pt-1">
+                        <button onClick={() => saveEdit(q.documentId)} disabled={editSaving}
+                          className="flex-1 py-1.5 rounded bg-accent text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-accent/90 disabled:opacity-50">
+                          {editSaving ? <><Loader2 size={11} className="animate-spin" /> Enregistrement</> : <><Check size={11} /> Enregistrer</>}
+                        </button>
+                        <button onClick={() => setEditingId('')}
+                          className="py-1.5 px-3 rounded bg-black/30 text-grey-muted text-[11px] hover:text-heading">
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Panneau stats inline : point d'entree, rendu detaille = Chantier 4 */}
+                  {statsOpenId === q.documentId && (
+                    <div className="mt-3 pt-3 border-t border-white/10">
+                      {statsLoading && (
+                        <p className="text-grey-muted text-[10px] flex items-center gap-1.5"><Loader2 size={11} className="animate-spin" /> Chargement des stats...</p>
+                      )}
+                      {statsError && <p className="text-red-400 text-[10px]">{statsError}</p>}
+                      {!statsLoading && !statsError && statsData && (
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="rounded-lg bg-black/40 p-2 text-center">
+                              <p className="text-heading text-base font-bold">{statsData.analytics?.total ?? statsData.total ?? 0}</p>
+                              <p className="text-grey-muted text-[9px] uppercase tracking-wider">Scans</p>
+                            </div>
+                            <div className="rounded-lg bg-black/40 p-2 text-center">
+                              <p className="text-heading text-base font-bold">{statsData.analytics?.uniquesEstimes ?? 0}</p>
+                              <p className="text-grey-muted text-[9px] uppercase tracking-wider">Uniques estimes</p>
+                            </div>
+                          </div>
+                          <p className="text-grey-muted text-[10px] flex items-center gap-1.5">
+                            <BarChart3 size={11} className="text-accent" /> Vue detaillee (graphes ville, appareil, heures) a venir.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -2114,6 +2406,32 @@ function QRCodeTab() {
                   </div>
                 </div>
               )}
+
+              {/* Garde-fou polarite : modules fonces sur fond clair + contraste
+                  suffisant (WCAG AA 4.5:1). Si non respecte, on avertit ici et
+                  on bloque le telechargement (boutons PNG/SVG desactives). */}
+              {!polarityOk ? (
+                <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3 space-y-2">
+                  <p className="text-red-300 text-xs font-semibold flex items-center gap-1.5">
+                    <AlertTriangle size={13} className="flex-shrink-0" />
+                    {QR_POLARITY_MESSAGE}
+                  </p>
+                  <p className="text-grey-muted text-[10px] leading-snug">
+                    {polarityInverted
+                      ? 'Polarite inversee : les points sont plus clairs que le fond.'
+                      : `Contraste insuffisant (${qrContrastRatio.toFixed(1)}:1, minimum 4.5:1).`}
+                    {' '}Le telechargement est bloque tant que ce n'est pas corrige.
+                  </p>
+                  <button onClick={resetPolarityStandard}
+                    className="px-3 py-1.5 rounded-lg bg-accent text-white text-[11px] font-semibold flex items-center gap-1.5 hover:bg-accent/90 transition-colors">
+                    <RefreshCw size={11} /> Reinitialiser en standard
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[10px] text-green-400/80 flex items-center gap-1.5">
+                  <Check size={11} /> Polarite correcte (contraste {qrContrastRatio.toFixed(1)}:1).
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -2144,16 +2462,27 @@ function QRCodeTab() {
           </div>
         )}
 
-        {/* Download */}
-        <div className="flex gap-2">
-          <button onClick={handleDownloadPNG}
-            className="flex-1 py-3 rounded-xl bg-accent text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-accent/90 transition-colors">
-            <Download size={16} /> PNG
-          </button>
-          <button onClick={handleDownloadSVG}
-            className="flex-1 py-3 rounded-xl bg-green-600 text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-green-500 transition-colors">
-            <Download size={16} /> SVG
-          </button>
+        {/* Download (bloque si la polarite n'est pas correcte) */}
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <button onClick={handleDownloadPNG} disabled={!polarityOk}
+              className={`flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors ${
+                polarityOk ? 'bg-accent text-white hover:bg-accent/90' : 'bg-white/5 text-grey-muted/50 cursor-not-allowed'
+              }`}>
+              <Download size={16} /> PNG
+            </button>
+            <button onClick={handleDownloadSVG} disabled={!polarityOk}
+              className={`flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors ${
+                polarityOk ? 'bg-green-600 text-white hover:bg-green-500' : 'bg-white/5 text-grey-muted/50 cursor-not-allowed'
+              }`}>
+              <Download size={16} /> SVG
+            </button>
+          </div>
+          {!polarityOk && (
+            <p className="text-[10px] text-red-300 flex items-center gap-1.5">
+              <AlertTriangle size={11} className="flex-shrink-0" /> {QR_POLARITY_MESSAGE} Corrige les couleurs dans l'onglet "Couleurs".
+            </p>
+          )}
         </div>
       </div>
 

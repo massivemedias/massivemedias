@@ -169,6 +169,24 @@ function isSafeHttpUrl(u: string): boolean {
   }
 }
 
+/**
+ * Validateur courriel minimal pour le champ optionnel clientEmail (destinataire
+ * du rapport de stats, cf. chantier rapport courriel). Volontairement simple :
+ * on verifie juste la forme "x@y.z". Une string vide est consideree valide
+ * (le champ est optionnel). Retourne la valeur nettoyee (trim, lowercase) ou
+ * null si invalide.
+ */
+function normalizeClientEmail(value: unknown): { ok: boolean; email: string | null } {
+  if (value === undefined || value === null || value === '') return { ok: true, email: null };
+  if (typeof value !== 'string') return { ok: false, email: null };
+  const trimmed = value.trim().toLowerCase();
+  if (!trimmed) return { ok: true, email: null };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) || trimmed.length > 200) {
+    return { ok: false, email: null };
+  }
+  return { ok: true, email: trimmed };
+}
+
 // requireAdminAuth importe depuis ../../../utils/auth (SEC-01, 2026-04-18).
 
 export default factories.createCoreController('api::qr-code.qr-code', ({ strapi }) => ({
@@ -183,13 +201,19 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
   async createDynamic(ctx) {
     if (!(await requireAdminAuth(ctx))) return;
 
-    const { destinationUrl, title } = (ctx.request.body || {}) as any;
+    const { destinationUrl, title, clientEmail } = (ctx.request.body || {}) as any;
     if (!destinationUrl || typeof destinationUrl !== 'string') {
       return ctx.badRequest('destinationUrl is required');
     }
     const trimmed = destinationUrl.trim();
     if (!isSafeHttpUrl(trimmed)) {
       return ctx.badRequest('destinationUrl must be a valid http(s) URL');
+    }
+    // clientEmail optionnel : destinataire du futur rapport de stats. Valide
+    // seulement s'il est fourni ; vide/absent est accepte (null en base).
+    const clientEmailCheck = normalizeClientEmail(clientEmail);
+    if (!clientEmailCheck.ok) {
+      return ctx.badRequest('clientEmail must be a valid email address');
     }
 
     // Generate a unique shortId. In the (virtually impossible) case of a collision,
@@ -219,6 +243,7 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
         destinationUrl: trimmed,
         title: (title && typeof title === 'string') ? title.trim().slice(0, 200) : '',
         createdByEmail,
+        clientEmail: clientEmailCheck.email,
         active: true,
       } as any,
     });
@@ -240,8 +265,68 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
       destinationUrl: trimmed,
       trackingUrl,
       title: (entity as any).title || '',
+      clientEmail: (entity as any).clientEmail || null,
       createdAt: (entity as any).createdAt,
       scansCount: 0,
+    };
+  },
+
+  /**
+   * PUT /api/qr-codes/:documentId
+   * Met a jour les champs editables d'un QR existant : title, destinationUrl,
+   * active, clientEmail. Le shortId n'est JAMAIS modifiable (le QR est deja
+   * imprime, changer le shortId casserait toutes les redirections existantes).
+   * Tous les champs sont optionnels dans le body : on ne met a jour que ceux
+   * qui sont fournis (patch partiel).
+   */
+  async updateQr(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+
+    const { documentId } = ctx.params;
+    const entity = await strapi.documents('api::qr-code.qr-code').findFirst({
+      filters: { documentId } as any,
+    });
+    if (!entity) return ctx.notFound('QR code not found');
+
+    const body = (ctx.request.body || {}) as any;
+    const data: Record<string, any> = {};
+
+    if (typeof body.title === 'string') {
+      data.title = body.title.trim().slice(0, 200);
+    }
+    if (body.destinationUrl !== undefined) {
+      const trimmed = String(body.destinationUrl).trim();
+      if (!isSafeHttpUrl(trimmed)) {
+        return ctx.badRequest('destinationUrl must be a valid http(s) URL');
+      }
+      data.destinationUrl = trimmed;
+    }
+    if (body.active !== undefined) {
+      data.active = !!body.active;
+    }
+    if (body.clientEmail !== undefined) {
+      const check = normalizeClientEmail(body.clientEmail);
+      if (!check.ok) return ctx.badRequest('clientEmail must be a valid email address');
+      data.clientEmail = check.email; // null vide le champ
+    }
+    // shortId volontairement ignore meme s'il est present dans le body.
+
+    if (Object.keys(data).length === 0) {
+      return ctx.badRequest('No editable field provided');
+    }
+
+    const updated = await strapi.documents('api::qr-code.qr-code').update({
+      documentId,
+      data: data as any,
+    });
+
+    ctx.body = {
+      documentId,
+      shortId: (updated as any).shortId,
+      destinationUrl: (updated as any).destinationUrl,
+      title: (updated as any).title || '',
+      clientEmail: (updated as any).clientEmail || null,
+      active: (updated as any).active !== false,
     };
   },
 
@@ -311,6 +396,7 @@ export default factories.createCoreController('api::qr-code.qr-code', ({ strapi 
         destinationUrl: c.destinationUrl,
         title: c.title || '',
         createdByEmail: c.createdByEmail || null,
+        clientEmail: c.clientEmail || null,
         createdAt: c.createdAt,
         active: c.active !== false,
         scansCount: agg.count,

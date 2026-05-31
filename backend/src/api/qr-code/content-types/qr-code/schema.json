@@ -30,6 +30,9 @@
     "createdByEmail": {
       "type": "string"
     },
+    "clientEmail": {
+      "type": "email"
+    },
     "active": {
       "type": "boolean",
       "default": true
