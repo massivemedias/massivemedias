@@ -3,6 +3,7 @@ import { Mail, MapPin, Instagram, Facebook, Send, CheckCircle, AlertCircle, Brie
 import { useState, useRef, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import SEO from '../components/SEO';
+import ClosureNotice from '../components/ClosureNotice';
 import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { bl } from '../utils/cms';
@@ -199,6 +200,8 @@ function Contact() {
           <p className="text-xl text-grey-light">
             {t('contactPage.hero.subtitle')}
           </p>
+          {/* Notice de fermeture temporaire (cf. constants/closure.js) */}
+          <ClosureNotice className="mt-6" />
         </motion.div>
 
         {/* Onglets */}

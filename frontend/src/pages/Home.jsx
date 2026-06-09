@@ -27,6 +27,7 @@ import { bl, mediaUrl } from '../utils/cms';
 import { getIcon } from '../utils/iconMap';
 import api from '../services/api';
 import { WORKSHOP_ADDRESS_FULL } from '../constants/workshop';
+import ClosureNotice from '../components/ClosureNotice';
 
 // Fallback icons & data if CMS not available
 const fallbackServiceIcons = ['Printer', 'Sticker', 'Shirt', 'Palette', 'Globe'];
@@ -252,6 +253,10 @@ function Home() {
                 {(content && bl(content, 'heroCta2', lang)) || t('home.hero.cta2')}
               </Link>
             </motion.div>
+
+            {/* CLOSURE-NOTICE : fermeture temporaire (rouge discret). Se desactive
+                via CLOSURE_ACTIVE dans constants/closure.js. */}
+            <ClosureNotice className="mt-6" />
 
             {/* RDV-NOTICE (28 mai 2026) : ligne discrete sous CTA hero pour
                 signaler atelier sur RDV sans encart criard. text-xs gris
