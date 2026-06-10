@@ -1,4 +1,5 @@
 import { img } from '../utils/paths';
+import { TIER_EXPLAINER_LONG_FLAT } from '../constants/printTiers';
 // PRIX-HARDCODE (avril 2026): toutes les grilles tarifaires vivent dans pricingData.js.
 // Ce fichier ne fait que les re-exporter sous l'ancienne forme pour compat retroactive.
 import {
@@ -261,7 +262,7 @@ export const fineArtImages = [
 
 export const fineArtFaq = {
   fr: [
-    { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: 'La Série Studio utilise une imprimante 4 encres pigmentées, excellente pour tous les usages. La Série Musée utilise une imprimante 12 encres pigmentées pour une qualité supérieure, parfaite pour la photographie et les tirages galerie.' },
+    { q: 'Quelle est la différence entre Série Studio et Série Musée?', a: TIER_EXPLAINER_LONG_FLAT.fr },
     { q: 'Quels papiers utilisez-vous?', a: 'Nous utilisons des papiers fine art professionnels premium : coton, alpha-cellulose, papiers d\'archives. Chaque papier est calibré avec un profil ICC sur mesure pour des couleurs fidèles.' },
     { q: 'Quelle est la durée de conservation?', a: 'Nos tirages fine art ont une durée de conservation de 100+ ans grâce aux encres pigmentées et papiers d\'archives. C\'est le standard des galeries et musées.' },
     { q: 'Puis-je faire encadrer mon tirage?', a: 'Oui! Cadre noir ou blanc disponible : 20$ pour carte postale et A4, 30$ pour A3, 35$ pour A3+ et 45$ pour A2. Ajoutez-le directement dans le configurateur.' },
@@ -269,7 +270,7 @@ export const fineArtFaq = {
     { q: 'La livraison est-elle disponible?', a: 'Pick-up gratuit au Plateau Mont-Royal sur rendez-vous uniquement. Livraison locale disponible à Montréal. Envoi postal avec emballage protection pour le reste du Canada.' },
   ],
   en: [
-    { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series uses a 4-color pigment printer, excellent for all uses. The Museum Series uses a 12-color pigment printer for superior quality, perfect for photography and gallery prints.' },
+    { q: 'What is the difference between Studio and Museum Series?', a: TIER_EXPLAINER_LONG_FLAT.en },
     { q: 'What papers do you use?', a: 'We use premium professional fine art papers: cotton, alpha-cellulose, archival papers. Each paper is calibrated with a custom ICC profile for accurate colors.' },
     { q: 'What is the conservation lifespan?', a: 'Our fine art prints have a 100+ year conservation life thanks to pigmented inks and archival papers. This is the gallery and museum standard.' },
     { q: 'Can I get my print framed?', a: 'Yes! We offer a black or white frame option for an additional $30. You can add it directly in the configurator.' },
@@ -277,7 +278,7 @@ export const fineArtFaq = {
     { q: 'Is delivery available?', a: 'Free pick-up in Plateau Mont-Royal by appointment only. Local delivery available in Montreal. Postal shipping with protective packaging for the rest of Canada.' },
   ],
   es: [
-    { q: '¿Cuál es la diferencia entre Serie Studio y Serie Museo?', a: 'La Serie Studio utiliza una impresora de 4 tintas pigmentadas, excelente para todos los usos. La Serie Museo utiliza una impresora de 12 tintas pigmentadas para una calidad superior, perfecta para fotografía e impresiones de galería.' },
+    { q: '¿Cuál es la diferencia entre Serie Studio y Serie Museo?', a: TIER_EXPLAINER_LONG_FLAT.es },
     { q: '¿Qué papeles utilizan?', a: 'Utilizamos papeles fine art profesionales premium: algodón, alfa-celulosa, papeles de archivo. Cada papel está calibrado con un perfil ICC personalizado para colores fieles.' },
     { q: '¿Cuál es la duración de conservación?', a: 'Nuestras impresiones fine art tienen una duración de conservación de más de 100 años gracias a las tintas pigmentadas y papeles de archivo. Es el estándar de galerías y museos.' },
     { q: '¿Puedo enmarcar mi impresión?', a: '¡Sí! Ofrecemos la opción de marco negro o blanco por $30 adicionales. Puedes agregarlo directamente en el configurador.' },

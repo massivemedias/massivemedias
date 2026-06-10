@@ -13,6 +13,7 @@ import FileUpload from '../FileUpload';
 // chunk meme apres plusieurs commits. Le nom de fichier change donc CF doit
 // chercher la nouvelle version sur l'origine.
 import PrintPreviewCarousel from '../PrintPreviewCarouselV2';
+import TierExplainer from '../TierExplainer';
 import {
   fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
@@ -482,6 +483,9 @@ function ConfiguratorFineArt() {
               </button>
             ))}
           </div>
+          {/* TIERS-01 : explication Studio vs Musee, disclosure cliquable
+              (mobile-friendly), textes dans constants/printTiers.js. */}
+          <TierExplainer variant="short" className="mt-2" />
         </div>
 
         {/* Format : toujours en grille 5 colonnes. Pour une image carree, les 3
