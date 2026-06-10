@@ -8,6 +8,7 @@ import {
   getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable, framePriceByFormat,
 } from '../../data/artistPricing';
 import { formatPrice } from '../../utils/formatCurrency';
+import TierExplainer from '../TierExplainer';
 
 function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onFrameColorChange }) {
   const { lang, tx } = useLang();
@@ -233,6 +234,8 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
               </button>
             ))}
           </div>
+          {/* TIERS-01 : explication Studio vs Musee (disclosure cliquable). */}
+          <TierExplainer variant="short" className="mt-2" />
         </div>
       )}
 

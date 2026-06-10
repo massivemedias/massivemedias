@@ -23,6 +23,7 @@ import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES,
 import { HelpCircle } from 'lucide-react';
 import { generateContractPDF } from '../utils/generateContractPDF';
 import { supabase } from '../lib/supabase';
+import TierExplainer from './TierExplainer';
 
 // Prix client et prix artiste (rabais 30% sur prix client)
 const ARTIST_DISCOUNT = 0.25;
@@ -764,6 +765,8 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               es: 'Cuando un cliente compra tu obra, tu comision = 50% del beneficio neto (precio de venta - costos de produccion). Cuando compras para ti, tienes 30% de descuento. Impuestos adicionales.',
             })}
           </p>
+          {/* TIERS-01 : explication Studio vs Musee au-dessus de la grille. */}
+          <TierExplainer variant="short" className="mb-4" />
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

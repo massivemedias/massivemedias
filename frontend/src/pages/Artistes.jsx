@@ -6,6 +6,7 @@ import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useArtists } from '../hooks/useArtists';
 import { mediaUrl } from '../utils/cms';
+import TierExplainer from '../components/TierExplainer';
 
 // Type map for each artist slug
 const ARTIST_TYPES = {
@@ -466,6 +467,9 @@ function Artistes() {
                   </motion.div>
                 ))}
               </div>
+              {/* TIERS-01 : explication Studio vs Musee (version longue, repliee),
+                  les oeuvres ci-dessus etant vendues dans les deux series. */}
+              <TierExplainer variant="long" className="max-w-3xl mx-auto" />
             </div>
           </section>
         );

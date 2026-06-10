@@ -15,6 +15,7 @@ import artistsData, { artistFormats, framePriceByFormat } from '../data/artistPr
 import { useArtists } from '../hooks/useArtists';
 import { thumb, img } from '../utils/paths';
 import { mediaUrl } from '../utils/cms';
+import TierExplainer from './TierExplainer';
 
 const CATEGORIES = [
   { id: 'prints', labelFr: 'Prints', labelEn: 'Prints', labelEs: 'Prints', requestAdd: 'add-prints', requestRemove: 'remove-prints' },
@@ -1097,6 +1098,8 @@ function ArtistGalleryManager() {
                                 ))}
                               </div>
                             </div>
+                            {/* TIERS-01 : explication Studio vs Musee (repliee par defaut). */}
+                            <TierExplainer variant="short" />
 
                             {/* Cadre */}
                             <div className="flex items-center gap-2">

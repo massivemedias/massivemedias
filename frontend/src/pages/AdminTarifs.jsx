@@ -12,6 +12,7 @@ import { useProductPricing } from '../hooks/useProductPricing';
 // page admin affiche le palier 'standard' par defaut + une note pour rappeler
 // l'existence des paliers Medium (+35%) et Large (+85%).
 import { STICKER_GRID } from '../utils/pricingData';
+import TierExplainer from '../components/TierExplainer';
 
 // =============================================
 // DONNÉES TARIFS
@@ -987,6 +988,9 @@ function AdminTarifs() {
           <SectionCard icon={Printer} iconColor="text-blue-400"
             title="Prints Fine Art"
             subtitle={tx({ fr: 'Service impression (client apporte son fichier)', en: 'Print service (client provides their file)', es: 'Servicio de impresion (cliente trae su archivo)' })}>
+            {/* TIERS-01 : explication Studio vs Musee (version longue) au-dessus
+                de la grille fine art. */}
+            <TierExplainer variant="long" className="mb-4" />
             <DataTable headers={[{ label: L.format }, { label: 'Studio (4 pig.)' }, { label: tx({ fr: 'Musee (12 pig.)', en: 'Museum (12 pig.)', es: 'Museo (12 pig.)' }) }, { label: L.frame }, { label: L.notes }]}>
               {SERVICE_PRICES.map((p, i) => (
                 <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
