@@ -192,7 +192,7 @@ function buildArtistFromCMS(cms) {
       socials: (cms.socials && typeof cms.socials === 'object') ? cms.socials : {},
       pricing: (cms.pricing && typeof cms.pricing === 'object')
         ? cms.pricing
-        : { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 } },
+        : { studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65 }, museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 }, framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 } },
       prints: cmsPrints.map((p, i) => {
         const safeP = (p && typeof p === 'object') ? p : {};
         return {

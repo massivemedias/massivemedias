@@ -64,7 +64,7 @@ function Artistes() {
       avatar: cms.socials?.avatarUrl || (cms.avatar ? mediaUrl(cms.avatar) : null),
       heroImage: cms.heroImage ? mediaUrl(cms.heroImage) : null,
       prints: cms.prints || [],
-      pricing: cms.pricing || { studio: { a4: 35, a3: 50, a3plus: 65, a2: 85 }, museum: { a4: 75, a3: 120, a3plus: 160, a2: 225 }, framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 } },
+      pricing: cms.pricing || { studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65 }, museum: { postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 }, framePriceByFormat: { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 } },
       socials: cms.socials || {},
     }));
   }, [cmsArtists]);
