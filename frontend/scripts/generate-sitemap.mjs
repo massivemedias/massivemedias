@@ -39,15 +39,18 @@ function escapeXml(s) {
 }
 
 function urlEntry({ loc, priority = '0.5', changefreq = 'monthly', lastmod }) {
-  const lm = lastmod || new Date().toISOString().slice(0, 10);
-  return [
+  // lastmod uniquement si on a une vraie date (updatedAt artiste). On NE met
+  // PAS la date de build par defaut : un lastmod uniforme et faux est pire
+  // que pas de lastmod du tout (Google le traite comme du bruit).
+  const lines = [
     '  <url>',
     `    <loc>${escapeXml(SITE_URL + loc)}</loc>`,
-    `    <lastmod>${lm}</lastmod>`,
-    `    <changefreq>${changefreq}</changefreq>`,
-    `    <priority>${priority}</priority>`,
-    '  </url>',
-  ].join('\n');
+  ];
+  if (lastmod) lines.push(`    <lastmod>${lastmod}</lastmod>`);
+  lines.push(`    <changefreq>${changefreq}</changefreq>`);
+  lines.push(`    <priority>${priority}</priority>`);
+  lines.push('  </url>');
+  return lines.join('\n');
 }
 
 async function main() {
