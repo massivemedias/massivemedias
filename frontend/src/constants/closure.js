@@ -5,7 +5,7 @@
 // (le composant ne rend alors plus rien, aucune autre modification necessaire),
 // puis redeployer. Le texte se modifie ici aussi, au meme endroit, en 3 langues.
 
-export const CLOSURE_ACTIVE = true;
+export const CLOSURE_ACTIVE = false;
 
 export const CLOSURE_NOTICE = {
   fr: 'Fermé jusqu\'au début juillet. De retour très bientôt, merci de votre patience.',
