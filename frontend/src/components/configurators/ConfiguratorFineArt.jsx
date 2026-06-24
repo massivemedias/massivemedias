@@ -26,7 +26,7 @@ import {
 // le calcul prix utilise getAffichePrice(format, qty, paliers).
 // Mapping IDs : les formats du configurateur sont en minuscules (a4, a3, a3plus)
 // mais les cles paliers dans Strapi sont en majuscules (A4, A3, A3+).
-const FORMAT_ID_TO_PALIER_KEY = { a4: 'A4', a3: 'A3', a3plus: 'A3+' };
+const FORMAT_ID_TO_PALIER_KEY = { a4: 'A4', a3: 'A3', a3plus: 'A3+', a2: 'A2' }
 const AFFICHE_STANDARD_TIER = {
   id: 'affiche-standard',
   labelFr: 'Affiches Standard',
@@ -167,7 +167,8 @@ function ConfiguratorFineArt() {
   }, [isAfficheStandard, withFrame]);
 
   // Auto-switch vers un format compatible si on entre en Affiches Standard
-  // avec un format non supporte (postcard/a2/sq*) : fallback sur A3.
+  // avec un format non supporte (postcard/sq*) : fallback sur A3. A2 est
+  // desormais supporte (grille marche degressive), il n'est plus rebascule.
   useEffect(() => {
     if (isAfficheStandard && !FORMAT_ID_TO_PALIER_KEY[format]) {
       setFormat('a3');
