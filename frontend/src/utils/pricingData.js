@@ -85,9 +85,9 @@ export function getStickerGridForSize(size, finish) {
 // pour les images 1:1. Le champ `shape: 'square'` est utilise par le
 // configurateur pour filtrer la liste quand l'image uploadee est carree.
 // Les prix alignes sur les formats rectangulaires equivalents en surface :
-//   8x8 (64 in^2)   proche A4 (93 in^2)  -> pricing A4-ish
-//   10x10 (100 in^2) proche A3 (187 in^2) -> pricing legerement au-dessus A4
-//   12x12 (144 in^2) proche A3+ (247 in^2) -> pricing entre A3 et A3+
+//   8x8 (64 in^2)    -> cale sur le niveau A4
+//   10x10 (100 in^2) -> entre A4 et A3
+//   12x12 (144 in^2) -> cale sur le niveau A3
 export const FINE_ART_GRID = Object.freeze({
   postcard: { studio: 8,    museum: 15,  frame: 20, label: 'A6 (4x6")',     w: 4,   h: 6,   typeName: 'Carte postale', shape: 'rect' },
   a4:       { studio: 10,   museum: 20,  frame: 20, label: 'A4 (8.5x11")',  w: 8.5, h: 11,  typeName: 'Affiche',       shape: 'rect' },
