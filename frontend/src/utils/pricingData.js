@@ -89,15 +89,15 @@ export function getStickerGridForSize(size, finish) {
 //   10x10 (100 in^2) proche A3 (187 in^2) -> pricing legerement au-dessus A4
 //   12x12 (144 in^2) proche A3+ (247 in^2) -> pricing entre A3 et A3+
 export const FINE_ART_GRID = Object.freeze({
-  postcard: { studio: 15,   museum: 30,  frame: 20, label: 'A6 (4x6")',     w: 4,   h: 6,   typeName: 'Carte postale', shape: 'rect' },
-  a4:       { studio: 20,   museum: 40,  frame: 20, label: 'A4 (8.5x11")',  w: 8.5, h: 11,  typeName: 'Affiche',       shape: 'rect' },
-  a3:       { studio: 25,   museum: 55,  frame: 30, label: 'A3 (11x17")',   w: 11,  h: 17,  typeName: 'Affiche',       shape: 'rect' },
-  a3plus:   { studio: 35,   museum: 95,  frame: 35, label: 'A3+ (13x19")',  w: 13,  h: 19,  typeName: 'Poster',        shape: 'rect' },
-  a2:       { studio: null, museum: 110, frame: 45, label: 'A2 (18x24")',   w: 18,  h: 24,  typeName: 'Grand format',  shape: 'rect' },
+  postcard: { studio: 8,    museum: 15,  frame: 20, label: 'A6 (4x6")',     w: 4,   h: 6,   typeName: 'Carte postale', shape: 'rect' },
+  a4:       { studio: 10,   museum: 20,  frame: 20, label: 'A4 (8.5x11")',  w: 8.5, h: 11,  typeName: 'Affiche',       shape: 'rect' },
+  a3:       { studio: 15,   museum: 30,  frame: 30, label: 'A3 (11x17")',   w: 11,  h: 17,  typeName: 'Affiche',       shape: 'rect' },
+  a3plus:   { studio: 20,   museum: 45,  frame: 35, label: 'A3+ (13x19")',  w: 13,  h: 19,  typeName: 'Poster',        shape: 'rect' },
+  a2:       { studio: null, museum: 55,  frame: 45, label: 'A2 (18x24")',   w: 18,  h: 24,  typeName: 'Grand format',  shape: 'rect' },
   // ----- Formats CARRES (pour images 1:1) -----
-  sq8:      { studio: 20,   museum: 40,  frame: 25, label: '8x8"',         w: 8,   h: 8,   typeName: 'Carre',          shape: 'square' },
-  sq10:     { studio: 28,   museum: 60,  frame: 30, label: '10x10"',       w: 10,  h: 10,  typeName: 'Carre',          shape: 'square' },
-  sq12:     { studio: 38,   museum: 85,  frame: 35, label: '12x12"',       w: 12,  h: 12,  typeName: 'Carre',          shape: 'square' },
+  sq8:      { studio: 10,   museum: 20,  frame: 25, label: '8x8"',         w: 8,   h: 8,   typeName: 'Carre',          shape: 'square' },
+  sq10:     { studio: 13,   museum: 25,  frame: 30, label: '10x10"',       w: 10,  h: 10,  typeName: 'Carre',          shape: 'square' },
+  sq12:     { studio: 15,   museum: 30,  frame: 35, label: '12x12"',       w: 12,  h: 12,  typeName: 'Carre',          shape: 'square' },
 });
 
 // =======================================================
