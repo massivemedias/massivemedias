@@ -14,6 +14,7 @@ import FileUpload from '../FileUpload';
 // chercher la nouvelle version sur l'origine.
 import PrintPreviewCarousel from '../PrintPreviewCarouselV2';
 import TierExplainer from '../TierExplainer';
+import { TIER_DESCRIPTION } from '../../constants/printTiers'
 import {
   fineArtPrinterTiers as defaultTiers, fineArtFormats as defaultFormats, fineArtFramePrice as defaultFramePrice,
   fineArtFramePriceByFormat, getFineArtPrice as defaultGetPrice, fineArtImages,
@@ -484,9 +485,14 @@ function ConfiguratorFineArt() {
               </button>
             ))}
           </div>
-          {/* TIERS-01 : explication Studio vs Musee, disclosure cliquable
+          {/* Description d'usage du tier selectionne (contextuel, surtout utile
+              quand Affiches Standard est choisi). Texte i18n dans printTiers.js. */}
+          <p className="mt-2 text-xs text-grey-light leading-relaxed">
+            {TIER_DESCRIPTION[tier] && tx(TIER_DESCRIPTION[tier])}
+          </p>
+          {/* TIERS-01 : explication des qualites, disclosure cliquable
               (mobile-friendly), textes dans constants/printTiers.js. */}
-          <TierExplainer variant="short" className="mt-2" />
+          <TierExplainer variant="short" includeAffiche className="mt-2" />
         </div>
 
         {/* Format : toujours en grille 5 colonnes. Pour une image carree, les 3
