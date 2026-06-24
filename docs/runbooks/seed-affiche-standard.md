@@ -72,14 +72,16 @@ JSON5 est generalement accepte en JSON strict aussi par l'admin Strapi v5) :
 ```json
 {
   "afficheStandardPaliers": {
-    "A4":  { "1": 10, "5": 8,  "10": 6,  "25": 4, "50": 3, "100": 2.50 },
-    "A3":  { "1": 15, "5": 12, "10": 8,  "25": 5, "50": 4, "100": 3.50 },
-    "A3+": { "1": 20, "5": 15, "10": 12, "25": 9, "50": 7, "100": 6    }
+    "A4":  { "1": 2,  "10": 1.5, "25": 1,   "50": 0.75, "100": 0.6,  "250": 0.5  },
+    "A3":  { "1": 4,  "10": 3,   "25": 2,   "50": 1.5,  "100": 1,    "250": 0.75 },
+    "A3+": { "1": 6,  "10": 4.5, "25": 3.5, "50": 2.5,  "100": 1.75, "250": 1.25 },
+    "A2":  { "1": 15, "10": 12,  "25": 10,  "50": 8,    "100": 6 }
   },
   "formats": [
     { "id": "A4",  "label": "A4 (8.5x11\")", "w": 8.5, "h": 11 },
     { "id": "A3",  "label": "A3 (11x17\")",  "w": 11,  "h": 17 },
-    { "id": "A3+", "label": "A3+ (13x19\")", "w": 13,  "h": 19 }
+    { "id": "A3+", "label": "A3+ (13x19\")", "w": 13,  "h": 19 },
+    { "id": "A2",  "label": "A2 (18x24\")",  "w": 18,  "h": 24 }
   ]
 }
 ```
@@ -87,14 +89,20 @@ JSON5 est generalement accepte en JSON strict aussi par l'admin Strapi v5) :
 **Lecture des paliers** :
 - Cle = quantite minimale du palier (`"25"` = palier "25 unites et plus")
 - Valeur = prix unitaire en CAD pour ce palier
-- Exemple : 17 unites A3 -> palier "10" (10 <= 17 < 25) -> 8 $/unite -> total 136 $
-- Exemple : 25 unites A3 -> palier "25" -> 5 $/unite -> total 125 $
+- Exemple : 17 unites A3 -> palier "10" (10 <= 17 < 25) -> 3 $/unite -> total 51 $
+- Exemple : 25 unites A3 -> palier "25" -> 2 $/unite -> total 50 $
+
+**A2 (18x24") - ACTIF depuis le recalibrage marche (juin 2026)** :
+- Paliers 1-9=15, 10-24=12, 25-49=10, 50-99=8, 100-249=6.
+- 250+ : PLAFOND a 6 $ (pas de cle "250" pour A2), faute de mecanisme
+  "soumission" par palier dans getAffichePrice. Pour un vrai "sur soumission"
+  a 250+, il faudrait l'ajouter au helper et au configurateur.
+- Cote code : `FORMAT_ID_TO_PALIER_KEY` (ConfiguratorFineArt.jsx) inclut
+  desormais `a2: 'A2'`, sinon A2 resterait force vers A3.
 
 **Pas inclus volontairement** :
 - **A6 (4x6")** : reste dans la categorie Flyers/Cartes (grille recto/verso
   separee dans `FLYER_GRID`).
-- **A2 (18x24")** : reste "sur soumission" via le configurateur fine-art
-  (12 encres pigmentees uniquement).
 
 ---
 
@@ -126,7 +134,7 @@ curl -s 'https://massivemedias-api.onrender.com/api/products?filters%5Bslug%5D%5
 Slug : affiche-standard
 Category : affiche-standard
 NameFr : Affiches Standard
-Paliers A3 : {"1":15,"5":12,"10":8,"25":5,"50":4,"100":3.5}
+Paliers A3 : {"1":4,"10":3,"25":2,"50":1.5,"100":1,"250":0.75}
 OK
 ```
 
