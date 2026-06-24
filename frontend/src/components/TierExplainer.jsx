@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, Info } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
-import { TIER_EXPLAINER_SHORT, TIER_EXPLAINER_TITLE, TIER_EXPLAINER_LONG } from '../constants/printTiers';
+import { TIER_EXPLAINER_SHORT, TIER_EXPLAINER_TITLE, TIER_EXPLAINER_TITLE_ALL, TIER_EXPLAINER_LONG, TIER_DESCRIPTION } from '../constants/printTiers'
 
 // Explication Studio vs Musee, partagee partout ou les deux series apparaissent.
 // Disclosure CLIQUABLE (pas de hover-only, mobile-friendly) :
@@ -9,7 +9,7 @@ import { TIER_EXPLAINER_SHORT, TIER_EXPLAINER_TITLE, TIER_EXPLAINER_LONG } from 
 // - variant="long"  : 3 paragraphes complets (pages tarifs, sections explicatives).
 // - defaultOpen     : true pour afficher deplie d'office (sections editoriales).
 // Les textes viennent de constants/printTiers.js (SSOT, 3 langues via tx()).
-function TierExplainer({ variant = 'short', defaultOpen = false, className = '' }) {
+function TierExplainer({ variant = 'short', defaultOpen = false, includeAffiche = false, className = '' }) {
   const { tx } = useLang();
   const [open, setOpen] = useState(defaultOpen);
 
@@ -23,7 +23,7 @@ function TierExplainer({ variant = 'short', defaultOpen = false, className = '' 
       >
         <span className="text-xs font-semibold text-heading flex items-center gap-1.5">
           <Info size={13} className="text-accent flex-shrink-0" aria-hidden="true" />
-          {tx(TIER_EXPLAINER_TITLE)}
+          {tx(includeAffiche ? TIER_EXPLAINER_TITLE_ALL : TIER_EXPLAINER_TITLE)}
         </span>
         <ChevronDown
           size={14}
@@ -43,6 +43,12 @@ function TierExplainer({ variant = 'short', defaultOpen = false, className = '' 
                 <strong className="text-heading">{tx({ fr: 'Musée', en: 'Museum', es: 'Museo' })}. </strong>
                 {tx(TIER_EXPLAINER_SHORT.museum)}
               </p>
+              {includeAffiche && (
+                <p>
+                  <strong className="text-heading">{tx({ fr: 'Affiches Standard', en: 'Standard Posters', es: 'Carteles Estandar' })}. </strong>
+                  {tx(TIER_DESCRIPTION['affiche-standard'])}
+                </p>
+              )}
             </>
           ) : (
             <>
