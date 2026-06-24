@@ -66,17 +66,17 @@ export const TIER_EXPLAINER_LONG_FLAT = {
 // SSOT, ne PAS dupliquer ces textes ailleurs.
 export const TIER_DESCRIPTION = {
   studio: {
-    fr: 'Tirage premium accessible sur beau papier. Le juste milieu entre l affiche et le fine art: un rendu soigne pour decorer chez soi ou offrir, sans le niveau archive de la serie Musee.',
+    fr: 'Tirage premium accessible sur beau papier. Le juste milieu entre l\'affiche et le fine art: un rendu soigné pour décorer chez soi ou offrir, sans le niveau archive de la série Musée.',
     en: 'Accessible premium print on quality paper. The middle ground between poster and fine art: a clean result to decorate your home or gift, without the archival grade of the Musee line.',
     es: 'Impresion premium accesible en buen papel. El punto medio entre el cartel y el fine art: un acabado cuidado para decorar tu casa o regalar, sin el nivel de archivo de la linea Musee.',
   },
   museum: {
-    fr: 'Fine art haut de gamme: encres pigmentaires, papier archive sans acide. Couleurs stables dans le temps, qualite galerie, pour l exposition et la vente de tirages.',
+    fr: 'Fine art haut de gamme: encres pigmentaires, papier archive sans acide. Couleurs stables dans le temps, qualité galerie, pour l\'exposition et la vente de tirages.',
     en: 'High-end fine art: pigment inks, acid-free archival paper. Colors that stay stable over time, gallery quality, for exhibition and selling prints.',
     es: 'Fine art de alta gama: tintas pigmentadas, papel de archivo sin acido. Colores estables en el tiempo, calidad galeria, para exposicion y venta de impresiones.',
   },
   'affiche-standard': {
-    fr: 'Impression couleur sur papier fin, qualite standard. Concue pour le volume et l affichage: flyers, affiches de show, collage en rue ou en vitrine. Economique et rapide, moins adaptee a la deco encadree ou a la conservation longue duree.',
+    fr: 'Impression couleur sur papier fin, qualité standard. Conçue pour le volume et l\'affichage : flyers, affiches de show, collage en rue ou en vitrine. Économique et rapide, moins adaptée a la déco encadrée ou a la conservation longue durée.',
     en: 'Color printing on thin paper, standard quality. Built for volume and display: flyers, show posters, street or window posting. Affordable and fast, less suited to framed decor or long-term archival.',
     es: 'Impresion a color en papel fino, calidad estandar. Pensada para el volumen y la difusion: flyers, carteles de show, pegado en calle o escaparate. Economica y rapida, menos indicada para decoracion enmarcada o conservacion a largo plazo.',
   },
@@ -84,7 +84,7 @@ export const TIER_DESCRIPTION = {
 
 // Titre de l'accordeon quand les 3 qualites sont couvertes (Affiches Standard inclus).
 export const TIER_EXPLAINER_TITLE_ALL = {
-  fr: 'Quelle est la difference entre les qualites?',
+  fr: 'Quelle est la différence entre les qualités ?',
   en: 'What is the difference between the qualities?',
   es: '¿Cuál es la diferencia entre las calidades?',
 }
