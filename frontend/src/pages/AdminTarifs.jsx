@@ -11,7 +11,7 @@ import { useProductPricing } from '../hooks/useProductPricing';
 // les arrays. STICKER_GRID expose 3 paliers (standard/medium/large) - cette
 // page admin affiche le palier 'standard' par defaut + une note pour rappeler
 // l'existence des paliers Medium (+35%) et Large (+85%).
-import { STICKER_GRID } from '../utils/pricingData';
+import { STICKER_GRID, FINE_ART_GRID } from '../utils/pricingData';
 import TierExplainer from '../components/TierExplainer';
 
 // =============================================
@@ -33,6 +33,22 @@ const ARTIST_PRICES = [
   { format: 'A3+ (13×19")', studio: 65, museum: 160, frame: 35 },
   { format: 'A2 (18×24")', studio: null, museum: 190, frame: 45 },
 ];
+
+// CLIENT-FINE-ART-SSOT (decouplage option B, juin 2026) : les affichages PRIX
+// CLIENT fine-art (PDF Tarifs-Complets section Impression Fine Art + tableau
+// ecran Prints Fine Art) derivent de la grille canonique FINE_ART_GRID
+// (utils/pricingData.js, deja recalibree), au lieu de la copie SERVICE_PRICES.
+// SERVICE_PRICES reste volontairement la BASE DE COUT des commissions artiste
+// (ARTIST_PRICES - SERVICE_PRICES), INCHANGEE. studio = null (A2) -> N/A.
+// La note A2 (museum seulement) est conservee pour le tableau ecran.
+const FINE_ART_NOTE_A2 = { fr: '12 encres pigmentées seulement', en: '12 pigmented inks only', es: '12 tintas pigmentadas solamente' }
+const CLIENT_FINE_ART = Object.entries(FINE_ART_GRID).map(([id, e]) => ({
+  format: e.label,
+  studio: e.studio,
+  museum: e.museum,
+  frame: e.frame,
+  notes: id === 'a2' ? FINE_ART_NOTE_A2 : { fr: '', en: '', es: '' },
+}))
 
 // FIX-PRICING-TIERS : les arrays STICKER_STANDARD/STICKER_FX sont maintenant
 // derives de la SSOT (STICKER_GRID.standard) au lieu d'etre hardcoded en
@@ -527,7 +543,7 @@ function AdminTarifs() {
       sectionTitle(tx({ fr: 'Impression Fine Art', en: 'Fine Art Printing', es: 'Impresion Fine Art' }));
       addTable(
         ['Format', 'Studio (4 encres)', tx({ fr: 'Musee (12 encres)', en: 'Museum (12 inks)', es: 'Museo (12 tintas)' }), 'Frame'],
-        SERVICE_PRICES.map(p => [p.format, p.studio ? `${p.studio}$` : 'N/A', `${p.museum}$`, p.frame ? `+${p.frame}$` : 'N/A'])
+        CLIENT_FINE_ART.map(p => [p.format, p.studio ? `${p.studio}$` : 'N/A', `${p.museum}$`, p.frame ? `+${p.frame}$` : 'N/A'])
       );
 
       // --- Flyers ---
@@ -992,7 +1008,7 @@ function AdminTarifs() {
                 de la grille fine art. */}
             <TierExplainer variant="long" className="mb-4" />
             <DataTable headers={[{ label: L.format }, { label: 'Studio (4 pig.)' }, { label: tx({ fr: 'Musee (12 pig.)', en: 'Museum (12 pig.)', es: 'Museo (12 pig.)' }) }, { label: L.frame }, { label: L.notes }]}>
-              {SERVICE_PRICES.map((p, i) => (
+              {CLIENT_FINE_ART.map((p, i) => (
                 <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
                   <Td center={false} className="text-heading font-medium">{p.format}</Td>
                   <Td>{p.studio !== null ? `${p.studio}$` : <span className="text-grey-muted">N/A</span>}</Td>
