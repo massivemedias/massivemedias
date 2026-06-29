@@ -10,10 +10,12 @@
  */
 
 /**
- * Prix de base d'un cadre par format (en CAD).
+ * Prix d'un cadre par format (en CAD). CADRE-FORFAIT (chantier musee-only) :
+ * 30 CAD forfait pour les formats encadrables (A6/A4/A3/A3+), toutes couleurs
+ * (noir ou blanc, sans impact prix). A2 conserve sa valeur (pas de cadre propose).
  * Le pricing CMS de chaque artiste peut overrider via `pricing.framePriceByFormat`.
  */
-export const framePriceByFormat = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
+export const framePriceByFormat = { postcard: 30, a4: 30, a3: 30, a3plus: 30, a2: 45 };
 
 /**
  * Artist print pricing - returns final client price (production + artist margin included).

@@ -8,7 +8,7 @@ import {
   getArtistPrintPrice, artistPrinterTiers, artistFormats, isFormatAvailable, framePriceByFormat,
 } from '../../data/artistPricing';
 import { formatPrice } from '../../utils/formatCurrency';
-import TierExplainer from '../TierExplainer';
+import { TIER_DESCRIPTION } from '../../constants/printTiers'
 
 function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onFrameColorChange }) {
   const { lang, tx } = useLang();
@@ -27,7 +27,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
   // Si customPrice set, tout est verrouille (piece unique ou vente privee)
   const isLocked = customPrice != null;
 
-  const [tier, setTier] = useState(fixedTier || 'studio');
+  const [tier, setTier] = useState(fixedTier || 'museum');
   const [format, setFormat] = useState(fixedFormat || 'a4');
   const [withFrame, setWithFrame] = useState(!!fixedFrame);
   const [frameColor, setFrameColor] = useState(fixedFrame || 'black');
@@ -63,7 +63,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
       if (selectedPrint?.fixedFormat) setFormat(selectedPrint.fixedFormat);
       else setFormat('a4');
       if (selectedPrint?.fixedTier) setTier(selectedPrint.fixedTier);
-      else setTier('studio');
+      else setTier('museum');
       if (selectedPrint?.fixedFrame) {
         setWithFrame(true);
         setFrameColor(selectedPrint.fixedFrame);
@@ -207,35 +207,23 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         </div>
       )}
 
-      {/* Printer tier selector */}
+      {/* Qualite MUSEE uniquement (chantier musee-only) : le choix Studio et
+          l'accordeon sont retires cote artiste. Encart explicatif a la place,
+          texte SSOT TIER_DESCRIPTION.museum (printTiers.js, #29). Le configurateur
+          CLIENT (ConfiguratorFineArt.jsx) garde Studio + Musee + accordeon. */}
       {!fixedTier && !isLocked && (
         <div>
           <label className="block text-heading font-semibold text-sm uppercase tracking-wider mb-2">
             {tx({ fr: 'Qualité d\'impression', en: 'Print Quality', es: 'Calidad de impresión' })}
           </label>
-          <div className="grid grid-cols-2 gap-3">
-            {artistPrinterTiers.map(t => (
-              <button
-                key={t.id}
-                onClick={() => {
-                  setTier(t.id);
-                  const newPrices = t.id === 'museum' ? artist.pricing.museum : artist.pricing.studio;
-                  if (newPrices[format] == null) setFormat('a4');
-                }}
-                className={`text-center py-3 px-3 rounded-lg text-sm font-medium transition-all border-2 ${tier === t.id
-                  ? 'border-accent option-selected'
-                  : 'border-transparent hover:border-grey-muted/30 option-default'
-                }`}
-              >
-                <span className="text-heading font-semibold text-sm block">
-                  {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEn })}
-                </span>
-                <span className="text-grey-muted text-xs">{t.desc}</span>
-              </button>
-            ))}
+          <div className="rounded-lg bg-white/5 border border-white/10 p-3">
+            <p className="text-heading font-semibold text-sm mb-1">
+              {tx({ fr: 'Série Musée', en: 'Museum Series', es: 'Serie Museo' })}
+            </p>
+            <p className="text-grey-light text-xs leading-relaxed">
+              {tx(TIER_DESCRIPTION.museum)}
+            </p>
           </div>
-          {/* TIERS-01 : explication Studio vs Musee (disclosure cliquable). */}
-          <TierExplainer variant="short" className="mt-2" />
         </div>
       )}
 
