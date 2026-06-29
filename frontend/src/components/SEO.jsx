@@ -16,11 +16,14 @@ export default function SEO({
   noindex = false,
   jsonLd,
   breadcrumbs,
+  canonical,
 }) {
   const { lang } = useLang();
   const location = useLocation();
 
-  const canonicalUrl = `${SITE_URL}${location.pathname}`;
+  // canonical optionnel : permet a une page de pointer son canonical ailleurs
+  // (ex. la vue prints de /boutique vers /artistes, page d'origine du catalogue).
+  const canonicalUrl = canonical || `${SITE_URL}${location.pathname}`;
   const ogImageUrl = ogImage
     ? (ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`)
     : `${SITE_URL}${DEFAULT_OG_IMAGE}`;

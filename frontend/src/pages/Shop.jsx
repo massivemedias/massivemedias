@@ -188,6 +188,7 @@ function Shop() {
     return (
       <>
         <SEO
+          canonical="https://massivemedias.com/artistes"
           title={tx({
             fr: 'Fine Art Prints Montréal - Tirages Qualité Galerie | Massive',
             en: 'Fine Art Prints Montreal - Gallery Quality Prints | Massive',

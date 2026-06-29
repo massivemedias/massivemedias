@@ -21,7 +21,8 @@ export const STRAPI_API = 'https://massivemedias-api.onrender.com/api';
  *   /vente-privee/:token, /suivi, /tracking,
  *   /services (Navigate vers /), /tarifs (Navigate), /portfolio (Navigate),
  *   /imprimeur-mile-end (Navigate), /boutique/stickers (Navigate),
- *   /boutique/merch-tshirt (Navigate), /services/* legacy slugs (Navigate),
+ *   /boutique/flyers (Navigate vers /boutique/fine-art), /boutique/merch-tshirt
+ *   (Navigate), /services/* legacy slugs (Navigate),
  *   /news (n'existe pas dans le router App.jsx).
  */
 export const STATIC_ROUTES = [
@@ -41,7 +42,7 @@ export const STATIC_ROUTES = [
   '/print-fine-art-quebec',
   '/sublimation-textile-montreal',
   '/impression-flyers-montreal',
-  // Boutique (9)
+  // Boutique (8)
   '/boutique',
   '/boutique/fine-art',
   '/boutique/sublimation',
@@ -50,7 +51,6 @@ export const STATIC_ROUTES = [
   '/boutique/merch/tshirt',
   '/boutique/merch/hoodie',
   '/boutique/merch/longsleeve',
-  '/boutique/flyers',
   // Artistes (index, le detail est ajoute dynamiquement plus bas)
   '/artistes',
 ];
@@ -73,28 +73,40 @@ export const FALLBACK_ARTISTS = [
 ];
 
 /**
- * Fetch les slugs artistes depuis Strapi. Sur erreur, retombe sur la liste
- * FALLBACK_ARTISTS. Ne throw jamais : le build et le prerender doivent
- * pouvoir continuer meme Strapi down.
+ * Fetch les artistes (slug + updatedAt) depuis Strapi. Sur erreur, retombe sur
+ * FALLBACK_ARTISTS (sans updatedAt). Ne throw jamais : le build et le prerender
+ * doivent pouvoir continuer meme Strapi down.
+ *
+ * Retourne un tableau d'objets { slug, updatedAt }, updatedAt = null si absent.
  */
-export async function fetchArtistSlugs() {
-  const url = `${STRAPI_API}/artists?fields[0]=slug&pagination[pageSize]=100`;
+export async function fetchArtists() {
+  const url = `${STRAPI_API}/artists?fields[0]=slug&fields[1]=updatedAt&pagination[pageSize]=100`;
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    // Strapi v4 -> attributes.slug, Strapi v5 -> slug directement. On gere les deux.
-    const slugs = (json.data || [])
-      .map((a) => a?.attributes?.slug || a?.slug)
-      .filter(Boolean);
-    if (slugs.length === 0) throw new Error('aucun slug retourne');
-    console.log(`[routes] ${slugs.length} artistes fetches depuis Strapi`);
-    return slugs;
+    // Strapi v4 -> attributes.X, Strapi v5 -> X directement. On gere les deux.
+    const artists = (json.data || [])
+      .map((a) => ({
+        slug: a?.attributes?.slug || a?.slug,
+        updatedAt: a?.attributes?.updatedAt || a?.updatedAt || null,
+      }))
+      .filter((a) => a.slug);
+    if (artists.length === 0) throw new Error('aucun slug retourne');
+    console.log(`[routes] ${artists.length} artistes fetches depuis Strapi`);
+    return artists;
   } catch (err) {
+    // Fallback. On SIGNALE BRUYAMMENT en CI via une annotation GitHub Actions
+    // ::warning:: (remonte dans le resume du run) : si Strapi est froid au
+    // build et qu'on retombe ici, un artiste recemment ajoute peut manquer du
+    // sitemap. Pas d'echec silencieux.
     console.warn(
       `[routes] fetch Strapi a echoue (${err?.message || err}), fallback sur ${FALLBACK_ARTISTS.length} artistes hardcodes`,
     );
-    return FALLBACK_ARTISTS;
+    console.log(
+      `::warning title=Sitemap fallback Strapi::Strapi inaccessible au build, sitemap genere depuis FALLBACK_ARTISTS (${FALLBACK_ARTISTS.length} artistes). Un artiste recemment ajoute peut manquer du sitemap. Re-deployer quand Strapi repond.`,
+    );
+    return FALLBACK_ARTISTS.map((slug) => ({ slug, updatedAt: null }));
   }
 }
 
@@ -103,32 +115,38 @@ export async function fetchArtistSlugs() {
  * = STATIC_ROUTES + 1 route par artiste actif.
  */
 export async function getAllPrerenderRoutes() {
-  const artistSlugs = await fetchArtistSlugs();
-  return [...STATIC_ROUTES, ...artistSlugs.map((s) => `/artistes/${s}`)];
+  const artists = await fetchArtists();
+  return [...STATIC_ROUTES, ...artists.map((a) => `/artistes/${a.slug}`)];
 }
 
 /**
  * Liste complete des routes pour le SITEMAP avec metadata SEO par categorie.
- * Memes routes que le prerender + (priority, changefreq) calcules.
+ * Memes routes que le prerender + (priority, changefreq, lastmod) calcules.
  */
 export async function getAllSitemapRoutes() {
-  const artistSlugs = await fetchArtistSlugs();
+  const artists = await fetchArtists();
   return [
     { loc: '/', priority: '1.0', changefreq: 'weekly' },
     ...STATIC_ROUTES.filter((r) => r !== '/').map((loc) => {
-      // Landings SEO locales + boutique = priorite haute, change souvent.
-      if (
-        loc.startsWith('/boutique') ||
-        /^\/(imprimeur|stickers|print|sublimation|impression)-/.test(loc)
-      ) {
+      // Landings SEO locales = priorite haute, change souvent.
+      if (/^\/(imprimeur|stickers|print|sublimation|impression)-/.test(loc)) {
         return { loc, priority: '0.8', changefreq: 'weekly' };
+      }
+      // /boutique* : priorite BASSE, volontairement SOUS /artistes. La vue
+      // prints de /boutique duplique le catalogue /artistes (meme CMS, memes
+      // prix, memes images) ; on laisse /artistes primer comme page d'origine.
+      if (loc.startsWith('/boutique')) {
+        return { loc, priority: '0.5', changefreq: 'weekly' };
       }
       return { loc, priority: '0.7', changefreq: 'monthly' };
     }),
-    ...artistSlugs.map((s) => ({
-      loc: `/artistes/${s}`,
+    ...artists.map((a) => ({
+      loc: `/artistes/${a.slug}`,
       priority: '0.6',
       changefreq: 'monthly',
+      // lastmod reel tire de updatedAt Strapi ; omis si indisponible (fallback)
+      // plutot que de mettre une date de build fausse.
+      lastmod: a.updatedAt ? String(a.updatedAt).slice(0, 10) : undefined,
     })),
   ];
 }
