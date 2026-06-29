@@ -45,11 +45,11 @@ const servicesDataEs = {
           subtitle: 'Impresion Fine Art',
           headers: ['Formato', 'Studio (4 pigmentos)', 'Museo (12 pigmentos)'],
           rows: [
-            ['A6 (4x6")', '$15', '$30'],
-            ['A4 (8.5x11")', '$20', '$40'],
-            ['A3 (11x17")', '$25', '$55'],
-            ['A3+ (13x19")', '$35', '$95'],
-            ['A2 (18x24")', 'N/A', '$110'],
+            ['A6 (4x6")', '$8', '$15'],
+            ['A4 (8.5x11")', '$10', '$20'],
+            ['A3 (11x17")', '$15', '$30'],
+            ['A3+ (13x19")', '$20', '$45'],
+            ['A2 (18x24")', 'N/A', '$55'],
           ],
         },
         // FLYERS-QUOTE-ONLY (29 avril 2026) - cf. services.js
