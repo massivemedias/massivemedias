@@ -1033,7 +1033,7 @@ function ArtisteDetail({ subdomainSlug }) {
                         {getItemTitle(sticker)}
                       </h3>
                       <p className="text-accent text-xs font-semibold mt-1">
-                        {tx({ fr: 'Des 30$ / 25x', en: 'From $30 / 25x', es: 'Desde 30$ / 25x' })}
+                        {tx({ fr: 'Des 19$ / 10x', en: 'From $19 / 10x', es: 'Desde 19$ / 10x' })}
                       </p>
                     </div>
                     {/* Zoom button */}

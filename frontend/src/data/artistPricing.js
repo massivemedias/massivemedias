@@ -69,6 +69,49 @@ export function isFormatAvailable(formatId, maxFormat) {
   return fmt.rank <= max.rank;
 }
 
+// ARTIST-STICKER (refonte stickers artiste) : grille de prix DEDIEE aux stickers
+// d'artistes, SEPAREE de STICKER_GRID (les prix clients de /services/stickers
+// n'en dependent pas). Prix UNIQUE : aucune dependance finition, taille ou forme.
+// Totaux par palier ; minimum 10. SSOT, ne pas dupliquer ailleurs.
+export const ARTIST_STICKER_GRID = { 10: 19, 25: 45, 50: 85, 100: 150, 250: 350, 500: 650 }
+
+/**
+ * Prix sticker artiste pour une quantite (>= 10). Interpolation lineaire du prix
+ * unitaire entre les 2 paliers encadrants, calquee sur lookupStickerPriceCustomQty
+ * (utils/pricingData.js) mais SANS finition ni taille. Au-dela de 500 : rate du
+ * dernier palier. Sous 10 : null (minimum d'impression).
+ * Retourne { qty, price, unitPrice } (arrondis a 2 decimales).
+ */
+export function getArtistStickerPrice(qty) {
+  const q = parseInt(String(qty == null ? '' : qty).replace(/[^0-9]/g, ''), 10)
+  if (!Number.isFinite(q) || q < 10) return null
+  const grid = ARTIST_STICKER_GRID
+  const tiers = Object.keys(grid).map(Number).sort((a, b) => a - b)
+  if (grid[q] != null) {
+    const unitPrice = Math.round((grid[q] / q) * 100) / 100
+    return { qty: q, price: grid[q], unitPrice, exact: true }
+  }
+  const maxQty = tiers[tiers.length - 1]
+  if (q >= maxQty) {
+    const maxUnit = Math.round((grid[maxQty] / maxQty) * 100) / 100
+    return { qty: q, price: Math.round(q * maxUnit * 100) / 100, unitPrice: maxUnit, capped: true }
+  }
+  let lowQty = tiers[0]
+  let highQty = tiers[1]
+  for (let i = 0; i < tiers.length - 1; i++) {
+    if (q >= tiers[i] && q < tiers[i + 1]) {
+      lowQty = tiers[i]
+      highQty = tiers[i + 1]
+      break
+    }
+  }
+  const lowUnit = grid[lowQty] / lowQty
+  const highUnit = grid[highQty] / highQty
+  const factor = (q - lowQty) / (highQty - lowQty)
+  const unitPrice = Math.round((lowUnit + factor * (highUnit - lowUnit)) * 100) / 100
+  return { qty: q, price: Math.round(q * unitPrice * 100) / 100, unitPrice, interpolated: true }
+}
+
 /**
  * SHIM (11 mai 2026) : export default vide. Les anciens composants qui
  * faisaient `import artistsData from '../data/artists'` continuent de
