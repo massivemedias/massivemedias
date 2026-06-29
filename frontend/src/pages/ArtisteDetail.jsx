@@ -109,57 +109,36 @@ function ContactArtisteForm({ artist, tx }) {
   );
 }
 
-// DYNAMIC-MOCKUP-COORDS (11 mai 2026) : pour eliminer DEFINITIVEMENT le
-// letterboxing dans les scenes photorealistes, les coords du cadre virtuel
-// sont calculees a la volee selon l'orientation de l'oeuvre. Le cadre est
-// AGRANDI pour deborder de la zone source (cadre dessine dans la photo) et
-// le MASQUER - donc le cadre virtuel devient le SEUL cadre visible, et il
-// peut etre carre, paysage, ou portrait selon l'oeuvre.
+// MOCKUP-V2 (juin 2026) : fonds neutres a mur VIDE (sans cadre dessine),
+// generes par IA. Le cadre virtuel CSS devient le SEUL cadre et se
+// dimensionne au RATIO reel de l'oeuvre (detecte au chargement de l'image),
+// centre sur la zone de mur degagee propre a chaque scene. Plus aucun cadre
+// dessine a masquer -> fini le double cadre et le letterboxing, quelle que
+// soit l'orientation (paysage, portrait, carre). Un seul fond par scene
+// sert les 3 orientations.
 //
-// Coords source = la zone verte de la photo originale (cadre portrait).
-// Pour square/landscape, on garde le MEME centre, on calcule width/height
-// au ratio target, et on PAD le cadre pour deborder du cadre source.
-const MOCKUP_FRAME_COORDS = {
-  // {scene}_{frameColor} : coords portrait de base (zone source)
-  bedroom_black:     { top: 21.6,  left: 41.49, width: 16.8,  height: 25.6  },
-  bedroom_white:     { top: 19.89, left: 41.26, width: 18.51, height: 25.03 },
-  living_room_black: { top: 19.09, left: 40.91, width: 19.66, height: 28.23 },
-  living_room_white: { top: 26.29, left: 38.86, width: 20.69, height: 26.97 },
-  office_black:      { top: 22.17, left: 38.63, width: 22.74, height: 31.66 },
-  office_white:      { top: 30.74, left: 33.94, width: 33.49, height: 23.54 }, // landscape natif
-  zen_black:         { top: 23.54, left: 38.17, width: 25.94, height: 35.77 },
-  zen_white:         { top: 21.49, left: 38.4,  width: 23.2,  height: 33.49 },
-  studio_black:      { top: 32,    left: 40,    width: 19.77, height: 27.77 },
-  studio_white:      { top: 28.46, left: 38.51, width: 22.86, height: 31.66 },
-};
+// {cx, cy} = centre de la zone de mur libre, {maxW, maxH} = extension max
+// du cadre dans cette zone (en % de l'image de scene 1:1).
+const MOCKUP_V2_ANCHORS = {
+  office:      { cx: 55, cy: 30, maxW: 36, maxH: 40 },
+  studio:      { cx: 47, cy: 34, maxW: 44, maxH: 46 },
+  living_room: { cx: 45, cy: 27, maxW: 40, maxH: 38 },
+  zen:         { cx: 26, cy: 35, maxW: 38, maxH: 50 },
+}
 
-// Calcule les coords du cadre virtuel pour une orientation donnee, en
-// gardant le MEME centre que la zone source et en agrandissant (pad 1.15x)
-// pour masquer le cadre dessine de la photo.
-function frameCoordsFor(sceneKey, frameColor, orientation) {
-  const base = MOCKUP_FRAME_COORDS[`${sceneKey}_${frameColor}`] || MOCKUP_FRAME_COORDS.bedroom_black;
-  const cx = base.left + base.width / 2;
-  const cy = base.top + base.height / 2;
-  const baseSide = Math.max(base.width, base.height);
-  const PAD = 1.15; // 15% de plus que la zone source pour masquer le cadre dessine
-  let w, h;
-  if (orientation === 'square') {
-    w = h = baseSide * PAD;
-  } else if (orientation === 'landscape') {
-    // 3:2 landscape : on prend une width un peu plus grande que le baseSide
-    w = baseSide * PAD * 1.15;
-    h = w / 1.5;
-  } else {
-    // portrait : agrandi du cadre source avec PAD pour masquer
-    w = base.width * PAD;
-    h = base.height * PAD;
+// Calcule le rectangle du cadre (en % de l'image de scene) au ratio de
+// l'oeuvre, inscrit dans la zone de mur degagee de l'ancre et centre
+// dessus. ratio = largeur / hauteur de l'oeuvre (>1 paysage, <1 portrait).
+function frameRectFor(anchor, ratio) {
+  const a = anchor || MOCKUP_V2_ANCHORS.studio
+  const r = (ratio && ratio > 0) ? ratio : 0.75
+  let w = a.maxW
+  let h = w / r
+  if (h > a.maxH) {
+    h = a.maxH
+    w = h * r
   }
-  return {
-    top: cy - h / 2,
-    left: cx - w / 2,
-    width: w,
-    height: h,
-  };
+  return { top: a.cy - h / 2, left: a.cx - w / 2, width: w, height: h }
 }
 
 function buildArtistFromCMS(cms) {
@@ -400,20 +379,35 @@ function ArtisteDetail({ subdomainSlug }) {
   const [openFaq, setOpenFaq] = useState(null);
   const [lightbox, setLightbox] = useState(null);
   const [mockupSlideIdx, setMockupSlideIdx] = useState(0);
+  const [artworkRatio, setArtworkRatio] = useState(null)
   const configuratorRef = useRef(null);
 
-  // Orientation lue directement depuis le CMS Strapi (champ `orientation`
-  // du print). Source de verite unique - utilisee pour dimensionner
-  // dynamiquement le cadre virtuel dans le carrousel (cf frameCoordsFor()
-  // module-level).
-  const effectiveOrientation = selectedPrint?.orientation || 'portrait';
+  // MOCKUP-V2 : le ratio de l'oeuvre pilote le cadre. Priorite au ratio
+  // DETECTE depuis l'image (onLoad -> naturalWidth/naturalHeight), fallback
+  // sur le champ CMS `orientation` tant que l'image n'est pas chargee, puis
+  // portrait par defaut. Le cadre CSS epouse ainsi l'orientation reelle de
+  // l'oeuvre sans dependre d'un champ souvent vide en CMS.
+  const orientationRatio = selectedPrint?.orientation === 'landscape'
+    ? 1.5
+    : selectedPrint?.orientation === 'square'
+      ? 1
+      : 0.75
+  const effectiveRatio = artworkRatio || orientationRatio
+
+  // Lit le ratio reel de l'oeuvre au chargement de son image (scene brute
+  // ou mockup) pour dimensionner le cadre CSS a la bonne orientation.
+  const handleArtworkLoad = (e) => {
+    const nw = e.target.naturalWidth
+    const nh = e.target.naturalHeight
+    if (nw > 0 && nh > 0) setArtworkRatio(nw / nh)
+  }
 
   // Scenes du slide: null = print brut, les autres = pieces interieures
-  // photorealistes. Pour chaque scene, frameCoordsFor() calcule les coords
-  // du cadre virtuel en fonction de effectiveOrientation, masquant le
-  // cadre dessine de la photo et eliminant tout letterboxing.
+  // photorealistes a mur VIDE (set v2). Pour chaque scene, frameRectFor()
+  // calcule le rectangle du cadre CSS au ratio de l'oeuvre, centre sur la
+  // zone de mur degagee. Aucun cadre dessine -> aucune orientation cassee.
   const MOCKUP_SCENES = useMemo(() => {
-    return [null, 'bedroom', 'living_room', 'office', 'zen'];
+    return [null, 'living_room', 'office', 'zen', 'studio'];
   }, []);
   const stickerConfiguratorRef = useRef(null);
   const printConfigsRef = useRef({}); // Sauvegarder la config par print id
@@ -479,9 +473,10 @@ function ArtisteDetail({ subdomainSlug }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [selectedPrint, lightbox]);
 
-  // Reset slide quand on change de print
+  // Reset slide + ratio detecte quand on change de print
   useEffect(() => {
     setMockupSlideIdx(0);
+    setArtworkRatio(null)
   }, [selectedPrint?.id]);
 
   // Hooks de profile et socials. DECLARES AVANT les early returns pour
@@ -1139,6 +1134,7 @@ function ArtisteDetail({ subdomainSlug }) {
                         <img loading="lazy"
                           src={selectedPrint.fullImage || toFull(selectedPrint.image)}
                           alt={getItemTitle(selectedPrint)}
+                          onLoad={handleArtworkLoad}
                           className="max-w-full max-h-[70vh] object-contain"
                         />
                         <div className="absolute inset-0 pointer-events-none md:flex md:items-center md:justify-center">
@@ -1146,21 +1142,18 @@ function ArtisteDetail({ subdomainSlug }) {
                         </div>
                       </div>
                     ) : (
-                      /* DYNAMIC-MOCKUP (11 mai 2026) : rendu CSS overlay direct
-                         sur la photo source. Le cadre virtuel change PHYSIQUEMENT
-                         de forme selon l'orientation de l'oeuvre :
-                           portrait  -> cadre portrait inscrit dans la zone source
-                           square    -> cadre 1:1 agrandi, masque le cadre source
-                           landscape -> cadre 3:2 agrandi, masque le cadre source
-                         Coords calculees par frameCoordsFor() avec le meme centre
-                         que la zone source mais width/height adaptes au ratio.
-                         L'oeuvre remplit le cadre virtuel a 100% via object-cover.
-                         Plus de letterboxing : le cadre s'adapte a l'oeuvre, pas
-                         l'inverse. */
+                      /* MOCKUP-V2 (juin 2026) : fond a mur VIDE + cadre CSS pose
+                         par-dessus. frameRectFor() dimensionne le cadre au RATIO
+                         reel de l'oeuvre (effectiveRatio, detecte au chargement)
+                         et le centre sur la zone de mur degagee de la scene. Le
+                         cadre epouse donc l'orientation reelle (paysage, portrait
+                         ou carre) ; l'oeuvre remplit le cadre via object-cover.
+                         Aucun cadre dessine a masquer -> plus de double cadre ni
+                         de letterboxing, quelle que soit l'orientation. */
                       (() => {
                         const sceneKey = MOCKUP_SCENES[mockupSlideIdx];
-                        const photoSrc = `/images/mockups/${sceneKey}_${printFrameColor}.webp`;
-                        const frame = frameCoordsFor(sceneKey, printFrameColor, effectiveOrientation);
+                        const photoSrc = `/images/mockups/v2/${sceneKey}.webp`;
+                        const frame = frameRectFor(MOCKUP_V2_ANCHORS[sceneKey], effectiveRatio);
                         const isLightFrame = printFrameColor === 'white';
                         return (
                           <div
@@ -1207,6 +1200,7 @@ function ArtisteDetail({ subdomainSlug }) {
                                 src={selectedPrint.fullImage || toFull(selectedPrint.image)}
                                 alt={getItemTitle(selectedPrint)}
                                 loading="lazy"
+                                onLoad={handleArtworkLoad}
                                 style={{
                                   width: '100%',
                                   height: '100%',
