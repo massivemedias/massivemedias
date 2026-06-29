@@ -64,6 +64,14 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [], 
     })
   }
 
+  // PREVIEW (hover desktop / tap mobile / +/-) : bascule les 2 apercus (interne
+  // previewSticker + grande preview parent via onThumbnailPreview) sur le design
+  // avec lequel l'utilisateur interagit. Sticky : aucun retour au mouseleave.
+  const previewDesign = (s) => {
+    setPreviewSticker(s)
+    onThumbnailPreview?.(s)
+  }
+
   const randomMix = () => {
     if (stickers.length === 0) return
     const newPack = {}
@@ -165,20 +173,15 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [], 
           return (
             <div
               key={s.id}
-              className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isSelected ? 'bg-accent/10' : 'bg-white/3 hover:bg-white/5'}`}
+              onMouseEnter={() => previewDesign(s)}
+              onClick={() => previewDesign(s)}
+              className={`flex items-center gap-3 p-2.5 rounded-lg transition-all cursor-pointer ${isSelected ? 'bg-accent/10' : 'bg-white/3 hover:bg-white/5'}`}
             >
               <div className="flex-shrink-0">
                 <img
                   src={s.image}
                   alt={title}
-                  className={`w-14 h-14 rounded-lg object-contain cursor-pointer transition-all ${previewSticker?.id === s.id ? 'ring-2 ring-accent' : 'hover:ring-1 hover:ring-white/30'}`}
-                  title={tx({ fr: 'Cliquer pour agrandir', en: 'Click to enlarge', es: 'Clic para ampliar' })}
-                  onClick={() => {
-                    // STICKER-PREVIEW : met a jour le mini-apercu interne ET
-                    // remonte au parent (ArtisteDetail) pour la grande preview.
-                    setPreviewSticker(s)
-                    onThumbnailPreview?.(s)
-                  }}
+                  className={`w-14 h-14 rounded-lg object-contain transition-all ${previewSticker?.id === s.id ? 'ring-2 ring-accent' : 'hover:ring-1 hover:ring-white/30'}`}
                 />
               </div>
               <span className={`flex-1 text-sm font-medium truncate ${isSelected ? 'text-heading' : 'text-grey-muted'}`}>
@@ -186,7 +189,11 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [], 
               </span>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button
-                  onClick={() => updateStickerQty(s.id, -1)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    updateStickerQty(s.id, -1)
+                    previewDesign(s)
+                  }}
                   disabled={qty === 0}
                   className="w-7 h-7 rounded-full flex items-center justify-center text-heading bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
@@ -196,7 +203,11 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [], 
                   {qty}
                 </span>
                 <button
-                  onClick={() => updateStickerQty(s.id, 1)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    updateStickerQty(s.id, 1)
+                    previewDesign(s)
+                  }}
                   className="w-7 h-7 rounded-full flex items-center justify-center text-heading bg-white/10 hover:bg-white/20 transition-colors"
                 >
                   <Plus size={13} />
