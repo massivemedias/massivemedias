@@ -29,6 +29,35 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseUniqueViolation = exports.isUniqueViolation = void 0;
 const strapi_1 = require("@strapi/strapi");
 const stripe_1 = __importDefault(require("stripe"));
+// FIX-EMAIL-OPTIONAL (8 mai 2026) : le schema api::order.order declare
+// customerEmail comme `type: email` + `required: true`. Strapi v5 utilise
+// Yup en interne et rejette toute valeur non-string sur ce champ avec :
+//   "customerEmail must be a string type, but the final value was: null"
+//
+// On NE PEUT PAS envoyer chaine vide '' (Yup type:email valide le format),
+// ni null/undefined (rejete par required:true). Or l'UI marque l'email comme
+// optionnel pour les commandes manuelles ET les soumissions. Solution :
+// generer un placeholder unique base sur le slug du nom client + timestamp,
+// au format `<slug>@quote.placeholder` (domaine reserve, jamais delivere par
+// un MTA). Cas legitime : Waterfront a `waterfront@quote.placeholder`.
+//
+// Le frontend a un garde-fou (cf. handleSendQuote dans AdminOrders) qui
+// bloque l'envoi par email tant que le client a un email @quote.placeholder
+// pour eviter les bounces. L'admin doit l'editer (Pencil) avant l'envoi.
+const slugifyName = (n) => String(n || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // diacritiques
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 30) || 'noname';
+function ensureCustomerEmail(rawEmail, customerName) {
+    if (rawEmail) {
+        const trimmed = String(rawEmail).trim().toLowerCase();
+        if (trimmed)
+            return trimmed;
+    }
+    return `${slugifyName(customerName)}-${Date.now()}@quote.placeholder`;
+}
 const shipping_1 = require("../../../utils/shipping");
 const email_1 = require("../../../utils/email");
 const tracking_provider_1 = require("../../../utils/tracking-provider");
@@ -37,6 +66,8 @@ const promo_codes_1 = require("../../../utils/promo-codes");
 const pricing_config_1 = require("../../../utils/pricing-config");
 const auth_1 = require("../../../utils/auth");
 const webhook_1 = require("../../../utils/webhook");
+const invoice_counter_1 = require("../../../utils/invoice-counter");
+const artist_lock_1 = require("../../../utils/artist-lock");
 const getStripe = () => {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key || key === 'sk_test_REPLACE_ME') {
@@ -201,30 +232,35 @@ async function reserveUniquePieces(strapiInstance, pieces, reservationId, expire
         byArtist.get(p.artistDocId).push({ printId: p.printId, title: p.title });
     }
     for (const [artistDocId, printRefs] of byArtist) {
-        const artist = await strapiInstance.documents('api::artist.artist').findFirst({
-            filters: { documentId: artistDocId },
-        });
-        if (!artist)
-            throw new Error('Artiste introuvable lors de la reservation');
-        const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
-        for (const { printId, title } of printRefs) {
-            const idx = prints.findIndex((p) => p.id === printId);
-            if (idx === -1)
-                throw new Error(`Piece introuvable chez ${artist.slug}`);
-            const print = prints[idx];
-            if (print.sold === true) {
-                throw new Error(`La piece "${print.title || title || printId}" a ete vendue pendant votre checkout.`);
+        // A4 (2026-05-13) : verrou per-artiste pour serialiser les reservations.
+        // Le re-read FRAIS inside le lock garantit qu'on voit l'etat le plus
+        // recent (pas de write-write race avec un autre checkout simultane).
+        await (0, artist_lock_1.withArtistLock)(artistDocId, async () => {
+            const artist = await strapiInstance.documents('api::artist.artist').findFirst({
+                filters: { documentId: artistDocId },
+            });
+            if (!artist)
+                throw new Error('Artiste introuvable lors de la reservation');
+            const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
+            for (const { printId, title } of printRefs) {
+                const idx = prints.findIndex((p) => p.id === printId);
+                if (idx === -1)
+                    throw new Error(`Piece introuvable chez ${artist.slug}`);
+                const print = prints[idx];
+                if (print.sold === true) {
+                    throw new Error(`La piece "${print.title || title || printId}" a ete vendue pendant votre checkout.`);
+                }
+                const existingUntil = print.reservedUntil ? new Date(print.reservedUntil).getTime() : 0;
+                if (existingUntil > now && print.reservedByOrderId && print.reservedByOrderId !== reservationId) {
+                    const minsLeft = Math.max(1, Math.ceil((existingUntil - now) / 60000));
+                    throw new Error(`La piece "${print.title || title || printId}" est reservee par un autre client (disponible dans ${minsLeft} min).`);
+                }
+                prints[idx] = { ...print, reservedUntil: expiresAtIso, reservedByOrderId: reservationId };
             }
-            const existingUntil = print.reservedUntil ? new Date(print.reservedUntil).getTime() : 0;
-            if (existingUntil > now && print.reservedByOrderId && print.reservedByOrderId !== reservationId) {
-                const minsLeft = Math.max(1, Math.ceil((existingUntil - now) / 60000));
-                throw new Error(`La piece "${print.title || title || printId}" est reservee par un autre client (disponible dans ${minsLeft} min).`);
-            }
-            prints[idx] = { ...print, reservedUntil: expiresAtIso, reservedByOrderId: reservationId };
-        }
-        await strapiInstance.documents('api::artist.artist').update({
-            documentId: artistDocId,
-            data: { prints },
+            await strapiInstance.documents('api::artist.artist').update({
+                documentId: artistDocId,
+                data: { prints },
+            });
         });
     }
 }
@@ -243,33 +279,37 @@ async function releaseUniquePieceReservations(strapiInstance, pieces, reservatio
         byArtist.get(p.artistDocId).push(p.printId);
     }
     for (const [artistDocId, printIds] of byArtist) {
-        const artist = await strapiInstance.documents('api::artist.artist').findFirst({
-            filters: { documentId: artistDocId },
-        });
-        if (!artist)
-            continue;
-        const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
-        let mutated = false;
-        for (const printId of printIds) {
-            const idx = prints.findIndex((p) => p.id === printId);
-            if (idx === -1)
-                continue;
-            const print = prints[idx];
-            if (print.sold === true)
-                continue; // ne touche jamais une piece vendue
-            if (print.reservedByOrderId === reservationId) {
-                // Strip les champs de reservation mais garde le reste intact
-                const { reservedUntil: _ru, reservedByOrderId: _rb, ...rest } = print;
-                prints[idx] = rest;
-                mutated = true;
-            }
-        }
-        if (mutated) {
-            await strapiInstance.documents('api::artist.artist').update({
-                documentId: artistDocId,
-                data: { prints },
+        // A4 (2026-05-13) : meme lock que reserve, pour eviter de relacher une
+        // reservation pendant qu'une autre operation lit/ecrit les prints.
+        await (0, artist_lock_1.withArtistLock)(artistDocId, async () => {
+            const artist = await strapiInstance.documents('api::artist.artist').findFirst({
+                filters: { documentId: artistDocId },
             });
-        }
+            if (!artist)
+                return;
+            const prints = Array.isArray(artist.prints) ? [...artist.prints] : [];
+            let mutated = false;
+            for (const printId of printIds) {
+                const idx = prints.findIndex((p) => p.id === printId);
+                if (idx === -1)
+                    continue;
+                const print = prints[idx];
+                if (print.sold === true)
+                    continue; // ne touche jamais une piece vendue
+                if (print.reservedByOrderId === reservationId) {
+                    // Strip les champs de reservation mais garde le reste intact
+                    const { reservedUntil: _ru, reservedByOrderId: _rb, ...rest } = print;
+                    prints[idx] = rest;
+                    mutated = true;
+                }
+            }
+            if (mutated) {
+                await strapiInstance.documents('api::artist.artist').update({
+                    documentId: artistDocId,
+                    data: { prints },
+                });
+            }
+        });
     }
 }
 exports.default = strapi_1.factories.createCoreController('api::order.order', ({ strapi }) => ({
@@ -476,7 +516,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             (0, webhook_1.dispatchWebhook)('order.created', {
                 orderRef: orderRefIntent,
                 documentId: order.documentId,
-                customerEmail: customerEmail || null,
+                customerEmail: ensureCustomerEmail(customerEmail, customerName),
                 customerName: customerName || null,
                 total: orderData.total || 0,
                 currency: orderData.currency || 'cad',
@@ -786,7 +826,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             (0, webhook_1.dispatchWebhook)('order.created', {
                 orderRef: orderRefCheckout,
                 documentId: newOrder.documentId,
-                customerEmail: customerEmail || null,
+                customerEmail: ensureCustomerEmail(customerEmail, customerName),
                 customerName: customerName || null,
                 total: orderData.total || 0,
                 currency: orderData.currency || 'cad',
@@ -802,10 +842,34 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     },
     async myOrders(ctx) {
         var _a;
+        // SEC-A2 (2026-05-13) : route precedemment publique -> fuite massive PII
+        // via `?email=victime@x.com`. On exige maintenant un JWT Supabase valide
+        // ET on verifie que les params de query correspondent a l'identite du
+        // JWT (sauf admin qui peut interroger n'importe qui).
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
+        const user = ctx.state.user;
         const supabaseUserId = ctx.query.supabaseUserId;
         const email = (ctx.query.email || '').trim().toLowerCase();
         if (!supabaseUserId && !email) {
             return ctx.badRequest('Missing user ID or email');
+        }
+        // Ownership : un user non-admin ne peut interroger que SES propres
+        // commandes (par son userId Supabase ET/OU son email du JWT). Les
+        // admins (emails dans ADMIN_EMAILS) bypassent ce check pour le support.
+        if (!user.isAdmin) {
+            const jwtEmail = String(user.userEmail || '').toLowerCase();
+            const jwtUserId = String(user.userId || '');
+            if (supabaseUserId && String(supabaseUserId) !== jwtUserId) {
+                ctx.status = 403;
+                ctx.body = { error: { status: 403, name: 'Forbidden', message: 'supabaseUserId does not match authenticated user' } };
+                return;
+            }
+            if (email && email !== jwtEmail) {
+                ctx.status = 403;
+                ctx.body = { error: { status: 403, name: 'Forbidden', message: 'email does not match authenticated user' } };
+                return;
+            }
         }
         // FIX-ERP (avril 2026) : filtrer par supabaseUserId ET/OU email pour rattraper
         // les commandes creees avant l'inscription du client au portail (commandes
@@ -966,27 +1030,43 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         });
                         const artist = artists[0];
                         if (artist) {
-                            const prints = Array.isArray(artist.prints) ? artist.prints : [];
-                            const updated = prints.map((p) => {
-                                if ((p === null || p === void 0 ? void 0 : p.id) === meta.printId && (p === null || p === void 0 ? void 0 : p.privateToken) === meta.privateSaleToken) {
-                                    return {
-                                        ...p,
-                                        sold: true,
-                                        soldAt: new Date().toISOString(),
-                                        soldAmount: typeof obj.amount_total === 'number'
-                                            ? obj.amount_total / 100
-                                            : (typeof obj.amount === 'number' ? obj.amount / 100 : null),
-                                        stripePaymentIntentId: obj.payment_intent || obj.id || null,
-                                    };
+                            // A4 (2026-05-13) : verrou per-artiste pour eviter qu'un autre
+                            // webhook (ou une reservation simultanee) ne race sur le meme
+                            // print. Re-read FRAIS inside le lock pour voir l'etat le plus
+                            // recent et detecter une double-vente (sold deja true => skip
+                            // proprement avec un log warn).
+                            await (0, artist_lock_1.withArtistLock)(artist.documentId, async () => {
+                                const fresh = await strapi.documents('api::artist.artist').findFirst({
+                                    filters: { documentId: artist.documentId },
+                                    status: 'published',
+                                });
+                                const prints = Array.isArray(fresh === null || fresh === void 0 ? void 0 : fresh.prints) ? fresh.prints : [];
+                                const idx = prints.findIndex((p) => (p === null || p === void 0 ? void 0 : p.id) === meta.printId && (p === null || p === void 0 ? void 0 : p.privateToken) === meta.privateSaleToken);
+                                if (idx === -1) {
+                                    strapi.log.warn(`[webhook:${requestId}] private-sale: print ${meta.artistSlug}/${meta.printId} introuvable apres re-read (deja vendu ou token invalide)`);
+                                    return;
                                 }
-                                return p;
+                                if (prints[idx].sold === true) {
+                                    strapi.log.warn(`[webhook:${requestId}] private-sale: ${meta.artistSlug}/${meta.printId} deja vendu (double webhook ?), skip`);
+                                    return;
+                                }
+                                const updated = [...prints];
+                                updated[idx] = {
+                                    ...prints[idx],
+                                    sold: true,
+                                    soldAt: new Date().toISOString(),
+                                    soldAmount: typeof obj.amount_total === 'number'
+                                        ? obj.amount_total / 100
+                                        : (typeof obj.amount === 'number' ? obj.amount / 100 : null),
+                                    stripePaymentIntentId: obj.payment_intent || obj.id || null,
+                                };
+                                await strapi.documents('api::artist.artist').update({
+                                    documentId: artist.documentId,
+                                    data: { prints: updated },
+                                    status: 'published',
+                                });
+                                strapi.log.info(`[webhook:${requestId}] private-sale SOLD: ${meta.artistSlug}/${meta.printId} token=${meta.privateSaleToken.slice(0, 8)}...`);
                             });
-                            await strapi.documents('api::artist.artist').update({
-                                documentId: artist.documentId,
-                                data: { prints: updated },
-                                status: 'published',
-                            });
-                            strapi.log.info(`[webhook:${requestId}] private-sale SOLD: ${meta.artistSlug}/${meta.printId} token=${meta.privateSaleToken.slice(0, 8)}...`);
                         }
                         else {
                             strapi.log.warn(`[webhook:${requestId}] private-sale: artist ${meta.artistSlug} introuvable`);
@@ -1101,23 +1181,12 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 }
                 if (orders.length > 0) {
                     const order = orders[0];
-                    // Generer le numero de facture sequentiel MM-AAAA-XXXX
+                    // A6 (2026-05-13) : generation ATOMIQUE via invoice_counters
+                    // (cf. backend/src/utils/invoice-counter.ts). Plus de race condition
+                    // entre 2 webhooks Stripe paralleles.
                     let invoiceNumber = '';
                     try {
-                        const now = new Date();
-                        const year = now.getFullYear();
-                        const prefix = `MM-${year}-`;
-                        const existingOrders = await strapi.documents('api::order.order').findMany({
-                            filters: { invoiceNumber: { $startsWith: prefix } },
-                            sort: { invoiceNumber: 'desc' },
-                            limit: 1,
-                        });
-                        let seq = 1;
-                        if (existingOrders.length > 0 && existingOrders[0].invoiceNumber) {
-                            const lastNum = existingOrders[0].invoiceNumber.replace(prefix, '');
-                            seq = (parseInt(lastNum, 10) || 0) + 1;
-                        }
-                        invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+                        invoiceNumber = await (0, invoice_counter_1.nextInvoiceNumber)();
                     }
                     catch (invoiceErr) {
                         strapi.log.warn('Erreur generation numero facture:', invoiceErr);
@@ -1268,29 +1337,71 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         const knex = strapi.db.connection;
                         const orderItems = Array.isArray(order.items) ? order.items : [];
                         for (const item of orderItems) {
-                            const qty = item.quantity || 1;
+                            // SERVICE-LINES-2026-05-14 : skip explicite des lignes service /
+                            // temps / forfait. Ces items n'ont pas de stock physique a
+                            // decrementer. Le flag `isService: true` est pose par
+                            // CreateManualOrderModal cote frontend. Defense en profondeur :
+                            // meme si quelqu'un met un sku par erreur sur un service, on
+                            // skip d'abord sur isService.
+                            if (item.isService === true)
+                                continue;
+                            const rawQty = Number(item.quantity);
+                            // M2 (2026-05-13) : garde-fou qty negative/non-numerique.
+                            // Avant ce guard, un item.quantity = -3 aurait fait :
+                            //   andWhere('quantity', '>=', -3) -> match toujours vrai
+                            //   knex.raw('quantity - ?', [-3]) -> quantity + 3 -> AUGMENTE
+                            //     l'inventaire au lieu de le decrementer ! Tres difficile
+                            //     a detecter en BDD (les stocks gonflent silencieusement).
+                            // Fallback a 1 (cas legacy ou quantity absent du panier).
+                            const qty = Number.isFinite(rawQty) && rawQty > 0 ? Math.floor(rawQty) : 1;
                             const sku = item.sku || item.slug;
                             if (!sku)
                                 continue;
-                            const rowsAffected = await knex('inventory_items')
+                            // INVENTORY-A1 (2026-05-13) : exact match d'abord (cas legacy
+                            // et admin qui set le SKU verbatim), puis prefix match
+                            // avec separateur '-' (cas createItem qui auto-suffix `-NNN`).
+                            // On retient le `matchedSku` reel pour le log et la mise a
+                            // jour conditionnelle ; en cas de prefix multi-match on prend
+                            // le 1er ordre alphabetique (suffixe `-001` avant `-002`).
+                            let matchedSku = sku;
+                            let rowsAffected = await knex('inventory_items')
                                 .where({ sku, active: true })
                                 .andWhere('quantity', '>=', qty)
                                 .update({ quantity: knex.raw('quantity - ?', [qty]) });
+                            if (rowsAffected === 0) {
+                                const candidate = await knex('inventory_items')
+                                    .where('active', true)
+                                    .where('sku', 'like', `${sku}-%`)
+                                    .andWhere('quantity', '>=', qty)
+                                    .orderBy('sku')
+                                    .first('sku', 'quantity');
+                                if (candidate) {
+                                    rowsAffected = await knex('inventory_items')
+                                        .where({ sku: candidate.sku, active: true })
+                                        .andWhere('quantity', '>=', qty)
+                                        .update({ quantity: knex.raw('quantity - ?', [qty]) });
+                                    if (rowsAffected > 0)
+                                        matchedSku = candidate.sku;
+                                }
+                            }
                             if (rowsAffected > 0) {
                                 const row = await knex('inventory_items')
-                                    .where({ sku, active: true })
+                                    .where({ sku: matchedSku, active: true })
                                     .first('quantity');
-                                strapi.log.info(`Inventory ${sku}: -${qty} -> ${(_d = row === null || row === void 0 ? void 0 : row.quantity) !== null && _d !== void 0 ? _d : '?'} (atomic)`);
+                                strapi.log.info(`Inventory ${matchedSku}: -${qty} -> ${(_d = row === null || row === void 0 ? void 0 : row.quantity) !== null && _d !== void 0 ? _d : '?'} (atomic, cart sku=${sku})`);
                             }
                             else {
                                 // Disambiguate: SKU non-tracked (silent skip, comportement avant) vs stock insuffisant (loud)
                                 const existing = await knex('inventory_items')
-                                    .where({ sku, active: true })
-                                    .first('quantity');
+                                    .where('active', true)
+                                    .where((qb) => {
+                                    qb.where('sku', sku).orWhere('sku', 'like', `${sku}-%`);
+                                })
+                                    .first('sku', 'quantity');
                                 if (existing !== undefined) {
-                                    strapi.log.warn(`RACE-02: inventory insuffisant pour SKU "${sku}" (en stock: ${existing.quantity}, ` +
-                                        `demande: ${qty}). Order ${order.documentId} paye mais stock non decremente. ` +
-                                        `A traiter manuellement (rupture de stock non detectee lors de l'achat).`);
+                                    strapi.log.warn(`RACE-02: inventory insuffisant pour SKU "${sku}" -> trouve "${existing.sku}" ` +
+                                        `(en stock: ${existing.quantity}, demande: ${qty}). Order ${order.documentId} ` +
+                                        `paye mais stock non decremente. A traiter manuellement (rupture de stock non detectee lors de l'achat).`);
                                 }
                             }
                         }
@@ -1414,29 +1525,38 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                             }
                             if (!matchedArtist || !printId)
                                 continue;
-                            const prints = Array.isArray(matchedArtist.prints) ? [...matchedArtist.prints] : [];
-                            const idx = prints.findIndex((p) => p.id === printId);
-                            if (idx === -1)
-                                continue;
-                            const print = prints[idx];
-                            // Marquer comme vendu si: unique OU private (piece sur commande)
-                            // Les prints non-uniques / non-prives (editions multiples) ne sont pas marques
-                            const shouldMarkSold = print.unique === true || print.private === true || item.isUnique === true;
-                            if (!shouldMarkSold)
-                                continue;
-                            if (print.sold === true) {
-                                strapi.log.warn(`Piece ${printId} de ${matchedArtist.slug} deja marquee vendue (race condition?)`);
-                                continue;
-                            }
-                            // RACE-01: strip les champs de reservation quand on marque sold - la reservation
-                            // est consommee, inutile de laisser reservedUntil/reservedByOrderId trainer.
-                            const { reservedUntil: _ru, reservedByOrderId: _rb, ...restPrint } = print;
-                            prints[idx] = { ...restPrint, sold: true, soldAt: new Date().toISOString() };
-                            await strapi.documents('api::artist.artist').update({
-                                documentId: matchedArtist.documentId,
-                                data: { prints },
+                            // A4 (2026-05-13) : verrou per-artiste + re-read frais inside le
+                            // lock. Necessaire car le find() ci-dessus utilise un cache des
+                            // artistes charge en debut de boucle ; entre le chargement et ici,
+                            // un autre webhook a pu deja marquer le print sold. On re-read
+                            // FRESH pour voir l'etat le plus recent, on skip si sold deja true.
+                            // RACE-01 strip des champs de reservation conservee.
+                            await (0, artist_lock_1.withArtistLock)(matchedArtist.documentId, async () => {
+                                const fresh = await strapi.documents('api::artist.artist').findFirst({
+                                    filters: { documentId: matchedArtist.documentId },
+                                });
+                                if (!fresh)
+                                    return;
+                                const prints = Array.isArray(fresh.prints) ? [...fresh.prints] : [];
+                                const idx = prints.findIndex((p) => p.id === printId);
+                                if (idx === -1)
+                                    return;
+                                const print = prints[idx];
+                                const shouldMarkSold = print.unique === true || print.private === true || item.isUnique === true;
+                                if (!shouldMarkSold)
+                                    return;
+                                if (print.sold === true) {
+                                    strapi.log.warn(`Piece ${printId} de ${matchedArtist.slug} deja marquee vendue (race condition evitee par lock)`);
+                                    return;
+                                }
+                                const { reservedUntil: _ru, reservedByOrderId: _rb, ...restPrint } = print;
+                                prints[idx] = { ...restPrint, sold: true, soldAt: new Date().toISOString() };
+                                await strapi.documents('api::artist.artist').update({
+                                    documentId: matchedArtist.documentId,
+                                    data: { prints },
+                                });
+                                strapi.log.info(`Piece ${print.unique ? 'unique' : 'privee'} ${printId} de ${matchedArtist.slug} marquee comme vendue`);
                             });
-                            strapi.log.info(`Piece ${print.unique ? 'unique' : 'privee'} ${printId} de ${matchedArtist.slug} marquee comme vendue`);
                         }
                     }
                     catch (err) {
@@ -1520,7 +1640,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             (0, webhook_1.dispatchWebhook)('order.created', {
                 orderRef: orderRefAdmin,
                 documentId: order.documentId,
-                customerEmail: data.customerEmail || null,
+                customerEmail: ensureCustomerEmail(data.customerEmail, data.customerName),
                 customerName: data.customerName || null,
                 companyName: data.companyName || null,
                 total: data.total || 0,
@@ -1533,6 +1653,180 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         catch (err) {
             strapi.log.error('adminCreate error:', err);
             return ctx.badRequest(err.message);
+        }
+    },
+    // ============================================================
+    // SOUMISSIONS CLIENTS (Quotes) - Phase initiale, 6 mai 2026
+    // ============================================================
+    // Une "soumission" est un Order minimal cree par l'admin pour proposer un
+    // devis a un client SANS generer de lien Stripe ni d'invoice immediatement.
+    // On reutilise le content-type Order avec :
+    //   - status = 'draft'
+    //   - isManual = true
+    //   - subtotal/total pre-remplis (estimation, modifiable plus tard)
+    //   - PAS de Stripe Payment Link (genere lors de la conversion)
+    //   - PAS d'Invoice (cree lors de la conversion)
+    //
+    // Discriminant cote frontend pour separer "draft Stripe en attente" vs
+    // "soumission admin" : le couple (status='draft' AND isManual=true).
+    // Les drafts Stripe en cours de paiement ont isManual=false par defaut.
+    //
+    // Convertir en commande = PUT /orders/:id/status avec newStatus='pending'
+    // suivi de POST /orders/:id/regenerate-stripe-link pour generer le lien.
+    // GET /orders/quotes - Liste des soumissions (drafts isManual)
+    async quoteList(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        try {
+            const page = parseInt(ctx.query.page) || 1;
+            const pageSize = parseInt(ctx.query.pageSize) || 200;
+            const search = ctx.query.search;
+            const filters = {
+                status: 'draft',
+                isManual: true,
+            };
+            if (search) {
+                filters.$or = [
+                    { customerName: { $containsi: search } },
+                    { customerEmail: { $containsi: search } },
+                ];
+            }
+            const [items, total] = await Promise.all([
+                strapi.documents('api::order.order').findMany({
+                    filters,
+                    sort: 'createdAt:desc',
+                    limit: pageSize,
+                    start: (page - 1) * pageSize,
+                }),
+                strapi.db.query('api::order.order').count({ where: filters }),
+            ]);
+            ctx.body = {
+                data: items,
+                meta: { page, pageSize, total, pageCount: Math.ceil(total / pageSize) },
+            };
+        }
+        catch (err) {
+            strapi.log.error('[quoteList] CRITICAL crash:', (err === null || err === void 0 ? void 0 : err.message) || err);
+            ctx.body = { data: [], meta: { page: 1, pageSize: 200, total: 0, pageCount: 0 } };
+        }
+    },
+    // PUT /orders/:documentId/quote-update - Modifier une soumission existante
+    // Body identique a quoteCreate. Le status doit rester 'draft' AND isManual=true
+    // (pas de mutation de status ici, utiliser updateOrderStatus pour conversion).
+    async quoteUpdate(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { documentId } = ctx.params;
+        if (!documentId)
+            return ctx.badRequest('documentId requis');
+        const body = ctx.request.body;
+        const { customerName, customerEmail, customerPhone, companyName, items, notes, } = body || {};
+        let { subtotal, total } = body || {};
+        if (!customerName || !Array.isArray(items) || items.length === 0) {
+            return ctx.badRequest('customerName et items[] requis');
+        }
+        const toNum = (v) => {
+            const n = typeof v === 'string' ? parseFloat(v.replace(',', '.')) : Number(v);
+            return Number.isFinite(n) ? n : 0;
+        };
+        subtotal = toNum(subtotal);
+        total = toNum(total);
+        if (subtotal === 0) {
+            subtotal = items.reduce((acc, it) => {
+                const q = toNum(it.quantity) || 1;
+                const u = toNum(it.unitPrice) || 0;
+                return acc + q * u;
+            }, 0);
+            subtotal = Math.round(subtotal * 100) / 100;
+        }
+        if (total === 0)
+            total = subtotal;
+        try {
+            const existing = await strapi.documents('api::order.order').findFirst({
+                filters: { documentId },
+            });
+            if (!existing)
+                return ctx.notFound('Soumission introuvable');
+            // Garde-fou : on ne laisse modifier via cet endpoint QUE les drafts
+            // manuels (= soumissions). Refuse de toucher a une commande payee
+            // ou a un draft Stripe en cours.
+            if (existing.status !== 'draft' || !existing.isManual) {
+                return ctx.badRequest('Cet endpoint n\'edite que les soumissions (status=draft + isManual=true)');
+            }
+            const updated = await strapi.documents('api::order.order').update({
+                documentId,
+                data: {
+                    customerName: String(customerName).trim(),
+                    customerEmail: ensureCustomerEmail(customerEmail, customerName),
+                    customerPhone: customerPhone ? String(customerPhone).trim() : undefined,
+                    companyName: companyName ? String(companyName).trim() : undefined,
+                    items,
+                    subtotal,
+                    total,
+                    notes: notes ? String(notes) : undefined,
+                },
+            });
+            strapi.log.info(`[quoteUpdate] Soumission mise a jour : ${documentId}`);
+            ctx.body = { success: true, data: updated };
+        }
+        catch (err) {
+            strapi.log.error('[quoteUpdate] error:', (err === null || err === void 0 ? void 0 : err.message) || err);
+            return ctx.badRequest((err === null || err === void 0 ? void 0 : err.message) || 'Quote update failed');
+        }
+    },
+    // POST /orders/quote-create - Creer une soumission minimale
+    // Body: { customerName, customerEmail?, customerPhone?, items, subtotal?, total?, notes? }
+    // items: [{ description, quantity?, unitPrice? }]
+    // Pas de Stripe, pas d'Invoice, pas d'email. Juste un Order draft.
+    async quoteCreate(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const body = ctx.request.body;
+        const { customerName, customerEmail, customerPhone, companyName, items, notes, } = body || {};
+        let { subtotal, total } = body || {};
+        if (!customerName || !Array.isArray(items) || items.length === 0) {
+            return ctx.badRequest('customerName et items[] requis');
+        }
+        const toNum = (v) => {
+            const n = typeof v === 'string' ? parseFloat(v.replace(',', '.')) : Number(v);
+            return Number.isFinite(n) ? n : 0;
+        };
+        subtotal = toNum(subtotal);
+        total = toNum(total);
+        // Si subtotal pas fourni, on l'estime depuis les items
+        if (subtotal === 0) {
+            subtotal = items.reduce((acc, it) => {
+                const q = toNum(it.quantity) || 1;
+                const u = toNum(it.unitPrice) || 0;
+                return acc + q * u;
+            }, 0);
+            subtotal = Math.round(subtotal * 100) / 100;
+        }
+        if (total === 0)
+            total = subtotal;
+        try {
+            const order = await strapi.documents('api::order.order').create({
+                data: {
+                    customerName: String(customerName).trim(),
+                    customerEmail: ensureCustomerEmail(customerEmail, customerName),
+                    customerPhone: customerPhone ? String(customerPhone).trim() : undefined,
+                    companyName: companyName ? String(companyName).trim() : undefined,
+                    items,
+                    subtotal,
+                    total,
+                    currency: 'cad',
+                    status: 'draft',
+                    isManual: true,
+                    notes: notes ? String(notes) : undefined,
+                    designReady: true,
+                },
+            });
+            strapi.log.info(`[quoteCreate] Soumission creee : ${order.documentId} pour ${customerName}`);
+            ctx.body = { success: true, data: order };
+        }
+        catch (err) {
+            strapi.log.error('[quoteCreate] error:', (err === null || err === void 0 ? void 0 : err.message) || err);
+            return ctx.badRequest((err === null || err === void 0 ? void 0 : err.message) || 'Quote creation failed');
         }
     },
     // POST /orders/manual - Creer une Order manuelle + Invoice + Stripe Payment Link
@@ -1714,7 +2008,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                     status: prepaid ? 'paid' : 'pending',
                     customerName,
                     companyName: cleanCompanyName || null,
-                    customerEmail: customerEmail || null,
+                    customerEmail: ensureCustomerEmail(customerEmail, customerName),
                     customerPhone: customerPhone || null,
                     items,
                     subtotal: Math.round(subtotal * 100),
@@ -1733,99 +2027,44 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             created.orderDocId = order.documentId;
             // 3. Numero de facture sequentiel MM-AAAA-XXXX (meme logique que webhook)
             //
-            // FIX-UNIQUE-RACE (27 avril 2026) : retry loop pour resister aux race
-            // conditions du compteur. Le pattern findMany sort:desc + 1 N'EST PAS
-            // atomic - si 2 manualCreate tournent en parallele (admin double-click,
-            // 2 onglets, retry reseau), les 2 calculs voient le meme lastSeq et
-            // generent le MEME invoiceNumber -> 2e crash sur unique constraint.
-            // Le client recoit alors "This attribute must be unique" sans contexte.
+            // A6 (2026-05-13) : remplacement de la retry-loop par un appel atomique
+            // au helper nextInvoiceNumber() (cf. backend/src/utils/invoice-counter.ts).
+            // Le compteur centralise (table invoice_counters) garantit qu'aucun
+            // deux callers ne recoivent le meme numero, donc plus de collision
+            // UNIQUE possible -> plus besoin de retry. Si l'INSERT echoue pour
+            // une AUTRE raison (companyName unique orphelin, validation), on remonte
+            // l'erreur telle quelle comme avant.
             //
-            // Solution : on tente jusqu'a MAX_INVOICE_RETRIES fois, en bumpant le
-            // seq a chaque tentative. Au 1er essai on prend lastSeq+1, au 2e
-            // lastSeq+2, etc. On loggue chaque collision pour pouvoir auditer la
-            // frequence. 5 retries couvrent meme le pire cas realiste.
-            const year = new Date().getFullYear();
-            const prefix = `MM-${year}-`;
-            const MAX_INVOICE_RETRIES = 5;
             // FIX-LEGACY : si invoiceDate fourni (YYYY-MM-DD), on l'utilise pour le champ `date`
             // qui apparait sur la facture PDF. Sinon, date du jour.
             const resolvedInvoiceDate = invoiceDate
                 ? String(invoiceDate).slice(0, 10)
                 : new Date().toISOString().slice(0, 10);
-            let invoice = null;
-            let invoiceNumber = '';
-            let attempt = 0;
-            let lastInvoiceErr = null;
-            while (attempt < MAX_INVOICE_RETRIES) {
-                attempt++;
-                // Re-lire le compteur a CHAQUE tentative : si la 1ere a echoue parce
-                // qu'un autre handler a insere notre numero, son insert est maintenant
-                // visible et notre prochain calcul donnera lastSeq+1 frais.
-                const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
-                    filters: { invoiceNumber: { $startsWith: prefix } },
-                    sort: { invoiceNumber: 'desc' },
-                    limit: 1,
-                });
-                let seq = 1;
-                if (lastInvoice.length > 0 && lastInvoice[0].invoiceNumber) {
-                    const lastNum = lastInvoice[0].invoiceNumber.replace(prefix, '');
-                    seq = (parseInt(lastNum, 10) || 0) + 1;
-                }
-                // Si on est en retry (attempt > 1), on ajoute (attempt-1) pour s'eloigner
-                // du seq qui a deja collisione. Sans ce bump, on relit la meme valeur
-                // et on retombe sur le meme conflit.
-                const candidateSeq = seq + (attempt - 1);
-                invoiceNumber = `${prefix}${String(candidateSeq).padStart(4, '0')}`;
-                try {
-                    invoice = await strapi.documents('api::invoice.invoice').create({
-                        data: {
-                            invoiceNumber,
-                            date: resolvedInvoiceDate,
-                            customerName,
-                            companyName: cleanCompanyName || null,
-                            customerEmail: customerEmail || null,
-                            customerPhone: customerPhone || null,
-                            items,
-                            subtotal,
-                            tps,
-                            tvq,
-                            total,
-                            // FIX-PREPAID : invoice flip aussi a paid si commande deja reglee hors-ligne.
-                            status: prepaid ? 'paid' : 'draft',
-                            paymentStatus: prepaid ? 'paid' : 'pending',
-                            ...(prepaid ? { paidAt: new Date().toISOString() } : {}),
-                            lang,
-                            notes: composedNotes,
-                            order: { connect: [order.documentId] },
-                            client: clientDocId ? { connect: [clientDocId] } : undefined,
-                        },
-                    });
-                    // Succes : on tracke l'invoice et on sort de la boucle.
-                    created.invoiceDocId = invoice.documentId;
-                    break;
-                }
-                catch (invoiceErr) {
-                    lastInvoiceErr = invoiceErr;
-                    const parsed = parseUniqueViolation(invoiceErr);
-                    // Si c'est une collision sur invoiceNumber, on retry avec un seq bumpe.
-                    if (isUniqueViolation(invoiceErr) && (parsed.field === 'invoiceNumber' || parsed.field === null)) {
-                        strapi.log.warn(`[manualCreate] Collision invoiceNumber=${invoiceNumber} (tentative ${attempt}/${MAX_INVOICE_RETRIES}). `
-                            + `Detail: ${parsed.raw.slice(0, 200)}`);
-                        continue;
-                    }
-                    // Autre type d'erreur (companyName unique orphelin, validation, etc.) :
-                    // on remonte tout de suite, le retry n'aiderait pas.
-                    throw invoiceErr;
-                }
-            }
-            if (!invoice) {
-                // Toutes les tentatives ont echoue sur invoiceNumber. Tres rare en pratique
-                // (5 collisions consecutives = des dizaines de manualCreate paralleles).
-                const parsed = parseUniqueViolation(lastInvoiceErr);
-                strapi.log.error(`[manualCreate] ECHEC genese invoiceNumber apres ${MAX_INVOICE_RETRIES} tentatives. `
-                    + `Dernier essai: ${invoiceNumber}. Field=${parsed.field}, raw=${parsed.raw.slice(0, 200)}`);
-                throw lastInvoiceErr || new Error(`Impossible de generer un numero de facture unique apres ${MAX_INVOICE_RETRIES} tentatives.`);
-            }
+            const invoiceNumber = await (0, invoice_counter_1.nextInvoiceNumber)();
+            const invoice = await strapi.documents('api::invoice.invoice').create({
+                data: {
+                    invoiceNumber,
+                    date: resolvedInvoiceDate,
+                    customerName,
+                    companyName: cleanCompanyName || null,
+                    customerEmail: ensureCustomerEmail(customerEmail, customerName),
+                    customerPhone: customerPhone || null,
+                    items,
+                    subtotal,
+                    tps,
+                    tvq,
+                    total,
+                    // FIX-PREPAID : invoice flip aussi a paid si commande deja reglee hors-ligne.
+                    status: prepaid ? 'paid' : 'draft',
+                    paymentStatus: prepaid ? 'paid' : 'pending',
+                    ...(prepaid ? { paidAt: new Date().toISOString() } : {}),
+                    lang,
+                    notes: composedNotes,
+                    order: { connect: [order.documentId] },
+                    client: clientDocId ? { connect: [clientDocId] } : undefined,
+                },
+            });
+            created.invoiceDocId = invoice.documentId;
             // 5. Stripe Payment Link : line_items detailles (sous-total + TPS + TVQ + shipping)
             // pour que le client VOIE le breakdown des taxes sur la page de paiement Stripe.
             // Chaque ligne a son propre Product+Price Stripe avec un label parlant.
@@ -1941,7 +2180,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             (0, webhook_1.dispatchWebhook)('order.created', {
                 orderRef: orderRefManual,
                 documentId: order.documentId,
-                customerEmail: customerEmail || null,
+                customerEmail: ensureCustomerEmail(customerEmail, customerName),
                 customerName: customerName || null,
                 companyName: cleanCompanyName || null,
                 total: Math.round(total * 100),
@@ -2121,76 +2360,37 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             let invoice = invoices.length > 0 ? invoices[0] : null;
             // 4. Si pas d'invoice (cas tres rare : ancienne commande importee, ou
             //    creation interrompue avant l'invoice), on en cree une minimale.
-            //    FIX-STRIPE-UNIQUE (28 avril 2026) : retry loop identique a celui de
-            //    manualCreate pour resister aux race conditions du compteur. Sans ce
-            //    retry, l'erreur "invoiceNumber must be unique" pouvait remonter
-            //    jusqu'au frontend et etre confondue avec une erreur Stripe.
+            //
+            // A6 (2026-05-13) : retry-loop supprimee, le helper nextInvoiceNumber()
+            // (table invoice_counters) garantit l'unicite atomique du numero. Plus
+            // de collision possible meme sous concurrence. Les autres unique
+            // violations (companyName orphelin, etc.) remontent telles quelles.
             if (!invoice) {
-                const year = new Date().getFullYear();
-                const prefix = `MM-${year}-`;
-                const MAX_INVOICE_RETRIES = 5;
                 const subtotalDollars = (order.subtotal || 0) / 100;
                 const tpsDollars = (order.tps || 0) / 100;
                 const tvqDollars = (order.tvq || 0) / 100;
                 const totalDollars = (order.total || 0) / 100;
-                let attempt = 0;
-                let lastInvoiceErr = null;
-                while (attempt < MAX_INVOICE_RETRIES) {
-                    attempt++;
-                    // Re-lire le compteur a CHAQUE tentative : si la 1ere a echoue parce
-                    // qu'un autre handler a insere notre numero, son insert est maintenant
-                    // visible et notre prochain calcul donnera lastSeq+1 frais.
-                    const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
-                        filters: { invoiceNumber: { $startsWith: prefix } },
-                        sort: { invoiceNumber: 'desc' },
-                        limit: 1,
-                    });
-                    let seq = 1;
-                    if (lastInvoice.length > 0 && lastInvoice[0].invoiceNumber) {
-                        const lastNum = lastInvoice[0].invoiceNumber.replace(prefix, '');
-                        seq = (parseInt(lastNum, 10) || 0) + 1;
-                    }
-                    // Bump (attempt - 1) si on est en retry, pour s'eloigner d'un seq
-                    // deja collisione au tour precedent.
-                    const candidateSeq = seq + (attempt - 1);
-                    const fallbackInvoiceNumber = `${prefix}${String(candidateSeq).padStart(4, '0')}`;
-                    try {
-                        invoice = await strapi.documents('api::invoice.invoice').create({
-                            data: {
-                                invoiceNumber: fallbackInvoiceNumber,
-                                date: new Date().toISOString().slice(0, 10),
-                                customerName: order.customerName,
-                                companyName: order.companyName || null,
-                                customerEmail: order.customerEmail || null,
-                                customerPhone: order.customerPhone || null,
-                                items: order.items || [],
-                                subtotal: subtotalDollars,
-                                tps: tpsDollars,
-                                tvq: tvqDollars,
-                                total: totalDollars,
-                                status: 'draft',
-                                paymentStatus: 'pending',
-                                lang: 'fr',
-                                order: { connect: [documentId] },
-                            },
-                        });
-                        strapi.log.warn(`[regenerateStripeLink] Order ${documentId} avait pas d'invoice, cree ${fallbackInvoiceNumber} (tentative ${attempt})`);
-                        break;
-                    }
-                    catch (invErr) {
-                        lastInvoiceErr = invErr;
-                        const parsed = parseUniqueViolation(invErr);
-                        if (isUniqueViolation(invErr) && (parsed.field === 'invoiceNumber' || parsed.field === null)) {
-                            strapi.log.warn(`[regenerateStripeLink] Collision invoiceNumber=${fallbackInvoiceNumber} (tentative ${attempt}/${MAX_INVOICE_RETRIES}) - retry avec seq bumpe`);
-                            continue;
-                        }
-                        // Autre erreur (companyName orphan unique, validation, etc.) : on remonte.
-                        throw invErr;
-                    }
-                }
-                if (!invoice) {
-                    throw lastInvoiceErr || new Error(`Impossible de generer une invoice fallback apres ${MAX_INVOICE_RETRIES} tentatives.`);
-                }
+                const fallbackInvoiceNumber = await (0, invoice_counter_1.nextInvoiceNumber)();
+                invoice = await strapi.documents('api::invoice.invoice').create({
+                    data: {
+                        invoiceNumber: fallbackInvoiceNumber,
+                        date: new Date().toISOString().slice(0, 10),
+                        customerName: order.customerName,
+                        companyName: order.companyName || null,
+                        customerEmail: order.customerEmail || null,
+                        customerPhone: order.customerPhone || null,
+                        items: order.items || [],
+                        subtotal: subtotalDollars,
+                        tps: tpsDollars,
+                        tvq: tvqDollars,
+                        total: totalDollars,
+                        status: 'draft',
+                        paymentStatus: 'pending',
+                        lang: 'fr',
+                        order: { connect: [documentId] },
+                    },
+                });
+                strapi.log.warn(`[regenerateStripeLink] Order ${documentId} avait pas d'invoice, cree ${fallbackInvoiceNumber}`);
             }
             const invoiceNumber = invoice.invoiceNumber;
             // Conversions cents -> dollars (les amounts dans Order sont en cents)
@@ -3180,20 +3380,9 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                         client: clientDocId ? { connect: [clientDocId] } : undefined,
                     },
                 });
-                // Numero de facture sequentiel
+                // A6 (2026-05-13) : generation atomique via invoice_counters.
                 const year = new Date(data.invoiceDate).getFullYear();
-                const prefix = `MM-${year}-`;
-                const lastInvoice = await strapi.documents('api::invoice.invoice').findMany({
-                    filters: { invoiceNumber: { $startsWith: prefix } },
-                    sort: { invoiceNumber: 'desc' },
-                    limit: 1,
-                });
-                let seq = 1;
-                if (lastInvoice.length > 0 && lastInvoice[0].invoiceNumber) {
-                    const lastNum = lastInvoice[0].invoiceNumber.replace(prefix, '');
-                    seq = (parseInt(lastNum, 10) || 0) + 1;
-                }
-                const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+                const invoiceNumber = await (0, invoice_counter_1.nextInvoiceNumber)(year);
                 // Create invoice
                 const invoice = await strapi.documents('api::invoice.invoice').create({
                     data: {
@@ -3407,6 +3596,18 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     },
     // GET /orders/by-payment-intent/:paymentIntentId - Recupere infos minimales d'une commande pour CheckoutSuccess
     async getByPaymentIntent(ctx) {
+        var _a;
+        // SEC-A2 (2026-05-13) : route precedemment publique -> connaitre un
+        // pi_xxx (leak via screenshot/log) donnait acces aux PII. On exige
+        // maintenant DEUX voies d'autorisation possibles :
+        //   (a) Le PaymentIntent est FRESH (cree il y a moins de 30 min via
+        //       Stripe API, status succeeded/processing/requires_capture).
+        //       Cas legitime : redirect post-checkout pour guest (pas encore
+        //       de compte) sur la page CheckoutSuccess.jsx.
+        //   (b) Le caller est authentifie (JWT Supabase) ET soit admin, soit
+        //       proprietaire de la commande (email ou userId match).
+        //       Cas legitime : Account portal qui re-fetche un ancien PI.
+        // Sans aucune de ces voies, on retourne 401.
         const { paymentIntentId } = ctx.params;
         if (!paymentIntentId)
             return ctx.badRequest('paymentIntentId required');
@@ -3416,6 +3617,63 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             });
             if (!order)
                 return ctx.notFound('Order not found');
+            let authorized = false;
+            // Path (a) : freshness via Stripe API
+            try {
+                const stripe = getStripe();
+                const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+                const okStatus = pi.status === 'succeeded' || pi.status === 'processing' || pi.status === 'requires_capture';
+                const ageMs = Date.now() - (pi.created * 1000);
+                const FRESH_WINDOW_MS = 30 * 60 * 1000; // 30 min
+                if (okStatus && ageMs >= 0 && ageMs <= FRESH_WINDOW_MS) {
+                    authorized = true;
+                }
+            }
+            catch (stripeErr) {
+                strapi.log.warn(`[getByPaymentIntent] Stripe lookup failed for ${paymentIntentId}: ${(stripeErr === null || stripeErr === void 0 ? void 0 : stripeErr.message) || stripeErr}`);
+            }
+            // Path (b) : JWT auth + ownership (verification INLINE pour ne pas
+            // emettre un 401 premature - on a deja la freshness comme 2e voie).
+            // Reuse de la meme logique que requireUserAuth (auth.ts) mais sans
+            // l'effet de bord 401 quand le header est absent ou le token expire.
+            if (!authorized) {
+                const authHeader = String(ctx.request.headers['authorization'] || '').trim();
+                if (authHeader) {
+                    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+                    try {
+                        const supabaseUrl = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
+                        const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
+                        if (supabaseUrl && supabaseKey && token) {
+                            const { createClient } = require('@supabase/supabase-js');
+                            const supabase = createClient(supabaseUrl, supabaseKey);
+                            const { data, error } = await supabase.auth.getUser(token);
+                            if (!error && ((_a = data === null || data === void 0 ? void 0 : data.user) === null || _a === void 0 ? void 0 : _a.email)) {
+                                const jwtEmail = data.user.email.toLowerCase();
+                                const jwtUserId = data.user.id;
+                                const adminEmails = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '')
+                                    .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+                                if (adminEmails.includes(jwtEmail)) {
+                                    authorized = true;
+                                }
+                                else if (jwtEmail === String(order.customerEmail || '').toLowerCase()) {
+                                    authorized = true;
+                                }
+                                else if (jwtUserId && order.supabaseUserId && jwtUserId === order.supabaseUserId) {
+                                    authorized = true;
+                                }
+                            }
+                        }
+                    }
+                    catch (_authErr) {
+                        // silencieux : 401 emis ci-dessous si rien n'a autorise
+                    }
+                }
+            }
+            if (!authorized) {
+                ctx.status = 401;
+                ctx.body = { error: { status: 401, name: 'Unauthorized', message: 'Authentication required or PaymentIntent stale' } };
+                return;
+            }
             // Retourner SEULEMENT les infos non-sensibles necessaires au signup
             ctx.body = {
                 customerName: order.customerName || '',
@@ -3433,9 +3691,36 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
     },
     // POST /orders/link-by-email - Lier les guest orders au nouveau compte par email match
     async linkByEmail(ctx) {
+        // SEC-A3 (2026-05-13) : route precedemment publique -> account hijacking.
+        // Un attaquant qui creait un compte Supabase pouvait envoyer
+        // `{email: "victime@x.com", supabaseUserId: "<son_id>"}` et s'approprier
+        // toutes les guest orders de la victime (visibles dans son portail).
+        // Correctif : on exige un JWT Supabase valide ET on impose que :
+        //   - `email` du body == userEmail du JWT
+        //   - `supabaseUserId` du body == userId du JWT
+        // -> impossible de lier des orders a un compte qui n'est pas le sien.
+        // Les admins (isAdmin) bypassent ce check pour les operations support.
+        if (!(await (0, auth_1.requireUserAuth)(ctx)))
+            return;
+        const user = ctx.state.user;
         const { email, supabaseUserId } = ctx.request.body;
         if (!email || !supabaseUserId)
             return ctx.badRequest('email and supabaseUserId required');
+        if (!user.isAdmin) {
+            const requestedEmail = String(email).toLowerCase();
+            const jwtEmail = String(user.userEmail || '').toLowerCase();
+            const jwtUserId = String(user.userId || '');
+            if (requestedEmail !== jwtEmail) {
+                ctx.status = 403;
+                ctx.body = { error: { status: 403, name: 'Forbidden', message: 'email does not match authenticated user' } };
+                return;
+            }
+            if (String(supabaseUserId) !== jwtUserId) {
+                ctx.status = 403;
+                ctx.body = { error: { status: 403, name: 'Forbidden', message: 'supabaseUserId does not match authenticated user' } };
+                return;
+            }
+        }
         try {
             const orders = await strapi.documents('api::order.order').findMany({
                 filters: {
@@ -3527,20 +3812,10 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             });
             // Aussi envoyer la confirmation au client
             try {
-                // Generer invoiceNumber si manquant
+                // A6 (2026-05-13) : generation atomique via invoice_counters
+                // si l'order n'a pas encore de numero.
                 if (!order.invoiceNumber) {
-                    const year = new Date().getFullYear();
-                    const prefix = `MM-${year}-`;
-                    const existingOrders = await strapi.documents('api::order.order').findMany({
-                        filters: { invoiceNumber: { $startsWith: prefix } },
-                        sort: { invoiceNumber: 'desc' },
-                        limit: 1,
-                    });
-                    let seq = 1;
-                    if (existingOrders.length > 0 && existingOrders[0].invoiceNumber) {
-                        seq = (parseInt(existingOrders[0].invoiceNumber.replace(prefix, ''), 10) || 0) + 1;
-                    }
-                    const invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+                    const invoiceNumber = await (0, invoice_counter_1.nextInvoiceNumber)();
                     await strapi.documents('api::order.order').update({
                         documentId: order.documentId,
                         data: { invoiceNumber },
@@ -3874,6 +4149,7 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
     },
     async updateStatus(ctx) {
+        var _a, _b, _c;
         if (!(await (0, auth_1.requireAdminAuth)(ctx)))
             return;
         const { documentId } = ctx.params;
@@ -3901,6 +4177,54 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (!order) {
             return ctx.notFound('Commande introuvable');
         }
+        // SEC-A5 (2026-05-13) : machine d'etat stricte. Avant ce fix, admin
+        // pouvait passer 'refunded' -> 'paid', 'delivered' -> 'draft', etc.,
+        // toute combinaison etait acceptee. Risque d'abus (rejouer un refund)
+        // et d'erreur humaine silencieuse (degrader une commande livree).
+        //
+        // Transitions autorisees (alignees sur le STATUS_FLOW de AdminOrders.jsx,
+        // avec ajout de 'pending' depuis draft pour la fonction "Convertir en
+        // commande" sur les quotes, et 'refunded' depuis tout post-paid pour
+        // permettre les remboursements a n'importe quel stade).
+        //
+        // Le webhook Stripe (payment_intent.succeeded -> 'paid') NE PASSE PAS
+        // par updateStatus : il appelle strapi.documents('order').update()
+        // directement. Donc cette state machine n'affecte pas le flux webhook.
+        //
+        // Override admin : body.force === true bypass la machine d'etat avec
+        // un log warn pour audit. A reserver aux corrections exceptionnelles
+        // (ex: erreur de saisie a corriger, support qui doit annuler un statut
+        // applique par erreur).
+        const STATUS_TRANSITIONS = {
+            draft: ['pending', 'paid', 'cancelled'],
+            pending: ['paid', 'cancelled'],
+            paid: ['processing', 'ready', 'shipped', 'cancelled', 'refunded'],
+            processing: ['ready', 'shipped', 'cancelled', 'refunded'],
+            ready: ['delivered', 'shipped', 'refunded'],
+            shipped: ['delivered', 'refunded'],
+            delivered: [], // etat final
+            cancelled: [], // etat final
+            refunded: [], // etat final
+        };
+        const currentStatus = String(order.status || 'draft');
+        const isNoOp = currentStatus === newStatus;
+        const allowedNext = STATUS_TRANSITIONS[currentStatus] || [];
+        const isAllowed = allowedNext.includes(newStatus);
+        const isForced = body.force === true;
+        if (!isNoOp && !isAllowed && !isForced) {
+            const allowedList = allowedNext.length > 0 ? allowedNext.join(', ') : '(etat final, aucune transition)';
+            return ctx.badRequest(`Transition de statut invalide : impossible de passer de '${currentStatus}' a '${newStatus}'. `
+                + `Transitions autorisees depuis '${currentStatus}' : ${allowedList}. `
+                + `Si correction admin volontaire, ajouter { "force": true } au body.`);
+        }
+        if (isForced && !isNoOp && !isAllowed) {
+            const adminMethod = ((_a = ctx.state) === null || _a === void 0 ? void 0 : _a.adminAuthMethod)
+                || ((_c = (_b = ctx.state) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.authMethod)
+                || 'unknown';
+            strapi.log.warn(`[updateStatus] FORCE override : order ${order.documentId} transition manuelle `
+                + `'${currentStatus}' -> '${newStatus}' (normalement interdite par la state machine). `
+                + `Auth method: ${adminMethod}. invoiceNumber=${order.invoiceNumber || 'null'}.`);
+        }
         // Compute updateData: status + optional invoice number (manual or auto-generated)
         const updateData = { status: newStatus };
         let assignedInvoice = null;
@@ -3909,21 +4233,9 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             assignedInvoice = invoiceNumber.trim();
         }
         else if (autoInvoice && newStatus === 'paid' && !order.invoiceNumber) {
-            // Auto-generate next sequential MM-YYYY-NNNN
+            // A6 (2026-05-13) : generation atomique via invoice_counters.
             try {
-                const year = new Date().getFullYear();
-                const prefix = `MM-${year}-`;
-                const existing = await strapi.documents('api::order.order').findMany({
-                    filters: { invoiceNumber: { $startsWith: prefix } },
-                    sort: { invoiceNumber: 'desc' },
-                    limit: 1,
-                });
-                let seq = 1;
-                if (existing.length > 0 && existing[0].invoiceNumber) {
-                    const lastNum = existing[0].invoiceNumber.replace(prefix, '');
-                    seq = (parseInt(lastNum, 10) || 0) + 1;
-                }
-                assignedInvoice = `${prefix}${String(seq).padStart(4, '0')}`;
+                assignedInvoice = await (0, invoice_counter_1.nextInvoiceNumber)();
                 updateData.invoiceNumber = assignedInvoice;
             }
             catch (e) {
@@ -4373,6 +4685,122 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             ctx.throw(500, (err === null || err === void 0 ? void 0 : err.message) || 'Erreur de mise a jour');
         }
     },
+    /**
+     * PUT /orders/:documentId/items
+     *
+     * ITEMS-EDIT-2026-05-14 : edition des lignes d'une commande deja creee.
+     * Permet de :
+     *  - ajouter/supprimer des lignes (produit ou service)
+     *  - modifier description, quantite, lineTotal, isService par ligne
+     *  - recalculer automatiquement subtotal, TPS (5%), TVQ (9.975%), total
+     *
+     * Body : {
+     *   items: Array<{
+     *     description: string (required, non-empty)
+     *     quantity: number (>= 1)
+     *     unitPrice?: number (optionnel, calcule comme lineTotal/quantity si absent)
+     *     lineTotal: number (>= 0)
+     *     isService?: boolean (true = pas de decrement inventaire)
+     *     // Autres champs pass-through (productName, size, finish, image, etc.)
+     *     // pour conserver les details des items e-commerce existants.
+     *   }>,
+     *   shipping?: number (en dollars, optionnel - 0 si absent)
+     * }
+     *
+     * Note : ne regenere PAS le Stripe Payment Link (volontaire - l'admin
+     * doit le faire explicitement via /regenerate-stripe-link s'il a modifie
+     * le total d'une commande pas encore payee). Ne touche pas a l'invoice
+     * non plus - juste l'order. Pour resynchroniser l'invoice, regenere
+     * le PDF cote client (deja base sur order.items).
+     */
+    async updateItems(ctx) {
+        if (!(await (0, auth_1.requireAdminAuth)(ctx)))
+            return;
+        const { documentId } = ctx.params;
+        const body = ctx.request.body;
+        if (!Array.isArray(body === null || body === void 0 ? void 0 : body.items) || body.items.length === 0) {
+            return ctx.badRequest('items[] requis et non vide');
+        }
+        const toNum = (v) => {
+            const n = typeof v === 'string' ? parseFloat(v.replace(',', '.')) : Number(v);
+            return Number.isFinite(n) ? n : 0;
+        };
+        // Normalise + valide chaque item. On preserve les champs pass-through
+        // (productName, size, finish, image, uploadedFiles, etc.) pour ne pas
+        // casser le rendu des commandes e-commerce existantes.
+        const items = [];
+        for (const raw of body.items) {
+            const description = String((raw === null || raw === void 0 ? void 0 : raw.description) || (raw === null || raw === void 0 ? void 0 : raw.productName) || '').trim();
+            if (!description)
+                continue; // skip lignes vides
+            const rawQty = Number(raw === null || raw === void 0 ? void 0 : raw.quantity);
+            const quantity = Number.isFinite(rawQty) && rawQty >= 1 ? Math.floor(rawQty) : 1;
+            const lineTotal = toNum(raw === null || raw === void 0 ? void 0 : raw.lineTotal);
+            if (lineTotal < 0) {
+                return ctx.badRequest(`lineTotal negatif refuse pour "${description}"`);
+            }
+            const unitPrice = (raw === null || raw === void 0 ? void 0 : raw.unitPrice) != null
+                ? toNum(raw.unitPrice)
+                : (quantity > 0 ? Math.round((lineTotal / quantity) * 100) / 100 : lineTotal);
+            // Pass-through des autres champs (preserve e-commerce metadata)
+            const preserved = {};
+            const passthroughKeys = ['productName', 'size', 'finish', 'shape', 'image',
+                'uploadedFiles', 'notes', 'sku', 'slug', 'packDetails', 'packComposition'];
+            for (const k of passthroughKeys) {
+                if (raw[k] !== undefined)
+                    preserved[k] = raw[k];
+            }
+            items.push({
+                ...preserved,
+                description,
+                quantity,
+                unitPrice,
+                lineTotal,
+                totalPrice: lineTotal, // alias pour rendu legacy
+                isService: (raw === null || raw === void 0 ? void 0 : raw.isService) === true,
+            });
+        }
+        if (items.length === 0) {
+            return ctx.badRequest('aucune ligne valide (description requise sur chaque ligne)');
+        }
+        const subtotalDollars = items.reduce((s, it) => s + it.lineTotal, 0);
+        const shippingDollars = toNum(body === null || body === void 0 ? void 0 : body.shipping);
+        // Taxes QC standard - recalculees sur le subtotal post-edit.
+        const tpsDollars = Math.round(subtotalDollars * 0.05 * 100) / 100;
+        const tvqDollars = Math.round(subtotalDollars * 0.09975 * 100) / 100;
+        const totalDollars = Math.round((subtotalDollars + shippingDollars + tpsDollars + tvqDollars) * 100) / 100;
+        if (totalDollars <= 0) {
+            return ctx.badRequest('Total recalcule 0 ou negatif - verifier les lignes');
+        }
+        const order = await strapi.documents('api::order.order').findFirst({
+            filters: { documentId },
+        });
+        if (!order)
+            return ctx.notFound('Commande introuvable');
+        try {
+            // Order schema stocke subtotal/total/shipping/tps/tvq en CENTS (integer).
+            const updated = await strapi.documents('api::order.order').update({
+                documentId,
+                data: {
+                    items,
+                    subtotal: Math.round(subtotalDollars * 100),
+                    shipping: Math.round(shippingDollars * 100),
+                    tps: Math.round(tpsDollars * 100),
+                    tvq: Math.round(tvqDollars * 100),
+                    total: Math.round(totalDollars * 100),
+                },
+            });
+            strapi.log.info(`[updateItems] Order ${documentId} : ${items.length} lignes, ` +
+                `subtotal=${subtotalDollars.toFixed(2)}$ TPS=${tpsDollars.toFixed(2)}$ ` +
+                `TVQ=${tvqDollars.toFixed(2)}$ shipping=${shippingDollars.toFixed(2)}$ total=${totalDollars.toFixed(2)}$. ` +
+                `Status=${order.status}, paid=${!!order.paidAt}`);
+            ctx.body = { data: updated };
+        }
+        catch (err) {
+            strapi.log.error(`[updateItems] Erreur sur ${documentId}: ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+            ctx.throw(500, (err === null || err === void 0 ? void 0 : err.message) || 'Erreur de mise a jour des items');
+        }
+    },
     // GET /orders/:documentId/tracking - Recupere le statut de livraison via le provider
     // (mock intelligent par defaut, branchement futur 17Track/Shippo via TRACKING_API_KEY).
     // Retourne aussi un `suggestStatusChange` si l'etat propose un changement automatique
@@ -4652,9 +5080,13 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 const printRate = Number.isFinite(parseFloat(artist.printCommissionRate))
                     ? parseFloat(artist.printCommissionRate)
                     : (Number.isFinite(legacyRate) ? legacyRate : 0.5);
-                const stickerRate = Number.isFinite(parseFloat(artist.stickerCommissionRate))
-                    ? parseFloat(artist.stickerCommissionRate)
-                    : (Number.isFinite(legacyRate) ? legacyRate : 0.15);
+                // STICKER-COMMISSION-ZERO (juin 2026) : commission sticker forcee a 0
+                // pour TOUS les artistes. Les stickers sont un produit de distribution
+                // (revenu artiste = achat au prix grille puis revente), sans commission
+                // magasin selon le contrat. On ignore stickerCommissionRate ET
+                // commissionRate -> robuste, 0 pour tous. Le champ Strapi reste en base
+                // mais n'est plus applique. Les PRINTS gardent printRate (50/50) inchange.
+                const stickerRate = 0;
                 const isSticker = pid.startsWith(`artist-sticker-pack-${matchedSlug}-`);
                 const rate = isSticker ? stickerRate : printRate;
                 const salePrice = item.totalPrice || item.unitPrice || 0;
@@ -5254,22 +5686,10 @@ ${allUrls
                     continue;
                 }
                 // ---- Same logic as the webhook: generate invoice + update order + emails ----
+                // A6 (2026-05-13) : generation atomique via invoice_counters.
                 let invoiceNumber = '';
                 try {
-                    const now = new Date();
-                    const year = now.getFullYear();
-                    const prefix = `MM-${year}-`;
-                    const existingOrders = await strapi.documents('api::order.order').findMany({
-                        filters: { invoiceNumber: { $startsWith: prefix } },
-                        sort: { invoiceNumber: 'desc' },
-                        limit: 1,
-                    });
-                    let seq = 1;
-                    if (existingOrders.length > 0 && existingOrders[0].invoiceNumber) {
-                        const lastNum = existingOrders[0].invoiceNumber.replace(prefix, '');
-                        seq = (parseInt(lastNum, 10) || 0) + 1;
-                    }
-                    invoiceNumber = `${prefix}${String(seq).padStart(4, '0')}`;
+                    invoiceNumber = await (0, invoice_counter_1.nextInvoiceNumber)();
                 }
                 catch (invoiceErr) {
                     strapi.log.warn('Erreur generation numero facture (reconcile):', invoiceErr);

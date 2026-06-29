@@ -5385,9 +5385,13 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         const printRate = Number.isFinite(parseFloat(artist.printCommissionRate))
           ? parseFloat(artist.printCommissionRate)
           : (Number.isFinite(legacyRate) ? legacyRate : 0.5);
-        const stickerRate = Number.isFinite(parseFloat(artist.stickerCommissionRate))
-          ? parseFloat(artist.stickerCommissionRate)
-          : (Number.isFinite(legacyRate) ? legacyRate : 0.15);
+        // STICKER-COMMISSION-ZERO (juin 2026) : commission sticker forcee a 0
+        // pour TOUS les artistes. Les stickers sont un produit de distribution
+        // (revenu artiste = achat au prix grille puis revente), sans commission
+        // magasin selon le contrat. On ignore stickerCommissionRate ET
+        // commissionRate -> robuste, 0 pour tous. Le champ Strapi reste en base
+        // mais n'est plus applique. Les PRINTS gardent printRate (50/50) inchange.
+        const stickerRate = 0
         const isSticker = pid.startsWith(`artist-sticker-pack-${matchedSlug}-`);
         const rate = isSticker ? stickerRate : printRate;
 
