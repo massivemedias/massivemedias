@@ -30,8 +30,8 @@
 // rejette des commandes legitimes via validation server-side).
 export const STICKER_GRID = Object.freeze({
   standard: Object.freeze({
-    matte: Object.freeze({ 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 }),
-    fx:    Object.freeze({ 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 }),
+    matte: Object.freeze({ 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 }),
+    fx:    Object.freeze({ 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 }),
   }),
   medium: Object.freeze({
     matte: Object.freeze({ 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 }),
@@ -169,13 +169,13 @@ export function lookupStickerPrice(finish, qty, size) {
  *
  * Strategie : interpolation LINEAIRE du unit price entre les 2 paliers qui
  * encadrent la quantite. Exemples (grille standard matte) :
- *   25  -> 1.20$/u (palier exact)
- *   50  -> 0.95$/u (palier exact)
- *   60  -> entre 0.95 et 0.85 -> interpole = 0.93$/u
- *   100 -> 0.85$/u (palier exact)
- *   150 -> entre 0.85 et 0.80 -> interpole = 0.83$/u
- *   240 -> proche de 250 -> interpole = 0.80$/u
- *   500 -> 0.75$/u (palier exact)
+ *   25  -> 1.00$/u (palier exact)
+ *   50  -> 0.90$/u (palier exact)
+ *   60  -> entre 0.90 et 0.80 -> interpole = 0.88$/u
+ *   100 -> 0.80$/u (palier exact)
+ *   150 -> entre 0.80 et 0.75 -> interpole = 0.78$/u
+ *   240 -> proche de 250 -> interpole = 0.75$/u
+ *   500 -> 0.70$/u (palier exact)
  *
  * Au-dela de 500 : on extrapole pas (risque mauvais pricing) - on utilise
  * le rate du palier 500. En dessous de 25 : null (minimum production).

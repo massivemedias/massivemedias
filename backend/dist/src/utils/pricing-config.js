@@ -51,8 +51,8 @@ exports.FRAME_PRICES_FALLBACK = {
 // Memes ratios appliques aux finis FX pour proportionnalite.
 exports.STICKER_GRID = {
     standard: {
-        matte: { 25: 30, 50: 47.50, 100: 85, 250: 200, 500: 375 },
-        fx: { 25: 35, 50: 57.50, 100: 100, 250: 225, 500: 425 },
+        matte: { 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 },
+        fx: { 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 },
     },
     medium: {
         matte: { 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 },
