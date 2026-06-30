@@ -1,4 +1,5 @@
 import { Palette, Shield, Sparkles, Truck } from 'lucide-react';
+import { isHiddenMerchPath } from '../config/merchStatus';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorDesign from '../components/configurators/ConfiguratorDesign';
 import { useProduct } from '../hooks/useProducts';
@@ -26,7 +27,7 @@ function BoutiqueDesign() {
     { to: '/boutique/stickers', fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' },
     { to: '/boutique/fine-art', fr: 'Impression Fine Art', en: 'Fine Art Print', es: 'Impresi\u00f3n Fine Art' },
     { to: '/boutique/merch', fr: 'Merch & Textile', en: 'Merch & Textile', es: 'Merch y Textil' },
-  ];
+  ].filter((l) => !isHiddenMerchPath(l.to));
 
   return (
     <BoutiqueProductLayout

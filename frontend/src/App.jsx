@@ -7,6 +7,7 @@ import { useLang } from './i18n/LanguageContext';
 import ScrollToTop from './components/ScrollToTop';
 import ScrollToTopButton from './components/ScrollToTopButton';
 import BackendHealthBanner from './components/BackendHealthBanner';
+import { MERCH_HIDDEN } from './config/merchStatus';
 import './index.css';
 
 // Retry wrapper for lazy imports - retries up to 3 times on chunk load failure
@@ -283,11 +284,11 @@ function App() {
             <Route path="/boutique" element={<Shop />} />
             <Route path="/boutique/stickers" element={<Navigate to="/services/stickers" replace />} />
             <Route path="/boutique/fine-art" element={<ServiceFineArt />} />
-            <Route path="/boutique/sublimation" element={<ServiceMerch />} />
+            <Route path="/boutique/sublimation" element={MERCH_HIDDEN ? <Navigate to="/" replace /> : <ServiceMerch />} />
             <Route path="/boutique/flyers" element={<Navigate to="/boutique/fine-art" replace />} />
             <Route path="/boutique/design" element={<ServiceDesign />} />
             <Route path="/boutique/web" element={<ServiceWeb />} />
-            <Route path="/boutique/merch/:type" element={<MerchDetail />} />
+            <Route path="/boutique/merch/:type" element={MERCH_HIDDEN ? <Navigate to="/" replace /> : <MerchDetail />} />
             <Route path="/boutique/merch-tshirt" element={<Navigate to="/boutique/merch/tshirt" replace />} />
             <Route path="/panier" element={<Panier />} />
 

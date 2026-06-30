@@ -10,6 +10,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import getServicesData from '../data/getServicesData';
 import { useServicePages } from '../hooks/useServicePages';
+import { MERCH_HIDDEN, HIDDEN_SERVICE_SLUGS } from '../config/merchStatus';
 import { bl, mediaUrl } from '../utils/cms';
 import { getIcon } from '../utils/iconMap';
 import QuoteForm from '../components/QuoteForm';
@@ -400,7 +401,9 @@ function ServiceDetail() {
     ...(service?.gallery || []),
   ], [service?.gallery]);
 
-  if (!service) {
+  // MERCH_HIDDEN : la page /services/merch existe toujours mais l'acces direct
+  // redirige vers l'accueil tant que le flag est actif.
+  if (!service || (MERCH_HIDDEN && slug === 'merch')) {
     return <Navigate to="/" replace />;
   }
 
@@ -445,13 +448,11 @@ function ServiceDetail() {
 
   // Build ordered slug list from CMS (sorted) or fallback data
   const allServices = useMemo(() => {
-    if (servicePages?.length) {
-      return servicePages.map(sp => ({
-        slug: sp.slug,
-        title: bl(sp, 'title', lang),
-      }));
-    }
-    return Object.values(fallbackData).map(s => ({ slug: s.slug, title: s.title }));
+    const list = servicePages?.length
+      ? servicePages.map(sp => ({ slug: sp.slug, title: bl(sp, 'title', lang) }))
+      : Object.values(fallbackData).map(s => ({ slug: s.slug, title: s.title }))
+    // MERCH_HIDDEN : exclut merch de la navigation prev/next entre services
+    return list.filter(s => !HIDDEN_SERVICE_SLUGS.includes(s.slug))
   }, [servicePages, fallbackData, lang]);
 
   const currentIndex = allServices.findIndex(s => s.slug === slug);

@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { MERCH_HIDDEN } from '../config/merchStatus';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, MessageSquare, Camera, Store, LayoutGrid, Grid3x3, List, ChevronDown, Paintbrush, Aperture } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -515,12 +516,16 @@ function Artistes() {
                     <Link to="/services/stickers" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
                       {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
                     </Link>
-                    <Link to="/boutique/merch/tshirt" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
-                      {tx({ fr: 'Merch', en: 'Merch', es: 'Merch' })}
-                    </Link>
-                    <Link to="/boutique/sublimation" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
-                      {tx({ fr: 'Sublimation', en: 'Sublimation', es: 'Sublimación' })}
-                    </Link>
+                    {!MERCH_HIDDEN && (
+                      <>
+                        <Link to="/boutique/merch/tshirt" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
+                          {tx({ fr: 'Merch', en: 'Merch', es: 'Merch' })}
+                        </Link>
+                        <Link to="/boutique/sublimation" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
+                          {tx({ fr: 'Sublimation', en: 'Sublimation', es: 'Sublimación' })}
+                        </Link>
+                      </>
+                    )}
                   </div>
 
                   <Link to="/boutique" className="btn-primary inline-flex items-center">

@@ -56,3 +56,35 @@ export function blockIfMerchPaused(tx) {
   }
   return true;
 }
+
+/**
+ * MERCH_HIDDEN (distinct de MERCH_PAUSED) : quand `true`, TOUTE la section
+ * merch est MASQUEE, pas seulement mise en pause :
+ *   - les liens merch disparaissent de la nav, du footer, de la home et des
+ *     pilules cross-sell (rien n'est supprime, juste delie)
+ *   - l'acces direct aux routes /services/merch, /boutique/sublimation et
+ *     /boutique/merch/* redirige vers l'accueil
+ *
+ * Pour TOUT REAFFICHER (page + liens + routes) : repasser MERCH_HIDDEN a
+ * `false`. C'est la seule action necessaire, rien n'a ete detruit. N'affecte
+ * ni MERCH_PAUSED ni la logique panier/banniere existante.
+ */
+export const MERCH_HIDDEN = true
+
+// Slugs de service caches de la nav (Header/Footer) et de la navigation
+// prev/next de ServiceDetail. Vide quand MERCH_HIDDEN=false.
+export const HIDDEN_SERVICE_SLUGS = MERCH_HIDDEN ? ['merch'] : []
+
+// Routes de la section merch. Sert a filtrer les liens cross-sell + la carte
+// service de la home, et a rediriger l'acces direct.
+const MERCH_PATHS = ['/services/merch', '/boutique/sublimation', '/boutique/merch']
+
+/**
+ * Retourne true si `path` pointe vers une surface merch ET que MERCH_HIDDEN
+ * est actif. Quand MERCH_HIDDEN=false, retourne toujours false (aucun filtre).
+ */
+export function isHiddenMerchPath(path) {
+  if (!MERCH_HIDDEN) return false
+  const p = String(path || '')
+  return MERCH_PATHS.some((m) => p === m || p.startsWith(m + '/'))
+}

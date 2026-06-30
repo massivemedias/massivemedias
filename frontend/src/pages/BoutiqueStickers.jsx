@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { isHiddenMerchPath } from '../config/merchStatus';
 import { Scissors, Shield, Sparkles, Truck, Droplets, Tag, Gift, Music, Package } from 'lucide-react';
 import BoutiqueProductLayout from '../components/BoutiqueProductLayout';
 import ConfiguratorStickers from '../components/configurators/ConfiguratorStickers';
@@ -59,7 +60,7 @@ function BoutiqueStickers() {
     { to: '/boutique/design', fr: 'Design', en: 'Design', es: 'Dise\u00f1o' },
     { to: '/boutique/fine-art', fr: 'Prints', en: 'Prints', es: 'Prints' },
     { to: '/boutique/sublimation', fr: 'Merch', en: 'Merch', es: 'Merch' },
-  ];
+  ].filter((l) => !isHiddenMerchPath(l.to));
 
   return (
     <BoutiqueProductLayout

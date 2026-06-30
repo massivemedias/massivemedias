@@ -5,6 +5,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { bl } from '../utils/cms';
 import { GOOGLE_REVIEW_LINK } from '../utils/socialLinks';
+import { HIDDEN_SERVICE_SLUGS } from '../config/merchStatus';
 
 function Footer() {
   const { t, tx, lang } = useLang();
@@ -85,7 +86,7 @@ function Footer() {
           <div className="basis-full sm:basis-0 sm:flex-1 sm:min-w-[140px]">
             <h4 className="font-heading font-bold mb-4 footer-heading">{t('footer.servicesTitle')}</h4>
             <ul className="space-y-2 footer-links">
-              {services.map((service) => (
+              {services.filter((service) => !HIDDEN_SERVICE_SLUGS.includes(service.slug)).map((service) => (
                 <li key={service.slug}>
                   <Link to={`/services/${service.slug}`} className="hover:text-accent transition-colors duration-300">
                     {service.name}
