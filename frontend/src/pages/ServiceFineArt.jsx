@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isHiddenMerchPath } from '../config/merchStatus';
 import { Printer, Shield, Sparkles, Truck, Frame, Gift, Building2, Camera, FileText, Music, Users, Briefcase, Megaphone } from 'lucide-react';
 import ProductLayout from '../components/ProductLayout';
 import ConfiguratorFineArt from '../components/configurators/ConfiguratorFineArt';
@@ -44,7 +45,7 @@ function ServiceFineArt() {
     { to: '/services/stickers', fr: 'Stickers Custom', en: 'Custom Stickers', es: 'Stickers Personalizados' },
     { to: '/boutique/design', fr: 'Design', en: 'Design', es: 'Dise\u00f1o' },
     { to: '/boutique/sublimation', fr: 'Sublimation & Merch', en: 'Sublimation & Merch', es: 'Sublimaci\u00f3n y Merch' },
-  ];
+  ].filter((l) => !isHiddenMerchPath(l.to));
 
   const allImages = cmsImages || [...fineArtImages, ...flyerImages];
 

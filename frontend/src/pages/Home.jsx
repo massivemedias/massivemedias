@@ -25,6 +25,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { bl, mediaUrl } from '../utils/cms';
 import { getIcon } from '../utils/iconMap';
+import { isHiddenMerchPath } from '../config/merchStatus';
 import api from '../services/api';
 import { WORKSHOP_ADDRESS_FULL } from '../constants/workshop';
 import ClosureNotice from '../components/ClosureNotice';
@@ -126,8 +127,10 @@ function Home() {
         link: fallbackServiceLinks[i],
         image: fallbackServiceImages[i],
       }));
-  const allServiceCards = resolvedServiceCards.length > 0
-    ? [...resolvedServiceCards, boutiqueCard]
+  // MERCH_HIDDEN : retire la carte service merch (lien /services/merch)
+  const visibleServiceCards = resolvedServiceCards.filter((c) => !isHiddenMerchPath(c.link))
+  const allServiceCards = visibleServiceCards.length > 0
+    ? [...visibleServiceCards, boutiqueCard]
     : [boutiqueCard];
 
   // STRAPI-ONLY (11 mai 2026) : la homepage lit le CMS via useArtists().

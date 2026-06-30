@@ -23,6 +23,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserRole } from '../contexts/UserRoleContext';
 import { useNotifications } from '../contexts/NotificationContext';
+import { HIDDEN_SERVICE_SLUGS } from '../config/merchStatus';
 
 const SERVICE_ICONS = [Printer, Sticker, Shirt, Globe, Monitor];
 
@@ -118,6 +119,8 @@ function Header() {
                       style={{ backgroundColor: 'var(--bg-body, #3D0079)', border: '1px solid rgba(255,255,255,0.08)' }}
                     >
                       {services.map((service, i) => {
+                        // MERCH_HIDDEN : skip par slug (preserve l'index des icones)
+                        if (HIDDEN_SERVICE_SLUGS.includes(service.slug)) return null
                         const Icon = SERVICE_ICONS[i];
                         const active = isActive(`/services/${service.slug}`);
                         return (
@@ -307,6 +310,8 @@ function Header() {
                 </p>
 
                 {services.map((service, i) => {
+                  // MERCH_HIDDEN : skip par slug (preserve l'index des icones)
+                  if (HIDDEN_SERVICE_SLUGS.includes(service.slug)) return null
                   const Icon = SERVICE_ICONS[i];
                   const active = isActive(`/services/${service.slug}`);
                   return (
