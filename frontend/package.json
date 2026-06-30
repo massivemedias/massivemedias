@@ -9,7 +9,8 @@
     "build": "vite build && find dist -name '*.wasm' -size +20M -delete && cp dist/index.html dist/404.html && node ./scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "capture": "node ./scripts/capture-screenshots.mjs"
   },
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
