@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "capture": "node ./scripts/capture-screenshots.mjs"
+    "capture": "node ./scripts/capture-screenshots.mjs",
+    "capture:all": "node ./scripts/capture-all.mjs"
   },
   "dependencies": {
     "@imgly/background-removal": "^1.7.0",
