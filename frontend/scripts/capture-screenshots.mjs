@@ -41,7 +41,15 @@ const FULL_WIDTH = 1600   // largeur full (images/<chemin>)
 const THUMB_WIDTH = 800   // largeur thumb (images/thumbs/<chemin>) - lue par thumb()
 const QUALITY = 80        // webp q80, convention Massive
 const NAV_TIMEOUT = 45000
-const SETTLE_MS = 1800    // delai post-networkidle pour polices + images lazy
+// Attente FIXE apres le chargement (networkidle) et AVANT la capture. Laisse le
+// contenu asynchrone s'afficher : apps React/Angular, loaders, agregation de
+// donnees (ex Sonaa "Aggregating frequencies", SPVM a moitie blanc si capture
+// trop tot). Ceinture-bretelles avec networkidle2. Appliquee a CHAQUE passe :
+// desktop et mobile chargent chacun leur propre viewport (layout mobile fidele,
+// et les sites qui re-render au resize - comme Sonaa qui relance son loader -
+// ne cassent pas). Donc payee 2x par site. Ajustable ici (Mika peut la baisser
+// plus tard sans fouiller le reste du script).
+const WAIT_MS = 30000
 
 // Lance Puppeteer (meme pattern que prerender.mjs). Reutilise par l'unitaire
 // ET le batch (un seul browser pour toute la boucle -> RAM maitrisee).
@@ -53,7 +61,13 @@ export async function launchBrowser() {
   })
 }
 
-// Capture une cible (desktop ou mobile) et retourne le buffer PNG brut.
+const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+
+// Charge l'url au viewport de la cible, attend WAIT_MS que le contenu async
+// s'affiche, puis retourne le buffer PNG. Chaque cible (desktop/mobile) a sa
+// PROPRE passe de chargement -> le layout mobile est rendu a 414px des le
+// depart (fidele), et les sites qui re-render/relancent un loader au resize ne
+// posent pas de probleme.
 async function shoot(browser, target, url) {
   const page = await browser.newPage()
   try {
@@ -65,7 +79,7 @@ async function shoot(browser, target, url) {
       hasTouch: target.isMobile,
     })
     await page.goto(url, { waitUntil: 'networkidle2', timeout: NAV_TIMEOUT })
-    await new Promise((r) => setTimeout(r, SETTLE_MS))
+    await wait(WAIT_MS)
     // fullPage false : on capture le viewport (haut de page, facon hero).
     return await page.screenshot({ type: 'png', fullPage: false })
   } finally {
