@@ -69,6 +69,12 @@ function ConfiguratorStickers({ onFinishChange }) {
   const [size, setSize] = useState('2.5in');
   const [qtyIndex, setQtyIndex] = useState(0);
   const [customQty, setCustomQty] = useState('');
+  // FIX-CUSTOM-QTY : mode "quantite personnalisee" pilote par un flag explicite,
+  // PAS par la validite du prix. Avant, le mode custom dependait de
+  // customPriceInfo (null sous 25), donc taper "60" passait par "6" (<25) ->
+  // l'input disparaissait et retombait au palier 25. Le flag garde l'input
+  // ouvert pendant la saisie ; le clamp au minimum se fait au blur.
+  const [isCustom, setIsCustom] = useState(false);
   const [added, setAdded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [notes, setNotes] = useState('');
@@ -205,7 +211,7 @@ function ConfiguratorStickers({ onFinishChange }) {
 
   // Options du select Quantite : 5 paliers + une option "Custom".
   // qtyValue == 'custom' active l'input libre en dessous.
-  const qtyValue = customQty && customPriceInfo ? 'custom' : String(qtyIndex);
+  const qtyValue = isCustom ? 'custom' : String(qtyIndex);
 
   return (
     <>
@@ -338,12 +344,14 @@ function ConfiguratorStickers({ onFinishChange }) {
               <select
                 value={qtyValue}
                 onChange={(e) => {
-                  const v = e.target.value;
+                  const v = e.target.value
                   if (v === 'custom') {
-                    if (!customQty) setCustomQty('25');
+                    setIsCustom(true)
+                    if (!customQty) setCustomQty('25')
                   } else {
-                    setQtyIndex(parseInt(v, 10));
-                    setCustomQty('');
+                    setIsCustom(false)
+                    setQtyIndex(parseInt(v, 10))
+                    setCustomQty('')
                   }
                 }}
                 className={SELECT_CLASS}
@@ -376,6 +384,12 @@ function ConfiguratorStickers({ onFinishChange }) {
                   onChange={(e) => {
                     const cleaned = e.target.value.replace(/[^0-9]/g, '');
                     setCustomQty(cleaned);
+                  }}
+                  onBlur={() => {
+                    // Clamp au minimum a la validation (pas a chaque frappe) :
+                    // vide ou sous 25 -> 25. La saisie de 60, 137... reste libre.
+                    const n = parseInt(customQty, 10)
+                    if (!Number.isFinite(n) || n < 25) setCustomQty('25')
                   }}
                   placeholder="25"
                   className="flex-1 bg-black/20 border-2 border-grey-muted/20 focus:border-accent rounded-lg px-3 py-2 text-sm text-heading focus:outline-none"
