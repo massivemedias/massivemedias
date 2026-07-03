@@ -1500,7 +1500,7 @@ function ArtisteDetail({ subdomainSlug }) {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="relative watermark-lightbox rounded-lg overflow-hidden"
+                className={`relative watermark-lightbox${isSticker ? ' watermark-lightbox-sticker' : ''} rounded-lg overflow-hidden`}
                 onClick={(e) => e.stopPropagation()}
               >
                 <img loading="lazy"
