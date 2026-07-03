@@ -30,16 +30,19 @@
 // rejette des commandes legitimes via validation server-side).
 export const STICKER_GRID = Object.freeze({
   standard: Object.freeze({
-    matte: Object.freeze({ 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 }),
-    fx:    Object.freeze({ 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 }),
+    matte:        Object.freeze({ 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 }),
+    intermediate: Object.freeze({ 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375 }),
+    fx:           Object.freeze({ 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 }),
   }),
   medium: Object.freeze({
-    matte: Object.freeze({ 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 }),
-    fx:    Object.freeze({ 25: 50, 50: 80, 100: 135, 250: 305, 500: 575 }),
+    matte:        Object.freeze({ 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 }),
+    intermediate: Object.freeze({ 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50 }),
+    fx:           Object.freeze({ 25: 50, 50: 80, 100: 135, 250: 305, 500: 575 }),
   }),
   large: Object.freeze({
-    matte: Object.freeze({ 25: 55, 50: 90, 100: 160, 250: 375, 500: 700 }),
-    fx:    Object.freeze({ 25: 65, 50: 105, 100: 185, 250: 415, 500: 785 }),
+    matte:        Object.freeze({ 25: 55, 50: 90, 100: 160, 250: 375, 500: 700 }),
+    intermediate: Object.freeze({ 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50 }),
+    fx:           Object.freeze({ 25: 65, 50: 105, 100: 185, 250: 415, 500: 785 }),
   }),
 });
 
@@ -49,7 +52,12 @@ export const STICKER_GRID = Object.freeze({
 export const STICKER_GRID_STANDARD = STICKER_GRID.standard.matte;
 export const STICKER_GRID_FX = STICKER_GRID.standard.fx;
 
-export const STICKER_FX_FINISHES = Object.freeze(['holographic', 'broken-glass', 'stars']);
+// FINITIONS-V2 : 3 groupes de prix. fx = fancy (finitions premium), intermediate
+// = Clear (lamine transparent), matte = sans finition (defaut). matte-pro, glossy
+// et dots sont passes en fancy (fx). Repliquer a l'identique dans le backend
+// (pricing-config.ts FX_FINISHES / INTERMEDIATE_FINISHES).
+export const STICKER_FX_FINISHES = Object.freeze(['holographic', 'broken-glass', 'stars', 'matte-pro', 'glossy', 'dots'])
+export const INTERMEDIATE_FINISHES = Object.freeze(['clear'])
 
 /**
  * Mapping taille -> tier de prix.
@@ -74,7 +82,12 @@ export function getStickerSizeTier(size) {
  */
 export function getStickerGridForSize(size, finish) {
   const tier = getStickerSizeTier(size);
-  const kind = STICKER_FX_FINISHES.includes(finish) ? 'fx' : 'matte';
+  // kind 3-voies : intermediate (Clear) sinon fx (fancy) sinon matte (sans finition, defaut).
+  const kind = INTERMEDIATE_FINISHES.includes(finish)
+    ? 'intermediate'
+    : STICKER_FX_FINISHES.includes(finish)
+      ? 'fx'
+      : 'matte'
   return STICKER_GRID[tier][kind];
 }
 

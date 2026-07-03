@@ -50,16 +50,19 @@ export const FRAME_PRICES_FALLBACK: Record<string, number> = {
 // Memes ratios appliques aux finis FX pour proportionnalite.
 export const STICKER_GRID: Record<string, Record<string, Record<number, number>>> = {
   standard: { // taille <= 2.5"
-    matte: { 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 },
-    fx:    { 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 },
+    matte:        { 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 },
+    intermediate: { 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375 },
+    fx:           { 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 },
   },
   medium: {   // taille <= 3.5"
-    matte: { 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 },
-    fx:    { 25: 50, 50: 80, 100: 135, 250: 305, 500: 575 },
+    matte:        { 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 },
+    intermediate: { 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50 },
+    fx:           { 25: 50, 50: 80, 100: 135, 250: 305, 500: 575 },
   },
   large: {    // taille <= 5"
-    matte: { 25: 55, 50: 90, 100: 160, 250: 375, 500: 700 },
-    fx:    { 25: 65, 50: 105, 100: 185, 250: 415, 500: 785 },
+    matte:        { 25: 55, 50: 90, 100: 160, 250: 375, 500: 700 },
+    intermediate: { 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50 },
+    fx:           { 25: 65, 50: 105, 100: 185, 250: 415, 500: 785 },
   },
 };
 
@@ -69,7 +72,11 @@ export const STICKER_GRID: Record<string, Record<string, Record<number, number>>
 export const STICKER_STANDARD_TIERS: Record<number, number> = STICKER_GRID.standard.matte;
 export const STICKER_FX_TIERS: Record<number, number> = STICKER_GRID.standard.fx;
 
-export const FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
+// FINITIONS-V2 : 3 groupes (fx / intermediate / matte). Copie EXACTE du front
+// (pricingData.js STICKER_FX_FINISHES / INTERMEDIATE_FINISHES). matte-pro, glossy
+// et dots sont fancy (fx) ; clear est intermediate ; matte = sans finition.
+export const FX_FINISHES = ['holographic', 'broken-glass', 'stars', 'matte-pro', 'glossy', 'dots']
+export const INTERMEDIATE_FINISHES = ['clear']
 
 /**
  * Mapping taille (string id ou label) -> tier de prix (standard/medium/large).
@@ -94,7 +101,12 @@ export function getStickerSizeTier(size: any): 'standard' | 'medium' | 'large' {
  */
 export function lookupStickerPriceBySize(finish: string, qty: number, size: any): number | null {
   const tier = getStickerSizeTier(size);
-  const kind = FX_FINISHES.includes(finish) ? 'fx' : 'matte';
+  // kind 3-voies : intermediate (Clear) sinon fx (fancy) sinon matte (sans finition, defaut).
+  const kind = INTERMEDIATE_FINISHES.includes(finish)
+    ? 'intermediate'
+    : FX_FINISHES.includes(finish)
+      ? 'fx'
+      : 'matte'
   const grid = STICKER_GRID[tier][kind];
   return grid[qty] ?? null;
 }

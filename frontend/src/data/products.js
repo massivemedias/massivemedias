@@ -21,8 +21,17 @@ import {
   getStickerGridForSize,
 } from '../utils/pricingData';
 
+// FINITIONS-V2 (juin 2026) : 3 groupes de prix (matte / intermediate / fx).
+// Ordre d'affichage du menu : Sans finition, Clear, Matte, Vinyle Lustre, etc.
+// L'id `matte` est CONSERVE pour "Sans finition" (commandes passees + grille
+// matte inchangee). Le nouveau "Matte" (finition pro laminee) prend l'id
+// `matte-pro` pour eviter la collision. Le mapping id -> grille de prix vit
+// dans pricingData.js (STICKER_FX_FINISHES / INTERMEDIATE_FINISHES) et sa
+// copie backend pricing-config.ts.
 export const stickerFinishes = [
-  { id: 'matte', labelFr: 'Matte', labelEn: 'Matte', labelEs: 'Mate', descFr: 'Fini mat naturel, sans reflets', descEn: 'Natural matte finish, no shine', descEs: 'Acabado mate natural, sin reflejos' },
+  { id: 'matte', labelFr: 'Sans finition', labelEn: 'No finish', labelEs: 'Sin acabado', descFr: 'Vinyle imprime, sans laminage', descEn: 'Printed vinyl, no lamination', descEs: 'Vinilo impreso, sin laminado' },
+  { id: 'clear', labelFr: 'Clear', labelEn: 'Clear', labelEs: 'Clear', descFr: 'Lamine transparent, protege les couleurs', descEn: 'Clear laminate, protects the colors', descEs: 'Laminado transparente, protege los colores' },
+  { id: 'matte-pro', labelFr: 'Matte', labelEn: 'Matte', labelEs: 'Mate', descFr: 'Lamination mate pro, fini doux sans reflets', descEn: 'Pro matte lamination, soft no-shine finish', descEs: 'Laminado mate pro, acabado suave sin reflejos' },
   { id: 'glossy', labelFr: 'Vinyle Lustré', labelEn: 'Luster Vinyl', labelEs: 'Vinilo Lustrado', descFr: 'Brillant subtil, couleurs éclatantes', descEn: 'Subtle shine, vibrant colors', descEs: 'Brillo sutil, colores vibrantes' },
   { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', labelEs: 'Holográfico', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect', descEs: 'Reflejos arcoíris, efecto wow' },
   { id: 'broken-glass', labelFr: 'Verre Brisé', labelEn: 'Broken Glass', labelEs: 'Vidrio Roto', descFr: 'Éclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections', descEs: 'Fragmentos cristalinos, reflejos prismáticos' },
