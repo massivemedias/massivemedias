@@ -20,7 +20,7 @@
  *   3. Verifier le contrat API /pricing-config renvoie bien la nouvelle valeur
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPricingConfigPayload = exports.ARTIST_DISCOUNT = exports.SUBLIMATION_DESIGN_FEE = exports.SUBLIMATION_UNIT_PRICES = exports.FINE_ART_MUSEUM_PRICES = exports.FINE_ART_STUDIO_PRICES = exports.FLYER_RECTO_VERSO_MULTIPLIER = exports.FLYER_RECTO_VERSO_TIERS = exports.FLYER_TIERS = exports.BUSINESS_CARD_TIERS = exports.SIZE_MULTIPLIERS = exports.lookupStickerPriceBySize = exports.getStickerSizeTier = exports.FX_FINISHES = exports.STICKER_FX_TIERS = exports.STICKER_STANDARD_TIERS = exports.STICKER_GRID = exports.FRAME_PRICES_FALLBACK = void 0;
+exports.getPricingConfigPayload = exports.ARTIST_DISCOUNT = exports.SUBLIMATION_DESIGN_FEE = exports.SUBLIMATION_UNIT_PRICES = exports.FINE_ART_MUSEUM_PRICES = exports.FINE_ART_STUDIO_PRICES = exports.FLYER_RECTO_VERSO_MULTIPLIER = exports.FLYER_RECTO_VERSO_TIERS = exports.FLYER_TIERS = exports.BUSINESS_CARD_TIERS = exports.SIZE_MULTIPLIERS = exports.lookupStickerPriceBySize = exports.getStickerSizeTier = exports.INTERMEDIATE_FINISHES = exports.FX_FINISHES = exports.STICKER_FX_TIERS = exports.STICKER_STANDARD_TIERS = exports.STICKER_GRID = exports.FRAME_PRICES_FALLBACK = void 0;
 // --- Prix cadre fine art par format (DOIT matcher products.js fineArtFramePriceByFormat) ---
 // A2 = 45$ depuis avril 2026 (fix PRIX-01 du 18 avril). Les anciennes commandes avec
 // 40$ ont ete reconciliees manuellement, le prix courant est 45$.
@@ -52,14 +52,17 @@ exports.FRAME_PRICES_FALLBACK = {
 exports.STICKER_GRID = {
     standard: {
         matte: { 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 },
+        intermediate: { 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375 },
         fx: { 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 },
     },
     medium: {
         matte: { 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 },
+        intermediate: { 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50 },
         fx: { 25: 50, 50: 80, 100: 135, 250: 305, 500: 575 },
     },
     large: {
         matte: { 25: 55, 50: 90, 100: 160, 250: 375, 500: 700 },
+        intermediate: { 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50 },
         fx: { 25: 65, 50: 105, 100: 185, 250: 415, 500: 785 },
     },
 };
@@ -68,7 +71,11 @@ exports.STICKER_GRID = {
 // Pour le nouveau code, utiliser STICKER_GRID[tier][kind][qty] avec getStickerSizeTier().
 exports.STICKER_STANDARD_TIERS = exports.STICKER_GRID.standard.matte;
 exports.STICKER_FX_TIERS = exports.STICKER_GRID.standard.fx;
-exports.FX_FINISHES = ['holographic', 'broken-glass', 'stars'];
+// FINITIONS-V2 : 3 groupes (fx / intermediate / matte). Copie EXACTE du front
+// (pricingData.js STICKER_FX_FINISHES / INTERMEDIATE_FINISHES). matte-pro, glossy
+// et dots sont fancy (fx) ; clear est intermediate ; matte = sans finition.
+exports.FX_FINISHES = ['holographic', 'broken-glass', 'stars', 'matte-pro', 'glossy', 'dots'];
+exports.INTERMEDIATE_FINISHES = ['clear'];
 /**
  * Mapping taille (string id ou label) -> tier de prix (standard/medium/large).
  * Accepte tous les formats : '2', '2in', '2.5', '2.5in', '3"', etc. Tolerance
@@ -98,7 +105,12 @@ exports.getStickerSizeTier = getStickerSizeTier;
 function lookupStickerPriceBySize(finish, qty, size) {
     var _a;
     const tier = getStickerSizeTier(size);
-    const kind = exports.FX_FINISHES.includes(finish) ? 'fx' : 'matte';
+    // kind 3-voies : intermediate (Clear) sinon fx (fancy) sinon matte (sans finition, defaut).
+    const kind = exports.INTERMEDIATE_FINISHES.includes(finish)
+        ? 'intermediate'
+        : exports.FX_FINISHES.includes(finish)
+            ? 'fx'
+            : 'matte';
     const grid = exports.STICKER_GRID[tier][kind];
     return (_a = grid[qty]) !== null && _a !== void 0 ? _a : null;
 }

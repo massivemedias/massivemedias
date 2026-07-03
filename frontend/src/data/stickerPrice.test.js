@@ -11,7 +11,7 @@
  * Finitions : fx = holographic / broken-glass / stars. Tout le reste = matte.
  */
 import { describe, it, expect } from 'vitest'
-import { getStickerPrice } from './products'
+import { getStickerPrice, getStickerPriceForTotal } from './products'
 
 const STD = '2.5'
 const MED = '3'
@@ -93,5 +93,39 @@ describe('getStickerPrice - taille Standard recalibree', () => {
       expect(r.price).toBe(785)
       expect(r.unitPrice).toBe(1.57)
     })
+  })
+})
+
+// FINITIONS-V2 (juin 2026) : 3 groupes de prix. matte = sans finition (id matte),
+// clear = intermediate (nouvelle grille), matte-pro/glossy/dots deplaces en fx.
+describe('getStickerPrice - finitions v2 (3 groupes, Standard)', () => {
+  it('matte (Sans finition) -> grille matte inchangee (25=25, 250=187.50)', () => {
+    expect(getStickerPrice('matte', 'die-cut', 25, STD).price).toBe(25)
+    expect(getStickerPrice('matte', 'die-cut', 250, STD).price).toBe(187.50)
+  })
+  it('clear -> grille intermediate (25=27.50, 100=90, 500=375)', () => {
+    expect(getStickerPrice('clear', 'die-cut', 25, STD).price).toBe(27.50)
+    expect(getStickerPrice('clear', 'die-cut', 100, STD).price).toBe(90)
+    expect(getStickerPrice('clear', 'die-cut', 500, STD).price).toBe(375)
+  })
+  it('matte-pro / glossy / dots / holographic -> grille fx (25=30)', () => {
+    for (const f of ['matte-pro', 'glossy', 'dots', 'holographic']) {
+      expect(getStickerPrice(f, 'die-cut', 25, STD).price).toBe(30)
+    }
+  })
+  it('ordre strict a chaque palier : matte < intermediate < fx', () => {
+    TIERS.forEach(q => {
+      const m = getStickerPrice('matte', 'die-cut', q, STD).price
+      const i = getStickerPrice('clear', 'die-cut', q, STD).price
+      const x = getStickerPrice('holographic', 'die-cut', q, STD).price
+      expect(m).toBeLessThan(i)
+      expect(i).toBeLessThan(x)
+    })
+  })
+  it('custom qty interpole sur intermediate (clear 60 = total 58.80)', () => {
+    const r = getStickerPriceForTotal('clear', 'die-cut', 60, STD)
+    expect(r.price).toBe(58.80)
+    expect(r.unitPrice).toBeGreaterThan(0.90)
+    expect(r.unitPrice).toBeLessThan(1.10)
   })
 })
