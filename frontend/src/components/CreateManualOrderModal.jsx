@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Loader2, AlertCircle, CheckCircle, Copy, ExternalLink, Plus, Trash2, CreditCard, Banknote, Mail, Send } from 'lucide-react';
+import { X, Loader2, AlertCircle, CheckCircle, Copy, ExternalLink, Plus, Trash2, CreditCard, Banknote, Mail, Send, Search } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
+import { filterClientAccounts, CLIENT_SEARCH_MIN_CHARS } from '../utils/clientAccountSearch'
 
 /**
  * Modal de creation d'une commande manuelle + facture + lien de paiement Stripe.
@@ -21,6 +22,67 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   const [companyName, setCompanyName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  // AUTOCOMPLETE-CLIENT (4 juillet 2026) : recherche parmi les comptes clients
+  // Supabase (GET /clients/users, derriere auth admin) pour pre-remplir les 4
+  // champs ci-dessus. Liste chargee UNE fois a l'ouverture du modal (volume
+  // minuscule) puis filtree en memoire (debounce 250ms, min 2 caracteres).
+  // accounts === null tant que le fetch n'a pas repondu, [] si echec : dans ce
+  // cas l'autocomplete reste muette et la saisie manuelle demeure intacte.
+  const [accounts, setAccounts] = useState(null)
+  const [clientSearch, setClientSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchBoxRef = useRef(null)
+
+  useEffect(() => {
+    let cancelled = false
+    api.get('/clients/users', { params: { perPage: 200 } })
+      .then(({ data }) => {
+        if (cancelled) return
+        const users = Array.isArray(data?.data) ? data.data : []
+        setAccounts(users.map((u) => ({
+          fullName: u.fullName || '',
+          email: u.email || '',
+          company: u.company || '',
+          phone: u.phone || '',
+        })))
+      })
+      .catch(() => {
+        if (!cancelled) setAccounts([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Debounce ~250ms entre la frappe et le filtrage
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(clientSearch), 250)
+    return () => clearTimeout(timer)
+  }, [clientSearch])
+
+  // Fermer le dropdown au clic hors du bloc de recherche
+  useEffect(() => {
+    function onDocMouseDown(e) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target)) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocMouseDown)
+    return () => document.removeEventListener('mousedown', onDocMouseDown)
+  }, [])
+
+  const clientSuggestions = filterClientAccounts(accounts || [], debouncedSearch)
+
+  // Remplit les 4 champs client. Les champs restent librement editables apres.
+  function pickClientAccount(account) {
+    setCustomerName(account.fullName || '')
+    setCustomerEmail(account.email || '')
+    setCompanyName(account.company || '')
+    setCustomerPhone(account.phone || '')
+    setClientSearch('')
+    setSearchOpen(false)
+  }
   // Note: le champ "lineTotal" est le prix TOTAL de la ligne (pas un prix unitaire).
   // Le calcul ne multiplie plus par quantity - la quantity sert uniquement de
   // descriptif ("100x Stickers") sur la facture et le paiement Stripe.
@@ -524,6 +586,60 @@ function CreateManualOrderModal({ onClose, onCreated }) {
           /* Form view */
           <form onSubmit={submit}>
             <div className="px-5 py-5 space-y-4 max-h-[65vh] overflow-y-auto">
+              {/* AUTOCOMPLETE-CLIENT : recherche d'un compte existant (nom,
+                  courriel, entreprise ou telephone). Au clic sur un resultat,
+                  les 4 champs ci-dessous sont remplis. Purement optionnel :
+                  la saisie manuelle reste possible comme avant. */}
+              <div ref={searchBoxRef} className="relative">
+                <label className="text-[13px] text-grey-muted uppercase tracking-wider block mb-1">
+                  {tx({ fr: 'Rechercher un client (compte site)', en: 'Search a client (site account)', es: 'Buscar un cliente (cuenta del sitio)' })}
+                </label>
+                <div className="relative">
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none" />
+                  <input
+                    type="text"
+                    value={clientSearch}
+                    onChange={(e) => {
+                      setClientSearch(e.target.value)
+                      setSearchOpen(true)
+                    }}
+                    onFocus={() => setSearchOpen(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') setSearchOpen(false)
+                    }}
+                    className="w-full rounded-lg text-sm pl-9 pr-3 py-2.5 outline-none border focus:border-accent" style={inputBg}
+                    placeholder={tx({ fr: 'Nom, courriel, entreprise ou telephone...', en: 'Name, email, company or phone...', es: 'Nombre, correo, empresa o telefono...' })}
+                  />
+                </div>
+                {searchOpen && clientSuggestions.length > 0 && (
+                  <div className="absolute z-20 left-0 right-0 mt-1 rounded-lg border shadow-xl overflow-hidden max-h-64 overflow-y-auto" style={inputBg}>
+                    {clientSuggestions.map((account) => (
+                      <button
+                        key={account.email}
+                        type="button"
+                        onMouseDown={(e) => {
+                          e.preventDefault()
+                          pickClientAccount(account)
+                        }}
+                        className="w-full text-left px-3 py-2.5 hover:bg-accent/10 transition-colors"
+                      >
+                        <span className="block text-sm font-medium text-heading">{account.fullName || account.email}</span>
+                        <span className="block text-xs text-grey-muted truncate">
+                          {account.email}
+                          {account.company ? ` | ${account.company}` : ''}
+                          {account.phone ? ` | ${account.phone}` : ''}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {searchOpen && accounts !== null && clientSuggestions.length === 0 && debouncedSearch.trim().length >= CLIENT_SEARCH_MIN_CHARS && (
+                  <div className="absolute z-20 left-0 right-0 mt-1 rounded-lg border px-3 py-2.5 text-xs text-grey-muted" style={inputBg}>
+                    {tx({ fr: 'Aucun compte trouve. Saisie manuelle ci-dessous.', en: 'No account found. Manual entry below.', es: 'Ninguna cuenta encontrada. Entrada manual abajo.' })}
+                  </div>
+                )}
+              </div>
+
               {/* Client info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
