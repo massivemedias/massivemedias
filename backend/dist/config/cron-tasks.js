@@ -15,7 +15,79 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const email_1 = require("../src/utils/email");
 const FOUR_DAYS_MS = 4 * 24 * 60 * 60 * 1000;
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+// FILE-PROD-01B : cap dur du nombre de lignes dans l'email digest. Au dela,
+// le mail mentionne "et X autres" (on ne veut pas un email de 400 lignes).
+const DIGEST_MAX_ROWS = 100;
 exports.default = {
+    /**
+     * productionDigest : digest quotidien des commandes payees non expediees.
+     *
+     * Schedule : 0 8 * * *  (tous les jours a 8h00 America/Toronto), une heure
+     * AVANT paymentReminder pour que les deux emails admin ne partent pas en
+     * meme temps et restent lisibles separement dans la boite.
+     *
+     * Logique :
+     *   1. SELECT orders WHERE status IN ('paid', 'processing', 'ready')
+     *      ORDER BY created_at ASC (la plus vieille en premier).
+     *   2. Zero resultat : log empty, AUCUN email (pas de bruit inutile).
+     *   3. Sinon : max 100 lignes dans l'email (reference, statut, etape de
+     *      production, age en jours, total), surplus mentionne "et X autres".
+     *
+     * Pas de flag one-shot : un digest est recurrent par nature, il repart
+     * chaque matin tant que des commandes attendent. L'age se calcule sur
+     * createdAt (pas de paidAt sur Order, cf inspection FILE-PROD-01 : la
+     * commande e-commerce est creee au checkout, payee dans la foulee).
+     */
+    productionDigest: {
+        task: async ({ strapi }) => {
+            const startedAt = Date.now();
+            strapi.log.info('[CRON][productionDigest] Start');
+            try {
+                const pending = await strapi.documents('api::order.order').findMany({
+                    filters: {
+                        status: { $in: ['paid', 'processing', 'ready'] },
+                    },
+                    sort: 'createdAt:asc',
+                    limit: 1000,
+                });
+                if (!pending.length) {
+                    strapi.log.info('[CRON][productionDigest] empty, aucune commande en attente, pas d envoi');
+                    return;
+                }
+                const rows = pending.slice(0, DIGEST_MAX_ROWS).map((order) => {
+                    const orderRef = (String(order.stripePaymentIntentId || '').slice(-8) ||
+                        String(order.documentId || '').slice(-8)).toUpperCase();
+                    const createdMs = new Date(order.createdAt || Date.now()).getTime();
+                    const ageDays = Math.max(0, Math.floor((startedAt - createdMs) / ONE_DAY_MS));
+                    return {
+                        orderRef,
+                        status: String(order.status || ''),
+                        productionStage: String(order.productionStage || ''),
+                        ageDays,
+                        totalCents: Number(order.total) || 0,
+                    };
+                });
+                const overflowCount = pending.length - rows.length;
+                const ok = await (0, email_1.sendProductionDigestEmail)({ rows, overflowCount });
+                const elapsedMs = Date.now() - startedAt;
+                if (ok) {
+                    strapi.log.info(`[CRON][productionDigest] sent in ${elapsedMs}ms, ${pending.length} commande(s), ${rows.length} ligne(s) dans l email`);
+                }
+                else {
+                    strapi.log.error(`[CRON][productionDigest] failed, envoi Resend refuse (${pending.length} commande(s) en attente)`);
+                }
+            }
+            catch (err) {
+                strapi.log.error(`[CRON][productionDigest] FATAL: ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+            }
+        },
+        options: {
+            // Tous les jours a 8h00 (heure Montreal, gere automatiquement EST/EDT).
+            rule: '0 8 * * *',
+            tz: 'America/Toronto',
+        },
+    },
     /**
      * paymentReminder : relance amicale automatique sur les commandes pending.
      *
