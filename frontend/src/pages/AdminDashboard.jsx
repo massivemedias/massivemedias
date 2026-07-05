@@ -12,6 +12,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
 import api from '../services/api';
 import AnnualBalanceCard from '../components/AnnualBalanceCard';
+import ProductionQueue from '../components/ProductionQueue'
 // HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
 
 // FIX-NOTES-FETCH (23 avril 2026) : on abandonne le wrapper getAdminNotes
@@ -392,6 +393,9 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-5">
+      {/* ===== FILE-PROD-01A : file de production, visible des le login ===== */}
+      <ProductionQueue orders={orders} />
+
       {/* ===== RANGEE 1 : KPIs business (revenus / ventes / commissions) ===== */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard
