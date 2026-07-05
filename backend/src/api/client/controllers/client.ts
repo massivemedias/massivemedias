@@ -1,5 +1,6 @@
 import { factories } from '@strapi/strapi';
 import { sendNewUserNotificationEmail } from '../../../utils/email';
+import { requireAdminAuth } from '../../../utils/auth'
 
 // Statuts de commande qui comptent comme "paye reellement"
 const PAID_STATUSES = ['paid', 'processing', 'ready', 'shipped', 'delivered'];
@@ -178,6 +179,12 @@ export default factories.createCoreController('api::client.client', ({ strapi })
   // warning et on tronque - signe qu'il faudrait passer a une query SQL
   // directe sur auth.users plutot que d'iterer l'admin API.
   async listSupabaseUsers(ctx) {
+    // SEC-CLIENTS (4 juillet 2026) : liste de comptes = donnees personnelles
+    // (Loi 25). Garde admin obligatoire, meme pattern que orders/admin-list.
+    // Le front (AdminUtilisateurs + autocomplete commande manuelle) envoie
+    // deja le Bearer Supabase via l'interceptor api.js, rien ne casse.
+    if (!(await requireAdminAuth(ctx))) return
+
     const supabaseUrl = process.env.SUPABASE_API_URL;
     const supabaseKey = process.env.SUPABASE_API_KEY; // service_role key
     if (!supabaseUrl || !supabaseKey) {
@@ -245,6 +252,10 @@ export default factories.createCoreController('api::client.client', ({ strapi })
           email: u.email,
           fullName: meta.full_name || meta.name || null,
           phone: u.phone || meta.phone || null,
+          // AUTOCOMPLETE-CLIENT (4 juillet 2026) : entreprise saisie dans le
+          // panneau compte (Account.jsx -> user_metadata.company). Expose pour
+          // pre-remplir le champ entreprise de la commande manuelle.
+          company: meta.company || null,
           createdAt: u.created_at,
           lastSignIn: u.last_sign_in_at,
           emailConfirmed: !!u.email_confirmed_at,
