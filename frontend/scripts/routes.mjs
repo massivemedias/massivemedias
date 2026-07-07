@@ -20,7 +20,7 @@ export const STRAPI_API = 'https://massivemedias-api.onrender.com/api';
  *   /panier, /login, /account, /admin/*, /mm-admin,
  *   /vente-privee/:token, /suivi, /tracking,
  *   /services (Navigate vers /), /tarifs (Navigate), /portfolio (Navigate),
- *   /imprimeur-mile-end (Navigate), /boutique/stickers (Navigate),
+ *   /boutique/stickers (Navigate),
  *   /boutique/merch-tshirt (Navigate), /services/* legacy slugs (Navigate),
  *   /news (n'existe pas dans le router App.jsx).
  */
@@ -35,8 +35,11 @@ export const STATIC_ROUTES = [
   '/services/merch',
   '/services/design',
   '/services/web',
-  // Landings SEO locales (5)
+  // Landings SEO locales (6)
+  // RESTORE-MILE-END (7 juillet 2026) : mile-end redevient une vraie page
+  // (mode zone desservie), coexiste avec plateau-mont-royal.
   '/imprimeur-plateau-mont-royal',
+  '/imprimeur-mile-end',
   '/stickers-personnalises-montreal',
   '/print-fine-art-quebec',
   '/sublimation-textile-montreal',

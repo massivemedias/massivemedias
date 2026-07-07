@@ -270,11 +270,13 @@ function App() {
                 IMPORTANT : ces routes doivent etre declarees AVANT les
                 routes catch-all 404 (NotFound) pour matcher en priorite. */}
             <Route path="/imprimeur-plateau-mont-royal" element={<LandingLocal />} />
-            {/* REDIRECT 10 mai 2026 : /imprimeur-mile-end renommee en
-                /imprimeur-plateau-mont-royal (meilleur ciblage SEO local).
-                On garde l'ancienne URL en redirect pour preserver le crawl
-                Google deja effectue (5 indexation requests deja soumises). */}
-            <Route path="/imprimeur-mile-end" element={<Navigate to="/imprimeur-plateau-mont-royal" replace />} />
+            {/* RESTORE-MILE-END (7 juillet 2026) : le redirect du 10 mai est
+                retire. Decision SEO du 23 juin : /imprimeur-mile-end est
+                position 1 sur "printing mile end" et redevient une VRAIE
+                landing (mode zone desservie, entree dediee dans
+                landingPages.js). Les deux pages coexistent : requetes et
+                contenus differents. NE PLUS rediriger cette URL. */}
+            <Route path="/imprimeur-mile-end" element={<LandingLocal />} />
             <Route path="/stickers-personnalises-montreal" element={<LandingLocal />} />
             <Route path="/print-fine-art-quebec" element={<LandingLocal />} />
             <Route path="/sublimation-textile-montreal" element={<LandingLocal />} />

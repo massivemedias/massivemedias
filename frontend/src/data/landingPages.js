@@ -65,6 +65,62 @@ export const LANDING_PAGES = {
     heroImage: '/images/locale/locale10.webp',
   },
 
+  // RESTORE-MILE-END (7 juillet 2026) : page ressuscitee apres le rename du
+  // 10 mai (966edd92). Decision SEO du 23 juin : position 1 sur "printing
+  // mile end", l'URL doit vivre. Coexiste avec imprimeur-plateau-mont-royal
+  // (requetes differentes), contenu VOLONTAIREMENT reformule pour eviter le
+  // duplicate content avec l'entree plateau.
+  // Wording obligatoire : le studio est BASE au Plateau (rue Marquette) et
+  // DESSERT le Mile-End. Jamais "situe au Mile-End", pas de marque
+  // d'equipement, pas de garantie inventee (CONVENTIONS section 3).
+  'imprimeur-mile-end': {
+    keyword: 'Imprimeur Mile-End',
+    geo: 'Mile-End, Montréal',
+    title: 'Imprimeur Mile-End Montréal | Stickers, Prints, Sublimation | Massive Medias',
+    description: 'Imprimeur indépendant qui dessert le Mile-End à Montréal : stickers personnalisés, prints fine art, sublimation textile, design graphique. Studio au Plateau voisin, livraison à vélo, ramassage sur rendez-vous.',
+    h1: 'Imprimeur pour le Mile-End, Montréal',
+    intro: 'Massive Medias est un studio d\'impression indépendant basé au Plateau Mont-Royal (rue Marquette), à quelques minutes du Mile-End qu\'on dessert au quotidien. Depuis 2022, on imprime stickers, prints fine art, merch et matériel événementiel pour les artistes, ateliers et commerces du Mile-End et des quartiers voisins. Production 100% montréalaise, proof numérique validé avant chaque impression, livraison à vélo ou ramassage au studio.',
+    sections: [
+      {
+        h2: 'Le Mile-End, on connaît : artistes, studios et commerces indépendants',
+        body: 'Le Mile-End vit de création : musiciens, illustrateurs, ateliers textiles, cafés et boutiques indépendantes. C\'est exactement notre clientèle. Stickers die-cut pour le merch de tournée, tirages fine art pour les expositions, t-shirts et tote bags sublimés pour la boutique, flyers pour les lancements. Un seul studio, un seul interlocuteur, zéro sous-traitance.',
+      },
+      {
+        h2: 'À dix minutes du Mile-End, sans les délais du web-to-print',
+        body: 'On valide chaque proof numérique avec toi avant de lancer la production. Les stickers urgents sortent en 24-48h. Livraison gratuite à vélo dans le Mile-End et le reste de Montréal pour les commandes de 50$ et plus, ou ramassage sans frais au studio du Plateau (5338 rue Marquette), sur rendez-vous. Chaque dollar reste dans l\'économie locale montréalaise.',
+      },
+      {
+        h2: 'Encres pigmentaires, découpe de précision, sublimation',
+        body: 'Impression pigmentaire 12 couleurs sur papier coton fine art 308gsm, découpe de précision pour les stickers die-cut sur vinyle laminé, presse à sublimation professionnelle pour le textile. Tout sort de notre studio montréalais, rien n\'est externalisé.',
+      },
+    ],
+    faq: [
+      {
+        q: 'Où est votre studio par rapport au Mile-End ?',
+        a: 'Le studio est au Plateau Mont-Royal, au 5338 rue Marquette (Montréal H2J 3Z3), à une dizaine de minutes du Mile-End. On dessert le quartier au quotidien : livraison à vélo ou ramassage au studio sur rendez-vous, du lundi au vendredi, 9h à 18h.',
+      },
+      {
+        q: 'Quels délais pour une commande du Mile-End ?',
+        a: 'Les mêmes que partout à Montréal : 24-48h pour les stickers die-cut, 2-3 jours ouvrables pour les prints fine art, 3-5 jours pour la sublimation textile. Urgences possibles avec supplément.',
+      },
+      {
+        q: 'La livraison dans le Mile-End est-elle gratuite ?',
+        a: 'Oui, à vélo, pour les commandes de 50$ et plus. Sous ce montant, ramassage gratuit au studio ou envoi par Postes Canada.',
+      },
+      {
+        q: 'Acceptez-vous les petites quantités ?',
+        a: 'Oui : 1 print fine art à l\'unité, 25 stickers minimum, 1 t-shirt minimum. Aucun minimum en design graphique.',
+      },
+    ],
+    relatedServices: [
+      { slug: 'stickers', label: 'Stickers personnalisés' },
+      { slug: 'prints', label: 'Prints fine art' },
+      { slug: 'merch', label: 'Sublimation textile' },
+      { slug: 'design', label: 'Design graphique' },
+    ],
+    heroImage: '/images/locale/locale7.webp',
+  },
+
   'stickers-personnalises-montreal': {
     keyword: 'Stickers personnalisés Montréal',
     geo: 'Montréal, QC',
