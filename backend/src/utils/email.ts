@@ -2355,3 +2355,126 @@ export async function sendQrReportEmail(data: QrReportData): Promise<boolean> {
     return false;
   }
 }
+
+// -----------------------------------------------------------
+// FILE-PROD-01B : digest quotidien de la file de production (vers admin)
+// -----------------------------------------------------------
+// Envoye par le cron productionDigest (config/cron-tasks.ts) chaque matin a
+// 8h00 Montreal quand au moins une commande payee attend en production
+// (status paid / processing / ready). Format rapport, pattern QrReport.
+// Le cron passe des lignes deja triees plus ancienne en premier et cape a
+// 100 lignes (overflowCount porte le surplus, affiche sous le tableau).
+
+export interface ProductionDigestRow {
+  orderRef: string
+  status: string
+  productionStage: string
+  ageDays: number
+  totalCents: number
+}
+
+export interface ProductionDigestData {
+  rows: ProductionDigestRow[]
+  overflowCount: number
+}
+
+// Libelles FR alignes sur ORDER_STATUS (AdminOrders.jsx) et STATUS_LABELS
+// (ClientCRMModal.jsx) pour que l'email raconte la meme chose que le panneau.
+const DIGEST_STATUS_FR: Record<string, string> = {
+  paid: 'Payé / En production',
+  processing: 'En production',
+  ready: 'Prêt / À remettre',
+}
+
+const DIGEST_STAGE_FR: Record<string, string> = {
+  files_prep: 'Préparation fichiers',
+  printing: 'Impression',
+  cutting: 'Découpe',
+  packaging: 'Emballage',
+}
+
+// Format prix quebecois : 108,54 $ (virgule decimale, espace avant le signe)
+function formatPriceFr(cents: number): string {
+  return ((Number(cents) || 0) / 100).toFixed(2).replace('.', ',') + ' $'
+}
+
+// Une commande qui traine au dela de ce seuil est mise en evidence (fond
+// rose pale + age en gras) pour attirer l'oeil au scan matinal de l'email.
+const DIGEST_HIGHLIGHT_AGE_DAYS = 3
+
+function buildProductionDigestHtml(data: ProductionDigestData): string {
+  const totalCount = data.rows.length + (data.overflowCount || 0)
+
+  const headerCell = (label: string, align: string) =>
+    `<td style="padding:8px 10px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;text-align:${align};border-bottom:2px solid #FF52A0;">${label}</td>`
+
+  const bodyRows = data.rows.map((row) => {
+    const late = row.ageDays > DIGEST_HIGHLIGHT_AGE_DAYS
+    const rowBg = late ? 'background:#fff0f7;' : ''
+    const ageStyle = late
+      ? 'color:#FF52A0;font-weight:800;'
+      : 'color:#222;font-weight:600;'
+    const statusLabel = DIGEST_STATUS_FR[row.status] || row.status
+    const stageLabel = DIGEST_STAGE_FR[row.productionStage] || row.productionStage || ''
+    return `
+      <tr style="${rowBg}">
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;color:#222;font-size:13px;font-family:monospace;font-weight:600;">#${row.orderRef}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;color:#444;font-size:13px;">${statusLabel}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;color:#444;font-size:13px;">${stageLabel}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;font-size:13px;text-align:center;${ageStyle}">${row.ageDays} j</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;color:#222;font-size:13px;text-align:right;font-weight:600;">${formatPriceFr(row.totalCents)}</td>
+      </tr>`
+  }).join('')
+
+  const overflowBlock = data.overflowCount > 0 ? `
+    <p style="margin:12px 0 0;color:#FF52A0;font-size:13px;font-weight:600;">
+      et ${data.overflowCount} autre${data.overflowCount > 1 ? 's' : ''} commande${data.overflowCount > 1 ? 's' : ''} en attente (affichage limite aux 100 plus anciennes)
+    </p>` : ''
+
+  const content = `
+    <h1 style="color:#FF52A0;margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">File de production</h1>
+    <h2 style="color:#222;margin:0 0 16px;font-size:18px;">${totalCount} commande${totalCount > 1 ? 's' : ''} en attente de production</h2>
+
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        ${headerCell('Reference', 'left')}
+        ${headerCell('Statut', 'left')}
+        ${headerCell('Etape', 'left')}
+        ${headerCell('Age', 'center')}
+        ${headerCell('Total', 'right')}
+      </tr>
+      ${bodyRows}
+    </table>
+    ${overflowBlock}
+
+    <p style="margin:24px 0 0;padding-top:14px;border-top:1px solid #eee;color:#999;font-size:11px;line-height:1.6;">
+      Digest automatique quotidien (8h00, heure de Montreal). Commandes payees non expediees,
+      triees de la plus ancienne a la plus recente. Les lignes en rose depassent ${DIGEST_HIGHLIGHT_AGE_DAYS} jours d'attente.
+    </p>`
+
+  return massiveEmailWrapper(content)
+}
+
+export async function sendProductionDigestEmail(data: ProductionDigestData): Promise<boolean> {
+  const resend = getResend()
+  if (!resend) {
+    console.warn('[email] Resend non configure, digest production non envoye')
+    return false
+  }
+  const sender = getSender()
+  const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com'
+  const totalCount = data.rows.length + (data.overflowCount || 0)
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: adminEmail,
+      subject: `File de production : ${totalCount} commande${totalCount > 1 ? 's' : ''} en attente`,
+      html: buildProductionDigestHtml(data),
+    })
+    console.log('[email] Digest production envoye a', adminEmail)
+    return true
+  } catch (err: any) {
+    console.error('[email] Erreur envoi digest production:', err?.message || err)
+    return false
+  }
+}

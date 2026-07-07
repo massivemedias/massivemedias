@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendArtistWelcomeEmail = exports.sendPaymentReminderEmail = exports.sendInvoiceEmail = exports.sendPrivatePrintEmail = exports.sendNewUserNotificationEmail = exports.sendDriveFailureAlert = exports.sendWebhookFailureAlert = exports.sendAutoReplyToProspect = exports.sendNewContactNotificationEmail = exports.sendOrderDeliveredEmail = exports.sendOrderReadyEmail = exports.sendTrackingEmail = exports.sendNewOrderNotificationEmail = exports.sendArtistSaleNotificationEmail = exports.sendContractSignedEmail = exports.sendOrderConfirmationEmail = exports.sendTestimonialRequestEmail = exports.sendContactReplyEmail = void 0;
+exports.sendProductionDigestEmail = exports.sendQrReportEmail = exports.sendArtistWelcomeEmail = exports.sendPaymentReminderEmail = exports.sendInvoiceEmail = exports.sendPrivatePrintEmail = exports.sendNewUserNotificationEmail = exports.sendDriveFailureAlert = exports.sendWebhookFailureAlert = exports.sendAutoReplyToProspect = exports.sendNewContactNotificationEmail = exports.sendOrderDeliveredEmail = exports.sendOrderReadyEmail = exports.sendTrackingEmail = exports.sendNewOrderNotificationEmail = exports.sendArtistSaleNotificationEmail = exports.sendContractSignedEmail = exports.sendOrderConfirmationEmail = exports.sendTestimonialRequestEmail = exports.sendContactReplyEmail = void 0;
 // Email transactionnels Massive Medias via Resend
 const resend_1 = require("resend");
 let resendInstance = null;
@@ -986,14 +986,20 @@ async function sendOrderDeliveredEmail(email, nom, orderRef) {
 exports.sendOrderDeliveredEmail = sendOrderDeliveredEmail;
 function buildNewContactNotificationHtml(data) {
     const date = new Date().toLocaleDateString('fr-CA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto' });
+    // CONTACT-EMAIL-2026-05-14 : escape de tous les champs user-input dans le
+    // HTML pour eviter qu'un caractere `<` ou `&` casse le rendu Gmail (en
+    // particulier le bloc Message qui contient du texte libre du visiteur).
+    // Le `${data.message}` brut precedent fonctionnait dans 99% des cas mais
+    // un visiteur qui tape `<3 votre site` voyait le `<3` interprete comme
+    // debut de tag et le reste de son message disparaissait du rendu admin.
     const detailRows = [
-        { label: 'Nom', value: data.nom },
-        { label: 'Courriel', value: data.email },
-        data.telephone ? { label: 'Telephone', value: data.telephone } : null,
-        data.entreprise ? { label: 'Entreprise', value: data.entreprise } : null,
-        data.service ? { label: 'Service', value: data.service } : null,
-        data.budget ? { label: 'Budget', value: data.budget } : null,
-        data.urgence ? { label: 'Urgence', value: data.urgence } : null,
+        { label: 'Nom', value: escapeHtmlAttr(String(data.nom || '')) },
+        { label: 'Courriel', value: escapeHtmlAttr(String(data.email || '')) },
+        data.telephone ? { label: 'Telephone', value: escapeHtmlAttr(String(data.telephone)) } : null,
+        data.entreprise ? { label: 'Entreprise', value: escapeHtmlAttr(String(data.entreprise)) } : null,
+        data.service ? { label: 'Service', value: escapeHtmlAttr(String(data.service)) } : null,
+        data.budget ? { label: 'Budget', value: escapeHtmlAttr(String(data.budget)) } : null,
+        data.urgence ? { label: 'Urgence', value: escapeHtmlAttr(String(data.urgence)) } : null,
         { label: 'Date', value: date },
     ].filter(Boolean);
     const rows = detailRows.map(r => `
@@ -1055,7 +1061,7 @@ function buildNewContactNotificationHtml(data) {
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;border-left:3px solid #FF52A0;">
         <p style="margin:0 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
-        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.message}</p>
+        <p style="margin:0;color:#222;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtmlAttr(String(data.message || ''))}</p>
       </td></tr>
     </table>
 
@@ -1074,22 +1080,50 @@ function buildNewContactNotificationHtml(data) {
 }
 async function sendNewContactNotificationEmail(data) {
     const resend = getResend();
-    if (!resend)
+    if (!resend) {
+        console.error('[email] sendNewContactNotificationEmail: Resend non configure (RESEND_API_KEY absent) - admin NE RECEVRA PAS la notification. Verifier en BDD via /admin/contact-submissions.');
         return false;
+    }
     const sender = getSender();
-    const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+    // CONTACT-EMAIL-2026-05-14 : resolution des destinataires admin avec support
+    // de `ADMIN_EMAILS` (pluriel, comma-separated, meme env var que celle
+    // utilisee par utils/auth.requireAdminAuth). Fallback en cascade :
+    //   1. ADMIN_EMAILS = "a@x.com,b@x.com" -> notifie les 2 (Resend accepte array)
+    //   2. ADMIN_EMAIL  = "a@x.com" (legacy singulier) -> notifie 1
+    //   3. defaut hardcode "massivemedias@gmail.com"
+    // Cette resolution evite le bug ou un admin avait config `ADMIN_EMAILS`
+    // sur Render mais l'email partait quand meme vers la valeur par defaut
+    // (ou n'arrivait pas si la default est rejetee).
+    const adminEmailsRaw = process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+    const recipients = adminEmailsRaw
+        .split(',')
+        .map((s) => s.trim())
+        .filter((s) => /@/.test(s));
+    if (recipients.length === 0) {
+        console.error('[email] sendNewContactNotificationEmail: aucun destinataire admin valide dans ADMIN_EMAILS / ADMIN_EMAIL.');
+        return false;
+    }
     try {
         await resend.emails.send({
             ...sender,
-            to: adminEmail,
+            to: recipients,
+            // `replyTo` permet a l'admin de cliquer "Reply" dans son client mail
+            // et de repondre directement au prospect, au lieu de repondre au
+            // sender Massive. Massive gain UX critique.
+            replyTo: data.email,
             subject: `[MESSAGE] ${data.nom} - ${data.service || 'Contact'}`,
             html: buildNewContactNotificationHtml(data),
         });
-        console.log('[email] Notification contact envoyee pour', data.email);
+        console.log(`[email] Notification contact envoyee a [${recipients.join(', ')}] pour ${data.email}`);
         return true;
     }
     catch (err) {
-        console.error('[email] Erreur notification contact:', err);
+        // Log ERROR (pas warn) pour visibilite max dans Render dashboard. Inclut
+        // le contenu du message pour que l'admin puisse au moins recuperer
+        // l'info dans les logs si Resend est down.
+        console.error(`[email] ECHEC notification contact pour ${data.email}: ${(err === null || err === void 0 ? void 0 : err.message) || err}. ` +
+            `Destinataires tentes: [${recipients.join(', ')}]. ` +
+            `Message original (premier 500c): "${String(data.message || '').slice(0, 500).replace(/\n/g, ' ')}"`);
         return false;
     }
 }
@@ -1892,3 +1926,201 @@ async function sendArtistWelcomeEmail(data) {
     }
 }
 exports.sendArtistWelcomeEmail = sendArtistWelcomeEmail;
+function buildQrReportHtml(data) {
+    var _a, _b;
+    const a = data.analytics || {};
+    const fmtDate = (v) => v
+        ? new Date(v).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Toronto' })
+        : null;
+    // Une cle byDay est DEJA une date locale Montreal 'YYYY-MM-DD'. On la formate
+    // a midi en local, sans re-appliquer de fuseau, sinon un double passage
+    // UTC -> Montreal ferait reculer la date d'un jour.
+    const fmtDayKey = (key) => {
+        const [y, m, d] = key.split('-').map(Number);
+        if (!y || !m || !d)
+            return key;
+        return new Date(y, m - 1, d, 12).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
+    };
+    // Periode : du premier au dernier jour ayant un scan (cles byDay).
+    const dayKeysSorted = Object.keys(a.byDay || {}).filter((k) => (a.byDay[k] || 0) > 0).sort();
+    const firstDay = dayKeysSorted.length ? fmtDayKey(dayKeysSorted[0]) : null;
+    const lastDay = dayKeysSorted.length ? fmtDayKey(dayKeysSorted[dayKeysSorted.length - 1]) : fmtDate(a.lastScannedAt);
+    const topRows = (obj, n) => Object.entries(obj || {})
+        .filter(([, v]) => v > 0).sort((x, y) => y[1] - x[1]).slice(0, n);
+    const listBlock = (title, rows) => {
+        if (!rows.length)
+            return '';
+        const items = rows.map(([k, v]) => `<tr><td style="padding:4px 0;color:#444;font-size:13px;">${k}</td>`
+            + `<td style="padding:4px 0;text-align:right;color:#222;font-size:13px;font-weight:600;">${v}</td></tr>`).join('');
+        return `
+      <p style="margin:18px 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${title}</p>
+      <table width="100%" cellpadding="0" cellspacing="0">${items}</table>`;
+    };
+    const dayRows = Object.entries(a.byDay || {}).filter(([, v]) => v > 0).sort((x, y) => (x[0] < y[0] ? -1 : 1));
+    const dayBlock = dayRows.length ? `
+    <p style="margin:18px 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Scans par jour</p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${dayRows.map(([d, v]) => `<tr><td style="padding:3px 0;color:#444;font-size:13px;">${d}</td><td style="padding:3px 0;text-align:right;color:#222;font-size:13px;font-weight:600;">${v}</td></tr>`).join('')}
+    </table>` : '';
+    const referers = Array.isArray(a.topReferers) ? a.topReferers.filter((r) => r.referer) : [];
+    const referBlock = referers.length ? `
+    <p style="margin:18px 0 6px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Provenance</p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${referers.map((r) => `<tr><td style="padding:3px 0;color:#444;font-size:13px;word-break:break-all;">${r.referer}</td><td style="padding:3px 0;text-align:right;color:#222;font-size:13px;font-weight:600;">${r.count}</td></tr>`).join('')}
+    </table>` : '';
+    const content = `
+    <h1 style="color:#FF52A0;margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">Rapport de statistiques</h1>
+    <h2 style="color:#222;margin:0 0 16px;font-size:18px;">${data.qrTitle || 'QR code'}</h2>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+      <tr><td style="padding:12px 16px;background:#f7f7f7;border-radius:8px;">
+        <p style="margin:0;color:#666;font-size:12px;">Code : <strong style="color:#222;font-family:monospace;">/qr/${data.shortId}</strong></p>
+        <p style="margin:6px 0 0;color:#666;font-size:12px;">Destination : <a href="${data.destinationUrl}" style="color:#FF52A0;text-decoration:none;word-break:break-all;">${data.destinationUrl}</a></p>
+        ${firstDay && lastDay ? `<p style="margin:6px 0 0;color:#666;font-size:12px;">Periode : ${firstDay === lastDay ? firstDay : `${firstDay} au ${lastDay}`}</p>` : ''}
+      </td></tr>
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+      <tr>
+        <td style="width:50%;padding:16px;background:rgba(255,82,160,0.06);border-radius:8px 0 0 8px;text-align:center;">
+          <p style="margin:0;color:#FF52A0;font-size:28px;font-weight:800;line-height:1;">${(_a = a.total) !== null && _a !== void 0 ? _a : 0}</p>
+          <p style="margin:6px 0 0;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Scans</p>
+        </td>
+        <td style="width:50%;padding:16px;background:#f7f7f7;border-radius:0 8px 8px 0;text-align:center;">
+          <p style="margin:0;color:#222;font-size:28px;font-weight:800;line-height:1;">${(_b = a.uniquesEstimes) !== null && _b !== void 0 ? _b : 0}</p>
+          <p style="margin:6px 0 0;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Visiteurs uniques estimes</p>
+        </td>
+      </tr>
+    </table>
+
+    ${listBlock('Villes', topRows(a.byCity, 5))}
+    ${listBlock('Pays', topRows(a.byCountry, 5))}
+    ${listBlock('Systeme', topRows(a.byOs, 5))}
+    ${listBlock('Navigateur', topRows(a.byBrowser, 5))}
+    ${dayBlock}
+    ${referBlock}
+
+    <p style="margin:24px 0 0;padding-top:14px;border-top:1px solid #eee;color:#999;font-size:11px;line-height:1.6;">
+      Les visiteurs uniques sont estimes a partir de l'adresse IP hachee, jamais une identite.
+      L'age et le modele exact d'appareil ne sont pas disponibles via un scan de QR.
+    </p>`;
+    return massiveEmailWrapper(content);
+}
+async function sendQrReportEmail(data) {
+    const resend = getResend();
+    if (!resend) {
+        console.warn('[email] Resend non configure, rapport QR non envoye');
+        return false;
+    }
+    if (!data.recipientEmail || !data.recipientEmail.includes('@')) {
+        console.warn('[email] sendQrReportEmail skip : adresse invalide', data.recipientEmail);
+        return false;
+    }
+    const sender = getSender();
+    try {
+        await resend.emails.send({
+            ...sender,
+            to: data.recipientEmail,
+            subject: `Rapport de statistiques QR - ${data.qrTitle || data.shortId}`,
+            html: buildQrReportHtml(data),
+        });
+        console.log('[email] Rapport QR envoye a', data.recipientEmail);
+        return true;
+    }
+    catch (err) {
+        console.error('[email] Erreur envoi rapport QR:', (err === null || err === void 0 ? void 0 : err.message) || err);
+        return false;
+    }
+}
+exports.sendQrReportEmail = sendQrReportEmail;
+// Libelles FR alignes sur ORDER_STATUS (AdminOrders.jsx) et STATUS_LABELS
+// (ClientCRMModal.jsx) pour que l'email raconte la meme chose que le panneau.
+const DIGEST_STATUS_FR = {
+    paid: 'Payé / En production',
+    processing: 'En production',
+    ready: 'Prêt / À remettre',
+};
+const DIGEST_STAGE_FR = {
+    files_prep: 'Préparation fichiers',
+    printing: 'Impression',
+    cutting: 'Découpe',
+    packaging: 'Emballage',
+};
+// Format prix quebecois : 108,54 $ (virgule decimale, espace avant le signe)
+function formatPriceFr(cents) {
+    return ((Number(cents) || 0) / 100).toFixed(2).replace('.', ',') + ' $';
+}
+// Une commande qui traine au dela de ce seuil est mise en evidence (fond
+// rose pale + age en gras) pour attirer l'oeil au scan matinal de l'email.
+const DIGEST_HIGHLIGHT_AGE_DAYS = 3;
+function buildProductionDigestHtml(data) {
+    const totalCount = data.rows.length + (data.overflowCount || 0);
+    const headerCell = (label, align) => `<td style="padding:8px 10px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;text-align:${align};border-bottom:2px solid #FF52A0;">${label}</td>`;
+    const bodyRows = data.rows.map((row) => {
+        const late = row.ageDays > DIGEST_HIGHLIGHT_AGE_DAYS;
+        const rowBg = late ? 'background:#fff0f7;' : '';
+        const ageStyle = late
+            ? 'color:#FF52A0;font-weight:800;'
+            : 'color:#222;font-weight:600;';
+        const statusLabel = DIGEST_STATUS_FR[row.status] || row.status;
+        const stageLabel = DIGEST_STAGE_FR[row.productionStage] || row.productionStage || '';
+        return `
+      <tr style="${rowBg}">
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;color:#222;font-size:13px;font-family:monospace;font-weight:600;">#${row.orderRef}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;color:#444;font-size:13px;">${statusLabel}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;color:#444;font-size:13px;">${stageLabel}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;font-size:13px;text-align:center;${ageStyle}">${row.ageDays} j</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #eee;color:#222;font-size:13px;text-align:right;font-weight:600;">${formatPriceFr(row.totalCents)}</td>
+      </tr>`;
+    }).join('');
+    const overflowBlock = data.overflowCount > 0 ? `
+    <p style="margin:12px 0 0;color:#FF52A0;font-size:13px;font-weight:600;">
+      et ${data.overflowCount} autre${data.overflowCount > 1 ? 's' : ''} commande${data.overflowCount > 1 ? 's' : ''} en attente (affichage limite aux 100 plus anciennes)
+    </p>` : '';
+    const content = `
+    <h1 style="color:#FF52A0;margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">File de production</h1>
+    <h2 style="color:#222;margin:0 0 16px;font-size:18px;">${totalCount} commande${totalCount > 1 ? 's' : ''} en attente de production</h2>
+
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        ${headerCell('Reference', 'left')}
+        ${headerCell('Statut', 'left')}
+        ${headerCell('Etape', 'left')}
+        ${headerCell('Age', 'center')}
+        ${headerCell('Total', 'right')}
+      </tr>
+      ${bodyRows}
+    </table>
+    ${overflowBlock}
+
+    <p style="margin:24px 0 0;padding-top:14px;border-top:1px solid #eee;color:#999;font-size:11px;line-height:1.6;">
+      Digest automatique quotidien (8h00, heure de Montreal). Commandes payees non expediees,
+      triees de la plus ancienne a la plus recente. Les lignes en rose depassent ${DIGEST_HIGHLIGHT_AGE_DAYS} jours d'attente.
+    </p>`;
+    return massiveEmailWrapper(content);
+}
+async function sendProductionDigestEmail(data) {
+    const resend = getResend();
+    if (!resend) {
+        console.warn('[email] Resend non configure, digest production non envoye');
+        return false;
+    }
+    const sender = getSender();
+    const adminEmail = process.env.ADMIN_EMAIL || 'massivemedias@gmail.com';
+    const totalCount = data.rows.length + (data.overflowCount || 0);
+    try {
+        await resend.emails.send({
+            ...sender,
+            to: adminEmail,
+            subject: `File de production : ${totalCount} commande${totalCount > 1 ? 's' : ''} en attente`,
+            html: buildProductionDigestHtml(data),
+        });
+        console.log('[email] Digest production envoye a', adminEmail);
+        return true;
+    }
+    catch (err) {
+        console.error('[email] Erreur envoi digest production:', (err === null || err === void 0 ? void 0 : err.message) || err);
+        return false;
+    }
+}
+exports.sendProductionDigestEmail = sendProductionDigestEmail;
