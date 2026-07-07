@@ -1,6 +1,7 @@
 import { Printer, Sticker, Shirt, Palette, Globe } from 'lucide-react';
 import { thumb, img } from '../utils/paths';
 import { WORKSHOP_NOTICE_SHORT } from '../constants/workshop';
+import { buildStickerPricingTabs } from './stickerPricingTabs'
 
 const servicesDataEn = {
   'prints': {
@@ -146,92 +147,7 @@ const servicesDataEn = {
     pricing: {
       title: 'Die-Cut Stickers Pricing',
       note: 'Graphic design not included - you provide your print-ready file. Price based on the longest dimension of your design.',
-      tabs: [
-        {
-          id: 'standard',
-          label: 'Standard (up to 2.5")',
-          tables: [
-            {
-              subtitle: 'Matte / Glossy',
-              headers: ['Qty', 'Price', 'Price/u'],
-              rows: [
-                ['25', '$25', '$1.00/u'],
-                ['50', '$45', '$0.90/u'],
-                ['100', '$80', '$0.80/u'],
-                ['250', '$187.50', '$0.75/u'],
-                ['500', '$350', '$0.70/u'],
-              ],
-            },
-            {
-              subtitle: 'Fx (Holo / Broken Glass / Stars)',
-              headers: ['Qty', 'Price', 'Price/u'],
-              rows: [
-                ['25', '$30', '$1.20/u'],
-                ['50', '$55', '$1.10/u'],
-                ['100', '$100', '$1.00/u'],
-                ['250', '$225', '$0.90/u'],
-                ['500', '$400', '$0.80/u'],
-              ],
-            },
-          ],
-        },
-        {
-          id: 'medium',
-          label: 'Medium (up to 3.5")',
-          tables: [
-            {
-              subtitle: 'Matte / Glossy',
-              headers: ['Qty', 'Price', 'Price/u'],
-              rows: [
-                ['25', '$40', '$1.60/u'],
-                ['50', '$65', '$1.30/u'],
-                ['100', '$115', '$1.15/u'],
-                ['250', '$275', '$1.10/u'],
-                ['500', '$500', '$1.00/u'],
-              ],
-            },
-            {
-              subtitle: 'Fx (Holo / Broken Glass / Stars)',
-              headers: ['Qty', 'Price', 'Price/u'],
-              rows: [
-                ['25', '$50', '$2.00/u'],
-                ['50', '$80', '$1.60/u'],
-                ['100', '$135', '$1.35/u'],
-                ['250', '$305', '$1.22/u'],
-                ['500', '$575', '$1.15/u'],
-              ],
-            },
-          ],
-        },
-        {
-          id: 'large',
-          label: 'Large (up to 5")',
-          tables: [
-            {
-              subtitle: 'Matte / Glossy',
-              headers: ['Qty', 'Price', 'Price/u'],
-              rows: [
-                ['25', '$55', '$2.20/u'],
-                ['50', '$90', '$1.80/u'],
-                ['100', '$160', '$1.60/u'],
-                ['250', '$375', '$1.50/u'],
-                ['500', '$700', '$1.40/u'],
-              ],
-            },
-            {
-              subtitle: 'Fx (Holo / Broken Glass / Stars)',
-              headers: ['Qty', 'Price', 'Price/u'],
-              rows: [
-                ['25', '$65', '$2.60/u'],
-                ['50', '$105', '$2.10/u'],
-                ['100', '$185', '$1.85/u'],
-                ['250', '$415', '$1.66/u'],
-                ['500', '$785', '$1.57/u'],
-              ],
-            },
-          ],
-        },
-      ],
+      tabs: buildStickerPricingTabs('en'),
     },
     gallery: [
       thumb('/images/realisations/stickers/Stickers-Coagule.webp'),

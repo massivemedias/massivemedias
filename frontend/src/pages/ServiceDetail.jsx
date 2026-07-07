@@ -272,8 +272,10 @@ function PricingTabs({ tabs, tx }) {
         ))}
       </div>
 
-      {/* Active tab content : reuse the same `tables` rendering as below */}
-      <div className={`gap-6 mx-auto ${active.tables?.length === 1 ? '' : 'grid grid-cols-1 md:grid-cols-2 items-stretch'}`}>
+      {/* Active tab content : reuse the same `tables` rendering as below.
+          TARIFS-STICKERS : 3 tables par tab (Sans finition / Clear / Finitions)
+          -> 3 colonnes sur lg pour eviter le layout 2+1 desequilibre. */}
+      <div className={`gap-6 mx-auto ${active.tables?.length === 1 ? '' : active.tables?.length >= 3 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch' : 'grid grid-cols-1 md:grid-cols-2 items-stretch'}`}>
         {(active.tables || []).map((table, tableIndex) => (
           <div key={tableIndex} className="rounded-xl overflow-hidden card-shadow flex flex-col h-full">
             <div className="p-3 md:p-4 border-b border-purple-main/30 bg-glass-alt">
