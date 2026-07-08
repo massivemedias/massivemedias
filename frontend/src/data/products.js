@@ -676,7 +676,7 @@ export function getAffichePrice(format, qty, paliers) {
 // pricing-config.ts), le serveur force ces valeurs au checkout.
 // -----------------------------------------------------------
 
-// Prix d'un design de la collection a l'unite (2 $ x quantite).
+// Prix d'un design de la collection a l'unite (STICKER_COLLECTION_UNIT_PRICE x quantite).
 export function getCollectionStickerPrice(quantity) {
   const qty = Math.max(1, Math.floor(Number(quantity) || 1))
   const price = Math.round(qty * STICKER_COLLECTION_UNIT_PRICE * 100) / 100

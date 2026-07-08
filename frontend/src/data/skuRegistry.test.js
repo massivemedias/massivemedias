@@ -96,9 +96,9 @@ describe('familles legitimes : prix serveur exact', () => {
     const r = await resolve({ productId: 'sticker-custom', quantity: 100, size: '2"', finish: 'matte', totalPrice: expected })
     expect(r).toMatchObject({ ok: true, price: expected, family: 'sticker-custom' })
   })
-  it('sticker-massive : 2 $ x quantite', async () => {
-    const r = await resolve({ productId: 'sticker-massive-adian-fumeuse', quantity: 5, totalPrice: 10 })
-    expect(r).toMatchObject({ ok: true, price: 10 })
+  it('sticker-massive : 3 $ x quantite', async () => {
+    const r = await resolve({ productId: 'sticker-massive-adian-fumeuse', quantity: 5, totalPrice: 15 })
+    expect(r).toMatchObject({ ok: true, price: 15 })
   })
   it('mystery packs : 8 / 14 / 25 $', async () => {
     expect((await resolve({ productId: 'mystery-pack-5', quantity: 1 })).price).toBe(8)
@@ -199,7 +199,7 @@ describe('familles legitimes : prix serveur exact', () => {
 
 describe('prix menteur : toujours ecrase par le serveur', () => {
   const CASES = [
-    [{ productId: 'sticker-massive-x', quantity: 5, totalPrice: 0.01 }, 10],
+    [{ productId: 'sticker-massive-x', quantity: 5, totalPrice: 0.01 }, 15],
     [{ productId: 'mystery-pack-20', quantity: 1, totalPrice: 0.01 }, 25],
     [{ productId: 'sticker-custom', quantity: 100, size: '2"', finish: 'matte', totalPrice: 0.01 }, STICKER_GRID.standard.matte[100]],
     [{ productId: 'business-card-premium', quantity: 500, totalPrice: 1 }, 250],

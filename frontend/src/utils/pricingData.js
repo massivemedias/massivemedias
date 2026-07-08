@@ -62,9 +62,10 @@ export const INTERMEDIATE_FINISHES = Object.freeze(['clear'])
 // STICKERS-SHOP-B (8 juillet 2026) : collection de stickers Massive (page
 // /stickers). MIROIR EXACT de backend/src/utils/pricing-config.ts, le serveur
 // force ces prix au checkout quoi qu'envoie le client.
-//   - Unite : 2 $ / design, minimum 5 stickers unitaires par commande.
+//   - Unite : 3 $ / design (2 $ -> 3 $ le 8 juillet 2026, decision Mika
+//     pre-allumage), minimum 5 stickers unitaires par commande.
 //   - Mystery packs (taille -> prix total), HORS du minimum de 5.
-export const STICKER_COLLECTION_UNIT_PRICE = 2
+export const STICKER_COLLECTION_UNIT_PRICE = 3
 export const STICKER_COLLECTION_MIN_UNITS = 5
 export const MYSTERY_PACK_PRICES = Object.freeze({ 5: 8, 10: 14, 20: 25 })
 

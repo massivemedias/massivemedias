@@ -7,6 +7,7 @@ import { MASSIVE_STICKERS, MASSIVE_STICKER_CATEGORIES } from '../data/massiveSti
 import {
   getCollectionStickerPrice,
   getMysteryPackPrice,
+  STICKER_COLLECTION_UNIT_PRICE,
   STICKER_COLLECTION_MIN_UNITS,
   MYSTERY_PACK_PRICES,
   stickerImages,
@@ -115,9 +116,9 @@ function MassiveStickers() {
           </h1>
           <p className="text-grey-muted max-w-2xl mx-auto">
             {tx({
-              fr: `${MASSIVE_STICKERS.length} designs originaux crees a Montreal. Vinyle die-cut, resistant eau et UV. 2 $ le sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}.`,
-              en: `${MASSIVE_STICKERS.length} original designs made in Montreal. Die-cut vinyl, water and UV resistant. $2 per sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}.`,
-              es: `${MASSIVE_STICKERS.length} disenos originales hechos en Montreal. Vinilo die-cut, resistente al agua y UV. 2 $ por sticker, minimo ${STICKER_COLLECTION_MIN_UNITS}.`,
+              fr: `${MASSIVE_STICKERS.length} designs originaux crees a Montreal. Vinyle die-cut, resistant eau et UV. ${STICKER_COLLECTION_UNIT_PRICE} $ le sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}.`,
+              en: `${MASSIVE_STICKERS.length} original designs made in Montreal. Die-cut vinyl, water and UV resistant. $${STICKER_COLLECTION_UNIT_PRICE} per sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}.`,
+              es: `${MASSIVE_STICKERS.length} disenos originales hechos en Montreal. Vinilo die-cut, resistente al agua y UV. ${STICKER_COLLECTION_UNIT_PRICE} $ por sticker, minimo ${STICKER_COLLECTION_MIN_UNITS}.`,
             })}
           </p>
         </div>
@@ -264,7 +265,7 @@ function MassiveStickers() {
                   {justAdded === s.slug ? <Check size={12} /> : <Plus size={12} />}
                   {justAdded === s.slug
                     ? tx({ fr: 'Ajoute !', en: 'Added!', es: 'Agregado!' })
-                    : tx({ fr: '2 $', en: '$2', es: '2 $' })}
+                    : tx({ fr: `${STICKER_COLLECTION_UNIT_PRICE} $`, en: `$${STICKER_COLLECTION_UNIT_PRICE}`, es: `${STICKER_COLLECTION_UNIT_PRICE} $` })}
                 </button>
               </div>
             ))}
