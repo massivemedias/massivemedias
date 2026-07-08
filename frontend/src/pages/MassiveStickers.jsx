@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Search, Sparkles, Plus, Check, Gift, ShoppingCart } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X } from 'lucide-react'
 import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
 import { useCart } from '../contexts/CartContext'
@@ -31,21 +31,34 @@ import { NEW_BADGE_ENABLED } from '../config/stickersShopStatus'
 
 const STICKER_DIR = '/images/stickers-massive'
 
-// STICKERS-UI-01 : ordre d'affichage des familles sur la vue d'accueil.
+// STICKERS-UI-01/02 : ordre d'affichage des familles sur la vue d'accueil.
 // AJUSTABLE PAR MIKA : reordonner les ids ici suffit (ids = MASSIVE_STICKER_
 // CATEGORIES). "Pop-culture" = la categorie personnages.
 const FAMILY_ORDER = ['dark', 'animaux', 'psyche', 'asiatique', 'personnages', 'aliens', 'street-art', 'fun']
 
-// Nombre de designs montres par rangee de famille sur la vue d'accueil.
-const FAMILY_ROW_SIZE = 10
+// STICKERS-UI-02 : collage de designs representatifs affiche en eventail sur
+// la carte de chaque famille. AJUSTABLE PAR MIKA : 5 slugs par famille.
+const FAMILY_COLLAGES = {
+  dark: ['massive-born-to-kill', 'massive-dj-skull', 'massive-skull-kaboom', 'massive-mort', 'massive-zombie-spider'],
+  animaux: ['massive-animals-meeting', 'massive-chameleon', 'massive-fox', 'massive-poisson-rose', 'massive-kapibara'],
+  psyche: ['massive-arte-moderno', 'massive-chmp-7', 'massive-colorage', 'massive-fleur-degueu', 'massive-symetrie-asian'],
+  asiatique: ['massive-adian-fumeuse', 'massive-asian-muerte', 'massive-samourai-violet', 'massive-geisha1', 'massive-dragon-firefly'],
+  personnages: ['massive-astronaute-spain', 'massive-gamer', 'massive-tv-man', 'massive-jade', 'massive-robot-qui-court'],
+  aliens: ['massive-alien-hot', 'massive-alien-calote', 'massive-soucoupe', 'massive-savant-vert', 'massive-cervo-robot'],
+  'street-art': ['massive-art-de-rue', 'massive-tagueur', 'massive-art-libre', 'massive-fuckyou', 'massive-mission'],
+  fun: ['massive-ramen', 'massive-mais', 'massive-lunette-duck', 'massive-pig-chapeau', 'massive-hotdog'],
+}
 
-// Carte d'un design : partagee entre la vue d'accueil (rangees par famille)
-// et la vue famille/recherche (grille). `compact` = version rangee
-// horizontale scrollable (largeur fixe).
-function StickerCard({ s, compact, justAdded, onAdd, tx }) {
+// Taille des tranches de la grille complete (pagination progressive).
+const PAGE_SIZE = 36
+
+// Carte d'un design : partagee entre toutes les grilles. Le clic sur le
+// visuel/nom ouvre la fiche produit (UI-02), le bouton +3 $ reste un ajout
+// direct au panier.
+function StickerCard({ s, justAdded, onAdd, onOpen, tx }) {
   return (
     <div
-      className={`relative rounded-xl bg-black/20 hover:bg-black/30 transition-colors p-3 flex flex-col items-center group ${compact ? 'flex-none w-36 sm:w-40' : ''}`}
+      className="relative rounded-xl bg-black/20 hover:bg-black/30 transition-colors p-3 flex flex-col items-center group"
     >
       {NEW_BADGE_ENABLED && s.nouveau && (
         <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wide">
@@ -53,15 +66,22 @@ function StickerCard({ s, compact, justAdded, onAdd, tx }) {
           {tx({ fr: 'Nouveau', en: 'New', es: 'Nuevo' })}
         </span>
       )}
-      <img
-        loading="lazy"
-        src={thumb(`${STICKER_DIR}/${s.slug}.webp`)}
-        alt={`Sticker ${s.nom} - collection Massive`}
-        className="sticker-stroke w-full aspect-square object-contain group-hover:scale-105 transition-transform duration-200"
-      />
-      <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={s.nom}>
-        {s.nom}
-      </p>
+      <button
+        type="button"
+        onClick={() => onOpen(s)}
+        className="w-full cursor-pointer"
+        aria-label={`${s.nom} - ${tx({ fr: 'voir la fiche', en: 'view details', es: 'ver ficha' })}`}
+      >
+        <img
+          loading="lazy"
+          src={thumb(`${STICKER_DIR}/${s.slug}.webp`)}
+          alt={`Sticker ${s.nom} - collection Massive`}
+          className="sticker-stroke w-full aspect-square object-contain group-hover:scale-105 transition-transform duration-200"
+        />
+        <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={s.nom}>
+          {s.nom}
+        </p>
+      </button>
       <button
         type="button"
         onClick={() => onAdd(s)}
@@ -80,6 +100,176 @@ function StickerCard({ s, compact, justAdded, onAdd, tx }) {
   )
 }
 
+// UI-02 : carte cliquable d'une famille, collage de 5 designs en eventail.
+function FamilleCard({ cat, count, tx, onOpen }) {
+  const slugs = FAMILY_COLLAGES[cat.id] || []
+  const ROTS = [-10, 6, -4, 9, -7]
+  const OFFS = [-88, -44, 0, 44, 88]
+  const ZS = [1, 2, 4, 3, 1]
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(cat.id)}
+      className="rounded-2xl bg-black/20 hover:bg-black/30 border border-white/5 hover:border-accent/40 transition-all p-4 text-left group"
+    >
+      <div className="relative h-28 sm:h-32 flex items-center justify-center overflow-hidden">
+        {slugs.map((slug, i) => (
+          <img
+            key={slug}
+            loading="lazy"
+            src={thumb(`${STICKER_DIR}/${slug}.webp`)}
+            alt=""
+            aria-hidden="true"
+            className="sticker-stroke absolute object-contain group-hover:scale-105 transition-transform duration-200"
+            style={{
+              width: i === 2 ? 104 : 82,
+              height: i === 2 ? 104 : 82,
+              left: `calc(50% + ${OFFS[i]}px - ${(i === 2 ? 104 : 82) / 2}px)`,
+              transform: `rotate(${ROTS[i]}deg)`,
+              zIndex: ZS[i],
+            }}
+          />
+        ))}
+      </div>
+      <div className="flex items-baseline justify-between gap-2 mt-3">
+        <h3 className="font-heading font-bold text-[15px] text-heading">{tx(cat)}</h3>
+        <span className="flex-none text-accent text-xs font-semibold">
+          {count} designs &rarr;
+        </span>
+      </div>
+    </button>
+  )
+}
+
+// UI-02 : fiche produit en modale, pattern Redbubble simplifie. Grand visuel
+// switchable (design seul / mockup gourde), zero option de configuration.
+function StickerFiche({ s, catLabel, justAdded, onAdd, onClose, tx }) {
+  const [vue, setVue] = useState('design')
+  const designUrl = thumb(`${STICKER_DIR}/${s.slug}.webp`)
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
+  }, [onClose])
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 p-5 sm:p-7 relative"
+        style={{ backgroundColor: 'var(--bg-body, #3D0079)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })}
+          className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 text-heading transition-colors"
+        >
+          <X size={16} />
+        </button>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <div className="rounded-2xl bg-black/25 h-72 sm:h-80 flex items-center justify-center relative overflow-hidden">
+              {vue === 'design' ? (
+                <img
+                  src={designUrl}
+                  alt={`Sticker ${s.nom}`}
+                  className="sticker-stroke max-h-[85%] max-w-[85%] object-contain"
+                />
+              ) : (
+                /* Mockup gourde : le design colle sur le tumbler blanc du
+                   repo (photo produit sublimation). Ancre centree sur le
+                   cylindre, rotation legere + ombrage cylindrique masque a
+                   l'alpha du design (pattern mockup adaptatif v2 simplifie). */
+                <div className="relative h-[92%]">
+                  <img
+                    src="/images/mugs/tumbler-white.webp"
+                    alt={tx({ fr: 'Gourde avec le sticker', en: 'Bottle with the sticker', es: 'Botella con el sticker' })}
+                    className="h-full w-auto object-contain"
+                  />
+                  <div className="absolute" style={{ left: '50%', top: '52%', width: '58%', aspectRatio: '1', transform: 'translate(-50%, -50%)' }}>
+                    <img
+                      src={designUrl}
+                      alt=""
+                      aria-hidden="true"
+                      className="w-full h-full object-contain"
+                      style={{ transform: 'rotate(-2deg)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))' }}
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0"
+                      style={{
+                        background: 'linear-gradient(90deg, rgba(0,0,0,0.16), rgba(255,255,255,0.06) 28%, transparent 45%, transparent 60%, rgba(0,0,0,0.18) 96%)',
+                        WebkitMaskImage: `url(${designUrl})`,
+                        WebkitMaskSize: 'contain',
+                        WebkitMaskRepeat: 'no-repeat',
+                        WebkitMaskPosition: 'center',
+                        maskImage: `url(${designUrl})`,
+                        maskSize: 'contain',
+                        maskRepeat: 'no-repeat',
+                        maskPosition: 'center',
+                        transform: 'rotate(-2deg)',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* Switch par vignettes, pattern Redbubble */}
+            <div className="flex gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => setVue('design')}
+                aria-label={tx({ fr: 'Voir le design', en: 'View the design', es: 'Ver el diseno' })}
+                className={`w-14 h-14 rounded-lg bg-black/25 flex items-center justify-center border-2 transition-colors ${vue === 'design' ? 'border-accent' : 'border-white/10 hover:border-white/30'}`}
+              >
+                <img src={designUrl} alt="" className="w-9 h-9 object-contain" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setVue('gourde')}
+                aria-label={tx({ fr: 'Voir sur une gourde', en: 'View on a bottle', es: 'Ver en una botella' })}
+                className={`w-14 h-14 rounded-lg bg-black/25 flex items-center justify-center border-2 transition-colors ${vue === 'gourde' ? 'border-accent' : 'border-white/10 hover:border-white/30'}`}
+              >
+                <img src="/images/mugs/tumbler-white.webp" alt="" className="h-10 object-contain" />
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-col justify-center">
+            <h2 className="font-heading font-bold text-2xl text-heading">{s.nom}</h2>
+            <p className="text-grey-muted text-sm mt-1">{catLabel}</p>
+            <p className="text-accent font-heading font-bold text-3xl mt-4">
+              {tx({ fr: `${STICKER_COLLECTION_UNIT_PRICE} $`, en: `$${STICKER_COLLECTION_UNIT_PRICE}`, es: `${STICKER_COLLECTION_UNIT_PRICE} $` })}
+            </p>
+            <p className="text-grey-muted text-xs mt-3 mb-5">
+              {tx({
+                fr: `Vinyle die-cut, resistant eau et UV. Minimum ${STICKER_COLLECTION_MIN_UNITS} stickers de la collection par commande.`,
+                en: `Die-cut vinyl, water and UV resistant. Minimum ${STICKER_COLLECTION_MIN_UNITS} collection stickers per order.`,
+                es: `Vinilo die-cut, resistente al agua y UV. Minimo ${STICKER_COLLECTION_MIN_UNITS} stickers de la coleccion por pedido.`,
+              })}
+            </p>
+            <button
+              type="button"
+              onClick={() => onAdd(s)}
+              className={`inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full font-semibold text-sm transition-all ${
+                justAdded === s.slug ? 'bg-green-500/20 text-green-400' : 'bg-accent text-white hover:brightness-110'
+              }`}
+            >
+              {justAdded === s.slug ? <Check size={16} /> : <ShoppingCart size={16} />}
+              {justAdded === s.slug
+                ? tx({ fr: 'Ajoute au panier !', en: 'Added to cart!', es: 'Agregado al carrito!' })
+                : tx({ fr: `Ajouter au panier - ${STICKER_COLLECTION_UNIT_PRICE} $`, en: `Add to cart - $${STICKER_COLLECTION_UNIT_PRICE}`, es: `Agregar al carrito - ${STICKER_COLLECTION_UNIT_PRICE} $` })}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function MassiveStickers() {
   const { tx } = useLang()
   const { items: cartItems, addToCart } = useCart()
@@ -87,6 +277,23 @@ function MassiveStickers() {
   const [query, setQuery] = useState('')
   // Feedback visuel apres un ajout (cle = slug du design ou 'pack-N')
   const [justAdded, setJustAdded] = useState('')
+  // UI-02 : fiche produit ouverte (slug) et pagination de la grille complete.
+  const [ficheSlug, setFicheSlug] = useState(null)
+  const [nbVisibles, setNbVisibles] = useState(PAGE_SIZE)
+  // UI-02 : ordre aleatoire de la grille complete, calcule APRES le mount
+  // (Fisher-Yates). Le rendu initial (et donc le HTML prerendu) garde l'ordre
+  // stable du manifest : le shuffle n'arrive qu'au runtime client, pas
+  // pendant l'hydratation.
+  const [ordreAleatoire, setOrdreAleatoire] = useState(null)
+  useEffect(() => {
+    const arr = [...MASSIVE_STICKERS]
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+    setOrdreAleatoire(arr)
+  }, [])
+  const catalogue = ordreAleatoire || MASSIVE_STICKERS
 
   // Compte des stickers UNITAIRES de la collection dans le panier (les
   // mystery packs sont hors compte : autosuffisants pour le minimum de 5).
@@ -254,12 +461,11 @@ function MassiveStickers() {
           />
         </div>
 
-        {/* STICKERS-UI-01 : trois vues.
-            1. Recherche active -> grille globale de resultats (les chips
-               disparaissent, la recherche est globale).
-            2. Accueil (activeCat='all', pas de recherche) -> les familles en
-               premier plan : une section par famille (ordre FAMILY_ORDER),
-               rangee horizontale scrollable + "Voir tout (n)".
+        {/* STICKERS-UI-02 : trois vues.
+            1. Recherche active -> grille globale de resultats.
+            2. Accueil -> cartes de familles (collages en eventail) PUIS la
+               grille complete du catalogue en ordre aleatoire (shuffle client
+               apres mount, prerender stable), paginee par tranches.
             3. Vue famille -> chips de navigation + grille complete filtree. */}
         {isSearching ? (
           visibles.length === 0 ? (
@@ -269,47 +475,48 @@ function MassiveStickers() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
               {visibles.map((s) => (
-                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} tx={tx} />
+                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} onOpen={(d) => setFicheSlug(d.slug)} tx={tx} />
               ))}
             </div>
           )
         ) : activeCat === 'all' ? (
           <div>
-            {FAMILY_ORDER.map((catId) => {
-              const cat = MASSIVE_STICKER_CATEGORIES.find((c) => c.id === catId)
-              if (!cat) return null
-              const designs = MASSIVE_STICKERS.filter((s) => s.cat === catId)
-              if (designs.length === 0) return null
-              return (
-                <section key={catId} className="mb-8">
-                  <div className="flex items-baseline justify-between gap-3 mb-3">
-                    <h2 className="font-heading font-bold text-lg sm:text-xl text-heading">{tx(cat)}</h2>
-                    <button
-                      type="button"
-                      onClick={() => setActiveCat(catId)}
-                      className="flex-none text-accent text-xs sm:text-sm font-semibold hover:brightness-125 transition-all"
-                    >
-                      {tx({ fr: 'Voir tout', en: 'See all', es: 'Ver todo' })} ({designs.length}) &rarr;
-                    </button>
-                  </div>
-                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
-                    {designs.slice(0, FAMILY_ROW_SIZE).map((s) => (
-                      <StickerCard key={s.slug} s={s} compact justAdded={justAdded} onAdd={addUnitToCart} tx={tx} />
-                    ))}
-                    {designs.length > FAMILY_ROW_SIZE && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveCat(catId)}
-                        className="flex-none w-36 sm:w-40 rounded-xl bg-black/20 hover:bg-black/30 transition-colors flex flex-col items-center justify-center gap-1 text-grey-muted hover:text-heading"
-                      >
-                        <span className="text-2xl font-bold text-accent">+{designs.length - FAMILY_ROW_SIZE}</span>
-                        <span className="text-xs font-semibold">{tx({ fr: 'Voir tout', en: 'See all', es: 'Ver todo' })}</span>
-                      </button>
-                    )}
-                  </div>
-                </section>
-              )
-            })}
+            {/* Cartes de familles, 2 colonnes desktop / 1 mobile, compactes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+              {FAMILY_ORDER.map((catId) => {
+                const cat = MASSIVE_STICKER_CATEGORIES.find((c) => c.id === catId)
+                if (!cat || !countByCat[catId]) return null
+                return (
+                  <FamilleCard key={catId} cat={cat} count={countByCat[catId]} tx={tx} onOpen={setActiveCat} />
+                )
+              })}
+            </div>
+
+            {/* Grille complete du catalogue, ordre aleatoire a chaque visite */}
+            <div className="flex items-baseline justify-between gap-3 mb-4">
+              <h2 className="font-heading font-bold text-lg sm:text-xl text-heading">
+                {tx({ fr: 'Tout le catalogue', en: 'The whole catalog', es: 'Todo el catalogo' })}
+              </h2>
+              <span className="text-grey-muted text-xs">
+                {tx({ fr: `${catalogue.length} designs, ordre aleatoire`, en: `${catalogue.length} designs, random order`, es: `${catalogue.length} disenos, orden aleatorio` })}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+              {catalogue.slice(0, nbVisibles).map((s) => (
+                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} onOpen={(d) => setFicheSlug(d.slug)} tx={tx} />
+              ))}
+            </div>
+            {nbVisibles < catalogue.length && (
+              <div className="text-center mt-6">
+                <button
+                  type="button"
+                  onClick={() => setNbVisibles((v) => v + PAGE_SIZE)}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-black/25 border border-white/10 hover:border-accent/50 text-heading text-sm font-semibold transition-all"
+                >
+                  {tx({ fr: 'Voir plus', en: 'See more', es: 'Ver mas' })} ({catalogue.length - nbVisibles})
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div>
@@ -337,12 +544,29 @@ function MassiveStickers() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
               {visibles.map((s) => (
-                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} tx={tx} />
+                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} onOpen={(d) => setFicheSlug(d.slug)} tx={tx} />
               ))}
             </div>
           </div>
         )}
       </div>
+
+      {/* UI-02 : fiche produit en modale */}
+      {ficheSlug && (() => {
+        const s = MASSIVE_STICKERS.find((d) => d.slug === ficheSlug)
+        if (!s) return null
+        const cat = MASSIVE_STICKER_CATEGORIES.find((c) => c.id === s.cat)
+        return (
+          <StickerFiche
+            s={s}
+            catLabel={cat ? tx(cat) : ''}
+            justAdded={justAdded}
+            onAdd={addUnitToCart}
+            onClose={() => setFicheSlug(null)}
+            tx={tx}
+          />
+        )
+      })()}
     </div>
   )
 }
