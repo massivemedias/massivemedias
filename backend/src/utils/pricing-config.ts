@@ -178,6 +178,98 @@ export const SUBLIMATION_DESIGN_FEE = 125;
 // --- Rabais artiste sur ses propres produits ---
 export const ARTIST_DISCOUNT = 0.25;
 
+// =======================================================
+// SEC-04 (8 juillet 2026) : grilles miroir pour le registre de SKU
+// (backend/src/utils/sku-registry.ts). Chaque famille de productId vendue
+// au public DOIT avoir un prix calculable serveur. MIROIRS EXACTS des
+// grilles de VENTE affichees par le front (utils/pricingData.js et
+// data/artistPricing.js). DO NOT MODIFY WITHOUT UPDATING THE FRONT.
+// =======================================================
+
+// Packs stickers d'artiste (ConfiguratorArtistSticker, minimum 10 stickers).
+// Miroir de frontend/src/data/artistPricing.js ARTIST_STICKER_GRID.
+export const ARTIST_STICKER_GRID: Record<number, number> = { 10: 19, 25: 45, 50: 85, 100: 150, 250: 350, 500: 650 }
+
+// Prix TOTAL d'un pack sticker artiste pour une quantite >= 10.
+// Interpolation lineaire du prix unitaire entre les 2 paliers encadrants,
+// cap au rate du dernier palier au-dela de 500. Sous 10 : null (minimum
+// d'impression). Miroir exact de getArtistStickerPrice (artistPricing.js).
+export function getArtistStickerPackPrice(qty: any): number | null {
+  const q = parseInt(String(qty == null ? '' : qty).replace(/[^0-9]/g, ''), 10)
+  if (!Number.isFinite(q) || q < 10) return null
+  const grid = ARTIST_STICKER_GRID
+  const tiers = Object.keys(grid).map(Number).sort((a, b) => a - b)
+  if (grid[q] != null) return grid[q]
+  const maxQty = tiers[tiers.length - 1]
+  if (q >= maxQty) {
+    const maxUnit = Math.round((grid[maxQty] / maxQty) * 100) / 100
+    return Math.round(q * maxUnit * 100) / 100
+  }
+  let lowQty = tiers[0]
+  let highQty = tiers[1]
+  for (let i = 0; i < tiers.length - 1; i++) {
+    if (q >= tiers[i] && q < tiers[i + 1]) { lowQty = tiers[i]; highQty = tiers[i + 1]; break }
+  }
+  const lowUnit = grid[lowQty] / lowQty
+  const highUnit = grid[highQty] / highQty
+  const factor = (q - lowQty) / (highQty - lowQty)
+  const unitPrice = Math.round((lowUnit + factor * (highUnit - lowUnit)) * 100) / 100
+  return Math.round(q * unitPrice * 100) / 100
+}
+
+// Depot de reservation flash tattoo (ReservationForm, montant fixe).
+export const DEPOSIT_FLASH_PRICE = 40
+
+// Produits en solde de la page Artistes : ids litteraux -> prix.
+// Miroir de defaultSaleItems (frontend/src/pages/Shop.jsx).
+export const SALE_ITEM_PRICES: Record<string, number> = { 'sale-stk-massive': 20 }
+
+// Packs stickers boutique (page Artistes) : prix PAR PACK selon le nombre
+// de packs commandes. Fallback quand le produit CMS (category sticker-pack)
+// n'a pas de pricingData.tiers. Miroir de defaultStickerPricingTiers (Shop.jsx).
+export const STICKER_PACK_DEFAULT_TIERS: Record<number, number> = { 1: 35, 5: 25, 10: 20, 25: 15 }
+
+// Merch fini (MerchDetail, actuellement derriere MERCH_HIDDEN) : prix plat
+// par type, identique pour toutes les tailles. Miroir de merchData.js.
+export const MERCH_PRICES: Record<string, number> = { tshirt: 22, hoodie: 39, longsleeve: 30 }
+
+// Sublimation BYOT : cout du blank deduit quand le client apporte son
+// textile. Miroir de SUBLIMATION_BLANK_COST / SUBLIMATION_BYOT_ALLOWED
+// (frontend/src/utils/pricingData.js).
+export const SUBLIMATION_BLANK_COST: Record<string, number> = {
+  tshirt: 12, longsleeve: 18, hoodie: 28, totebag: 6, bag: 45, mug: 4, tumbler: 10,
+}
+export const SUBLIMATION_BYOT_ALLOWED: string[] = ['tshirt', 'longsleeve', 'hoodie', 'totebag']
+
+// Cartes cadeaux : montant libre encode dans le SKU (gift-card-<n>), borne
+// serveur. Entiers seulement.
+export const GIFT_CARD_MIN = 10
+export const GIFT_CARD_MAX = 500
+
+// Grille de VENTE Fine Art affichee par le front (miroir de pricingData.js
+// FINE_ART_GRID : base Studio/Musee + prix du cadre par format, y compris
+// les formats carres). DISTINCTE de FINE_ART_STUDIO/MUSEUM_PRICES ci-dessus
+// (divergence connue, resolution reportee a PRIX-02 Vague 3, ne PAS unifier
+// ici) : le registre SEC-04 valide contre ce que le client VOIT a l'ecran,
+// jamais plus cher.
+export const FINE_ART_SALE_GRID: Record<string, { studio: number | null; museum: number; frame: number }> = {
+  postcard: { studio: 8, museum: 15, frame: 20 },
+  a4:       { studio: 10, museum: 20, frame: 20 },
+  a3:       { studio: 15, museum: 30, frame: 30 },
+  a3plus:   { studio: 20, museum: 45, frame: 35 },
+  a2:       { studio: null, museum: 55, frame: 45 },
+  sq8:      { studio: 10, museum: 20, frame: 25 },
+  sq10:     { studio: 13, museum: 25, frame: 30 },
+  sq12:     { studio: 15, museum: 30, frame: 35 },
+}
+
+// NOTE Affiches Standard : PAS de grille fallback ici. Les paliers vivent
+// UNIQUEMENT dans le CMS (product slug affiche-standard, champ
+// pricingData.afficheStandardPaliers, cles de format en MAJUSCULES A4/A3/
+// A3+/A2), exactement comme au front (pas de paliers CMS = pas de prix
+// affiche = pas d'achat). Si le CMS est indisponible au moment du checkout,
+// le registre REJETTE l'item plutot que de deviner un prix.
+
 /**
  * Payload complet retourne par GET /api/pricing-config.
  * Le frontend peut cacher cette reponse et fallback sur ses constantes locales
