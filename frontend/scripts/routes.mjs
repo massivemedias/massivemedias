@@ -29,6 +29,9 @@ export const STATIC_ROUTES = [
   '/a-propos',
   '/contact',
   '/temoignage',
+  // ALLUMAGE STICKERS (8 juillet 2026) : la collection est en vente,
+  // la page entre au prerender + sitemap avec le flag STICKERS_SHOP_ENABLED.
+  '/stickers',
   // Pages services (5)
   '/services/prints',
   '/services/stickers',

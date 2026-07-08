@@ -14,10 +14,14 @@
  *      sitemap au prochain build)
  *   C'est tout.
  *
- * NOTE chantier 3B (STICKERS-SHOP-B, commerce) : la page est maintenant
- * ACHETABLE quand le flag est actif - unite 2 $ (minimum 5 par commande),
- * mystery packs 5/10/20 a 8/14/25 $, checkout Stripe complet avec prix
- * forces serveur. Le flag reste OFF tant que Mika n'a pas donne le GO
- * lancement.
+ * NOTE chantier 3B (STICKERS-SHOP-B, commerce) : la page est ACHETABLE
+ * quand le flag est actif - unite 3 $ (minimum 5 par commande), mystery
+ * packs 5/10/20 a 8/14/25 $, checkout Stripe complet avec prix forces
+ * serveur (registre SEC-04).
+ *
+ * ALLUMAGE le 8 juillet 2026 (GO lancement Mika, sequence pre-approuvee) :
+ * flag passe a true + /stickers ajoutee au prerender/sitemap (routes.mjs).
+ * Pour ETEINDRE en urgence : repasser a false + retirer la route de
+ * routes.mjs, push sur main.
  */
-export const STICKERS_SHOP_ENABLED = false
+export const STICKERS_SHOP_ENABLED = true
