@@ -156,9 +156,9 @@ function MassiveStickers() {
       <SEO
         title={tx({ fr: 'Collection Stickers - Massive', en: 'Sticker Collection - Massive', es: 'Coleccion de Stickers - Massive' })}
         description={tx({
-          fr: 'La collection de stickers Massive : 285 designs originaux crees a Montreal. Skulls, animaux, aliens, manga, street art et plus.',
-          en: 'The Massive sticker collection: 285 original designs made in Montreal. Skulls, animals, aliens, manga, street art and more.',
-          es: 'La coleccion de stickers Massive: 285 disenos originales hechos en Montreal.',
+          fr: `La collection de stickers Massive : ${MASSIVE_STICKERS.length} designs originaux crees a Montreal. Skulls, animaux, aliens, manga, street art et plus.`,
+          en: `The Massive sticker collection: ${MASSIVE_STICKERS.length} original designs made in Montreal. Skulls, animals, aliens, manga, street art and more.`,
+          es: `La coleccion de stickers Massive: ${MASSIVE_STICKERS.length} disenos originales hechos en Montreal.`,
         })}
       />
 

@@ -60,7 +60,6 @@ export const MASSIVE_STICKERS = [
   { slug: 'massive-boom1', nom: "Boom1", cat: 'fun', nouveau: false },
   { slug: 'massive-born-to-kill', nom: "Born to kill", cat: 'dark', nouveau: false },
   { slug: 'massive-bouche-langue', nom: "Bouche langue", cat: 'fun', nouveau: false },
-  { slug: 'massive-buldo', nom: "buldo", cat: 'animaux', nouveau: false },
   { slug: 'massive-cacane', nom: "Cacane", cat: 'fun', nouveau: false },
   { slug: 'massive-canar-pleure', nom: "Canar pleure", cat: 'animaux', nouveau: false },
   { slug: 'massive-canardos', nom: "canardos", cat: 'animaux', nouveau: false },
