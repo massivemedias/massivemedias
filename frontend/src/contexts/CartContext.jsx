@@ -110,8 +110,14 @@ export function CartProvider({ children }) {
         // FIX-FP-MONEY (5 mai 2026) : roundMoney sur le total ligne pour eviter
         // les artefacts IEEE 754 (ex: 25 * 0.5 = 12.499999... apres plusieurs ops).
         // Sans ca, un user a vu "125.99999999$" dans son total panier.
-        const newQty = existing.quantity + (item.quantity || 1);
-        const newTotal = Math.round(newQty * existing.unitPrice * 100) / 100;
+        // HOTFIX-ALLUMAGE (8 juillet 2026) : `existing` etait le parametre du
+        // callback findIndex ci-dessus, DONC hors scope ici -> ReferenceError
+        // et page blanche des qu'on ajoutait 2 fois le meme produit. Dormant
+        // depuis mai (configs produits toutes uniques), revele par la
+        // collection stickers ou re-cliquer un design est le geste normal.
+        const base = prev[existingIndex];
+        const newQty = base.quantity + (item.quantity || 1);
+        const newTotal = Math.round(newQty * base.unitPrice * 100) / 100;
         updated = prev.map((existing, i) =>
           i === existingIndex
             ? { ...existing, quantity: newQty, totalPrice: newTotal }
