@@ -229,6 +229,11 @@ async function main() {
           Object.defineProperty(navigator, 'language', { get: () => 'fr-CA' });
           Object.defineProperty(navigator, 'languages', { get: () => ['fr-CA', 'fr', 'en'] });
         } catch (_) { /* deja defini, on ignore */ }
+        // STICKERS-NAMES : signale le prerender aux composants. La grille
+        // /stickers skip son shuffle aleatoire quand ce flag est present ->
+        // le HTML capture garde l'ordre stable du manifest (SEO + diffs
+        // reproductibles). Les visiteurs reels n'ont jamais ce flag.
+        window.__MASSIVE_PRERENDER__ = true;
       });
 
       await page.goto(url, { waitUntil: 'networkidle0', timeout: navTimeout });

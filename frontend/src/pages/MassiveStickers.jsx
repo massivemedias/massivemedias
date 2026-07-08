@@ -70,16 +70,16 @@ function StickerCard({ s, justAdded, onAdd, onOpen, tx }) {
         type="button"
         onClick={() => onOpen(s)}
         className="w-full cursor-pointer"
-        aria-label={`${s.nom} - ${tx({ fr: 'voir la fiche', en: 'view details', es: 'ver ficha' })}`}
+        aria-label={`${tx(s)} - ${tx({ fr: 'voir la fiche', en: 'view details', es: 'ver ficha' })}`}
       >
         <img
           loading="lazy"
           src={thumb(`${STICKER_DIR}/${s.slug}.webp`)}
-          alt={`Sticker ${s.nom} - collection Massive`}
+          alt={`Sticker ${tx(s)} - collection Massive`}
           className="sticker-stroke w-full aspect-square object-contain group-hover:scale-105 transition-transform duration-200"
         />
-        <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={s.nom}>
-          {s.nom}
+        <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={tx(s)}>
+          {tx(s)}
         </p>
       </button>
       <button
@@ -176,7 +176,7 @@ function StickerFiche({ s, catLabel, justAdded, onAdd, onClose, tx }) {
               {vue === 'design' ? (
                 <img
                   src={designUrl}
-                  alt={`Sticker ${s.nom}`}
+                  alt={`Sticker ${tx(s)}`}
                   className="sticker-stroke max-h-[85%] max-w-[85%] object-contain"
                 />
               ) : (
@@ -239,7 +239,7 @@ function StickerFiche({ s, catLabel, justAdded, onAdd, onClose, tx }) {
             </div>
           </div>
           <div className="flex flex-col justify-center">
-            <h2 className="font-heading font-bold text-2xl text-heading">{s.nom}</h2>
+            <h2 className="font-heading font-bold text-2xl text-heading">{tx(s)}</h2>
             <p className="text-grey-muted text-sm mt-1">{catLabel}</p>
             <p className="text-accent font-heading font-bold text-3xl mt-4">
               {tx({ fr: `${STICKER_COLLECTION_UNIT_PRICE} $`, en: `$${STICKER_COLLECTION_UNIT_PRICE}`, es: `${STICKER_COLLECTION_UNIT_PRICE} $` })}
@@ -286,6 +286,11 @@ function MassiveStickers() {
   // pendant l'hydratation.
   const [ordreAleatoire, setOrdreAleatoire] = useState(null)
   useEffect(() => {
+    // STICKERS-NAMES : pas de shuffle pendant le prerender (flag pose par
+    // scripts/prerender.mjs). Le HTML capture garde l'ordre stable du
+    // manifest pour le SEO et des builds reproductibles ; les visiteurs
+    // reels n'ont jamais ce flag et recoivent l'ordre aleatoire.
+    if (typeof window !== 'undefined' && window.__MASSIVE_PRERENDER__) return
     const arr = [...MASSIVE_STICKERS]
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
@@ -312,7 +317,7 @@ function MassiveStickers() {
     addToCart({
       productId: `sticker-massive-${s.slug.replace(/^massive-/, '')}`,
       sku: s.slug,
-      productName: tx({ fr: `Sticker ${s.nom}`, en: `Sticker ${s.nom}`, es: `Sticker ${s.nom}` }),
+      productName: tx({ fr: `Sticker ${s.fr}`, en: `Sticker ${s.en}`, es: `Sticker ${s.es}` }),
       quantity: 1,
       unitPrice: info.unitPrice,
       totalPrice: info.price,
@@ -346,7 +351,9 @@ function MassiveStickers() {
   const visibles = useMemo(() => {
     const q = normalizeSearchText(query).trim()
     return MASSIVE_STICKERS.filter((s) => {
-      if (q) return normalizeSearchText(s.nom).includes(q)
+      // STICKERS-NAMES : la recherche matche les TROIS langues, peu importe
+      // l'interface active (chercher "skull" trouve les designs en interface FR).
+      if (q) return [s.fr, s.en, s.es].some((n) => normalizeSearchText(n).includes(q))
       if (activeCat !== 'all' && s.cat !== activeCat) return false
       return true
     })
