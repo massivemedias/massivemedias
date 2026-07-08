@@ -14,6 +14,7 @@ import {
 } from '../data/products'
 import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb } from '../utils/paths'
+import { NEW_BADGE_ENABLED } from '../config/stickersShopStatus'
 
 /**
  * MassiveStickers (STICKERS-SHOP-A, 8 juillet 2026) - VITRINE de la
@@ -29,6 +30,55 @@ import { thumb } from '../utils/paths'
  */
 
 const STICKER_DIR = '/images/stickers-massive'
+
+// STICKERS-UI-01 : ordre d'affichage des familles sur la vue d'accueil.
+// AJUSTABLE PAR MIKA : reordonner les ids ici suffit (ids = MASSIVE_STICKER_
+// CATEGORIES). "Pop-culture" = la categorie personnages.
+const FAMILY_ORDER = ['dark', 'animaux', 'psyche', 'asiatique', 'personnages', 'aliens', 'street-art', 'fun']
+
+// Nombre de designs montres par rangee de famille sur la vue d'accueil.
+const FAMILY_ROW_SIZE = 10
+
+// Carte d'un design : partagee entre la vue d'accueil (rangees par famille)
+// et la vue famille/recherche (grille). `compact` = version rangee
+// horizontale scrollable (largeur fixe).
+function StickerCard({ s, compact, justAdded, onAdd, tx }) {
+  return (
+    <div
+      className={`relative rounded-xl bg-black/20 hover:bg-black/30 transition-colors p-3 flex flex-col items-center group ${compact ? 'flex-none w-36 sm:w-40' : ''}`}
+    >
+      {NEW_BADGE_ENABLED && s.nouveau && (
+        <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wide">
+          <Sparkles size={9} />
+          {tx({ fr: 'Nouveau', en: 'New', es: 'Nuevo' })}
+        </span>
+      )}
+      <img
+        loading="lazy"
+        src={thumb(`${STICKER_DIR}/${s.slug}.webp`)}
+        alt={`Sticker ${s.nom} - collection Massive`}
+        className="sticker-stroke w-full aspect-square object-contain group-hover:scale-105 transition-transform duration-200"
+      />
+      <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={s.nom}>
+        {s.nom}
+      </p>
+      <button
+        type="button"
+        onClick={() => onAdd(s)}
+        className={`mt-2 w-full inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+          justAdded === s.slug
+            ? 'bg-green-500/20 text-green-400'
+            : 'bg-accent text-white hover:brightness-110'
+        }`}
+      >
+        {justAdded === s.slug ? <Check size={12} /> : <Plus size={12} />}
+        {justAdded === s.slug
+          ? tx({ fr: 'Ajoute !', en: 'Added!', es: 'Agregado!' })
+          : tx({ fr: `${STICKER_COLLECTION_UNIT_PRICE} $`, en: `$${STICKER_COLLECTION_UNIT_PRICE}`, es: `${STICKER_COLLECTION_UNIT_PRICE} $` })}
+      </button>
+    </div>
+  )
+}
 
 function MassiveStickers() {
   const { tx } = useLang()
@@ -83,11 +133,14 @@ function MassiveStickers() {
     flashAdded(`pack-${size}`)
   }
 
+  // Recherche active = grille globale (la recherche ignore la famille).
+  const isSearching = normalizeSearchText(query).trim().length > 0
+
   const visibles = useMemo(() => {
     const q = normalizeSearchText(query).trim()
     return MASSIVE_STICKERS.filter((s) => {
+      if (q) return normalizeSearchText(s.nom).includes(q)
       if (activeCat !== 'all' && s.cat !== activeCat) return false
-      if (q && !normalizeSearchText(s.nom).includes(q)) return false
       return true
     })
   }, [activeCat, query])
@@ -201,74 +254,92 @@ function MassiveStickers() {
           />
         </div>
 
-        {/* Chips categories */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
-          <button
-            type="button"
-            onClick={() => setActiveCat('all')}
-            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-              activeCat === 'all' ? 'bg-accent text-white shadow-md' : 'bg-black/20 text-grey-muted hover:text-heading'
-            }`}
-          >
-            {tx({ fr: 'Tout', en: 'All', es: 'Todo' })} ({countByCat.all})
-          </button>
-          {MASSIVE_STICKER_CATEGORIES.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setActiveCat(c.id)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                activeCat === c.id ? 'bg-accent text-white shadow-md' : 'bg-black/20 text-grey-muted hover:text-heading'
-              }`}
-            >
-              {tx(c)} ({countByCat[c.id] || 0})
-            </button>
-          ))}
-        </div>
-
-        {/* Grille */}
-        {visibles.length === 0 ? (
-          <p className="text-center text-grey-muted py-16">
-            {tx({ fr: 'Aucun sticker ne correspond.', en: 'No sticker matches.', es: 'Ningun sticker coincide.' })}
-          </p>
+        {/* STICKERS-UI-01 : trois vues.
+            1. Recherche active -> grille globale de resultats (les chips
+               disparaissent, la recherche est globale).
+            2. Accueil (activeCat='all', pas de recherche) -> les familles en
+               premier plan : une section par famille (ordre FAMILY_ORDER),
+               rangee horizontale scrollable + "Voir tout (n)".
+            3. Vue famille -> chips de navigation + grille complete filtree. */}
+        {isSearching ? (
+          visibles.length === 0 ? (
+            <p className="text-center text-grey-muted py-16">
+              {tx({ fr: 'Aucun sticker ne correspond.', en: 'No sticker matches.', es: 'Ningun sticker coincide.' })}
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+              {visibles.map((s) => (
+                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} tx={tx} />
+              ))}
+            </div>
+          )
+        ) : activeCat === 'all' ? (
+          <div>
+            {FAMILY_ORDER.map((catId) => {
+              const cat = MASSIVE_STICKER_CATEGORIES.find((c) => c.id === catId)
+              if (!cat) return null
+              const designs = MASSIVE_STICKERS.filter((s) => s.cat === catId)
+              if (designs.length === 0) return null
+              return (
+                <section key={catId} className="mb-8">
+                  <div className="flex items-baseline justify-between gap-3 mb-3">
+                    <h2 className="font-heading font-bold text-lg sm:text-xl text-heading">{tx(cat)}</h2>
+                    <button
+                      type="button"
+                      onClick={() => setActiveCat(catId)}
+                      className="flex-none text-accent text-xs sm:text-sm font-semibold hover:brightness-125 transition-all"
+                    >
+                      {tx({ fr: 'Voir tout', en: 'See all', es: 'Ver todo' })} ({designs.length}) &rarr;
+                    </button>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+                    {designs.slice(0, FAMILY_ROW_SIZE).map((s) => (
+                      <StickerCard key={s.slug} s={s} compact justAdded={justAdded} onAdd={addUnitToCart} tx={tx} />
+                    ))}
+                    {designs.length > FAMILY_ROW_SIZE && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveCat(catId)}
+                        className="flex-none w-36 sm:w-40 rounded-xl bg-black/20 hover:bg-black/30 transition-colors flex flex-col items-center justify-center gap-1 text-grey-muted hover:text-heading"
+                      >
+                        <span className="text-2xl font-bold text-accent">+{designs.length - FAMILY_ROW_SIZE}</span>
+                        <span className="text-xs font-semibold">{tx({ fr: 'Voir tout', en: 'See all', es: 'Ver todo' })}</span>
+                      </button>
+                    )}
+                  </div>
+                </section>
+              )
+            })}
+          </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-            {visibles.map((s) => (
-              <div
-                key={s.slug}
-                className="relative rounded-xl bg-black/20 hover:bg-black/30 transition-colors p-3 flex flex-col items-center group"
+          <div>
+            {/* Chips de navigation dans la vue famille */}
+            <div className="flex flex-wrap justify-center gap-2 mb-8">
+              <button
+                type="button"
+                onClick={() => setActiveCat('all')}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all bg-black/20 text-grey-muted hover:text-heading"
               >
-                {s.nouveau && (
-                  <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wide">
-                    <Sparkles size={9} />
-                    {tx({ fr: 'Nouveau', en: 'New', es: 'Nuevo' })}
-                  </span>
-                )}
-                <img
-                  loading="lazy"
-                  src={thumb(`${STICKER_DIR}/${s.slug}.webp`)}
-                  alt={`Sticker ${s.nom} - collection Massive`}
-                  className="w-full aspect-square object-contain group-hover:scale-105 transition-transform duration-200"
-                />
-                <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={s.nom}>
-                  {s.nom}
-                </p>
+                &larr; {tx({ fr: 'Toutes les familles', en: 'All families', es: 'Todas las familias' })}
+              </button>
+              {MASSIVE_STICKER_CATEGORIES.map((c) => (
                 <button
+                  key={c.id}
                   type="button"
-                  onClick={() => addUnitToCart(s)}
-                  className={`mt-2 w-full inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
-                    justAdded === s.slug
-                      ? 'bg-green-500/20 text-green-400'
-                      : 'bg-accent text-white hover:brightness-110'
+                  onClick={() => setActiveCat(c.id)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                    activeCat === c.id ? 'bg-accent text-white shadow-md' : 'bg-black/20 text-grey-muted hover:text-heading'
                   }`}
                 >
-                  {justAdded === s.slug ? <Check size={12} /> : <Plus size={12} />}
-                  {justAdded === s.slug
-                    ? tx({ fr: 'Ajoute !', en: 'Added!', es: 'Agregado!' })
-                    : tx({ fr: `${STICKER_COLLECTION_UNIT_PRICE} $`, en: `$${STICKER_COLLECTION_UNIT_PRICE}`, es: `${STICKER_COLLECTION_UNIT_PRICE} $` })}
+                  {tx(c)} ({countByCat[c.id] || 0})
                 </button>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+              {visibles.map((s) => (
+                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} tx={tx} />
+              ))}
+            </div>
           </div>
         )}
       </div>
