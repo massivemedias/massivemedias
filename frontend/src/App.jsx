@@ -8,6 +8,7 @@ import ScrollToTop from './components/ScrollToTop';
 import ScrollToTopButton from './components/ScrollToTopButton';
 import BackendHealthBanner from './components/BackendHealthBanner';
 import { MERCH_HIDDEN } from './config/merchStatus';
+import { STICKERS_SHOP_ENABLED } from './config/stickersShopStatus'
 import './index.css';
 
 // Retry wrapper for lazy imports - retries up to 3 times on chunk load failure
@@ -53,6 +54,7 @@ const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 // geo + service. Chaque page resolue dynamiquement via le slug d'URL,
 // data centralisee dans src/data/landingPages.js.
 const LandingLocal = lazyWithRetry(() => import('./pages/LandingLocal'));
+const MassiveStickers = lazyWithRetry(() => import('./pages/MassiveStickers'))
 const MmAdmin = lazyWithRetry(() => import('./pages/MmAdmin'));
 // AdminLayout est importe STATIQUEMENT (pas lazy) pour eviter les problemes
 // de cache Cloudflare ou le sidebar n'affiche pas les nouveaux onglets au premier chargement.
@@ -277,6 +279,13 @@ function App() {
                 landingPages.js). Les deux pages coexistent : requetes et
                 contenus differents. NE PLUS rediriger cette URL. */}
             <Route path="/imprimeur-mile-end" element={<LandingLocal />} />
+            {/* STICKERS-SHOP-A (8 juillet 2026) : vitrine de la collection
+                stickers Massive, derriere le flag STICKERS_SHOP_ENABLED
+                (config/stickersShopStatus.js). Flag off = route inexistante
+                (404), rien d'autre a debrancher. */}
+            {STICKERS_SHOP_ENABLED && (
+              <Route path="/stickers" element={<MassiveStickers />} />
+            )}
             <Route path="/stickers-personnalises-montreal" element={<LandingLocal />} />
             <Route path="/print-fine-art-quebec" element={<LandingLocal />} />
             <Route path="/sublimation-textile-montreal" element={<LandingLocal />} />

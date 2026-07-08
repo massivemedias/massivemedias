@@ -21,6 +21,7 @@ import { useLang } from '../i18n/LanguageContext';
 import BrightnessFader from './BrightnessFader';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { STICKERS_SHOP_ENABLED } from '../config/stickersShopStatus'
 import { useUserRole } from '../contexts/UserRoleContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { HIDDEN_SERVICE_SLUGS } from '../config/merchStatus';
@@ -154,6 +155,17 @@ function Header() {
               >
                 {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
               </SmartLink>
+
+              {/* STICKERS-SHOP-A : lien vitrine stickers, visible seulement si le flag est actif */}
+              {STICKERS_SHOP_ENABLED && (
+                <SmartLink
+                  to="/stickers"
+                  onClick={navClick('/stickers')}
+                  className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/stickers') ? 'text-accent' : 'nav-link'}`}
+                >
+                  {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
+                </SmartLink>
+              )}
 
               <SmartLink to="/a-propos" onClick={navClick('/a-propos')} className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/a-propos') ? 'text-accent' : 'nav-link'}`}>
                 {t('nav.aPropos')}
@@ -346,6 +358,21 @@ function Header() {
                   <span className="font-semibold text-[14px]">{tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </SmartLink>
+
+                {/* STICKERS-SHOP-A : vitrine stickers (flag) */}
+                {STICKERS_SHOP_ENABLED && (
+                  <SmartLink
+                    to="/stickers"
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/stickers') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                    onClick={navClick('/stickers', close)}
+                  >
+                    <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                      <Sticker size={14} className="text-accent" />
+                    </span>
+                    <span className="font-semibold text-[14px]">{tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}</span>
+                    <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                  </SmartLink>
+                )}
 
                 <SmartLink
                   to="/a-propos"
