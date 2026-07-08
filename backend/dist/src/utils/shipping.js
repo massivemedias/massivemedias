@@ -1,8 +1,9 @@
 "use strict";
-// Calcul des frais de livraison par poids
-// Source de verite cote serveur - le frontend a un miroir pour l'affichage
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calculateShipping = exports.calculateTotalWeight = exports.getItemWeight = void 0;
+// Calcul des frais de livraison par poids
+// Source de verite cote serveur - le frontend a un miroir pour l'affichage
+const pricing_config_1 = require("./pricing-config");
 const PRINT_WEIGHTS = {
     a4: { print: 100, framed: 800 },
     a3: { print: 150, framed: 1200 },
@@ -26,6 +27,17 @@ function getItemWeight(item) {
     // Stickers custom: 50g base + 10g par tranche de 25
     if (id === 'sticker-custom') {
         return 50 + Math.ceil(qty / 25) * 10;
+    }
+    // STICKERS-SHOP-B : collection Massive. Poids pour les paniers MIXTES
+    // (regles par paliers) - le cas 100% collection passe par le forfait
+    // enveloppe dans calculateShipping et n'utilise pas ces poids.
+    if (id.startsWith('sticker-massive-')) {
+        return 10 * qty;
+    }
+    if (id.startsWith('mystery-pack-')) {
+        const packSize = parseInt(id.replace('mystery-pack-', ''), 10);
+        const per = packSize === 20 ? 210 : packSize === 10 ? 110 : 60;
+        return per * qty;
     }
     // Packs stickers artistes (ex: psyqu33n-stk-001-x3)
     if (id.includes('-stk-')) {
@@ -91,6 +103,35 @@ function calculateShipping(province, postalCode, items) {
     // Montreal (code postal H): toujours gratuit
     if (province === 'QC' && (postalCode === null || postalCode === void 0 ? void 0 : postalCode.toUpperCase().startsWith('H'))) {
         return { shippingCost: 0, totalWeight };
+    }
+    // STICKERS-SHOP-B : commande composee UNIQUEMENT de la collection Massive
+    // (unites sticker-massive-* et/ou mystery packs) -> enveloppe rigide a
+    // tarif fixe, PAS les paliers par poids (12 $+ serait disproportionne pour
+    // 10-25 $ de stickers). Montreal reste gratuit via le check ci-dessus.
+    // Des 30 $ de stickers collection : gratuit partout au Quebec (pousse le
+    // panier vers le pack 20 + unites). Le Canada hors Quebec reste a 6 $.
+    // Panier MIXTE (au moins un autre produit) : paliers par poids inchanges.
+    const isCollectionOnly = items.length > 0 && items.every((i) => {
+        const id = (i.productId || '').toLowerCase();
+        return id.startsWith('sticker-massive-') || id.startsWith('mystery-pack-');
+    });
+    if (isCollectionOnly) {
+        let collectionSubtotal = 0;
+        for (const i of items) {
+            const id = (i.productId || '').toLowerCase();
+            const qty = i.quantity || 1;
+            if (id.startsWith('sticker-massive-')) {
+                collectionSubtotal += pricing_config_1.STICKER_COLLECTION_UNIT_PRICE * qty;
+            }
+            else {
+                const packSize = parseInt(id.replace('mystery-pack-', ''), 10);
+                collectionSubtotal += (pricing_config_1.MYSTERY_PACK_PRICES[packSize] || 0) * qty;
+            }
+        }
+        if (province === 'QC') {
+            return { shippingCost: collectionSubtotal >= 30 ? 0 : 4, totalWeight };
+        }
+        return { shippingCost: 6, totalWeight };
     }
     // Reste du Quebec
     if (province === 'QC') {

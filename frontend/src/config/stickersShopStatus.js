@@ -14,8 +14,10 @@
  *      sitemap au prochain build)
  *   C'est tout.
  *
- * NOTE chantier 3B (commerce) : prix, minimum de commande, mystery packs et
- * checkout viendront dans un chantier separe. Cette page est une VITRINE :
- * aucun prix affiche, aucun achat possible.
+ * NOTE chantier 3B (STICKERS-SHOP-B, commerce) : la page est maintenant
+ * ACHETABLE quand le flag est actif - unite 2 $ (minimum 5 par commande),
+ * mystery packs 5/10/20 a 8/14/25 $, checkout Stripe complet avec prix
+ * forces serveur. Le flag reste OFF tant que Mika n'a pas donne le GO
+ * lancement.
  */
 export const STICKERS_SHOP_ENABLED = false
