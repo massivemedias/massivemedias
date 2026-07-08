@@ -1,8 +1,16 @@
 import { useMemo, useState } from 'react'
-import { Search, Sparkles } from 'lucide-react'
+import { Search, Sparkles, Plus, Check, Gift, ShoppingCart } from 'lucide-react'
 import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
+import { useCart } from '../contexts/CartContext'
 import { MASSIVE_STICKERS, MASSIVE_STICKER_CATEGORIES } from '../data/massiveStickers'
+import {
+  getCollectionStickerPrice,
+  getMysteryPackPrice,
+  STICKER_COLLECTION_MIN_UNITS,
+  MYSTERY_PACK_PRICES,
+  stickerImages,
+} from '../data/products'
 import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb } from '../utils/paths'
 
@@ -23,8 +31,56 @@ const STICKER_DIR = '/images/stickers-massive'
 
 function MassiveStickers() {
   const { tx } = useLang()
+  const { items: cartItems, addToCart } = useCart()
   const [activeCat, setActiveCat] = useState('all')
   const [query, setQuery] = useState('')
+  // Feedback visuel apres un ajout (cle = slug du design ou 'pack-N')
+  const [justAdded, setJustAdded] = useState('')
+
+  // Compte des stickers UNITAIRES de la collection dans le panier (les
+  // mystery packs sont hors compte : autosuffisants pour le minimum de 5).
+  const unitCount = useMemo(() =>
+    (cartItems || []).reduce((sum, it) =>
+      String(it?.productId || '').startsWith('sticker-massive-') ? sum + (Number(it?.quantity) || 1) : sum, 0),
+    [cartItems])
+
+  function flashAdded(key) {
+    setJustAdded(key)
+    setTimeout(() => setJustAdded((k) => (k === key ? '' : k)), 1200)
+  }
+
+  function addUnitToCart(s) {
+    const info = getCollectionStickerPrice(1)
+    addToCart({
+      productId: `sticker-massive-${s.slug.replace(/^massive-/, '')}`,
+      sku: s.slug,
+      productName: tx({ fr: `Sticker ${s.nom}`, en: `Sticker ${s.nom}`, es: `Sticker ${s.nom}` }),
+      quantity: 1,
+      unitPrice: info.unitPrice,
+      totalPrice: info.price,
+      image: thumb(`${STICKER_DIR}/${s.slug}.webp`),
+    })
+    flashAdded(s.slug)
+  }
+
+  function addPackToCart(size) {
+    const pack = getMysteryPackPrice(size)
+    if (!pack) return
+    addToCart({
+      productId: `mystery-pack-${size}`,
+      sku: `mystery-pack-${size}`,
+      productName: tx({
+        fr: `Mystery Pack ${size} stickers`,
+        en: `Mystery Pack ${size} stickers`,
+        es: `Mystery Pack ${size} stickers`,
+      }),
+      quantity: 1,
+      unitPrice: pack.price,
+      totalPrice: pack.price,
+      image: stickerImages[0],
+    })
+    flashAdded(`pack-${size}`)
+  }
 
   const visibles = useMemo(() => {
     const q = normalizeSearchText(query).trim()
@@ -59,11 +115,77 @@ function MassiveStickers() {
           </h1>
           <p className="text-grey-muted max-w-2xl mx-auto">
             {tx({
-              fr: `${MASSIVE_STICKERS.length} designs originaux crees a Montreal. Vinyle die-cut, resistant eau et UV.`,
-              en: `${MASSIVE_STICKERS.length} original designs made in Montreal. Die-cut vinyl, water and UV resistant.`,
-              es: `${MASSIVE_STICKERS.length} disenos originales hechos en Montreal. Vinilo die-cut, resistente al agua y UV.`,
+              fr: `${MASSIVE_STICKERS.length} designs originaux crees a Montreal. Vinyle die-cut, resistant eau et UV. 2 $ le sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}.`,
+              en: `${MASSIVE_STICKERS.length} original designs made in Montreal. Die-cut vinyl, water and UV resistant. $2 per sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}.`,
+              es: `${MASSIVE_STICKERS.length} disenos originales hechos en Montreal. Vinilo die-cut, resistente al agua y UV. 2 $ por sticker, minimo ${STICKER_COLLECTION_MIN_UNITS}.`,
             })}
           </p>
+        </div>
+
+        {/* Compteur du minimum de 5 stickers unitaires (packs hors compte) */}
+        {unitCount > 0 && (
+          <div className={`max-w-md mx-auto mb-6 px-4 py-2.5 rounded-full text-sm text-center font-semibold flex items-center justify-center gap-2 ${
+            unitCount >= STICKER_COLLECTION_MIN_UNITS
+              ? 'bg-green-500/15 text-green-400'
+              : 'bg-amber-500/15 text-amber-400'
+          }`}>
+            <ShoppingCart size={14} />
+            {unitCount >= STICKER_COLLECTION_MIN_UNITS
+              ? tx({
+                  fr: `${unitCount} stickers au panier, minimum atteint !`,
+                  en: `${unitCount} stickers in cart, minimum reached!`,
+                  es: `${unitCount} stickers en el carrito, minimo alcanzado!`,
+                })
+              : tx({
+                  fr: `${unitCount}/${STICKER_COLLECTION_MIN_UNITS} stickers, ajoute ${STICKER_COLLECTION_MIN_UNITS - unitCount} de plus (minimum ${STICKER_COLLECTION_MIN_UNITS})`,
+                  en: `${unitCount}/${STICKER_COLLECTION_MIN_UNITS} stickers, add ${STICKER_COLLECTION_MIN_UNITS - unitCount} more (minimum ${STICKER_COLLECTION_MIN_UNITS})`,
+                  es: `${unitCount}/${STICKER_COLLECTION_MIN_UNITS} stickers, agrega ${STICKER_COLLECTION_MIN_UNITS - unitCount} mas (minimo ${STICKER_COLLECTION_MIN_UNITS})`,
+                })}
+          </div>
+        )}
+
+        {/* Mystery Packs : designs choisis par Massive, hors minimum */}
+        <div className="max-w-4xl mx-auto mb-10">
+          <h2 className="font-heading font-bold text-xl text-heading text-center mb-1 flex items-center justify-center gap-2">
+            <Gift size={18} className="text-accent" />
+            {tx({ fr: 'Mystery Packs', en: 'Mystery Packs', es: 'Mystery Packs' })}
+          </h2>
+          <p className="text-grey-muted text-xs text-center mb-4">
+            {tx({
+              fr: 'Des designs surprises choisis par Massive. Pas de minimum, prets a partir.',
+              en: 'Surprise designs picked by Massive. No minimum, ready to go.',
+              es: 'Disenos sorpresa elegidos por Massive. Sin minimo.',
+            })}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {Object.keys(MYSTERY_PACK_PRICES).map((sizeKey) => {
+              const size = Number(sizeKey)
+              const pack = getMysteryPackPrice(size)
+              const perSticker = (pack.price / size).toFixed(2).replace('.', ',')
+              const key = `pack-${size}`
+              return (
+                <div key={size} className="rounded-xl bg-black/20 hover:bg-black/30 transition-colors p-4 text-center flex flex-col items-center gap-1.5">
+                  <p className="font-heading font-bold text-heading">
+                    {tx({ fr: `${size} stickers`, en: `${size} stickers`, es: `${size} stickers` })}
+                  </p>
+                  <p className="text-2xl font-bold text-accent">{pack.price}&nbsp;$</p>
+                  <p className="text-[11px] text-grey-muted">
+                    {tx({ fr: `${perSticker} $ / sticker`, en: `$${(pack.price / size).toFixed(2)} / sticker`, es: `${perSticker} $ / sticker` })}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => addPackToCart(size)}
+                    className="mt-1.5 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent text-white text-xs font-semibold hover:brightness-110 transition-all"
+                  >
+                    {justAdded === key ? <Check size={13} /> : <Plus size={13} />}
+                    {justAdded === key
+                      ? tx({ fr: 'Ajoute !', en: 'Added!', es: 'Agregado!' })
+                      : tx({ fr: 'Ajouter au panier', en: 'Add to cart', es: 'Agregar' })}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
         </div>
 
         {/* Recherche par nom */}
@@ -130,6 +252,20 @@ function MassiveStickers() {
                 <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={s.nom}>
                   {s.nom}
                 </p>
+                <button
+                  type="button"
+                  onClick={() => addUnitToCart(s)}
+                  className={`mt-2 w-full inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+                    justAdded === s.slug
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'bg-accent text-white hover:brightness-110'
+                  }`}
+                >
+                  {justAdded === s.slug ? <Check size={12} /> : <Plus size={12} />}
+                  {justAdded === s.slug
+                    ? tx({ fr: 'Ajoute !', en: 'Added!', es: 'Agregado!' })
+                    : tx({ fr: '2 $', en: '$2', es: '2 $' })}
+                </button>
               </div>
             ))}
           </div>

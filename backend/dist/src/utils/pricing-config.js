@@ -20,7 +20,7 @@
  *   3. Verifier le contrat API /pricing-config renvoie bien la nouvelle valeur
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPricingConfigPayload = exports.ARTIST_DISCOUNT = exports.SUBLIMATION_DESIGN_FEE = exports.SUBLIMATION_UNIT_PRICES = exports.FINE_ART_MUSEUM_PRICES = exports.FINE_ART_STUDIO_PRICES = exports.FLYER_RECTO_VERSO_MULTIPLIER = exports.FLYER_RECTO_VERSO_TIERS = exports.FLYER_TIERS = exports.BUSINESS_CARD_TIERS = exports.SIZE_MULTIPLIERS = exports.lookupStickerPriceBySize = exports.getStickerSizeTier = exports.INTERMEDIATE_FINISHES = exports.FX_FINISHES = exports.STICKER_FX_TIERS = exports.STICKER_STANDARD_TIERS = exports.STICKER_GRID = exports.FRAME_PRICES_FALLBACK = void 0;
+exports.getPricingConfigPayload = exports.ARTIST_DISCOUNT = exports.SUBLIMATION_DESIGN_FEE = exports.SUBLIMATION_UNIT_PRICES = exports.FINE_ART_MUSEUM_PRICES = exports.FINE_ART_STUDIO_PRICES = exports.FLYER_RECTO_VERSO_MULTIPLIER = exports.FLYER_RECTO_VERSO_TIERS = exports.FLYER_TIERS = exports.BUSINESS_CARD_TIERS = exports.SIZE_MULTIPLIERS = exports.lookupStickerPriceBySize = exports.getStickerSizeTier = exports.MYSTERY_PACK_PRICES = exports.STICKER_COLLECTION_MIN_UNITS = exports.STICKER_COLLECTION_UNIT_PRICE = exports.INTERMEDIATE_FINISHES = exports.FX_FINISHES = exports.STICKER_FX_TIERS = exports.STICKER_STANDARD_TIERS = exports.STICKER_GRID = exports.FRAME_PRICES_FALLBACK = void 0;
 // --- Prix cadre fine art par format (DOIT matcher products.js fineArtFramePriceByFormat) ---
 // A2 = 45$ depuis avril 2026 (fix PRIX-01 du 18 avril). Les anciennes commandes avec
 // 40$ ont ete reconciliees manuellement, le prix courant est 45$.
@@ -76,6 +76,18 @@ exports.STICKER_FX_TIERS = exports.STICKER_GRID.standard.fx;
 // et dots sont fancy (fx) ; clear est intermediate ; matte = sans finition.
 exports.FX_FINISHES = ['holographic', 'broken-glass', 'stars', 'matte-pro', 'glossy', 'dots'];
 exports.INTERMEDIATE_FINISHES = ['clear'];
+// DO NOT MODIFY THESE PRICES. OFFICIAL 2026 (STICKERS-SHOP-B, 8 juillet 2026).
+// Collection de stickers Massive vendue en ligne (page /stickers). Offre
+// validee par Mika, dual-source avec le front (pricingData.js).
+//   - Unite : 2 $ par design choisi, MINIMUM 5 stickers unitaires par
+//     commande (mix de designs permis, c'est le total unitaire qui compte).
+//   - Mystery packs (designs choisis par Massive) : taille -> prix TOTAL.
+//     Les packs ne comptent PAS dans le minimum de 5, ils sont autosuffisants.
+// SKU : sticker-massive-<slug> (unites, un productId par design) et
+// mystery-pack-5 / mystery-pack-10 / mystery-pack-20.
+exports.STICKER_COLLECTION_UNIT_PRICE = 2;
+exports.STICKER_COLLECTION_MIN_UNITS = 5;
+exports.MYSTERY_PACK_PRICES = { 5: 8, 10: 14, 20: 25 };
 /**
  * Mapping taille (string id ou label) -> tier de prix (standard/medium/large).
  * Accepte tous les formats : '2', '2in', '2.5', '2.5in', '3"', etc. Tolerance
@@ -176,6 +188,10 @@ function getPricingConfigPayload() {
         stickerGrid: exports.STICKER_GRID,
         stickerTiersStandard: exports.STICKER_STANDARD_TIERS,
         stickerTiersFx: exports.STICKER_FX_TIERS,
+        // STICKERS-SHOP-B : collection Massive (unites 2 $ + mystery packs).
+        stickerCollectionUnitPrice: exports.STICKER_COLLECTION_UNIT_PRICE,
+        stickerCollectionMinUnits: exports.STICKER_COLLECTION_MIN_UNITS,
+        mysteryPackPrices: exports.MYSTERY_PACK_PRICES,
         fxFinishes: exports.FX_FINISHES,
         sizeMultipliers: exports.SIZE_MULTIPLIERS,
         businessCardTiers: exports.BUSINESS_CARD_TIERS,

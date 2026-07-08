@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CreditCard, Loader2 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
+import { STICKER_COLLECTION_MIN_UNITS } from '../data/products'
 
 function CheckoutForm({ cartTotal, checkoutData }) {
   const { t, tx } = useLang();
@@ -10,6 +11,20 @@ function CheckoutForm({ cartTotal, checkoutData }) {
 
   const handlePayment = async () => {
     if (isProcessing) return;
+    // STICKERS-SHOP-B : minimum 5 stickers unitaires de la collection Massive
+    // par commande (les mystery packs ne comptent pas, ils sont autosuffisants).
+    // Le backend refuse de toute facon - cette garde evite l'aller-retour et
+    // donne un message clair avant la redirection Stripe.
+    const collectionUnits = (checkoutData?.items || []).reduce((sum, it) =>
+      String(it?.productId || '').startsWith('sticker-massive-') ? sum + (Number(it?.quantity) || 1) : sum, 0)
+    if (collectionUnits > 0 && collectionUnits < STICKER_COLLECTION_MIN_UNITS) {
+      setErrorMessage(tx({
+        fr: `Minimum ${STICKER_COLLECTION_MIN_UNITS} stickers de la collection par commande (tu en as ${collectionUnits}). Ajoute quelques designs de plus.`,
+        en: `Minimum ${STICKER_COLLECTION_MIN_UNITS} collection stickers per order (you have ${collectionUnits}). Add a few more designs.`,
+        es: `Minimo ${STICKER_COLLECTION_MIN_UNITS} stickers de la coleccion por pedido (tienes ${collectionUnits}). Agrega algunos mas.`,
+      }))
+      return
+    }
     setIsProcessing(true);
     setErrorMessage('');
 

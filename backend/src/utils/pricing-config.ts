@@ -78,6 +78,19 @@ export const STICKER_FX_TIERS: Record<number, number> = STICKER_GRID.standard.fx
 export const FX_FINISHES = ['holographic', 'broken-glass', 'stars', 'matte-pro', 'glossy', 'dots']
 export const INTERMEDIATE_FINISHES = ['clear']
 
+// DO NOT MODIFY THESE PRICES. OFFICIAL 2026 (STICKERS-SHOP-B, 8 juillet 2026).
+// Collection de stickers Massive vendue en ligne (page /stickers). Offre
+// validee par Mika, dual-source avec le front (pricingData.js).
+//   - Unite : 2 $ par design choisi, MINIMUM 5 stickers unitaires par
+//     commande (mix de designs permis, c'est le total unitaire qui compte).
+//   - Mystery packs (designs choisis par Massive) : taille -> prix TOTAL.
+//     Les packs ne comptent PAS dans le minimum de 5, ils sont autosuffisants.
+// SKU : sticker-massive-<slug> (unites, un productId par design) et
+// mystery-pack-5 / mystery-pack-10 / mystery-pack-20.
+export const STICKER_COLLECTION_UNIT_PRICE = 2
+export const STICKER_COLLECTION_MIN_UNITS = 5
+export const MYSTERY_PACK_PRICES: Record<number, number> = { 5: 8, 10: 14, 20: 25 }
+
 /**
  * Mapping taille (string id ou label) -> tier de prix (standard/medium/large).
  * Accepte tous les formats : '2', '2in', '2.5', '2.5in', '3"', etc. Tolerance
@@ -179,6 +192,10 @@ export function getPricingConfigPayload() {
     stickerGrid: STICKER_GRID,
     stickerTiersStandard: STICKER_STANDARD_TIERS,
     stickerTiersFx: STICKER_FX_TIERS,
+    // STICKERS-SHOP-B : collection Massive (unites 2 $ + mystery packs).
+    stickerCollectionUnitPrice: STICKER_COLLECTION_UNIT_PRICE,
+    stickerCollectionMinUnits: STICKER_COLLECTION_MIN_UNITS,
+    mysteryPackPrices: MYSTERY_PACK_PRICES,
     fxFinishes: FX_FINISHES,
     sizeMultipliers: SIZE_MULTIPLIERS,
     businessCardTiers: BUSINESS_CARD_TIERS,

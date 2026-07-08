@@ -12,6 +12,9 @@ import {
   SUBLIMATION_DESIGN_FEE,
   SUBLIMATION_BLANK_COST,
   SUBLIMATION_BYOT_ALLOWED,
+  STICKER_COLLECTION_UNIT_PRICE,
+  STICKER_COLLECTION_MIN_UNITS,
+  MYSTERY_PACK_PRICES,
   lookupStickerPrice,
   lookupStickerPriceCustomQty,
   lookupFineArtPrice,
@@ -665,3 +668,28 @@ export function getAffichePrice(format, qty, paliers) {
   }
   return selectedPrice;
 }
+
+
+// -----------------------------------------------------------
+// STICKERS-SHOP-B (8 juillet 2026) : helpers de prix de la collection
+// Massive (page /stickers). Prix dual-source (pricingData.js <-> backend
+// pricing-config.ts), le serveur force ces valeurs au checkout.
+// -----------------------------------------------------------
+
+// Prix d'un design de la collection a l'unite (2 $ x quantite).
+export function getCollectionStickerPrice(quantity) {
+  const qty = Math.max(1, Math.floor(Number(quantity) || 1))
+  const price = Math.round(qty * STICKER_COLLECTION_UNIT_PRICE * 100) / 100
+  return { qty, unitPrice: STICKER_COLLECTION_UNIT_PRICE, price }
+}
+
+// Prix d'un mystery pack (designs choisis par Massive). Retourne null si la
+// taille n'existe pas (5, 10 et 20 seulement) - le backend REJETTE de toute
+// facon un pack de taille inconnue.
+export function getMysteryPackPrice(size) {
+  const price = MYSTERY_PACK_PRICES[size]
+  if (price == null) return null
+  return { size, price }
+}
+
+export { STICKER_COLLECTION_UNIT_PRICE, STICKER_COLLECTION_MIN_UNITS, MYSTERY_PACK_PRICES }

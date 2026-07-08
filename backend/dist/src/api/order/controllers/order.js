@@ -331,6 +331,13 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (!items || !Array.isArray(items) || items.length === 0) {
             return ctx.badRequest('Cart is empty');
         }
+        // STICKERS-SHOP-B : minimum 5 stickers unitaires de la collection par
+        // commande (mix de designs permis). Les mystery packs ne comptent PAS,
+        // ils sont autosuffisants. Valide SERVEUR, jamais confiance au front.
+        const collectionUnitCount = items.reduce((sum, it) => String((it === null || it === void 0 ? void 0 : it.productId) || '').startsWith('sticker-massive-') ? sum + (Number(it === null || it === void 0 ? void 0 : it.quantity) || 1) : sum, 0);
+        if (collectionUnitCount > 0 && collectionUnitCount < pricing_config_1.STICKER_COLLECTION_MIN_UNITS) {
+            return ctx.badRequest(`Minimum ${pricing_config_1.STICKER_COLLECTION_MIN_UNITS} stickers de la collection par commande (panier actuel: ${collectionUnitCount})`);
+        }
         if (!customerEmail || !customerName) {
             return ctx.badRequest('Customer email and name are required');
         }
@@ -352,6 +359,20 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 else {
                     strapi.log.warn(`Invalid sticker tier: size=${item.size} qty=${item.quantity}, using client price ${item.totalPrice}`);
                 }
+            }
+            // --- STICKERS-SHOP-B : collection Massive, prix TOUJOURS forces serveur
+            // (2 $/unite, packs 8/14/25 $). Un pack de taille inconnue est REJETE
+            // (pas de fallback prix client sur Stripe LIVE). ---
+            if (typeof item.productId === 'string' && item.productId.startsWith('sticker-massive-')) {
+                validPrice = Math.round((Number(item.quantity) || 1) * pricing_config_1.STICKER_COLLECTION_UNIT_PRICE * 100) / 100;
+            }
+            if (typeof item.productId === 'string' && item.productId.startsWith('mystery-pack-')) {
+                const packSize = parseInt(item.productId.replace('mystery-pack-', ''), 10);
+                const packPrice = pricing_config_1.MYSTERY_PACK_PRICES[packSize];
+                if (packPrice == null) {
+                    return ctx.badRequest(`Invalid mystery pack: ${item.productId}`);
+                }
+                validPrice = packPrice * (Number(item.quantity) || 1);
             }
             // Validate business card pricing against tiers
             if (item.productId && item.productId.startsWith('business-card-')) {
@@ -539,6 +560,13 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (!items || !Array.isArray(items) || items.length === 0) {
             return ctx.badRequest('Cart is empty');
         }
+        // STICKERS-SHOP-B : minimum 5 stickers unitaires de la collection par
+        // commande (mix de designs permis). Les mystery packs ne comptent PAS,
+        // ils sont autosuffisants. Valide SERVEUR, jamais confiance au front.
+        const collectionUnitCount = items.reduce((sum, it) => String((it === null || it === void 0 ? void 0 : it.productId) || '').startsWith('sticker-massive-') ? sum + (Number(it === null || it === void 0 ? void 0 : it.quantity) || 1) : sum, 0);
+        if (collectionUnitCount > 0 && collectionUnitCount < pricing_config_1.STICKER_COLLECTION_MIN_UNITS) {
+            return ctx.badRequest(`Minimum ${pricing_config_1.STICKER_COLLECTION_MIN_UNITS} stickers de la collection par commande (panier actuel: ${collectionUnitCount})`);
+        }
         if (!customerEmail || !customerName) {
             return ctx.badRequest('Customer email and name are required');
         }
@@ -589,6 +617,19 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
                 if (tierPrice != null) {
                     validPrice = tierPrice;
                 }
+            }
+            // --- STICKERS-SHOP-B : collection Massive, prix TOUJOURS forces serveur
+            // (2 $/unite, packs 8/14/25 $). Pack de taille inconnue REJETE. ---
+            if (typeof item.productId === 'string' && item.productId.startsWith('sticker-massive-')) {
+                validPrice = Math.round((Number(item.quantity) || 1) * pricing_config_1.STICKER_COLLECTION_UNIT_PRICE * 100) / 100;
+            }
+            if (typeof item.productId === 'string' && item.productId.startsWith('mystery-pack-')) {
+                const packSize = parseInt(item.productId.replace('mystery-pack-', ''), 10);
+                const packPrice = pricing_config_1.MYSTERY_PACK_PRICES[packSize];
+                if (packPrice == null) {
+                    return ctx.badRequest(`Invalid mystery pack: ${item.productId}`);
+                }
+                validPrice = packPrice * (Number(item.quantity) || 1);
             }
             // --- Artist prints: validation serveur contre le CMS ---
             if (typeof item.productId === 'string' && item.productId.startsWith('artist-print-')) {
