@@ -25,3 +25,12 @@
  * routes.mjs, push sur main.
  */
 export const STICKERS_SHOP_ENABLED = true
+
+/**
+ * STICKERS-UI-01 (8 juillet 2026) : badge "Nouveau" sur les cartes de la
+ * grille. OFF pour l'instant : l'attribution automatique du manifest 3A
+ * (158 designs sur 285 !) etait sur-inclusive et a ete videe. A la
+ * reactivation, Mika marque lui-meme `nouveau: true` sur SES choix dans
+ * massiveStickers.js, puis repasse ce flag a true.
+ */
+export const NEW_BADGE_ENABLED = false

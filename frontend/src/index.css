@@ -1172,3 +1172,14 @@ iframe.instagram-media-rendered {
 iframe.instagram-media-rendered + * {
   display: none !important;
 }
+
+/* STICKERS-UI-01 (8 juillet 2026) : contour blanc autour de la decoupe de
+   chaque design de la collection (grille /stickers). Reproduit la bordure
+   blanche physique du sticker die-cut reel et rend lisibles les designs a
+   lignes noires transparentes sur fond fonce. 4 drop-shadows nets (blur 0)
+   qui suivent l'alpha du webp. Variante 8 directions testee et rejetee :
+   38 fps au scroll sur 285 images (celle-ci : 60 fps). */
+.sticker-stroke {
+  filter: drop-shadow(1.5px 0 0 white) drop-shadow(-1.5px 0 0 white)
+          drop-shadow(0 1.5px 0 white) drop-shadow(0 -1.5px 0 white);
+}
