@@ -4,10 +4,11 @@
  *
  * Run : cd frontend && npm run test
  *
- * Offre validee (NON negociable) : unite 2 $ / design, minimum 5 stickers
- * unitaires par commande ; mystery packs 5 -> 8 $, 10 -> 14 $, 20 -> 25 $
- * (les packs ne comptent pas dans le minimum). Miroir exact du backend
- * pricing-config.ts qui force ces prix au checkout.
+ * Offre validee : unite 3 $ / design (2 $ -> 3 $ le 8 juillet 2026, decision
+ * Mika pre-allumage), minimum 5 stickers unitaires par commande ; mystery
+ * packs 5 -> 8 $, 10 -> 14 $, 20 -> 25 $ (les packs ne comptent pas dans le
+ * minimum). Miroir exact du backend pricing-config.ts qui force ces prix au
+ * checkout.
  */
 import { describe, it, expect } from 'vitest'
 import {
@@ -19,8 +20,8 @@ import {
 } from './products'
 
 describe('constantes collection (dual-source)', () => {
-  it('unite a 2 $, minimum 5', () => {
-    expect(STICKER_COLLECTION_UNIT_PRICE).toBe(2)
+  it('unite a 3 $, minimum 5', () => {
+    expect(STICKER_COLLECTION_UNIT_PRICE).toBe(3)
     expect(STICKER_COLLECTION_MIN_UNITS).toBe(5)
   })
   it('packs exactement 5/10/20 aux prix valides', () => {
@@ -28,15 +29,15 @@ describe('constantes collection (dual-source)', () => {
   })
 })
 
-describe('getCollectionStickerPrice - unites a 2 $', () => {
-  it('1 sticker -> 2 $', () => {
-    expect(getCollectionStickerPrice(1)).toEqual({ qty: 1, unitPrice: 2, price: 2 })
+describe('getCollectionStickerPrice - unites a 3 $', () => {
+  it('1 sticker -> 3 $', () => {
+    expect(getCollectionStickerPrice(1)).toEqual({ qty: 1, unitPrice: 3, price: 3 })
   })
-  it('5 stickers (le minimum) -> 10 $', () => {
-    expect(getCollectionStickerPrice(5).price).toBe(10)
+  it('5 stickers (le minimum) -> 15 $', () => {
+    expect(getCollectionStickerPrice(5).price).toBe(15)
   })
-  it('20 stickers -> 40 $', () => {
-    expect(getCollectionStickerPrice(20).price).toBe(40)
+  it('20 stickers -> 60 $', () => {
+    expect(getCollectionStickerPrice(20).price).toBe(60)
   })
   it('quantites invalides ramenees a 1 (0, negatif, NaN, undefined)', () => {
     expect(getCollectionStickerPrice(0).qty).toBe(1)
@@ -46,7 +47,7 @@ describe('getCollectionStickerPrice - unites a 2 $', () => {
   })
   it('quantite decimale tronquee vers le bas', () => {
     expect(getCollectionStickerPrice(7.9).qty).toBe(7)
-    expect(getCollectionStickerPrice(7.9).price).toBe(14)
+    expect(getCollectionStickerPrice(7.9).price).toBe(21)
   })
 })
 
@@ -81,7 +82,7 @@ describe('invariants metier de l offre', () => {
     expect(perSticker(10)).toBeLessThan(perSticker(5))
     expect(perSticker(20)).toBeLessThan(perSticker(10))
   })
-  it('le minimum en unites (5 x 2 $ = 10 $) depasse le seuil du pack 5 (8 $)', () => {
+  it('le minimum en unites (5 x 3 $ = 15 $) depasse le seuil du pack 5 (8 $)', () => {
     expect(getCollectionStickerPrice(STICKER_COLLECTION_MIN_UNITS).price).toBeGreaterThan(MYSTERY_PACK_PRICES[5])
   })
 })

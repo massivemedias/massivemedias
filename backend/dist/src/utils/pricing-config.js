@@ -79,13 +79,14 @@ exports.INTERMEDIATE_FINISHES = ['clear'];
 // DO NOT MODIFY THESE PRICES. OFFICIAL 2026 (STICKERS-SHOP-B, 8 juillet 2026).
 // Collection de stickers Massive vendue en ligne (page /stickers). Offre
 // validee par Mika, dual-source avec le front (pricingData.js).
-//   - Unite : 2 $ par design choisi, MINIMUM 5 stickers unitaires par
-//     commande (mix de designs permis, c'est le total unitaire qui compte).
+//   - Unite : 3 $ par design choisi (2 $ -> 3 $ le 8 juillet 2026, decision
+//     Mika pre-allumage), MINIMUM 5 stickers unitaires par commande (mix de
+//     designs permis, c'est le total unitaire qui compte).
 //   - Mystery packs (designs choisis par Massive) : taille -> prix TOTAL.
 //     Les packs ne comptent PAS dans le minimum de 5, ils sont autosuffisants.
 // SKU : sticker-massive-<slug> (unites, un productId par design) et
 // mystery-pack-5 / mystery-pack-10 / mystery-pack-20.
-exports.STICKER_COLLECTION_UNIT_PRICE = 2;
+exports.STICKER_COLLECTION_UNIT_PRICE = 3;
 exports.STICKER_COLLECTION_MIN_UNITS = 5;
 exports.MYSTERY_PACK_PRICES = { 5: 8, 10: 14, 20: 25 };
 /**
