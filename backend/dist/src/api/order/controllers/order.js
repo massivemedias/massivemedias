@@ -64,6 +64,9 @@ const tracking_provider_1 = require("../../../utils/tracking-provider");
 const crypto_1 = __importDefault(require("crypto"));
 const promo_codes_1 = require("../../../utils/promo-codes");
 const pricing_config_1 = require("../../../utils/pricing-config");
+// SEC-04 (8 juillet 2026) : registre central des familles de SKU. Whitelist
+// stricte des productId au checkout public, prix toujours force serveur.
+const sku_registry_1 = require("../../../utils/sku-registry");
 const auth_1 = require("../../../utils/auth");
 const webhook_1 = require("../../../utils/webhook");
 const invoice_counter_1 = require("../../../utils/invoice-counter");
@@ -326,6 +329,14 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         ctx.body = uploadedFiles;
     },
     async createPaymentIntent(ctx) {
+        // SEC-04 : chemin legacy (Stripe Payment Element) abandonne par le front
+        // depuis le passage a Stripe Checkout hebergee. OFF par defaut : la route
+        // publique repond 404 sauf reactivation explicite via la variable d'env
+        // LEGACY_PAYMENT_INTENT_ENABLED=true (aucun redeploy de code requis).
+        // Le registre SEC-04 reste branche dessus au cas ou elle serait reactivee.
+        if (process.env.LEGACY_PAYMENT_INTENT_ENABLED !== 'true') {
+            return ctx.notFound();
+        }
         const { items, customerEmail, customerName, customerPhone, shippingAddress, shipping: clientShipping, taxes: clientTaxes, orderTotal: clientOrderTotal, promoCode, promoDiscountPercent, designReady, notes, supabaseUserId } = ctx.request.body;
         // Validate
         if (!items || !Array.isArray(items) || items.length === 0) {
@@ -341,65 +352,37 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         if (!customerEmail || !customerName) {
             return ctx.badRequest('Customer email and name are required');
         }
-        // Recalculate total server-side (never trust client-side totals)
+        // SEC-04 : WHITELIST stricte via le registre central de SKU. Chaque item
+        // DOIT resoudre a un prix serveur (sku-registry.ts), sinon 400 avec un
+        // message clair. Fini le fallback "prix client accepte" : un productId
+        // hors registre ou un palier inconnu est REFUSE. Cache CMS par requete.
+        let piCachedArtists = null;
+        const piCachedProducts = {};
+        const piSkuDeps = {
+            getArtists: async () => {
+                if (piCachedArtists === null) {
+                    piCachedArtists = await strapi.documents('api::artist.artist').findMany({ filters: { active: true } });
+                }
+                return piCachedArtists;
+            },
+            getProductBySlug: async (slug) => {
+                if (!(slug in piCachedProducts)) {
+                    const found = await strapi.documents('api::product.product').findMany({ filters: { slug } });
+                    piCachedProducts[slug] = found && found.length > 0 ? found[0] : null;
+                }
+                return piCachedProducts[slug];
+            },
+            log: strapi.log,
+        };
         let subtotal = 0;
         for (const item of items) {
-            let validPrice = item.totalPrice || 0;
-            // FIX-PRICING-TIERS (27 avril 2026) : validation sticker selon les 3
-            // paliers de taille (Standard/Medium/Large). Le prix officiel vient de
-            // STICKER_GRID[tier][kind][qty] - taille INFLUENCE maintenant le prix.
-            // Avant : prix fixe peu importe la taille -> non rentable sur 4"/5".
-            if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
-                const finishLower = String(item.finish || '').toLowerCase();
-                const tierPrice = (0, pricing_config_1.lookupStickerPriceBySize)(finishLower, item.quantity, item.size);
-                if (tierPrice != null) {
-                    validPrice = tierPrice;
-                    strapi.log.info(`[sticker-validate] size=${item.size} qty=${item.quantity} finish=${finishLower} -> ${tierPrice}$`);
-                }
-                else {
-                    strapi.log.warn(`Invalid sticker tier: size=${item.size} qty=${item.quantity}, using client price ${item.totalPrice}`);
-                }
+            const resolution = await (0, sku_registry_1.resolveSkuPrice)(item, piSkuDeps);
+            if (!resolution.ok) {
+                // Loi 25 : IP hashee (sha256 sale via QR_IP_HASH_SALT), jamais en clair.
+                strapi.log.warn(`[sku-registry] REFUS endpoint=payment-intent productId=${String((item === null || item === void 0 ? void 0 : item.productId) || '(vide)')} family=${resolution.family} email=${customerEmail || '?'} ipHash=${(0, sku_registry_1.hashIpForLog)(ctx.request.ip)} raison="${resolution.reject}"`);
+                return ctx.badRequest(resolution.reject);
             }
-            // --- STICKERS-SHOP-B : collection Massive, prix TOUJOURS forces serveur
-            // (2 $/unite, packs 8/14/25 $). Un pack de taille inconnue est REJETE
-            // (pas de fallback prix client sur Stripe LIVE). ---
-            if (typeof item.productId === 'string' && item.productId.startsWith('sticker-massive-')) {
-                validPrice = Math.round((Number(item.quantity) || 1) * pricing_config_1.STICKER_COLLECTION_UNIT_PRICE * 100) / 100;
-            }
-            if (typeof item.productId === 'string' && item.productId.startsWith('mystery-pack-')) {
-                const packSize = parseInt(item.productId.replace('mystery-pack-', ''), 10);
-                const packPrice = pricing_config_1.MYSTERY_PACK_PRICES[packSize];
-                if (packPrice == null) {
-                    return ctx.badRequest(`Invalid mystery pack: ${item.productId}`);
-                }
-                validPrice = packPrice * (Number(item.quantity) || 1);
-            }
-            // Validate business card pricing against tiers
-            if (item.productId && item.productId.startsWith('business-card-')) {
-                const cardTiers = pricing_config_1.BUSINESS_CARD_TIERS[item.productId];
-                if (cardTiers) {
-                    const tierPrice = cardTiers[item.quantity];
-                    if (tierPrice) {
-                        validPrice = tierPrice;
-                    }
-                    else {
-                        strapi.log.warn(`Invalid business card tier: ${item.productId} qty=${item.quantity}, using client price ${item.totalPrice}`);
-                    }
-                }
-            }
-            // Validate flyer pricing against official grid (HARDCODED 2026 - lookup strict).
-            if (item.productId === 'flyer-a6') {
-                const isRectoVerso = item.finish && (item.finish.toLowerCase().includes('recto-verso') || item.finish.toLowerCase().includes('double'));
-                const grid = isRectoVerso ? pricing_config_1.FLYER_RECTO_VERSO_TIERS : pricing_config_1.FLYER_TIERS;
-                const tierPrice = grid[item.quantity];
-                if (tierPrice) {
-                    validPrice = tierPrice;
-                }
-                else {
-                    strapi.log.warn(`Invalid flyer tier: qty=${item.quantity} rectoVerso=${isRectoVerso}, using client price ${item.totalPrice}`);
-                }
-            }
-            subtotal += validPrice;
+            subtotal += resolution.price;
         }
         // Validate and apply promo code server-side (never trust client discount)
         // PROMO_CODES importe de src/utils/promo-codes.ts
@@ -555,7 +538,6 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
     },
     async createCheckoutSession(ctx) {
-        var _a, _b;
         const { items, customerEmail, customerName, customerPhone, shippingAddress, promoCode, designReady, notes, supabaseUserId } = ctx.request.body;
         if (!items || !Array.isArray(items) || items.length === 0) {
             return ctx.badRequest('Cart is empty');
@@ -582,6 +564,20 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
             }
             return cachedArtists;
         };
+        // SEC-04 : dependances du registre de SKU (whitelist stricte). Cache
+        // produits CMS par requete (affiche-standard, packs sticker-pack).
+        const csCachedProducts = {};
+        const csSkuDeps = {
+            getArtists,
+            getProductBySlug: async (slug) => {
+                if (!(slug in csCachedProducts)) {
+                    const found = await strapi.documents('api::product.product').findMany({ filters: { slug } });
+                    csCachedProducts[slug] = found && found.length > 0 ? found[0] : null;
+                }
+                return csCachedProducts[slug];
+            },
+            log: strapi.log,
+        };
         // Verifier le slug artiste du user pour valider isArtistOwnPrint (securite)
         // artistSlug est stocke dans api::user-role. Lookup par supabaseUserId puis email fallback.
         let verifiedUserArtistSlug = null;
@@ -607,106 +603,19 @@ exports.default = strapi_1.factories.createCoreController('api::order.order', ({
         }
         catch (_) { /* ignore */ }
         for (const item of items) {
-            let validPrice = item.totalPrice || 0;
-            // --- Stickers: validation par grille officielle 3 paliers de taille ---
-            // FIX-PRICING-TIERS (27 avril 2026) : voir createPaymentIntent pour le
-            // detail. Meme regle ici (chemin checkout-session) pour coherence.
-            if (item.productId === 'sticker-custom' || item.productId === 'sticker-artist') {
-                const finishLower = String(item.finish || '').toLowerCase();
-                const tierPrice = (0, pricing_config_1.lookupStickerPriceBySize)(finishLower, item.quantity, item.size);
-                if (tierPrice != null) {
-                    validPrice = tierPrice;
-                }
+            // SEC-04 : WHITELIST stricte via le registre central (sku-registry.ts).
+            // Toutes les familles (stickers custom, collection Massive, mystery
+            // packs, cartes, flyers, prints d'artiste via CMS, packs stickers
+            // artiste/boutique, affiches standard, fine art, sublimation, merch,
+            // depots flash, cartes cadeaux, soldes) resolvent leur prix SERVEUR.
+            // ProductId hors registre ou palier inconnu = 400, message clair.
+            const resolution = await (0, sku_registry_1.resolveSkuPrice)(item, csSkuDeps);
+            if (!resolution.ok) {
+                // Loi 25 : IP hashee (sha256 sale via QR_IP_HASH_SALT), jamais en clair.
+                strapi.log.warn(`[sku-registry] REFUS endpoint=checkout-session productId=${String((item === null || item === void 0 ? void 0 : item.productId) || '(vide)')} family=${resolution.family} email=${customerEmail || '?'} ipHash=${(0, sku_registry_1.hashIpForLog)(ctx.request.ip)} raison="${resolution.reject}"`);
+                return ctx.badRequest(resolution.reject);
             }
-            // --- STICKERS-SHOP-B : collection Massive, prix TOUJOURS forces serveur
-            // (2 $/unite, packs 8/14/25 $). Pack de taille inconnue REJETE. ---
-            if (typeof item.productId === 'string' && item.productId.startsWith('sticker-massive-')) {
-                validPrice = Math.round((Number(item.quantity) || 1) * pricing_config_1.STICKER_COLLECTION_UNIT_PRICE * 100) / 100;
-            }
-            if (typeof item.productId === 'string' && item.productId.startsWith('mystery-pack-')) {
-                const packSize = parseInt(item.productId.replace('mystery-pack-', ''), 10);
-                const packPrice = pricing_config_1.MYSTERY_PACK_PRICES[packSize];
-                if (packPrice == null) {
-                    return ctx.badRequest(`Invalid mystery pack: ${item.productId}`);
-                }
-                validPrice = packPrice * (Number(item.quantity) || 1);
-            }
-            // --- Artist prints: validation serveur contre le CMS ---
-            if (typeof item.productId === 'string' && item.productId.startsWith('artist-print-')) {
-                try {
-                    const pid = item.productId;
-                    const artists = await getArtists();
-                    // Trouver artiste + printId (slug le plus long gagne)
-                    let matchedArtist = null;
-                    let printId = '';
-                    for (const a of artists) {
-                        if (pid.startsWith(`artist-print-${a.slug}-`)) {
-                            if (!matchedArtist || a.slug.length > matchedArtist.slug.length) {
-                                matchedArtist = a;
-                                printId = pid.replace(`artist-print-${a.slug}-`, '');
-                            }
-                        }
-                    }
-                    if (!matchedArtist || !printId) {
-                        return ctx.badRequest(`Print introuvable: ${pid}`);
-                    }
-                    const prints = Array.isArray(matchedArtist.prints) ? matchedArtist.prints : [];
-                    const print = prints.find((p) => p.id === printId);
-                    if (!print) {
-                        return ctx.badRequest(`Print ${printId} introuvable chez ${matchedArtist.slug}`);
-                    }
-                    // Refuser si deja vendu (unique ou private)
-                    if (print.sold === true) {
-                        return ctx.badRequest(`Cette oeuvre a deja ete vendue et n'est plus disponible.`);
-                    }
-                    // RACE-01: refuser si reservee par un autre checkout actif. A ce point on n'a
-                    // pas encore cree la session Stripe, donc toute reservation active ici appartient
-                    // forcement a un AUTRE client. Notre propre reservation sera posee plus loin.
-                    const reservedUntilTs = print.reservedUntil ? new Date(print.reservedUntil).getTime() : 0;
-                    if (reservedUntilTs > Date.now()) {
-                        const minsLeft = Math.max(1, Math.ceil((reservedUntilTs - Date.now()) / 60000));
-                        return ctx.badRequest(`Cette oeuvre est actuellement reservee par un autre client (dispo dans ${minsLeft} min si le paiement echoue).`);
-                    }
-                    // Recalculer le prix attendu a partir du CMS
-                    const pricing = matchedArtist.pricing || {};
-                    // Prix de base selon tier/format (fige pour les pieces privees)
-                    const tier = print.fixedTier || 'studio';
-                    const format = print.fixedFormat || 'a4';
-                    const tierPrices = tier === 'museum' ? (pricing.museum || {}) : (pricing.studio || {});
-                    const basePrice = tierPrices[format] || 0;
-                    // Cadre: lire depuis pricing.framePriceByFormat sinon fallback
-                    const frameMap = pricing.framePriceByFormat || {};
-                    const expectedFramePrice = (print.withFrame || item.shape)
-                        ? ((_b = (_a = frameMap[format]) !== null && _a !== void 0 ? _a : pricing_config_1.FRAME_PRICES_FALLBACK[format]) !== null && _b !== void 0 ? _b : 30)
-                        : 0;
-                    // Prix unique: customPrice si defini (pour unique: true)
-                    let expectedUnitPrice;
-                    if (print.unique === true && typeof print.customPrice === 'number') {
-                        expectedUnitPrice = print.customPrice;
-                    }
-                    else {
-                        expectedUnitPrice = basePrice + expectedFramePrice;
-                    }
-                    // Solde (onSale): appliquer le discount
-                    if (print.onSale && typeof print.salePercent === 'number') {
-                        expectedUnitPrice = Math.round(expectedUnitPrice * (1 - print.salePercent / 100) * 100) / 100;
-                    }
-                    const qty = (print.unique === true || print.private === true) ? 1 : (item.quantity || 1);
-                    const expectedTotal = Math.round(expectedUnitPrice * qty * 100) / 100;
-                    // Tolerance 1 cent pour les arrondis
-                    if (Math.abs((item.totalPrice || 0) - expectedTotal) > 0.01) {
-                        strapi.log.warn(`Prix manipule detecte: ${pid} client=${item.totalPrice} expected=${expectedTotal}`);
-                        validPrice = expectedTotal;
-                    }
-                    else {
-                        validPrice = item.totalPrice;
-                    }
-                }
-                catch (validationErr) {
-                    strapi.log.error(`Erreur validation artist-print ${item.productId}:`, validationErr);
-                    return ctx.badRequest('Validation du prix impossible, reessayez plus tard');
-                }
-            }
+            const validPrice = resolution.price;
             subtotal += validPrice;
             // --- Rabais artiste 25% sur ses propres produits ---
             // Securite: verifier que le user est bien l'artiste du produit (pas juste le flag client)
