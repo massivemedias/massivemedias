@@ -52,6 +52,12 @@ export function getItemWeight(item: CartItem): number {
     return per * qty
   }
 
+  // Packs stickers artistes via configurateur (artist-sticker-pack-<slug>-<timestamp>)
+  // quantity = nombre total de stickers du pack, ~10g piece comme sticker-massive-
+  if (id.startsWith('artist-sticker-pack-')) {
+    return 10 * qty;
+  }
+
   // Packs stickers artistes (ex: psyqu33n-stk-001-x3)
   if (id.includes('-stk-')) {
     return 30 * qty;
