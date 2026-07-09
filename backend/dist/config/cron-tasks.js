@@ -184,4 +184,39 @@ exports.default = {
             tz: 'America/Toronto',
         },
     },
+    /**
+     * visitorHitPurge (ADMIN-VISITORS, 9 juillet 2026) : supprime les
+     * pageviews de plus de 48h. Le compteur admin ne regarde qu'une fenetre
+     * de 24h max, donc 48h de retention couvre largement, et purger court
+     * limite la donnee conservee (meme si ce n'est qu'un hash sale, Loi 25 =
+     * minimisation). Meme esprit que la purge IP des QR scans.
+     *
+     * Schedule : toutes les heures a la minute 17 (decale des autres crons).
+     */
+    visitorHitPurge: {
+        task: async ({ strapi }) => {
+            try {
+                const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+                const vieux = await strapi.documents('api::visitor-hit.visitor-hit').findMany({
+                    filters: { hitAt: { $lt: cutoff } },
+                    fields: ['documentId'],
+                    limit: 100000,
+                });
+                let purges = 0;
+                for (const v of vieux) {
+                    await strapi.documents('api::visitor-hit.visitor-hit').delete({ documentId: v.documentId });
+                    purges++;
+                }
+                if (purges > 0)
+                    strapi.log.info(`[CRON][visitorHitPurge] ${purges} pageviews > 48h supprimes`);
+            }
+            catch (err) {
+                strapi.log.error(`[CRON][visitorHitPurge] FATAL: ${(err === null || err === void 0 ? void 0 : err.message) || err}`);
+            }
+        },
+        options: {
+            rule: '17 * * * *',
+            tz: 'America/Toronto',
+        },
+    },
 };
