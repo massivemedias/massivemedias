@@ -1183,3 +1183,57 @@ iframe.instagram-media-rendered + * {
   filter: drop-shadow(1.5px 0 0 white) drop-shadow(-1.5px 0 0 white)
           drop-shadow(0 1.5px 0 white) drop-shadow(0 -1.5px 0 white);
 }
+
+/* STICKERS-UI-08 : cartes de familles premium, eventail qui s'ouvre au survol
+   (variante A validee). Au repos les 4 stickers sont groupes serres ; au
+   survol ils s'ecartent et se redressent (transform only, leger stagger), la
+   carte se souleve avec un glow rose (accent du theme), le CTA s'anime.
+
+   Perf : transform/opacity SEULEMENT (zero reflow). L'animation ne joue qu'au
+   survol -> aucun cout au scroll (au repos rien n'est anime). will-change
+   pose au survol uniquement. 3 etats par vignette via variables inline :
+   --r{x,r} repos (serre), --m{x,r} median (tactile/reduced, legerement
+   ouvert), --h{x,r} survol (ouvert), --d delai de stagger. */
+.famcard {
+  transition: transform .22s ease-out, box-shadow .22s ease-out, border-color .22s ease-out;
+}
+.famcard-thumb {
+  transform: translate(calc(-50% + var(--rx)), -50%) rotate(var(--rr));
+  transition: transform .26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.famcard-cta { transition: color .2s ease-out; }
+.famcard-arrow { display: inline-block; transition: transform .2s ease-out; }
+
+@media (hover: hover) and (pointer: fine) {
+  .famcard:hover {
+    transform: translateY(-6px);
+    border-color: var(--color-accent, #F00098);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45),
+                0 0 24px rgba(var(--accent-rgb, 240, 0, 152), 0.38);
+  }
+  .famcard:hover .famcard-thumb {
+    transform: translate(calc(-50% + var(--hx)), -50%) rotate(var(--hr));
+    transition-delay: var(--d);
+    will-change: transform;
+  }
+  .famcard:hover .famcard-arrow { transform: translateX(5px); }
+  .famcard:hover .famcard-cta { filter: brightness(1.3); }
+}
+
+/* Tactile (pas de survol) : eventail legerement ouvert par defaut (etat median) */
+@media (hover: none) {
+  .famcard-thumb {
+    transform: translate(calc(-50% + var(--mx)), -50%) rotate(var(--mr));
+  }
+}
+
+/* Mouvement reduit : etat median statique, aucune transition */
+@media (prefers-reduced-motion: reduce) {
+  .famcard, .famcard-thumb, .famcard-cta, .famcard-arrow { transition: none; }
+  .famcard-thumb {
+    transform: translate(calc(-50% + var(--mx)), -50%) rotate(var(--mr));
+  }
+  .famcard:hover .famcard-thumb {
+    transform: translate(calc(-50% + var(--mx)), -50%) rotate(var(--mr));
+  }
+}

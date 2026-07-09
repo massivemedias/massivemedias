@@ -125,16 +125,27 @@ function StickerCard({ s, justAdded, cartQty, onAdd, onOpen, tx }) {
 // chargement eager + fetchpriority high (les cartes SONT le premier ecran).
 function FamilleCard({ cat, count, tx, onOpen }) {
   const slugs = FAMILY_COLLAGES[cat.id] || []
-  const ROTS = [-9, 5, -5, 8]
-  const OFFS = [-57, -19, 19, 57]
-  const ZS = [1, 3, 4, 2]
+  // UI-08 (variante A) : eventail qui s'ouvre au survol. 3 etats par vignette
+  // via variables CSS (voir .famcard* dans index.css) : REPOS serre, MEDIAN
+  // (tactile/reduced-motion, legerement ouvert), SURVOL ouvert. Indices 1 & 2
+  // = cartes centrales (au-dessus, un peu plus grandes). Le mouvement est
+  // 100 % transform (translate/rotate) -> zero reflow, aucun cout au scroll.
+  const REST_X = [-14, -5, 5, 14]
+  const REST_R = [-3, -1.5, 1.5, 3]
+  const MID_X = [-46, -16, 16, 46]
+  const MID_R = [-9, -3.5, 3.5, 9]
+  const HOV_X = [-74, -26, 26, 74]
+  const HOV_R = [-15, -6, 6, 15]
+  const DELAY = [0, 45, 90, 135]
+  const SIZE = [60, 72, 72, 60]
+  const ZS = [2, 4, 4, 2]
   return (
     <button
       type="button"
       onClick={() => onOpen(cat.id)}
-      className="rounded-2xl bg-black/20 hover:bg-black/30 border border-white/5 hover:border-accent/40 transition-all p-3 text-left group"
+      className="famcard rounded-2xl bg-black/20 border border-white/5 p-3 text-left"
     >
-      <div className="relative h-20 sm:h-24 flex items-center justify-center overflow-hidden">
+      <div className="relative h-24 sm:h-28 flex items-center justify-center">
         {slugs.map((slug, i) => (
           <img
             key={slug}
@@ -146,23 +157,25 @@ function FamilleCard({ cat, count, tx, onOpen }) {
             src={`/images/thumbs-mini/stickers-massive/${slug}.webp`}
             alt=""
             aria-hidden="true"
-            className="sticker-stroke absolute object-contain group-hover:scale-105 transition-transform duration-200"
+            className="famcard-thumb sticker-stroke absolute object-contain"
             style={{
-              width: i === 2 ? 80 : 64,
-              height: i === 2 ? 80 : 64,
-              left: `calc(50% + ${OFFS[i]}px - ${(i === 2 ? 80 : 64) / 2}px)`,
+              width: SIZE[i],
+              height: SIZE[i],
+              left: '50%',
               top: '50%',
-              marginTop: i === 2 ? -40 : -32,
-              transform: `rotate(${ROTS[i]}deg)`,
               zIndex: ZS[i],
+              '--rx': `${REST_X[i]}px`, '--rr': `${REST_R[i]}deg`,
+              '--mx': `${MID_X[i]}px`, '--mr': `${MID_R[i]}deg`,
+              '--hx': `${HOV_X[i]}px`, '--hr': `${HOV_R[i]}deg`,
+              '--d': `${DELAY[i]}ms`,
             }}
           />
         ))}
       </div>
       <div className="flex items-baseline justify-between gap-2 mt-2.5">
         <h3 className="font-heading font-bold text-[13.5px] leading-tight text-heading">{tx(cat)}</h3>
-        <span className="flex-none text-accent text-[11px] font-semibold">
-          {count} &rarr;
+        <span className="famcard-cta flex-none text-accent text-[11px] font-semibold">
+          {count} <span className="famcard-arrow">&rarr;</span>
         </span>
       </div>
     </button>
