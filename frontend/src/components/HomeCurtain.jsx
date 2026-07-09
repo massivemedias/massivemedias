@@ -35,6 +35,11 @@ const REVEAL_DELAY_MS = 1500 // 1,2-1,8 s : temps avant lever auto
 const REVEAL_DURATION_MS = 1000 // 800-1200 ms : duree du lever
 const REVEAL_EASING = 'cubic-bezier(0.65, 0, 0.35, 1)' // ease-in-out
 
+// HOME-PERF-01 : interrupteur du rideau. false = page normale (hero + contenu,
+// scroll natif, aucun lever). Sert de kill-switch ET a l'isolation Lighthouse
+// (mesure rideau ON vs OFF).
+const HOME_CURTAIN_ENABLED = true
+
 export default function HomeCurtain({ children }) {
   const stageRef = useRef(null)
 
@@ -45,6 +50,9 @@ export default function HomeCurtain({ children }) {
     // Prerender : ne jamais toucher au scroll ni au transform, laisser la page
     // deroulee pour le crawler.
     if (window.__MASSIVE_PRERENDER__) return
+
+    // HOME-PERF-01 : rideau desactive -> page normale, rien a faire.
+    if (!HOME_CURTAIN_ENABLED) return
 
     // Deja joue cette session, ou l'utilisateur refuse les animations : page
     // normale, scroll natif, rien a faire.
