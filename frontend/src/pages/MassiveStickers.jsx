@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X } from 'lucide-react'
 import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
@@ -310,6 +310,78 @@ function StickerFiche({ s, catLabel, justAdded, onAdd, onClose, tx }) {
   )
 }
 
+// UI-05 : grille a SCROLL INFINI. Affiche `items` par tranches de PAGE_SIZE ;
+// une sentinelle en fin de grille, observee par un IntersectionObserver a
+// rootMargin 700px, charge la tranche suivante AVANT que l'utilisateur
+// atteigne le bas (scroll fluide, pas de trou). Reutilise pour les 3 grilles
+// (catalogue accueil, vue famille, resultats de recherche).
+//
+// FILET (lecon UI-04 : un IO ne fire pas en onglet cache) : le bouton "Voir
+// plus" reste rendu tant qu'il reste des elements. En usage normal le scroll
+// infini charge avant qu'on le voie ; si l'IO est indisponible ou ne fire
+// pas, le bouton reste cliquable -> jamais de grille bloquee.
+//
+// RESET : le parent passe une `key` (activeCat + query) ; un changement de
+// filtre/recherche remonte le composant et remet count a PAGE_SIZE.
+function InfiniteGrid({ items, justAdded, onAdd, onOpen, tx }) {
+  const [count, setCount] = useState(PAGE_SIZE)
+  const sentinelRef = useRef(null)
+  // Guard anti double-chargement : bloque les fire multiples de l'IO entre
+  // le setCount et le re-render (relache une fois la tranche montee).
+  const loadingRef = useRef(false)
+  const hasMore = count < items.length
+
+  const loadMore = () => {
+    if (loadingRef.current) return
+    loadingRef.current = true
+    setCount((c) => Math.min(c + PAGE_SIZE, items.length))
+  }
+  // Relache le guard apres chaque changement de count (nouvelle tranche montee).
+  useEffect(() => { loadingRef.current = false }, [count])
+
+  // (Re)observe la sentinelle tant qu'il reste des elements. useEffect +
+  // useRef (pas de ref-callback) : robuste aux re-renders, comme le lazy
+  // corrige en UI-04. Cleanup deconnecte l'ancien observer.
+  useEffect(() => {
+    if (!hasMore) return
+    const el = sentinelRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore() },
+      { rootMargin: '700px' }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMore, count, items.length])
+
+  return (
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+        {items.slice(0, count).map((s) => (
+          <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={onAdd} onOpen={onOpen} tx={tx} />
+        ))}
+      </div>
+      {hasMore && (
+        <>
+          {/* Sentinelle : declenche le chargement auto ~700px avant le bas */}
+          <div ref={sentinelRef} aria-hidden="true" className="h-px" />
+          {/* Filet : bouton toujours rendu, cliquable si l'IO ne fire pas */}
+          <div className="text-center mt-6">
+            <button
+              type="button"
+              onClick={loadMore}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-black/25 border border-white/10 hover:border-accent/50 text-heading text-sm font-semibold transition-all"
+            >
+              {tx({ fr: 'Voir plus', en: 'See more', es: 'Ver mas' })} ({items.length - count})
+            </button>
+          </div>
+        </>
+      )}
+    </>
+  )
+}
+
 function MassiveStickers() {
   const { tx } = useLang()
   const { items: cartItems, addToCart } = useCart()
@@ -317,9 +389,9 @@ function MassiveStickers() {
   const [query, setQuery] = useState('')
   // Feedback visuel apres un ajout (cle = slug du design ou 'pack-N')
   const [justAdded, setJustAdded] = useState('')
-  // UI-02 : fiche produit ouverte (slug) et pagination de la grille complete.
+  // UI-02 : fiche produit ouverte (slug). La pagination vit desormais dans
+  // InfiniteGrid (UI-05), reset par sa `key` a chaque changement de contexte.
   const [ficheSlug, setFicheSlug] = useState(null)
-  const [nbVisibles, setNbVisibles] = useState(PAGE_SIZE)
   // UI-02 : ordre aleatoire de la grille complete, calcule APRES le mount
   // (Fisher-Yates). Le rendu initial (et donc le HTML prerendu) garde l'ordre
   // stable du manifest : le shuffle n'arrive qu'au runtime client, pas
@@ -520,11 +592,14 @@ function MassiveStickers() {
               {tx({ fr: 'Aucun sticker ne correspond.', en: 'No sticker matches.', es: 'Ningun sticker coincide.' })}
             </p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-              {visibles.map((s) => (
-                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} onOpen={(d) => setFicheSlug(d.slug)} tx={tx} />
-              ))}
-            </div>
+            <InfiniteGrid
+              key={`search|${query}`}
+              items={visibles}
+              justAdded={justAdded}
+              onAdd={addUnitToCart}
+              onOpen={(d) => setFicheSlug(d.slug)}
+              tx={tx}
+            />
           )
         ) : activeCat === 'all' ? (
           <div>
@@ -548,22 +623,14 @@ function MassiveStickers() {
                 {tx({ fr: `${catalogue.length} designs, ordre aleatoire`, en: `${catalogue.length} designs, random order`, es: `${catalogue.length} disenos, orden aleatorio` })}
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-              {catalogue.slice(0, nbVisibles).map((s) => (
-                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} onOpen={(d) => setFicheSlug(d.slug)} tx={tx} />
-              ))}
-            </div>
-            {nbVisibles < catalogue.length && (
-              <div className="text-center mt-6">
-                <button
-                  type="button"
-                  onClick={() => setNbVisibles((v) => v + PAGE_SIZE)}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-black/25 border border-white/10 hover:border-accent/50 text-heading text-sm font-semibold transition-all"
-                >
-                  {tx({ fr: 'Voir plus', en: 'See more', es: 'Ver mas' })} ({catalogue.length - nbVisibles})
-                </button>
-              </div>
-            )}
+            <InfiniteGrid
+              key="catalogue-all"
+              items={catalogue}
+              justAdded={justAdded}
+              onAdd={addUnitToCart}
+              onOpen={(d) => setFicheSlug(d.slug)}
+              tx={tx}
+            />
           </div>
         ) : (
           <div>
@@ -589,11 +656,14 @@ function MassiveStickers() {
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-              {visibles.map((s) => (
-                <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={addUnitToCart} onOpen={(d) => setFicheSlug(d.slug)} tx={tx} />
-              ))}
-            </div>
+            <InfiniteGrid
+              key={`famille|${activeCat}`}
+              items={visibles}
+              justAdded={justAdded}
+              onAdd={addUnitToCart}
+              onOpen={(d) => setFicheSlug(d.slug)}
+              tx={tx}
+            />
           </div>
         )}
       </div>
