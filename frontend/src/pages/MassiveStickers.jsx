@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X } from 'lucide-react'
+import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
 import { useCart } from '../contexts/CartContext'
@@ -13,7 +13,7 @@ import {
   stickerImages,
 } from '../data/products'
 import { normalizeSearchText } from '../utils/clientAccountSearch'
-import { thumb } from '../utils/paths'
+import { thumb, img } from '../utils/paths'
 import { NEW_BADGE_ENABLED } from '../config/stickersShopStatus'
 
 /**
@@ -212,24 +212,33 @@ function LazyImg({ src, alt, className, title }) {
   )
 }
 
-// UI-02 : fiche produit en modale, pattern Redbubble simplifie. Grand visuel
-// switchable (design seul / mockup gourde), zero option de configuration.
-function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, tx }) {
+// UI-02/06 : fiche produit en modale, pattern Redbubble. UI-06 : visuel
+// agrandi (image 800px), modale large, navigation entre designs par fleches
+// (gauche/droite + clavier) en boucle sur la liste courante.
+function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, onPrev, onNext, tx }) {
   const [vue, setVue] = useState('design')
-  const designUrl = thumb(`${STICKER_DIR}/${s.slug}.webp`)
+  const designUrl = img(`${STICKER_DIR}/${s.slug}.webp`) // 800px (UI-06)
+  const thumbUrl = thumb(`${STICKER_DIR}/${s.slug}.webp`) // 400px : vignette du switch
+  // Chaque design ouvert repart sur la vue "design".
+  useEffect(() => { setVue('design') }, [s.slug])
+  // Clavier : Escape ferme, fleches gauche/droite naviguent (UI-06).
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose()
+      else if (e.key === 'ArrowLeft') onPrev?.()
+      else if (e.key === 'ArrowRight') onNext?.()
+    }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
-  }, [onClose])
+  }, [onClose, onPrev, onNext])
   return (
     <div
       className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 p-5 sm:p-7 relative"
+        className="w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 p-5 sm:p-7 relative"
         style={{ backgroundColor: 'var(--bg-body, #3D0079)' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -241,14 +250,35 @@ function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, tx }) {
         >
           <X size={16} />
         </button>
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-[1.5fr_1fr] gap-6 md:gap-8">
           <div>
-            <div className="rounded-2xl bg-black/25 h-72 sm:h-80 flex items-center justify-center relative overflow-hidden">
+            <div className="rounded-2xl bg-black/25 h-80 sm:h-[26rem] md:h-[30rem] flex items-center justify-center relative overflow-hidden">
+              {/* UI-06 : navigation entre designs (boucle sur la liste courante) */}
+              {onPrev && (
+                <button
+                  type="button"
+                  onClick={onPrev}
+                  aria-label={tx({ fr: 'Design précédent', en: 'Previous design', es: 'Diseno anterior' })}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/45 hover:bg-accent text-white transition-colors"
+                >
+                  <ChevronLeft size={22} />
+                </button>
+              )}
+              {onNext && (
+                <button
+                  type="button"
+                  onClick={onNext}
+                  aria-label={tx({ fr: 'Design suivant', en: 'Next design', es: 'Diseno siguiente' })}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/45 hover:bg-accent text-white transition-colors"
+                >
+                  <ChevronRight size={22} />
+                </button>
+              )}
               {vue === 'design' ? (
                 <img
                   src={designUrl}
                   alt={`Sticker ${tx(s)}`}
-                  className="sticker-stroke max-h-[85%] max-w-[85%] object-contain"
+                  className="sticker-stroke max-h-[90%] max-w-[88%] object-contain"
                 />
               ) : (
                 /* Mockup gourde : le design colle sur le tumbler blanc du
@@ -297,7 +327,7 @@ function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, tx }) {
                 aria-label={tx({ fr: 'Voir le design', en: 'View the design', es: 'Ver el diseno' })}
                 className={`w-14 h-14 rounded-lg bg-black/25 flex items-center justify-center border-2 transition-colors ${vue === 'design' ? 'border-accent' : 'border-white/10 hover:border-white/30'}`}
               >
-                <img src={designUrl} alt="" className="w-9 h-9 object-contain" />
+                <img src={thumbUrl} alt="" className="w-9 h-9 object-contain" />
               </button>
               <button
                 type="button"
@@ -804,6 +834,16 @@ function MassiveStickers() {
         const s = MASSIVE_STICKERS.find((d) => d.slug === ficheSlug)
         if (!s) return null
         const cat = MASSIVE_STICKER_CATEGORIES.find((c) => c.id === s.cat)
+        // UI-06 : navigation fleches en BOUCLE sur la liste actuellement
+        // affichee (recherche/famille -> visibles ; accueil -> catalogue).
+        const navList = (isSearching || activeCat !== 'all') ? visibles : catalogue
+        const go = (dir) => {
+          const idx = navList.findIndex((d) => d.slug === ficheSlug)
+          if (idx < 0) return
+          const target = navList[(idx + dir + navList.length) % navList.length]
+          if (target) setFicheSlug(target.slug)
+        }
+        const canNav = navList.length > 1
         return (
           <StickerFiche
             s={s}
@@ -812,6 +852,8 @@ function MassiveStickers() {
             cartQty={cartQtyBySlug[s.slug] || 0}
             onAdd={addUnitToCart}
             onClose={() => setFicheSlug(null)}
+            onPrev={canNav ? () => go(-1) : undefined}
+            onNext={canNav ? () => go(1) : undefined}
             tx={tx}
           />
         )
