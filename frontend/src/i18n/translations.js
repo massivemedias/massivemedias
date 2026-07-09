@@ -10,7 +10,7 @@ const translations = {
       account: 'Mon compte',
       servicesList: [
         { name: 'Prints', slug: 'prints' },
-        { name: 'Stickers', slug: 'stickers' },
+        { name: 'Stickers custom', slug: 'stickers' },
         { name: 'Merch', slug: 'merch' },
         { name: 'Design', slug: 'design' },
         { name: 'Web', slug: 'web' },
@@ -373,7 +373,7 @@ const translations = {
       account: 'My Account',
       servicesList: [
         { name: 'Prints', slug: 'prints' },
-        { name: 'Stickers', slug: 'stickers' },
+        { name: 'Custom Stickers', slug: 'stickers' },
         { name: 'Merch', slug: 'merch' },
         { name: 'Design', slug: 'design' },
         { name: 'Web', slug: 'web' },
@@ -733,7 +733,7 @@ const translations = {
       account: 'Mi cuenta',
       servicesList: [
         { name: 'Prints', slug: 'prints' },
-        { name: 'Stickers', slug: 'stickers' },
+        { name: 'Stickers personalizados', slug: 'stickers' },
         { name: 'Merch', slug: 'merch' },
         { name: 'Diseño', slug: 'design' },
         { name: 'Web', slug: 'web' },
