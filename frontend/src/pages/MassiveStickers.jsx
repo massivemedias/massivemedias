@@ -36,17 +36,20 @@ const STICKER_DIR = '/images/stickers-massive'
 // CATEGORIES). "Pop-culture" = la categorie personnages.
 const FAMILY_ORDER = ['dark', 'animaux', 'psyche', 'asiatique', 'personnages', 'aliens', 'street-art', 'fun']
 
-// STICKERS-UI-02 : collage de designs representatifs affiche en eventail sur
-// la carte de chaque famille. AJUSTABLE PAR MIKA : 5 slugs par famille.
+// STICKERS-UI-02/04 : collage de designs representatifs en eventail sur la
+// carte de chaque famille. AJUSTABLE PAR MIKA : 4 slugs par famille (servis
+// en micro-thumbs 160px, relancer scripts/generate-mini-thumbs.mjs apres
+// tout ajout au catalogue). UI-04 : dragon-firefly et zombie-spider (fonds
+// blancs rectangulaires) remplaces par des designs detoures.
 const FAMILY_COLLAGES = {
-  dark: ['massive-born-to-kill', 'massive-dj-skull', 'massive-skull-kaboom', 'massive-mort', 'massive-zombie-spider'],
-  animaux: ['massive-animals-meeting', 'massive-chameleon', 'massive-fox', 'massive-poisson-rose', 'massive-kapibara'],
-  psyche: ['massive-arte-moderno', 'massive-chmp-7', 'massive-colorage', 'massive-fleur-degueu', 'massive-symetrie-asian'],
-  asiatique: ['massive-adian-fumeuse', 'massive-asian-muerte', 'massive-samourai-violet', 'massive-geisha1', 'massive-dragon-firefly'],
-  personnages: ['massive-astronaute-spain', 'massive-gamer', 'massive-tv-man', 'massive-jade', 'massive-robot-qui-court'],
-  aliens: ['massive-alien-hot', 'massive-alien-calote', 'massive-soucoupe', 'massive-savant-vert', 'massive-cervo-robot'],
-  'street-art': ['massive-art-de-rue', 'massive-tagueur', 'massive-art-libre', 'massive-fuckyou', 'massive-mission'],
-  fun: ['massive-ramen', 'massive-mais', 'massive-lunette-duck', 'massive-pig-chapeau', 'massive-hotdog'],
+  dark: ['massive-born-to-kill', 'massive-dj-skull', 'massive-skull-kaboom', 'massive-mort'],
+  animaux: ['massive-animals-meeting', 'massive-chameleon', 'massive-poisson-rose', 'massive-kapibara'],
+  psyche: ['massive-arte-moderno', 'massive-chmp-7', 'massive-fleur-degueu', 'massive-symetrie-asian'],
+  asiatique: ['massive-adian-fumeuse', 'massive-asian-muerte', 'massive-samourai-violet', 'massive-geisha1'],
+  personnages: ['massive-jade', 'massive-tv-man', 'massive-robot-qui-court', 'massive-punk-rose'],
+  aliens: ['massive-alien-hot', 'massive-alien-calote', 'massive-soucoupe', 'massive-savant-vert'],
+  'street-art': ['massive-art-de-rue', 'massive-tagueur', 'massive-art-libre', 'massive-fuckyou'],
+  fun: ['massive-mais', 'massive-lunette-duck', 'massive-pig-chapeau', 'massive-hotdog'],
 }
 
 // Taille des tranches de la grille complete (pagination progressive).
@@ -72,8 +75,7 @@ function StickerCard({ s, justAdded, onAdd, onOpen, tx }) {
         className="w-full cursor-pointer"
         aria-label={`${tx(s)} - ${tx({ fr: 'voir la fiche', en: 'view details', es: 'ver ficha' })}`}
       >
-        <img
-          loading="lazy"
+        <LazyImg
           src={thumb(`${STICKER_DIR}/${s.slug}.webp`)}
           alt={`Sticker ${tx(s)} - collection Massive`}
           className="sticker-stroke w-full aspect-square object-contain group-hover:scale-105 transition-transform duration-200"
@@ -100,44 +102,82 @@ function StickerCard({ s, justAdded, onAdd, onOpen, tx }) {
   )
 }
 
-// UI-02 : carte cliquable d'une famille, collage de 5 designs en eventail.
+// UI-02/04 : carte cliquable d'une famille, collage de 4 designs en eventail.
+// UI-04 perf : micro-thumbs 160px (au lieu des 400px affiches a ~80px),
+// chargement eager + fetchpriority high (les cartes SONT le premier ecran).
 function FamilleCard({ cat, count, tx, onOpen }) {
   const slugs = FAMILY_COLLAGES[cat.id] || []
-  const ROTS = [-10, 6, -4, 9, -7]
-  const OFFS = [-88, -44, 0, 44, 88]
-  const ZS = [1, 2, 4, 3, 1]
+  const ROTS = [-9, 5, -5, 8]
+  const OFFS = [-57, -19, 19, 57]
+  const ZS = [1, 3, 4, 2]
   return (
     <button
       type="button"
       onClick={() => onOpen(cat.id)}
-      className="rounded-2xl bg-black/20 hover:bg-black/30 border border-white/5 hover:border-accent/40 transition-all p-4 text-left group"
+      className="rounded-2xl bg-black/20 hover:bg-black/30 border border-white/5 hover:border-accent/40 transition-all p-3 text-left group"
     >
-      <div className="relative h-28 sm:h-32 flex items-center justify-center overflow-hidden">
+      <div className="relative h-20 sm:h-24 flex items-center justify-center overflow-hidden">
         {slugs.map((slug, i) => (
           <img
             key={slug}
-            loading="lazy"
-            src={thumb(`${STICKER_DIR}/${slug}.webp`)}
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            width="80"
+            height="80"
+            src={`/images/thumbs-mini/stickers-massive/${slug}.webp`}
             alt=""
             aria-hidden="true"
             className="sticker-stroke absolute object-contain group-hover:scale-105 transition-transform duration-200"
             style={{
-              width: i === 2 ? 104 : 82,
-              height: i === 2 ? 104 : 82,
-              left: `calc(50% + ${OFFS[i]}px - ${(i === 2 ? 104 : 82) / 2}px)`,
+              width: i === 2 ? 80 : 64,
+              height: i === 2 ? 80 : 64,
+              left: `calc(50% + ${OFFS[i]}px - ${(i === 2 ? 80 : 64) / 2}px)`,
+              top: '50%',
+              marginTop: i === 2 ? -40 : -32,
               transform: `rotate(${ROTS[i]}deg)`,
               zIndex: ZS[i],
             }}
           />
         ))}
       </div>
-      <div className="flex items-baseline justify-between gap-2 mt-3">
-        <h3 className="font-heading font-bold text-[15px] text-heading">{tx(cat)}</h3>
-        <span className="flex-none text-accent text-xs font-semibold">
-          {count} designs &rarr;
+      <div className="flex items-baseline justify-between gap-2 mt-2.5">
+        <h3 className="font-heading font-bold text-[13.5px] leading-tight text-heading">{tx(cat)}</h3>
+        <span className="flex-none text-accent text-[11px] font-semibold">
+          {count} &rarr;
         </span>
       </div>
     </button>
+  )
+}
+
+// UI-04 : image de grille en lazy loading NATIF du navigateur.
+//
+// Le premier jet utilisait un IntersectionObserver custom qui gatait le
+// `src` (undefined tant que hors viewport). Verifie en preview ET en Chrome
+// reel : quand l'onglet n'est PAS au premier plan (visibilityState hidden),
+// les callbacks IntersectionObserver sont suspendus par le navigateur ->
+// AUCUNE image de grille ne chargeait jamais. Les images `loading="eager"`
+// (collages), elles, chargeaient normalement. Un src gate par IO est donc
+// un risque reel de page vide, en plus d'etre invérifiable dans un onglet
+// de fond.
+//
+// `loading="lazy"` natif : le navigateur charge le proche-viewport, gere le
+// retour de visibilite tout seul, src TOUJOURS present (jamais de page
+// vide). width/height explicites -> zero CLS. decoding async -> decodage
+// hors du main thread.
+function LazyImg({ src, alt, className, title }) {
+  return (
+    <img
+      loading="lazy"
+      decoding="async"
+      width="400"
+      height="400"
+      src={src}
+      alt={alt}
+      title={title}
+      className={className}
+    />
   )
 }
 
@@ -488,8 +528,8 @@ function MassiveStickers() {
           )
         ) : activeCat === 'all' ? (
           <div>
-            {/* Cartes de familles, 2 colonnes desktop / 1 mobile, compactes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+            {/* Cartes de familles UI-04 : 4 colonnes desktop / 2 mobile, compactes */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
               {FAMILY_ORDER.map((catId) => {
                 const cat = MASSIVE_STICKER_CATEGORIES.find((c) => c.id === catId)
                 if (!cat || !countByCat[catId]) return null
