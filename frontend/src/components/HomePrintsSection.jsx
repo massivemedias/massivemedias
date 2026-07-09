@@ -3,35 +3,32 @@ import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { fineArtFormats, fineArtPrinterTiers } from '../data/products'
+import { thumb } from '../utils/paths'
 
 /**
  * HOME-02 section b : PRINTS & FINE ART.
  *
- * Presente 2-3 prints "en situation" dans les scenes mockup v2 du repo
- * (salon, studio, zen - des fonds de piece vides sur lesquels on COMPOSE une
- * oeuvre vedette en CSS, leger et prerendu, sans le canvas chroma-key lourd
- * du configurateur qui plomberait le Lighthouse de la home).
+ * STICKERS-UI (revision) : showcase SOBRE. Petites vignettes d'oeuvres
+ * encadrees (pas de scenes de piece salon/studio/zen - juges trop gros).
+ * Les oeuvres viennent des prints artistes deja charges par la home (prop
+ * `artworks`), avec un fallback local d'exemples de prints pour le prerender
+ * / CMS vide. Tiers Studio / Musee mentionnes avec prix d'appel DUAL-SOURCE
+ * (plus petit prix de FINE_ART_GRID via fineArtFormats), jamais hardcode.
  *
- * Les oeuvres vedettes viennent des prints artistes deja charges par la home
- * (prop `artworks`, images CMS propres). Sans oeuvre (prerender / CMS vide),
- * la scene affiche un cadre elegant vide -> jamais casse.
- *
- * Tiers Studio / Musee mentionnes avec prix d'appel DUAL-SOURCE (plus petit
- * prix de la grille FINE_ART_GRID via fineArtFormats), jamais hardcode.
- *
- * FRAME_RECT : rectangle du cadre par scene, en % du conteneur. Ajustable a
- * l'oeil (les scenes sont frontales, pas de perspective forte).
+ * Perf : vignettes en lazy, transform/opacity au hover uniquement.
  */
-const SCENES = [
-  { id: 'living_room', fr: 'Salon', en: 'Living room', es: 'Salon', rect: { left: 34, top: 15, width: 31 } },
-  { id: 'studio', fr: 'Studio', en: 'Studio', es: 'Estudio', rect: { left: 20, top: 20, width: 30 } },
-  { id: 'zen', fr: 'Zen', en: 'Zen', es: 'Zen', rect: { left: 35, top: 17, width: 29 } },
+
+// Fallback local (exemples de prints reels) si aucun print CMS charge.
+const FALLBACK = [
+  '/images/realisations/prints/FineArt1.webp',
+  '/images/realisations/prints/FineArt4.webp',
+  '/images/realisations/prints/FineArt6.webp',
+  '/images/realisations/prints/Prints7.webp',
+  '/images/realisations/prints/Prints17.webp',
+  '/images/realisations/prints/Prints24.webp',
 ]
-const SCENE_DIR = '/images/mockups/v2'
-const FRAME_RATIO = 4 / 3 // hauteur / largeur du cadre (portrait)
 
 function priceFrom(key) {
-  // Plus petit prix non nul de la grille pour le tier (studioPrice/museumPrice).
   const vals = fineArtFormats.map((f) => f[key]).filter((v) => typeof v === 'number' && v > 0)
   return vals.length ? Math.min(...vals) : null
 }
@@ -46,6 +43,11 @@ export default function HomePrintsSection({ artworks = [] }) {
     return lang === 'en' ? t.labelEn : lang === 'es' ? t.labelEs : t.labelFr
   }
 
+  // Vignettes : prints artistes si dispo, sinon exemples locaux.
+  const vignettes = artworks.length
+    ? artworks.slice(0, 6).map((a) => ({ src: a.image, link: `/artistes/${a.artistSlug}`, title: a.titleFr || a.titleEn || '' }))
+    : FALLBACK.map((src) => ({ src: thumb(src), link: '/services/prints', title: '' }))
+
   return (
     <section className="section-container">
       <motion.div
@@ -53,7 +55,7 @@ export default function HomePrintsSection({ artworks = [] }) {
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="text-center mb-10"
+        className="text-center mb-8"
       >
         <h2 className="text-4xl md:text-5xl font-heading font-bold text-heading mb-3 hero-title">
           {tx({ fr: 'Prints & Fine Art', en: 'Prints & Fine Art', es: 'Prints & Fine Art' })}
@@ -67,56 +69,35 @@ export default function HomePrintsSection({ artworks = [] }) {
         </p>
       </motion.div>
 
-      {/* Scenes : oeuvre vedette composee sur le mur */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto mb-10">
-        {SCENES.map((scene, i) => {
-          const art = artworks[i]
-          return (
-            <motion.div
-              key={scene.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              viewport={{ once: true }}
-              className="relative rounded-2xl overflow-hidden aspect-square"
+      {/* Showcase compact : petites vignettes encadrees, rangee centree */}
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-4 max-w-3xl mx-auto mb-10">
+        {vignettes.map((v, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: i * 0.06 }}
+            viewport={{ once: true }}
+          >
+            <Link
+              to={v.link}
+              className="group block w-20 sm:w-24 rounded-md bg-white p-1.5 shadow-lg transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl"
+              aria-label={v.title || tx({ fr: 'Voir les prints', en: 'View prints', es: 'Ver los prints' })}
             >
-              <img
-                src={`${SCENE_DIR}/${scene.id}.webp`}
-                alt={tx({ fr: `Print en situation - ${scene.fr}`, en: `Print in a ${scene.en}`, es: `Print en un ${scene.es}` })}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                decoding="async"
-                width="700"
-                height="700"
-              />
-              {/* Cadre + oeuvre vedette composee sur le mur */}
-              <div
-                className="absolute shadow-2xl"
-                style={{
-                  left: `${scene.rect.left}%`,
-                  top: `${scene.rect.top}%`,
-                  width: `${scene.rect.width}%`,
-                  aspectRatio: `1 / ${FRAME_RATIO}`,
-                  background: '#fff',
-                  padding: '4%',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
-                }}
-              >
-                {art ? (
-                  <img
-                    src={art.image}
-                    alt={art.titleFr || art.titleEn || ''}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-black/5" aria-hidden="true" />
-                )}
+              <div className="aspect-[3/4] overflow-hidden rounded-sm">
+                <img
+                  src={v.src}
+                  alt={v.title || tx({ fr: 'Print fine art Massive', en: 'Massive fine art print', es: 'Print fine art Massive' })}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  width="200"
+                  height="267"
+                />
               </div>
-            </motion.div>
-          )
-        })}
+            </Link>
+          </motion.div>
+        ))}
       </div>
 
       {/* Tiers Studio / Musee + prix d'appel (dual-source) */}

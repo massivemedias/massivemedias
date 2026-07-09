@@ -241,9 +241,9 @@ function Home() {
       <HomeCollectionBanner />
 
       {/* ============ b. PRINTS & FINE ART ============
-          Oeuvres vedettes composees sur les scenes mockup v2 (salon/studio/
-          zen). Prend les 3 premiers prints artistes deja charges par la home. */}
-      <HomePrintsSection artworks={displayArtworks.slice(0, 3)} />
+          Showcase sobre : petites vignettes d'oeuvres encadrees (pas de
+          scenes de piece). Prend les prints artistes deja charges par la home. */}
+      <HomePrintsSection artworks={displayArtworks.slice(0, 6)} />
 
       {/* ============ ARTISTES & OEUVRES ============ */}
       <section className="section-container">
