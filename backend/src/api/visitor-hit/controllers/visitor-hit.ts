@@ -1,5 +1,5 @@
 import { factories } from '@strapi/strapi'
-import { hashIpSalted, normalizeWindow, VISITOR_WINDOWS, countDistinctVisitors } from '../../../utils/ip-hash'
+import { hashIpSalted, extractClientIp, normalizeWindow, VISITOR_WINDOWS, countDistinctVisitors } from '../../../utils/ip-hash'
 import { requireAdminAuth } from '../../../utils/auth'
 
 // Rate-limit in-memory du beacon public (pattern __reorderThrottle__ de
@@ -14,14 +14,16 @@ const THROTTLE_MAX = 20_000
 export default factories.createCoreController('api::visitor-hit.visitor-hit', ({ strapi }) => ({
   /**
    * POST /api/visitor-hits/collect  (public, rate-limite)
-   * Body : { path }. L'IP vient de ctx.request.ip, hashee immediatement,
-   * jamais stockee en clair. Repond TOUJOURS 204 (fire-and-forget cote
-   * beacon) : aucune fuite d'info, aucun blocage du client.
+   * Body : { path }. La vraie IP client (via cf-connecting-ip) est hashee
+   * immediatement, jamais stockee en clair. Repond TOUJOURS 204
+   * (fire-and-forget cote beacon) : aucune fuite d'info, aucun blocage.
    */
   async collect(ctx) {
     try {
       const salt = process.env.QR_IP_HASH_SALT || ''
-      const ipHash = hashIpSalted(ctx.request.ip, salt)
+      // Vraie IP client via cf-connecting-ip (Cloudflare), PAS ctx.request.ip
+      // qui renvoie l'IP interne variable du proxy Render -> comptage faux.
+      const ipHash = hashIpSalted(extractClientIp(ctx), salt)
       const rawPath = (ctx.request.body as any)?.path
       let path = typeof rawPath === 'string' ? rawPath.slice(0, 300) : ''
       // On ne garde que le pathname (pas de query string : pourrait porter
