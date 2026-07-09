@@ -87,6 +87,67 @@ function StatCard({ icon: Icon, label, value, subValue, color, to, highlight }) 
   return to ? <Link to={to}>{content}</Link> : content;
 }
 
+// --- ADMIN-VISITORS : widget visiteurs uniques (fenetre 1h/3h/24h) ---
+// Autonome : son propre fetch + auto-refresh 60s (pas de polling agressif).
+// Discret, une seule tuile pleine largeur au-dessus des KPIs.
+function VisitorsWidget() {
+  const { tx } = useLang();
+  const [windowKey, setWindowKey] = useState('3h');
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await api.get(`/visitor-hits/count?window=${windowKey}`);
+        if (!cancelled) { setData(res.data); setErr(false); }
+      } catch (_) {
+        if (!cancelled) setErr(true);
+      }
+    };
+    load();
+    const iv = setInterval(load, 60000); // refresh 60s
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [windowKey]);
+
+  const WINDOWS = ['1h', '3h', '24h'];
+  return (
+    <div className="flex items-center gap-3 p-4 rounded-xl bg-black/20">
+      <div className="p-2.5 rounded-lg bg-purple-500/15 text-purple-300">
+        <Eye size={20} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-xl font-bold text-heading leading-tight">
+            {err ? '–' : (data ? data.uniqueVisitors : '…')}
+          </span>
+          <span className="text-xs text-grey-muted">
+            {tx({ fr: 'visiteurs uniques', en: 'unique visitors', es: 'visitantes unicos' })}
+          </span>
+        </div>
+        <p className="text-xs text-grey-muted truncate">
+          {tx({ fr: 'Trafic public en direct', en: 'Live public traffic', es: 'Trafico publico en vivo' })}
+        </p>
+      </div>
+      <div className="flex gap-1 flex-shrink-0">
+        {WINDOWS.map((w) => (
+          <button
+            key={w}
+            type="button"
+            onClick={() => setWindowKey(w)}
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+              windowKey === w ? 'bg-purple-500/25 text-purple-200' : 'bg-black/20 text-grey-muted hover:text-heading'
+            }`}
+          >
+            {w}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // --- Alerte compacte cliquable ---
 function AlertRow({ icon: Icon, iconColor, text, sub, to }) {
   const body = (
@@ -393,6 +454,9 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-5">
+      {/* ===== ADMIN-VISITORS : trafic public en direct ===== */}
+      <VisitorsWidget />
+
       {/* ===== FILE-PROD-01A : file de production, visible des le login ===== */}
       <ProductionQueue orders={orders} />
 

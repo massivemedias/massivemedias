@@ -699,6 +699,8 @@ export interface ApiArtistArtist extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
     pricing: Schema.Attribute.JSON;
+    printCommissionRate: Schema.Attribute.Decimal &
+      Schema.Attribute.DefaultTo<0.5>;
     printImages: Schema.Attribute.Media<'images', true>;
     prints: Schema.Attribute.JSON;
     productionCosts: Schema.Attribute.JSON;
@@ -708,10 +710,66 @@ export interface ApiArtistArtist extends Struct.CollectionTypeSchema {
       Schema.Attribute.Unique;
     socials: Schema.Attribute.JSON;
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    stickerCommissionRate: Schema.Attribute.Decimal &
+      Schema.Attribute.DefaultTo<0.15>;
     stickers: Schema.Attribute.JSON;
     taglineEn: Schema.Attribute.String;
     taglineEs: Schema.Attribute.String;
     taglineFr: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiBillingSettingBillingSetting
+  extends Struct.SingleTypeSchema {
+  collectionName: 'billing_settings';
+  info: {
+    description: 'Numeros de taxes (TPS/TVQ), NEQ, coordonnees bancaires et modalites de paiement';
+    displayName: 'Reglages Facturation';
+    pluralName: 'billing-settings';
+    singularName: 'billing-setting';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    bankAccount: Schema.Attribute.String;
+    bankInstitution: Schema.Attribute.String;
+    bankName: Schema.Attribute.String;
+    bankTransit: Schema.Attribute.String;
+    companyAddress: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'5338 rue Marquette'>;
+    companyCity: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Montreal (QC) H2J 3Z3'>;
+    companyEmail: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'massivemedias@gmail.com'>;
+    companyName: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Massive Medias'>;
+    companyOwner: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Michael Sanchez'>;
+    companyPhone: Schema.Attribute.String;
+    companyWebsite: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'massivemedias.com'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    interacEmail: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'massivemedias@gmail.com'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::billing-setting.billing-setting'
+    > &
+      Schema.Attribute.Private;
+    neq: Schema.Attribute.String & Schema.Attribute.DefaultTo<'2269057891'>;
+    paymentNotes: Schema.Attribute.Text;
+    publishedAt: Schema.Attribute.DateTime;
+    tps: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'732457635RT0001'>;
+    tvq: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'4012577678TQ0001'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -828,6 +886,7 @@ export interface ApiContactSubmissionContactSubmission
       Schema.Attribute.Private;
     email: Schema.Attribute.Email & Schema.Attribute.Required;
     entreprise: Schema.Attribute.String;
+    fileLink: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -928,10 +987,13 @@ export interface ApiInventoryItemInventoryItem
         'materiel',
         'cadre',
         'merch',
+        'equipment',
+        'consumables',
+        'packaging',
+        'software',
         'sticker',
         'consommable',
         'emballage',
-        'equipment',
         'frame',
       ]
     > &
@@ -963,8 +1025,21 @@ export interface ApiInventoryItemInventoryItem
     publishedAt: Schema.Attribute.DateTime;
     quantity: Schema.Attribute.Integer &
       Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
       Schema.Attribute.DefaultTo<0>;
-    reserved: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    reserved: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     sku: Schema.Attribute.String & Schema.Attribute.Unique;
     stickerFormat: Schema.Attribute.Enumeration<['rouleau', 'feuille']>;
     stickerType: Schema.Attribute.Enumeration<
@@ -991,6 +1066,7 @@ export interface ApiInvoiceInvoice extends Struct.CollectionTypeSchema {
   };
   attributes: {
     client: Schema.Attribute.Relation<'manyToOne', 'api::client.client'>;
+    companyName: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1101,6 +1177,7 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.DefaultTo<'postes-canada'>;
     client: Schema.Attribute.Relation<'manyToOne', 'api::client.client'>;
+    companyName: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1118,6 +1195,12 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
       Schema.Attribute.Private;
     notes: Schema.Attribute.Text;
+    paymentReminderSent: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    productionStage: Schema.Attribute.Enumeration<
+      ['files_prep', 'printing', 'cutting', 'packaging']
+    > &
+      Schema.Attribute.DefaultTo<'files_prep'>;
     promoCode: Schema.Attribute.String;
     promoDiscount: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     publishedAt: Schema.Attribute.DateTime;
@@ -1181,6 +1264,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         'merch-longsleeve',
         'merch-crewneck',
         'merch-totebag',
+        'affiche-standard',
       ]
     > &
       Schema.Attribute.Required;
@@ -1215,6 +1299,43 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
     sortOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiProjectProject extends Struct.CollectionTypeSchema {
+  collectionName: 'projects';
+  info: {
+    description: 'Etudes de cas du portfolio Massive Medias - generees a partir des commandes livrees via le wizard admin.';
+    displayName: 'Projet (Portfolio)';
+    pluralName: 'projects';
+    singularName: 'project';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    category: Schema.Attribute.String;
+    clientName: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.RichText;
+    images: Schema.Attribute.Media<'images', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::project.project'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    publishedUrl: Schema.Attribute.String;
+    slug: Schema.Attribute.UID<'title'>;
+    sourceOrderRef: Schema.Attribute.String;
+    tags: Schema.Attribute.JSON;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1279,6 +1400,7 @@ export interface ApiQrCodeQrCode extends Struct.CollectionTypeSchema {
   };
   attributes: {
     active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    clientEmail: Schema.Attribute.Email;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1316,7 +1438,7 @@ export interface ApiQrCodeQrCode extends Struct.CollectionTypeSchema {
 export interface ApiQrScanQrScan extends Struct.CollectionTypeSchema {
   collectionName: 'qr_scans';
   info: {
-    description: 'Individual scan events on QR codes';
+    description: 'Individual scan events on QR codes. TODO: retirer ipAddress du schema apres confirmation de la purge en prod (champ conserve uniquement pour la migration Loi 25 feat/qr-ip-hash, plus jamais alimente).';
     displayName: 'QR Scan';
     pluralName: 'qr-scans';
     singularName: 'qr-scan';
@@ -1325,10 +1447,22 @@ export interface ApiQrScanQrScan extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    city: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
+    country: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 4;
+      }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     ipAddress: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 64;
+      }>;
+    ipHash: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 64;
       }>;
@@ -1736,6 +1870,43 @@ export interface ApiUserRoleUserRole extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'user'>;
     supabaseUserId: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiVisitorHitVisitorHit extends Struct.CollectionTypeSchema {
+  collectionName: 'visitor_hits';
+  info: {
+    description: "ADMIN-VISITORS : pageview minimal pour le compteur de visiteurs uniques du dashboard. Loi 25 : JAMAIS d'IP en clair, uniquement le hash sale (QR_IP_HASH_SALT). Pas de user-agent, pas de referer. Purge auto a 48h (cron visitorHitPurge).";
+    displayName: 'Visitor Hit';
+    pluralName: 'visitor-hits';
+    singularName: 'visitor-hit';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    hitAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    ipHash: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 64;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::visitor-hit.visitor-hit'
+    > &
+      Schema.Attribute.Private;
+    path: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 300;
+      }>;
+    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -2335,6 +2506,7 @@ declare module '@strapi/strapi' {
       'api::artist-payment.artist-payment': ApiArtistPaymentArtistPayment;
       'api::artist-submission.artist-submission': ApiArtistSubmissionArtistSubmission;
       'api::artist.artist': ApiArtistArtist;
+      'api::billing-setting.billing-setting': ApiBillingSettingBillingSetting;
       'api::boutique-item.boutique-item': ApiBoutiqueItemBoutiqueItem;
       'api::client.client': ApiClientClient;
       'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
@@ -2344,6 +2516,7 @@ declare module '@strapi/strapi' {
       'api::news-article.news-article': ApiNewsArticleNewsArticle;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
+      'api::project.project': ApiProjectProject;
       'api::promo-code.promo-code': ApiPromoCodePromoCode;
       'api::qr-code.qr-code': ApiQrCodeQrCode;
       'api::qr-scan.qr-scan': ApiQrScanQrScan;
@@ -2353,6 +2526,7 @@ declare module '@strapi/strapi' {
       'api::stripe-webhook-event.stripe-webhook-event': ApiStripeWebhookEventStripeWebhookEvent;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
       'api::user-role.user-role': ApiUserRoleUserRole;
+      'api::visitor-hit.visitor-hit': ApiVisitorHitVisitorHit;
       'api::webhook-alert-throttle.webhook-alert-throttle': ApiWebhookAlertThrottleWebhookAlertThrottle;
       'api::withdrawal-request.withdrawal-request': ApiWithdrawalRequestWithdrawalRequest;
       'plugin::content-releases.release': PluginContentReleasesRelease;

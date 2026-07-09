@@ -9,6 +9,7 @@ import ScrollToTopButton from './components/ScrollToTopButton';
 import BackendHealthBanner from './components/BackendHealthBanner';
 import { MERCH_HIDDEN } from './config/merchStatus';
 import { STICKERS_SHOP_ENABLED } from './config/stickersShopStatus'
+import { sendVisitorBeacon } from './utils/visitorBeacon';
 import './index.css';
 
 // Retry wrapper for lazy imports - retries up to 3 times on chunk load failure
@@ -168,6 +169,18 @@ function RecoveryRedirect() {
   return null;
 }
 
+// ADMIN-VISITORS : pageview beacon a chaque changement de route. Monte une
+// seule fois (dans MainLayout), suit location.pathname. sendBeacon est
+// async et non bloquant, ne trace pas les pages /admin (donnees internes).
+function VisitorBeacon() {
+  const location = useLocation();
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/mm-admin')) return;
+    sendVisitorBeacon(location.pathname);
+  }, [location.pathname]);
+  return null;
+}
+
 function App() {
   const subdomainSlug = getSubdomainSlug();
 
@@ -234,6 +247,7 @@ function App() {
     <BrowserRouter basename={basename}>
       <BackendHealthBanner />
       <RecoveryRedirect />
+      <VisitorBeacon />
       <ScrollToTop />
       <ScrollToTopButton />
       <ErrorBoundary>
