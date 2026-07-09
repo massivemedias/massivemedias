@@ -16,6 +16,26 @@ export function hashIpSalted(ip: string, salt: string): string {
 }
 
 /**
+ * Extrait la vraie IP client derriere les proxies (Cloudflare -> Render).
+ * MEME priorite que api/qr-code (pattern eprouve en prod) :
+ *   1. cf-connecting-ip : l'IP client fournie par Cloudflare (la plus fiable)
+ *   2. x-forwarded-for[0] : premier hop = client si le proxy est honnete
+ *   3. ctx.ip : fallback (IP directe, ok en local sans proxy)
+ * SANS ce helper, ctx.request.ip peut renvoyer l'IP interne du proxy Render
+ * qui VARIE entre requetes -> chaque pageview compterait comme un visiteur
+ * distinct, faussant le compteur. Retour = IP en clair EN MEMOIRE seulement,
+ * a hasher immediatement, jamais a persister.
+ */
+export function extractClientIp(ctx: any): string {
+  return (
+    (ctx?.request?.headers?.['cf-connecting-ip'] as string) ||
+    (ctx?.request?.headers?.['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    ctx?.ip ||
+    ''
+  )
+}
+
+/**
  * Fenetres de comptage supportees par le widget admin (heures).
  * Cle -> millisecondes. Toute cle hors de cette table est refusee.
  */

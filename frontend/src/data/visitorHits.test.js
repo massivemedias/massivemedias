@@ -10,6 +10,7 @@ import {
   hashIpSalted,
   normalizeWindow,
   countDistinctVisitors,
+  extractClientIp,
   VISITOR_WINDOWS,
 } from '../../../backend/src/utils/ip-hash'
 
@@ -90,5 +91,26 @@ describe('countDistinctVisitors', () => {
   it('fenetre inconnue -> retombe sur 3h (pas de crash)', () => {
     const hits = [{ ipHash: 'a', hitAt: minsAgo(100) }]
     expect(countDistinctVisitors(hits, 'bogus', now)).toBe(1)
+  })
+})
+
+describe('extractClientIp (proxy Cloudflare/Render)', () => {
+  it('priorite cf-connecting-ip (Cloudflare)', () => {
+    const ctx = { request: { headers: { 'cf-connecting-ip': '24.1.1.1', 'x-forwarded-for': '10.0.0.1, 172.16.0.1' } }, ip: '192.168.1.1' }
+    expect(extractClientIp(ctx)).toBe('24.1.1.1')
+  })
+  it('fallback x-forwarded-for[0] si pas de cf', () => {
+    const ctx = { request: { headers: { 'x-forwarded-for': '24.2.2.2, 172.16.0.1' } }, ip: '192.168.1.1' }
+    expect(extractClientIp(ctx)).toBe('24.2.2.2')
+  })
+  it('fallback ctx.ip si aucun header proxy', () => {
+    const ctx = { request: { headers: {} }, ip: '127.0.0.1' }
+    expect(extractClientIp(ctx)).toBe('127.0.0.1')
+  })
+  it('la meme IP client donne le meme ipHash quel que soit le hop proxy', () => {
+    const salt = 'sel'
+    const ctxA = { request: { headers: { 'cf-connecting-ip': '24.1.1.1', 'x-forwarded-for': '24.1.1.1, 10.0.0.5' } } }
+    const ctxB = { request: { headers: { 'cf-connecting-ip': '24.1.1.1', 'x-forwarded-for': '24.1.1.1, 10.0.0.9' } } }
+    expect(hashIpSalted(extractClientIp(ctxA), salt)).toBe(hashIpSalted(extractClientIp(ctxB), salt))
   })
 })
