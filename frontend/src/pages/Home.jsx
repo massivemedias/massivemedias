@@ -129,6 +129,7 @@ function Home() {
         description={content?.homeSeo ? bl(content.homeSeo, 'description', lang) || t('home.seo.description') : t('home.seo.description')}
         breadcrumbs={[{ name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }) }]}
         jsonLd={[getOrganizationSchema(), getLocalBusinessSchema(lang), getWebSiteSchema()]}
+        preloadImages={[{ href: '/images/mugs/tumbler-white.webp', media: '(min-width: 768px)' }]}
       />
 
       {/* HOME-02 : le rideau enveloppe hero + vitrine. Le hero (1er enfant)
