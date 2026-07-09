@@ -11,6 +11,7 @@ import CheckoutForm from '../components/CheckoutForm';
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import { calculateShipping as calcShipping } from '../utils/shipping';
 import { formatPrice } from '../utils/formatCurrency';
+import { collectionProgress } from '../utils/collectionCart';
 
 const provinces = [
   { code: 'QC', fr: 'Quebec', en: 'Quebec', es: 'Quebec' },
@@ -136,6 +137,39 @@ function Checkout() {
             </Link>
 
             <h1 className="text-4xl font-heading font-bold text-heading mb-8">{t('checkout.title')}</h1>
+
+            {/* CART-01 : avertissement DES L'ARRIVEE si on atterrit ici avec un
+                panier collection sous le minimum (lien direct, bouton retour).
+                Le blocage final au clic Payer (CheckoutForm) reste en place :
+                defense en profondeur. */}
+            {(() => {
+              const prog = collectionProgress(items);
+              if (!prog.hasCollection || prog.minMet) return null;
+              return (
+                <div className="mb-8 px-4 py-4 rounded-xl border border-red-500/30 error-bg flex items-start gap-3">
+                  <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-heading text-sm font-semibold mb-1">
+                      {tx({
+                        fr: `Minimum ${prog.minUnits} stickers de la collection non atteint`,
+                        en: `Minimum ${prog.minUnits} collection stickers not reached`,
+                        es: `Minimo ${prog.minUnits} stickers de la coleccion no alcanzado`,
+                      })}
+                    </p>
+                    <p className="text-grey-muted text-sm">
+                      {tx({
+                        fr: `Tu as ${prog.units} sticker${prog.units > 1 ? 's' : ''} de la collection, il en faut ${prog.minUnits}. `,
+                        en: `You have ${prog.units} collection sticker${prog.units > 1 ? 's' : ''}, ${prog.minUnits} are required. `,
+                        es: `Tienes ${prog.units} sticker${prog.units > 1 ? 's' : ''} de la coleccion, se necesitan ${prog.minUnits}. `,
+                      })}
+                      <Link to="/stickers" className="text-accent hover:underline font-semibold">
+                        {tx({ fr: 'Ajoute des designs', en: 'Add more designs', es: 'Agrega mas disenos' })}
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
 

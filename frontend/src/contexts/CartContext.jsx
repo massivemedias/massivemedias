@@ -95,7 +95,18 @@ export function CartProvider({ children }) {
     saveCartLocal(cartItems);
   }, []);
 
+  // CART-01 : ouverture du mini-panier lateral. S'ouvre a chaque ajout d'un
+  // produit de la COLLECTION (unites sticker-massive-* ou mystery packs) pour
+  // montrer la progression vers le minimum de 5. Les autres produits
+  // (configurateurs prints/merch, qui ont leur propre feedback) n'ouvrent pas
+  // le tiroir -> aucune regression de ces flux.
+  const [isCartDrawerOpen, setCartDrawerOpen] = useState(false)
+  const openCartDrawer = useCallback(() => setCartDrawerOpen(true), [])
+  const closeCartDrawer = useCallback(() => setCartDrawerOpen(false), [])
+
   const addToCart = useCallback((item) => {
+    const pid = String(item?.productId || '')
+    const isCollection = pid.startsWith('sticker-massive-') || pid.startsWith('mystery-pack-')
     setItems(prev => {
       // Si le meme produit existe deja (meme productId + finish + size + shape), incrementer la quantite
       const existingIndex = prev.findIndex(existing =>
@@ -130,7 +141,9 @@ export function CartProvider({ children }) {
       return updated;
     });
     trackAddToCart(item);
-  }, [saveCart]);
+    // CART-01 : le tiroir s'ouvre a chaque ajout de la collection.
+    if (isCollection) openCartDrawer();
+  }, [saveCart, openCartDrawer]);
 
   const removeFromCart = useCallback((index) => {
     setItems(prev => {
@@ -217,8 +230,10 @@ export function CartProvider({ children }) {
     items, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal,
     promoCode, discountPercent, discountAmount, promoLabel,
     applyPromoCode, removePromoCode, cartId,
+    isCartDrawerOpen, openCartDrawer, closeCartDrawer,
   }), [items, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal,
-    promoCode, discountPercent, discountAmount, promoLabel, applyPromoCode, removePromoCode, cartId]);
+    promoCode, discountPercent, discountAmount, promoLabel, applyPromoCode, removePromoCode, cartId,
+    isCartDrawerOpen, openCartDrawer, closeCartDrawer]);
 
   return (
     <CartContext.Provider value={value}>
