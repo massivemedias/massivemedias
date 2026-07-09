@@ -10,43 +10,28 @@ import {
   DollarSign,
   Music,
   Quote,
-  ShoppingBag,
   Calendar,
 } from 'lucide-react';
 import { useArtists } from '../hooks/useArtists';
-import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
-import LeadMagnetCTA from '../components/LeadMagnetCTA';
 import HomeCollectionBanner from '../components/HomeCollectionBanner';
+import HomePrintsSection from '../components/HomePrintsSection';
+import HomeOffersSection from '../components/HomeOffersSection';
+import HomeServicesTeaser from '../components/HomeServicesTeaser';
 import SEO from '../components/SEO';
 import { getOrganizationSchema, getLocalBusinessSchema, getWebSiteSchema } from '../components/seo/schemas';
 import MassiveLogo from '../components/MassiveLogo';
+import HomeCurtain from '../components/HomeCurtain';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { bl, mediaUrl } from '../utils/cms';
 import { getIcon } from '../utils/iconMap';
-import { isHiddenMerchPath } from '../config/merchStatus';
 import api from '../services/api';
 import { WORKSHOP_ADDRESS_FULL } from '../constants/workshop';
 import ClosureNotice from '../components/ClosureNotice';
 
 // Fallback icons & data if CMS not available
-const fallbackServiceIcons = ['Printer', 'Sticker', 'Shirt', 'Palette', 'Globe'];
-const fallbackServiceLinks = [
-  '/services/prints',
-  '/services/stickers',
-  '/services/merch',
-  '/services/design',
-  '/services/web',
-];
-const fallbackServiceImages = [
-  thumb('/images/prints/PrintsHero.webp'),
-  thumb('/images/stickers/StickersHero.webp'),
-  thumb('/images/textile/MerchHero.webp'),
-  thumb('/images/graphism/GraphicDesignHero.webp'),
-  thumb('/images/web/DevWebHero.webp'),
-];
 const fallbackAdvantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
 const fallbackFeaturedProjectImages = [
   thumb('/images/realisations/prints/FineArt4.webp'),
@@ -69,18 +54,6 @@ function Home() {
   const { t, lang, tx } = useLang();
   const { content } = useSiteContent();
   const { artists: cmsArtists } = useArtists();
-
-  // ── Service Cards (fallback si vide ou absent) ──
-  const cmsServiceCards = content?.serviceCards?.length ? content.serviceCards : null;
-  const serviceCards = cmsServiceCards
-    ? cmsServiceCards.map((c, i) => ({
-        title: bl(c, 'title', lang),
-        description: bl(c, 'description', lang),
-        icon: getIcon(c.iconName),
-        link: c.link,
-        image: mediaUrl(c.image, null) || fallbackServiceImages[i] || null,
-      }))
-    : null;
 
   // ── Featured Projects (images locales forcees - CMS images non fiables) ──
   const cmsFeaturedProjects = content?.featuredProjects?.length ? content.featuredProjects : null;
@@ -107,32 +80,9 @@ function Home() {
   const testimonials = null;
 
   // Fallback data from translations
-  const fbServiceCards = t('home.serviceCards');
   const fbAdvantages = t('home.advantages');
   const fbFeaturedProjects = t('home.featuredProjects');
   const fbTestimonials = t('home.testimonials.items');
-
-  // Carte Boutique injectee en position 2
-  const boutiqueCard = {
-    title: tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' }),
-    description: tx({ fr: 'Prints, stickers, merch - commandez en ligne', en: 'Prints, stickers, merch - order online', es: 'Prints, stickers, merch - pedidos en línea' }),
-    icon: ShoppingBag,
-    link: '/boutique',
-    image: thumb('/images/boutique.webp'),
-  };
-  const resolvedServiceCards = serviceCards
-    ? serviceCards
-    : fbServiceCards.map((card, i) => ({
-        ...card,
-        icon: getIcon(fallbackServiceIcons[i]),
-        link: fallbackServiceLinks[i],
-        image: fallbackServiceImages[i],
-      }));
-  // MERCH_HIDDEN : retire la carte service merch (lien /services/merch)
-  const visibleServiceCards = resolvedServiceCards.filter((c) => !isHiddenMerchPath(c.link))
-  const allServiceCards = visibleServiceCards.length > 0
-    ? [...visibleServiceCards, boutiqueCard]
-    : [boutiqueCard];
 
   // STRAPI-ONLY (11 mai 2026) : la homepage lit le CMS via useArtists().
   // artistsList est declare au niveau du composant car utilise A LA FOIS dans
@@ -181,7 +131,10 @@ function Home() {
         jsonLd={[getOrganizationSchema(), getLocalBusinessSchema(lang), getWebSiteSchema()]}
       />
 
-      {/* ============ HERO ============ */}
+      {/* HOME-02 : le rideau enveloppe hero + vitrine. Le hero (1er enfant)
+          se souleve pour reveler le contenu. Voir components/HomeCurtain.jsx. */}
+      <HomeCurtain>
+      {/* ============ HERO (= le rideau qui se souleve) ============ */}
       <section className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 hero-aurora"></div>
 
@@ -287,52 +240,10 @@ function Home() {
           STICKERS_SHOP_ENABLED (retourne null et disparait si le flag tombe). */}
       <HomeCollectionBanner />
 
-      {/* ============ LEAD MAGNET / OFFRE D'INSCRIPTION ============
-          Insere directement apres le HERO pour capturer l'attention pendant
-          que le visiteur scroll. Si l'utilisateur est deja loggue, le
-          composant retourne null et la section disparait sans laisser de
-          trou (pas de spacing parasite). */}
-      <LeadMagnetCTA />
-
-      {/* ============ SERVICES ============ */}
-      <section id="services" className="section-container">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-5xl md:text-6xl font-heading font-bold text-heading mb-4 hero-title">
-            {(content && bl(content, 'servicesSectionTitle', lang)) || t('home.servicesSection.title')}
-          </h2>
-          <p className="text-xl text-grey-light max-w-2xl mx-auto">
-            {(content && bl(content, 'servicesSectionSubtitle', lang)) || t('home.servicesSection.subtitle')}
-          </p>
-        </motion.div>
-
-        <div className="flex flex-wrap justify-center items-stretch gap-4 max-w-4xl mx-auto">
-          {allServiceCards.map((card, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.7rem)] flex flex-col"
-            >
-              <ServiceCard
-                icon={card.icon}
-                title={card.title}
-                description={card.description}
-                link={card.link}
-                image={card.image}
-                mirror={index === 1}
-              />
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      {/* ============ b. PRINTS & FINE ART ============
+          Showcase sobre : petites vignettes d'oeuvres encadrees (pas de
+          scenes de piece). Prend les prints artistes deja charges par la home. */}
+      <HomePrintsSection artworks={displayArtworks.slice(0, 6)} />
 
       {/* ============ ARTISTES & OEUVRES ============ */}
       <section className="section-container">
@@ -415,6 +326,16 @@ function Home() {
           </Link>
         </div>
       </section>
+
+      {/* ============ d. OFFRES & PACKAGES ============
+          Offre de bienvenue en 1re carte (deplacee depuis l'ancien
+          LeadMagnetCTA autonome) + packages (prix a remplir par Mika). */}
+      <HomeOffersSection />
+
+      {/* ============ e. SERVICES EN TEASER ============
+          Rangee sobre, noms de services actuels, vers les pages existantes.
+          Remplace la grille de services complete qui vivait apres le hero. */}
+      <HomeServicesTeaser />
 
       {/* ============ CHIFFRES ============ */}
       <section className="section-container">
@@ -633,6 +554,7 @@ function Home() {
           </div>
         </motion.div>
       </section>
+      </HomeCurtain>
     </>
   );
 }
