@@ -58,7 +58,7 @@ const PAGE_SIZE = 36
 // Carte d'un design : partagee entre toutes les grilles. Le clic sur le
 // visuel/nom ouvre la fiche produit (UI-02), le bouton +3 $ reste un ajout
 // direct au panier.
-function StickerCard({ s, justAdded, onAdd, onOpen, tx }) {
+function StickerCard({ s, justAdded, cartQty, onAdd, onOpen, tx }) {
   return (
     <div
       className="relative rounded-xl bg-black/20 hover:bg-black/30 transition-colors p-3 flex flex-col items-center group"
@@ -84,19 +84,24 @@ function StickerCard({ s, justAdded, onAdd, onOpen, tx }) {
           {tx(s)}
         </p>
       </button>
+      {/* CART-01 : feedback persistant. Flash "Ajoute !" au clic, puis retombe
+          sur "N au panier" tant que le design est dans le panier (au lieu de
+          revenir a "3 $"). Le tiroir montre le detail. */}
       <button
         type="button"
         onClick={() => onAdd(s)}
         className={`mt-2 w-full inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
-          justAdded === s.slug
+          justAdded === s.slug || cartQty > 0
             ? 'bg-green-500/20 text-green-400'
             : 'bg-accent text-white hover:brightness-110'
         }`}
       >
-        {justAdded === s.slug ? <Check size={12} /> : <Plus size={12} />}
+        {justAdded === s.slug || cartQty > 0 ? <Check size={12} /> : <Plus size={12} />}
         {justAdded === s.slug
           ? tx({ fr: 'Ajoute !', en: 'Added!', es: 'Agregado!' })
-          : tx({ fr: `${STICKER_COLLECTION_UNIT_PRICE} $`, en: `$${STICKER_COLLECTION_UNIT_PRICE}`, es: `${STICKER_COLLECTION_UNIT_PRICE} $` })}
+          : cartQty > 0
+            ? tx({ fr: `${cartQty} au panier`, en: `${cartQty} in cart`, es: `${cartQty} en carrito` })
+            : tx({ fr: `${STICKER_COLLECTION_UNIT_PRICE} $`, en: `$${STICKER_COLLECTION_UNIT_PRICE}`, es: `${STICKER_COLLECTION_UNIT_PRICE} $` })}
       </button>
     </div>
   )
@@ -323,7 +328,7 @@ function StickerFiche({ s, catLabel, justAdded, onAdd, onClose, tx }) {
 //
 // RESET : le parent passe une `key` (activeCat + query) ; un changement de
 // filtre/recherche remonte le composant et remet count a PAGE_SIZE.
-function InfiniteGrid({ items, justAdded, onAdd, onOpen, tx }) {
+function InfiniteGrid({ items, justAdded, cartQtyBySlug, onAdd, onOpen, tx }) {
   const [count, setCount] = useState(PAGE_SIZE)
   const sentinelRef = useRef(null)
   // Guard anti double-chargement : bloque les fire multiples de l'IO entre
@@ -359,7 +364,7 @@ function InfiniteGrid({ items, justAdded, onAdd, onOpen, tx }) {
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {items.slice(0, count).map((s) => (
-          <StickerCard key={s.slug} s={s} justAdded={justAdded} onAdd={onAdd} onOpen={onOpen} tx={tx} />
+          <StickerCard key={s.slug} s={s} justAdded={justAdded} cartQty={cartQtyBySlug[s.slug] || 0} onAdd={onAdd} onOpen={onOpen} tx={tx} />
         ))}
       </div>
       {hasMore && (
@@ -418,6 +423,21 @@ function MassiveStickers() {
     (cartItems || []).reduce((sum, it) =>
       String(it?.productId || '').startsWith('sticker-massive-') ? sum + (Number(it?.quantity) || 1) : sum, 0),
     [cartItems])
+
+  // CART-01 : quantite au panier par slug de design, pour le feedback
+  // persistant "N au panier" sur le bouton de chaque carte. Le productId est
+  // `sticker-massive-<slug sans prefixe massive->` ; on remonte au slug du
+  // manifest (`massive-<...>`) pour matcher s.slug.
+  const cartQtyBySlug = useMemo(() => {
+    const map = {}
+    for (const it of cartItems || []) {
+      const pid = String(it?.productId || '')
+      if (!pid.startsWith('sticker-massive-')) continue
+      const slug = 'massive-' + pid.replace('sticker-massive-', '')
+      map[slug] = (map[slug] || 0) + (Number(it?.quantity) || 1)
+    }
+    return map
+  }, [cartItems])
 
   function flashAdded(key) {
     setJustAdded(key)
@@ -595,6 +615,7 @@ function MassiveStickers() {
             <InfiniteGrid
               key={`search|${query}`}
               items={visibles}
+              cartQtyBySlug={cartQtyBySlug}
               justAdded={justAdded}
               onAdd={addUnitToCart}
               onOpen={(d) => setFicheSlug(d.slug)}
@@ -626,6 +647,7 @@ function MassiveStickers() {
             <InfiniteGrid
               key="catalogue-all"
               items={catalogue}
+              cartQtyBySlug={cartQtyBySlug}
               justAdded={justAdded}
               onAdd={addUnitToCart}
               onOpen={(d) => setFicheSlug(d.slug)}
@@ -659,6 +681,7 @@ function MassiveStickers() {
             <InfiniteGrid
               key={`famille|${activeCat}`}
               items={visibles}
+              cartQtyBySlug={cartQtyBySlug}
               justAdded={justAdded}
               onAdd={addUnitToCart}
               onOpen={(d) => setFicheSlug(d.slug)}

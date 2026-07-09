@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import CookieBanner from '../components/CookieBanner';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import GoogleOneTap from '../components/GoogleOneTap';
+import MiniCartDrawer from '../components/MiniCartDrawer';
 import { useAnalytics } from '../hooks/useAnalytics';
 
 function MainLayout() {
@@ -20,6 +21,8 @@ function MainLayout() {
           <Outlet />
         </main>
         <Footer />
+        {/* CART-01 : mini-panier lateral, s'ouvre a chaque ajout collection */}
+        <MiniCartDrawer />
         <CookieBanner />
         {/* GOOGLE-ONE-TAP (3 mai 2026) : prompt non-bloquant qui apparait
             en haut a droite si l'user est anonyme et VITE_GOOGLE_CLIENT_ID

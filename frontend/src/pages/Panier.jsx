@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { validatePromoCode } from '../services/orderService';
 import { getStickerPrice } from '../data/products';
 import { formatPrice } from '../utils/formatCurrency';
+import { collectionProgress } from '../utils/collectionCart';
 
 const ARTIST_DISCOUNT = 0.25;
 // Produits a paliers fixes - pas de +/- libre
@@ -314,19 +315,45 @@ function Panier() {
           </p>
         </div>
 
+        {/* CART-01 : progression vers le minimum de 5 unites collection.
+            Visible seulement si le panier contient de la collection sous le
+            minimum. Evite d'aller remplir le formulaire checkout pour rien. */}
+        {(() => {
+          const prog = collectionProgress(items);
+          if (!prog.hasCollection || prog.minMet) return null;
+          return (
+            <div className="mb-4 px-4 py-3 rounded-xl border border-accent/30 bg-accent/10 flex items-center gap-3">
+              <AlertTriangle size={18} className="text-accent flex-shrink-0" />
+              <p className="text-sm text-heading">
+                {tx({
+                  fr: `${prog.units}/${prog.minUnits} stickers de la collection. Ajoute ${prog.unitsRemaining} de plus pour commander (minimum ${prog.minUnits}).`,
+                  en: `${prog.units}/${prog.minUnits} collection stickers. Add ${prog.unitsRemaining} more to check out (minimum ${prog.minUnits}).`,
+                  es: `${prog.units}/${prog.minUnits} stickers de la coleccion. Agrega ${prog.unitsRemaining} mas para ordenar (minimo ${prog.minUnits}).`,
+                })}
+              </p>
+            </div>
+          );
+        })()}
+
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Link to="/boutique" className="btn-outline flex-1 justify-center">
             <ArrowLeft size={18} className="mr-2" />
             {tx({ fr: 'Continuer mes achats', en: 'Continue shopping', es: 'Seguir comprando' })}
           </Link>
-          <button
-            onClick={() => navigate('/checkout')}
-            className="btn-primary flex-1 justify-center"
-          >
-            {tx({ fr: 'Passer au paiement', en: 'Proceed to checkout', es: 'Proceder al pago' })}
-            <ArrowRight size={18} className="ml-2" />
-          </button>
+          {(() => {
+            const minMet = collectionProgress(items).minMet;
+            return (
+              <button
+                onClick={() => minMet && navigate('/checkout')}
+                disabled={!minMet}
+                className={`btn-primary flex-1 justify-center ${!minMet ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {tx({ fr: 'Passer au paiement', en: 'Proceed to checkout', es: 'Proceder al pago' })}
+                <ArrowRight size={18} className="ml-2" />
+              </button>
+            );
+          })()}
         </div>
       </div>
     </>
