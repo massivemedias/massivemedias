@@ -55,6 +55,10 @@ const FAMILY_COLLAGES = {
 // Taille des tranches de la grille complete (pagination progressive).
 const PAGE_SIZE = 36
 
+// UI-08b : tilt parallax (variante B) des cartes de familles - l'eventail suit
+// legerement la souris en 3D. Mettre a false pour couper l'effet (une ligne).
+const FAMILY_TILT = true
+
 // Carte d'un design : partagee entre toutes les grilles. Le clic sur le
 // visuel/nom ouvre la fiche produit (UI-02), le bouton +3 $ reste un ajout
 // direct au panier.
@@ -139,38 +143,61 @@ function FamilleCard({ cat, count, tx, onOpen }) {
   const DELAY = [0, 45, 90, 135]
   const SIZE = [60, 72, 72, 60]
   const ZS = [2, 4, 4, 2]
+  // UI-08b : l'eventail (famcard-fan) suit legerement la souris en 3D (max
+  // ~4 deg). rAF pour ne pas spammer le layout, transform uniquement -> zero
+  // reflow. Coupe par CSS en reduced-motion et sur tactile (voir index.css) :
+  // la regle transform:none !important y bat le style inline.
+  const fanRef = useRef(null)
+  const rafRef = useRef(0)
+  const tilt = (e) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    const px = (e.clientX - r.left) / r.width - 0.5
+    const py = (e.clientY - r.top) / r.height - 0.5
+    cancelAnimationFrame(rafRef.current)
+    rafRef.current = requestAnimationFrame(() => {
+      if (fanRef.current) fanRef.current.style.transform = `rotateX(${(-py * 7).toFixed(2)}deg) rotateY(${(px * 9).toFixed(2)}deg)`
+    })
+  }
+  const untilt = () => {
+    cancelAnimationFrame(rafRef.current)
+    if (fanRef.current) fanRef.current.style.transform = ''
+  }
   return (
     <button
       type="button"
       onClick={() => onOpen(cat.id)}
+      onMouseMove={FAMILY_TILT ? tilt : undefined}
+      onMouseLeave={FAMILY_TILT ? untilt : undefined}
       className="famcard rounded-2xl bg-black/20 border border-white/5 p-3 text-left"
     >
-      <div className="relative h-24 sm:h-28 flex items-center justify-center">
-        {slugs.map((slug, i) => (
-          <img
-            key={slug}
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            width="80"
-            height="80"
-            src={`/images/thumbs-mini/stickers-massive/${slug}.webp`}
-            alt=""
-            aria-hidden="true"
-            className="famcard-thumb sticker-stroke absolute object-contain"
-            style={{
-              width: SIZE[i],
-              height: SIZE[i],
-              left: '50%',
-              top: '50%',
-              zIndex: ZS[i],
-              '--rx': `${REST_X[i]}px`, '--rr': `${REST_R[i]}deg`,
-              '--mx': `${MID_X[i]}px`, '--mr': `${MID_R[i]}deg`,
-              '--hx': `${HOV_X[i]}px`, '--hr': `${HOV_R[i]}deg`,
-              '--d': `${DELAY[i]}ms`,
-            }}
-          />
-        ))}
+      <div className="famcard-fanwrap relative h-24 sm:h-28">
+        <div ref={fanRef} className="famcard-fan absolute inset-0">
+          {slugs.map((slug, i) => (
+            <img
+              key={slug}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              width="80"
+              height="80"
+              src={`/images/thumbs-mini/stickers-massive/${slug}.webp`}
+              alt=""
+              aria-hidden="true"
+              className="famcard-thumb sticker-stroke absolute object-contain"
+              style={{
+                width: SIZE[i],
+                height: SIZE[i],
+                left: '50%',
+                top: '50%',
+                zIndex: ZS[i],
+                '--rx': `${REST_X[i]}px`, '--rr': `${REST_R[i]}deg`,
+                '--mx': `${MID_X[i]}px`, '--mr': `${MID_R[i]}deg`,
+                '--hx': `${HOV_X[i]}px`, '--hr': `${HOV_R[i]}deg`,
+                '--d': `${DELAY[i]}ms`,
+              }}
+            />
+          ))}
+        </div>
       </div>
       <div className="flex items-baseline justify-between gap-2 mt-2.5">
         <h3 className="font-heading font-bold text-[13.5px] leading-tight text-heading">{tx(cat)}</h3>
