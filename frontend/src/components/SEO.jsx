@@ -16,6 +16,7 @@ export default function SEO({
   noindex = false,
   jsonLd,
   breadcrumbs,
+  preloadImages,
 }) {
   const { lang } = useLang();
   const location = useLocation();
@@ -59,6 +60,13 @@ export default function SEO({
       {!noindex && <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
 
       <link rel="canonical" href={canonicalUrl} />
+
+      {/* HOME-PERF-01b : preload cible de l'image LCP (ex: mockup gourde de la
+          banniere, LCP desktop revele par le rideau). `media` permet de scoper
+          au desktop pour ne pas peser sur mobile ou l'element n'existe pas. */}
+      {(preloadImages || []).map((p, i) => (
+        <link key={`preload-img-${i}`} rel="preload" as="image" href={p.href} media={p.media} fetchpriority="high" />
+      ))}
 
       {/* Geo-targeting */}
       <meta name="geo.region" content="CA-QC" />
