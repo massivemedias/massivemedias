@@ -1237,3 +1237,17 @@ iframe.instagram-media-rendered + * {
     transform: translate(calc(-50% + var(--mx)), -50%) rotate(var(--mr));
   }
 }
+
+/* UI-08b : tilt parallax de l'eventail (variante B). La perspective est posee
+   sur le wrapper, la rotation 3D (mise en inline par le JS au mousemove) sur
+   .famcard-fan. transform only -> zero reflow. Coupe proprement en
+   reduced-motion ET sur tactile : transform:none !important bat le style
+   inline pose par le JS. */
+.famcard-fanwrap { perspective: 720px; }
+.famcard-fan { transform-style: preserve-3d; transition: transform .18s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .famcard-fan { transition: none; transform: none !important; }
+}
+@media (hover: none) {
+  .famcard-fan { transform: none !important; }
+}
