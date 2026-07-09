@@ -21,6 +21,7 @@ import HomeCollectionBanner from '../components/HomeCollectionBanner';
 import SEO from '../components/SEO';
 import { getOrganizationSchema, getLocalBusinessSchema, getWebSiteSchema } from '../components/seo/schemas';
 import MassiveLogo from '../components/MassiveLogo';
+import HomeCurtain from '../components/HomeCurtain';
 import { img, thumb } from '../utils/paths';
 import { useLang } from '../i18n/LanguageContext';
 import { useSiteContent } from '../hooks/useSiteContent';
@@ -181,7 +182,10 @@ function Home() {
         jsonLd={[getOrganizationSchema(), getLocalBusinessSchema(lang), getWebSiteSchema()]}
       />
 
-      {/* ============ HERO ============ */}
+      {/* HOME-02 : le rideau enveloppe hero + vitrine. Le hero (1er enfant)
+          se souleve pour reveler le contenu. Voir components/HomeCurtain.jsx. */}
+      <HomeCurtain>
+      {/* ============ HERO (= le rideau qui se souleve) ============ */}
       <section className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 hero-aurora"></div>
 
@@ -633,6 +637,7 @@ function Home() {
           </div>
         </motion.div>
       </section>
+      </HomeCurtain>
     </>
   );
 }
