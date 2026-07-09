@@ -17,6 +17,7 @@ import { useArtists } from '../hooks/useArtists';
 import ServiceCard from '../components/ServiceCard';
 import Counter from '../components/Counter';
 import LeadMagnetCTA from '../components/LeadMagnetCTA';
+import HomeCollectionBanner from '../components/HomeCollectionBanner';
 import SEO from '../components/SEO';
 import { getOrganizationSchema, getLocalBusinessSchema, getWebSiteSchema } from '../components/seo/schemas';
 import MassiveLogo from '../components/MassiveLogo';
@@ -280,6 +281,11 @@ function Home() {
 
         <div className="absolute bottom-0 left-0 right-0 h-40 hero-fade"></div>
       </section>
+
+      {/* ============ HOME-COLLECTION : annonce de la vente de designs ============
+          Juste apres le hero, placee haut. Conditionnelle au flag
+          STICKERS_SHOP_ENABLED (retourne null et disparait si le flag tombe). */}
+      <HomeCollectionBanner />
 
       {/* ============ LEAD MAGNET / OFFRE D'INSCRIPTION ============
           Insere directement apres le HERO pour capturer l'attention pendant

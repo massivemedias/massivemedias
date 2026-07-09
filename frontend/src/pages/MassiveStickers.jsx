@@ -419,7 +419,7 @@ function MassiveStickers() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="font-heading font-bold text-3xl sm:text-4xl text-heading mb-3">
-            {tx({ fr: 'Collection Stickers', en: 'Sticker Collection', es: 'Coleccion de Stickers' })}
+            {tx({ fr: 'Collection Stickers Massive', en: 'Massive Sticker Collection', es: 'Coleccion de Stickers Massive' })}
           </h1>
           <p className="text-grey-muted max-w-2xl mx-auto">
             {tx({

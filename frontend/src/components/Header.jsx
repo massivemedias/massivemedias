@@ -156,14 +156,17 @@ function Header() {
                 {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
               </SmartLink>
 
-              {/* STICKERS-SHOP-A : lien vitrine stickers, visible seulement si le flag est actif */}
+              {/* STICKERS-SHOP-A : lien vers la vente de designs, visible seulement
+                  si le flag est actif. HOME-COLLECTION : renomme "La Collection"
+                  pour lever la confusion avec le service Stickers custom du
+                  dropdown Services (decision Mika). L'URL /stickers ne change pas. */}
               {STICKERS_SHOP_ENABLED && (
                 <SmartLink
                   to="/stickers"
                   onClick={navClick('/stickers')}
                   className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/stickers') ? 'text-accent' : 'nav-link'}`}
                 >
-                  {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
+                  {tx({ fr: 'La Collection', en: 'The Collection', es: 'La Coleccion' })}
                 </SmartLink>
               )}
 
@@ -366,7 +369,8 @@ function Header() {
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </SmartLink>
 
-                {/* STICKERS-SHOP-A : vitrine stickers (flag) */}
+                {/* STICKERS-SHOP-A : vente de designs (flag). HOME-COLLECTION :
+                    "La Collection" (voir desktop ci-dessus). */}
                 {STICKERS_SHOP_ENABLED && (
                   <SmartLink
                     to="/stickers"
@@ -376,7 +380,7 @@ function Header() {
                     <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
                       <Sticker size={14} className="text-accent" />
                     </span>
-                    <span className="font-semibold text-[14px]">{tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}</span>
+                    <span className="font-semibold text-[14px]">{tx({ fr: 'La Collection', en: 'The Collection', es: 'La Coleccion' })}</span>
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                   </SmartLink>
                 )}
