@@ -59,10 +59,23 @@ const PAGE_SIZE = 36
 // visuel/nom ouvre la fiche produit (UI-02), le bouton +3 $ reste un ajout
 // direct au panier.
 function StickerCard({ s, justAdded, cartQty, onAdd, onOpen, tx }) {
+  // UI-07 : etat SELECTIONNE persistant quand le design est au panier. Bordure
+  // rose (ring) + leger fond rose + badge coin "✓ n" -> la carte reste
+  // visiblement marquee partout (grille, famille, recherche) tant que l'item
+  // est au panier, pas seulement le flash au clic.
+  const inCart = cartQty > 0
   return (
     <div
-      className="relative rounded-xl bg-black/20 hover:bg-black/30 transition-colors p-3 flex flex-col items-center group"
+      className={`relative rounded-xl transition-all p-3 flex flex-col items-center group ${
+        inCart ? 'bg-accent/10 ring-2 ring-accent' : 'bg-black/20 hover:bg-black/30'
+      }`}
     >
+      {inCart && (
+        <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-0.5 pl-1 pr-1.5 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold shadow">
+          <Check size={10} />
+          {cartQty}
+        </span>
+      )}
       {NEW_BADGE_ENABLED && s.nouveau && (
         <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold uppercase tracking-wide">
           <Sparkles size={9} />
@@ -188,7 +201,7 @@ function LazyImg({ src, alt, className, title }) {
 
 // UI-02 : fiche produit en modale, pattern Redbubble simplifie. Grand visuel
 // switchable (design seul / mockup gourde), zero option de configuration.
-function StickerFiche({ s, catLabel, justAdded, onAdd, onClose, tx }) {
+function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, tx }) {
   const [vue, setVue] = useState('design')
   const designUrl = thumb(`${STICKER_DIR}/${s.slug}.webp`)
   useEffect(() => {
@@ -296,17 +309,23 @@ function StickerFiche({ s, catLabel, justAdded, onAdd, onClose, tx }) {
                 es: `Vinilo die-cut, resistente al agua y UV. Minimo ${STICKER_COLLECTION_MIN_UNITS} stickers de la coleccion por pedido.`,
               })}
             </p>
+            {/* CART-01/UI-07 : feedback persistant identique aux cartes. Flash
+                "Ajoute !" au clic, puis retombe sur "N au panier" (vert) tant
+                que le design est au panier - au lieu de revenir a "3 $". Le
+                bouton reste cliquable pour ajouter une unite de plus. */}
             <button
               type="button"
               onClick={() => onAdd(s)}
               className={`inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full font-semibold text-sm transition-all ${
-                justAdded === s.slug ? 'bg-green-500/20 text-green-400' : 'bg-accent text-white hover:brightness-110'
+                justAdded === s.slug || cartQty > 0 ? 'bg-green-500/20 text-green-400' : 'bg-accent text-white hover:brightness-110'
               }`}
             >
-              {justAdded === s.slug ? <Check size={16} /> : <ShoppingCart size={16} />}
+              {justAdded === s.slug || cartQty > 0 ? <Check size={16} /> : <ShoppingCart size={16} />}
               {justAdded === s.slug
                 ? tx({ fr: 'Ajoute au panier !', en: 'Added to cart!', es: 'Agregado al carrito!' })
-                : tx({ fr: `Ajouter au panier - ${STICKER_COLLECTION_UNIT_PRICE} $`, en: `Add to cart - $${STICKER_COLLECTION_UNIT_PRICE}`, es: `Agregar al carrito - ${STICKER_COLLECTION_UNIT_PRICE} $` })}
+                : cartQty > 0
+                  ? tx({ fr: `${cartQty} au panier`, en: `${cartQty} in cart`, es: `${cartQty} en el carrito` })
+                  : tx({ fr: `Ajouter au panier - ${STICKER_COLLECTION_UNIT_PRICE} $`, en: `Add to cart - $${STICKER_COLLECTION_UNIT_PRICE}`, es: `Agregar al carrito - ${STICKER_COLLECTION_UNIT_PRICE} $` })}
             </button>
           </div>
         </div>
@@ -387,9 +406,108 @@ function InfiniteGrid({ items, justAdded, cartQtyBySlug, onAdd, onOpen, tx }) {
   )
 }
 
+// UI-07 : widget flottant, RACCOURCI VISUEL vers le tiroir panier (CART-01).
+// Remplace l'ancien bandeau texte "N/5 stickers". Sticky en haut de /stickers,
+// visible seulement quand le panier contient des unites de la collection.
+// Vignettes rondes des designs ajoutes + progression vers le minimum de 5
+// (emplacements vides en pointille), compteur discret ; clic = ouvre le tiroir
+// (le detail complet). Mobile : version compacte (vignettes reduites, sous-
+// texte masque), jamais intrusive.
+function CollectionWidget({ items, onOpen, tx }) {
+  const collectionItems = (items || []).filter((it) =>
+    String(it?.productId || '').startsWith('sticker-massive-')
+  )
+  const unitCount = collectionItems.reduce((sum, it) => sum + (Number(it?.quantity) || 1), 0)
+  if (unitCount === 0) return null
+
+  const MIN = STICKER_COLLECTION_MIN_UNITS
+  const minMet = unitCount >= MIN
+
+  // Vignettes affichees + emplacements pointilles :
+  // - Progression (< 5) : une vignette par UNITE (repetee selon la quantite),
+  //   completee a 5 slots par des pointilles -> la rangee se remplit vers le min.
+  // - Minimum atteint (>= 5) : les DESIGNS distincts (max 5, surplus en "+n"),
+  //   sans pointille (la progression n'a plus lieu d'etre).
+  let thumbs = []
+  let dotted = 0
+  let extra = 0
+  if (!minMet) {
+    const unitThumbs = []
+    for (const it of collectionItems) {
+      const q = Number(it?.quantity) || 1
+      for (let i = 0; i < q; i++) unitThumbs.push(it.image)
+    }
+    thumbs = unitThumbs.slice(0, MIN)
+    dotted = Math.max(0, MIN - thumbs.length)
+  } else {
+    const distinct = collectionItems.map((it) => it.image)
+    if (distinct.length > MIN) {
+      thumbs = distinct.slice(0, MIN - 1)
+      extra = distinct.length - (MIN - 1)
+    } else {
+      thumbs = distinct
+    }
+  }
+
+  return (
+    <div className="fixed top-[64px] sm:top-[72px] left-1/2 -translate-x-1/2 z-40 px-2">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={tx({
+          fr: `${unitCount} sticker${unitCount > 1 ? 's' : ''} au panier, ouvrir le panier`,
+          en: `${unitCount} sticker${unitCount > 1 ? 's' : ''} in cart, open cart`,
+          es: `${unitCount} sticker${unitCount > 1 ? 's' : ''} en el carrito, abrir el carrito`,
+        })}
+        className="flex items-center gap-2 sm:gap-3 rounded-full border border-accent/35 shadow-xl pl-2.5 pr-3 sm:pl-3.5 sm:pr-4 py-1.5 sm:py-2 hover:brightness-110 transition-all"
+        style={{ background: 'linear-gradient(135deg, #2a0a4a, #3D0079)' }}
+      >
+        <div className="flex items-center pl-1.5 sm:pl-2">
+          {thumbs.map((src, i) => (
+            <div
+              key={i}
+              className="-ml-1.5 sm:-ml-2 w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 border-accent/50 bg-black/30 overflow-hidden flex items-center justify-center"
+            >
+              <img src={src} alt="" aria-hidden="true" className="sticker-stroke w-full h-full object-contain" />
+            </div>
+          ))}
+          {extra > 0 && (
+            <div className="-ml-1.5 sm:-ml-2 w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 border-accent/50 bg-black/50 flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">
+              +{extra}
+            </div>
+          )}
+          {Array.from({ length: dotted }).map((_, i) => (
+            <div
+              key={`d${i}`}
+              className="-ml-1.5 sm:-ml-2 w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 border-dashed border-white/25"
+              aria-hidden="true"
+            />
+          ))}
+        </div>
+        <div className="flex flex-col items-start leading-tight">
+          <span className={`flex items-center gap-1 font-bold text-[13px] sm:text-[15px] ${minMet ? 'text-green-400' : 'text-white'}`}>
+            {minMet && <Check size={13} />}
+            {minMet ? unitCount : `${unitCount}/${MIN}`}
+          </span>
+          {!minMet && (
+            <span className="hidden sm:block text-[11px]" style={{ color: '#f5b3d4' }}>
+              {tx({
+                fr: `ajoute ${MIN - unitCount} de plus`,
+                en: `add ${MIN - unitCount} more`,
+                es: `agrega ${MIN - unitCount} mas`,
+              })}
+            </span>
+          )}
+        </div>
+        <ShoppingCart size={16} className="text-white flex-shrink-0" />
+      </button>
+    </div>
+  )
+}
+
 function MassiveStickers() {
   const { tx } = useLang()
-  const { items: cartItems, addToCart } = useCart()
+  const { items: cartItems, addToCart, openCartDrawer } = useCart()
   const [activeCat, setActiveCat] = useState('all')
   const [query, setQuery] = useState('')
   // Feedback visuel apres un ajout (cle = slug du design ou 'pack-N')
@@ -416,13 +534,6 @@ function MassiveStickers() {
     setOrdreAleatoire(arr)
   }, [])
   const catalogue = ordreAleatoire || MASSIVE_STICKERS
-
-  // Compte des stickers UNITAIRES de la collection dans le panier (les
-  // mystery packs sont hors compte : autosuffisants pour le minimum de 5).
-  const unitCount = useMemo(() =>
-    (cartItems || []).reduce((sum, it) =>
-      String(it?.productId || '').startsWith('sticker-massive-') ? sum + (Number(it?.quantity) || 1) : sum, 0),
-    [cartItems])
 
   // CART-01 : quantite au panier par slug de design, pour le feedback
   // persistant "N au panier" sur le bouton de chaque carte. Le productId est
@@ -508,6 +619,9 @@ function MassiveStickers() {
         })}
       />
 
+      {/* UI-07 : widget flottant (fixed), raccourci vers le tiroir panier */}
+      <CollectionWidget items={cartItems} onOpen={openCartDrawer} tx={tx} />
+
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="font-heading font-bold text-3xl sm:text-4xl text-heading mb-3">
@@ -522,27 +636,8 @@ function MassiveStickers() {
           </p>
         </div>
 
-        {/* Compteur du minimum de 5 stickers unitaires (packs hors compte) */}
-        {unitCount > 0 && (
-          <div className={`max-w-md mx-auto mb-6 px-4 py-2.5 rounded-full text-sm text-center font-semibold flex items-center justify-center gap-2 ${
-            unitCount >= STICKER_COLLECTION_MIN_UNITS
-              ? 'bg-green-500/15 text-green-400'
-              : 'bg-amber-500/15 text-amber-400'
-          }`}>
-            <ShoppingCart size={14} />
-            {unitCount >= STICKER_COLLECTION_MIN_UNITS
-              ? tx({
-                  fr: `${unitCount} stickers au panier, minimum atteint !`,
-                  en: `${unitCount} stickers in cart, minimum reached!`,
-                  es: `${unitCount} stickers en el carrito, minimo alcanzado!`,
-                })
-              : tx({
-                  fr: `${unitCount}/${STICKER_COLLECTION_MIN_UNITS} stickers, ajoute ${STICKER_COLLECTION_MIN_UNITS - unitCount} de plus (minimum ${STICKER_COLLECTION_MIN_UNITS})`,
-                  en: `${unitCount}/${STICKER_COLLECTION_MIN_UNITS} stickers, add ${STICKER_COLLECTION_MIN_UNITS - unitCount} more (minimum ${STICKER_COLLECTION_MIN_UNITS})`,
-                  es: `${unitCount}/${STICKER_COLLECTION_MIN_UNITS} stickers, agrega ${STICKER_COLLECTION_MIN_UNITS - unitCount} mas (minimo ${STICKER_COLLECTION_MIN_UNITS})`,
-                })}
-          </div>
-        )}
+        {/* UI-07 : le widget flottant (rendu plus bas, fixed) remplace l'ancien
+            bandeau texte de progression - juge pas assez design. */}
 
         {/* Mystery Packs : designs choisis par Massive, hors minimum */}
         <div className="max-w-4xl mx-auto mb-10">
@@ -701,6 +796,7 @@ function MassiveStickers() {
             s={s}
             catLabel={cat ? tx(cat) : ''}
             justAdded={justAdded}
+            cartQty={cartQtyBySlug[s.slug] || 0}
             onAdd={addUnitToCart}
             onClose={() => setFicheSlug(null)}
             tx={tx}
