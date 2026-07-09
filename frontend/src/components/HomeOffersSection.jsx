@@ -19,14 +19,15 @@ import { useAuth } from '../contexts/AuthContext'
  * Aucune valeur inventee (regle dual-source, prod Stripe LIVE).
  */
 
-// MIKA : renseigne `price` (ex: '900 $') et, si tu veux, `savings`
-// (ex: 'Économise 150 $') pour chaque package. Vide = "Sur devis".
+// Prix verifies contre Tarifs.pdf. `savings` = montant de l'economie SEUL (le
+// verbe "Economise / Save / Ahorra" est ajoute selon la langue par
+// PackageCard). Un `price` vide affiche "Sur devis".
 const PACKAGES = [
   {
     id: 'festival',
     icon: PartyPopper,
-    price: '',
-    savings: '',
+    price: '900 $',
+    savings: '245 $',
     link: '/contact',
     fr: 'Festival', en: 'Festival', es: 'Festival',
     dFr: 'Affiches line-up, flyers et stickers, prêts pour la scène.',
@@ -36,8 +37,8 @@ const PACKAGES = [
   {
     id: 'artist-launch',
     icon: Rocket,
-    price: '',
-    savings: '',
+    price: '2 800 $',
+    savings: '490 $',
     link: '/contact',
     fr: 'Lancement artiste', en: 'Artist launch', es: 'Lanzamiento de artista',
     dFr: 'Pochette, prints et visuels pour ta sortie.',
@@ -47,8 +48,8 @@ const PACKAGES = [
   {
     id: 'label-merch',
     icon: Shirt,
-    price: '',
-    savings: '',
+    price: '1 400 $',
+    savings: '285 $',
     link: '/contact',
     fr: 'Merchandising label', en: 'Label merchandising', es: 'Merchandising de sello',
     dFr: 'Merch et goodies aux couleurs de ton label.',
@@ -123,7 +124,7 @@ function PackageCard({ pkg, tx, index }) {
             {pkg.savings && (
               <span className="inline-flex items-center gap-1 text-xs font-semibold text-green-400">
                 <Tag size={12} />
-                {pkg.savings}
+                {tx({ fr: 'Économise', en: 'Save', es: 'Ahorra' })} {pkg.savings}
               </span>
             )}
           </div>
