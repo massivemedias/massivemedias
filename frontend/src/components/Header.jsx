@@ -28,6 +28,15 @@ import { HIDDEN_SERVICE_SLUGS } from '../config/merchStatus';
 
 const SERVICE_ICONS = [Printer, Sticker, Shirt, Globe, Monitor];
 
+// SITE-ARCHI-02 (9 juillet 2026) : descriptifs courts des services custom pour
+// le mega-menu "Services". Cle = slug. Inline ici pour rester dans Header.jsx.
+const SERVICE_DESC = {
+  design: { fr: 'Identité visuelle, affiches, logos', en: 'Visual identity, posters, logos', es: 'Identidad visual, afiches, logos' },
+  web: { fr: 'Sites, boutiques, applications', en: 'Websites, shops, apps', es: 'Sitios, tiendas, aplicaciones' },
+  stickers: { fr: 'Vinyle découpé sur mesure', en: 'Custom die-cut vinyl', es: 'Vinilo troquelado a medida' },
+  merch: { fr: 'Textiles, tasses, objets', en: 'Apparel, mugs, objects', es: 'Textiles, tazas, objetos' },
+};
+
 function Header() {
   const { lang, cycleLang, t, tx } = useLang();
   const { cartCount } = useCart();
@@ -49,6 +58,19 @@ function Header() {
   const services = t('nav.servicesList');
   const close = () => setMobileMenuOpen(false);
 
+  // SITE-ARCHI-02 (9 juillet 2026) : nav a 3 piliers d'offre + Artistes + Suivi.
+  // Barre finale : Stickers | Prints | Services (mega-menu) | Artistes | Suivi |
+  // Contact. "Prints" sort du dropdown pour devenir un pilier (route inchangee
+  // /services/prints) ; le mega-menu "Services" = le reste des services custom
+  // en respectant les slugs caches (merch via HIDDEN_SERVICE_SLUGS). "La
+  // Collection" devient le pilier "Stickers" (meme URL /stickers). "A propos"
+  // quitte la barre et vit dans le footer. REGLE ABSOLUE : aucune URL ne change.
+  const printsLabel = services.find((s) => s.slug === 'prints')?.name || 'Prints';
+  const serviceMenu = services
+    .map((s, i) => ({ ...s, Icon: SERVICE_ICONS[i] }))
+    .filter((s) => s.slug !== 'prints' && !HIDDEN_SERVICE_SLUGS.includes(s.slug));
+  const onServicePage = pathname.startsWith('/services') && !pathname.startsWith('/services/prints');
+
   // FIX-NAV-SCROLL (27 avril 2026) : helper pour scroller en haut quand on
   // re-clique sur le lien de la page courante. React Router ne re-render pas
   // un Link si pathname == to, et ScrollToTop ne se declenche que sur un vrai
@@ -66,7 +88,7 @@ function Header() {
     if (typeof andDo === 'function') andDo();
   };
 
-  // Desktop: dropdown "Services"
+  // Desktop: mega-menu "Services"
   const [servicesOpen, setServicesOpen] = useState(false);
   const servicesTimeoutRef = useRef(null);
   const openServices = () => {
@@ -93,7 +115,27 @@ function Header() {
 
             {/* Navigation Desktop */}
             <div className="hidden lg:flex items-center gap-5 xl:gap-7">
-              {/* Services dropdown */}
+              {/* Pilier Stickers = boutique Collection (meme URL /stickers, gated) */}
+              {STICKERS_SHOP_ENABLED && (
+                <SmartLink
+                  to="/stickers"
+                  onClick={navClick('/stickers')}
+                  className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/stickers') ? 'text-accent' : 'nav-link'}`}
+                >
+                  {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
+                </SmartLink>
+              )}
+
+              {/* Pilier Prints (route inchangee /services/prints) */}
+              <SmartLink
+                to="/services/prints"
+                onClick={navClick('/services/prints')}
+                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/services/prints') ? 'text-accent' : 'nav-link'}`}
+              >
+                {printsLabel}
+              </SmartLink>
+
+              {/* Services : mega-menu des offres sur mesure */}
               <div
                 className="relative"
                 onMouseEnter={openServices}
@@ -102,7 +144,7 @@ function Header() {
                 <button
                   type="button"
                   onClick={() => setServicesOpen(v => !v)}
-                  className={`flex items-center gap-1 transition-colors duration-200 font-medium text-sm whitespace-nowrap ${pathname.startsWith('/services') ? 'text-accent' : 'nav-link'}`}
+                  className={`flex items-center gap-1 transition-colors duration-200 font-medium text-sm whitespace-nowrap ${onServicePage ? 'text-accent' : 'nav-link'}`}
                   aria-expanded={servicesOpen}
                   aria-haspopup="true"
                 >
@@ -116,37 +158,41 @@ function Header() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-[240px] rounded-xl shadow-2xl shadow-black/40 p-2 z-50"
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[440px] max-w-[92vw] rounded-2xl shadow-2xl shadow-black/40 p-3 z-50"
                       style={{ backgroundColor: 'var(--bg-body, #3D0079)', border: '1px solid rgba(255,255,255,0.08)' }}
                     >
-                      {services.map((service, i) => {
-                        // MERCH_HIDDEN : skip par slug (preserve l'index des icones)
-                        if (HIDDEN_SERVICE_SLUGS.includes(service.slug)) return null
-                        const Icon = SERVICE_ICONS[i];
-                        const active = isActive(`/services/${service.slug}`);
-                        return (
-                          <SmartLink
-                            key={service.slug}
-                            to={`/services/${service.slug}`}
-                            onClick={navClick(`/services/${service.slug}`, () => setServicesOpen(false))}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link hover:bg-white/5'}`}
-                          >
-                            {Icon && (
-                              <span className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent/10 flex-shrink-0">
-                                <Icon size={16} className="text-accent" />
+                      <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-grey-muted">
+                        {tx({ fr: 'Sur mesure', en: 'Custom work', es: 'A medida' })}
+                      </p>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {serviceMenu.map(({ slug, name, Icon }) => {
+                          const active = isActive(`/services/${slug}`);
+                          return (
+                            <SmartLink
+                              key={slug}
+                              to={`/services/${slug}`}
+                              onClick={navClick(`/services/${slug}`, () => setServicesOpen(false))}
+                              className={`flex items-start gap-3 px-3 py-2.5 rounded-xl transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link hover:bg-white/5'}`}
+                            >
+                              {Icon && (
+                                <span className="w-9 h-9 rounded-lg flex items-center justify-center bg-accent/10 flex-shrink-0">
+                                  <Icon size={17} className="text-accent" />
+                                </span>
+                              )}
+                              <span className="min-w-0">
+                                <span className="block font-semibold text-sm leading-tight">{name}</span>
+                                {SERVICE_DESC[slug] && (
+                                  <span className="block text-xs mt-0.5 text-grey-muted leading-snug">{tx(SERVICE_DESC[slug])}</span>
+                                )}
                               </span>
-                            )}
-                            <span className="font-semibold text-sm">{service.name}</span>
-                          </SmartLink>
-                        );
-                      })}
+                            </SmartLink>
+                          );
+                        })}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-
-              {/* Separateur visuel entre Services et Artistes (audit: "double identite") */}
-              <span aria-hidden="true" className="text-grey-muted/40 select-none">|</span>
 
               <SmartLink
                 to="/artistes"
@@ -156,27 +202,8 @@ function Header() {
                 {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
               </SmartLink>
 
-              {/* STICKERS-SHOP-A : lien vers la vente de designs, visible seulement
-                  si le flag est actif. HOME-COLLECTION : renomme "La Collection"
-                  pour lever la confusion avec le service Stickers custom du
-                  dropdown Services (decision Mika). L'URL /stickers ne change pas. */}
-              {STICKERS_SHOP_ENABLED && (
-                <SmartLink
-                  to="/stickers"
-                  onClick={navClick('/stickers')}
-                  className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/stickers') ? 'text-accent' : 'nav-link'}`}
-                >
-                  {tx({ fr: 'La Collection', en: 'The Collection', es: 'La Coleccion' })}
-                </SmartLink>
-              )}
-
-              <SmartLink to="/a-propos" onClick={navClick('/a-propos')} className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/a-propos') ? 'text-accent' : 'nav-link'}`}>
-                {t('nav.aPropos')}
-              </SmartLink>
-
-              {/* NAV-01 : suivi de commande public (/tracking), seule page
-                  orpheline utile aux clients. "Seguimiento" est l'entree la
-                  plus large (~85px), mesuree sans wrap a lg. */}
+              {/* NAV-01 : suivi de commande public (/tracking), page client
+                  essentielle -> reste en barre primaire (decision Mika ARCHI-02). */}
               <SmartLink to="/tracking" onClick={navClick('/tracking')} className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/tracking') ? 'text-accent' : 'nav-link'}`}>
                 {tx({ fr: 'Suivi', en: 'Tracking', es: 'Seguimiento' })}
               </SmartLink>
@@ -326,29 +353,59 @@ function Header() {
 
               {/* Scrollable links */}
               <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 flex flex-col gap-0">
-                {/* Services */}
+                {/* SITE-ARCHI-02 : Boutique (produits) */}
                 <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1">
-                  Services
+                  {tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' })}
                 </p>
 
-                {services.map((service, i) => {
-                  // MERCH_HIDDEN : skip par slug (preserve l'index des icones)
-                  if (HIDDEN_SERVICE_SLUGS.includes(service.slug)) return null
-                  const Icon = SERVICE_ICONS[i];
-                  const active = isActive(`/services/${service.slug}`);
+                {STICKERS_SHOP_ENABLED && (
+                  <SmartLink
+                    to="/stickers"
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/stickers') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                    onClick={navClick('/stickers', close)}
+                  >
+                    <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                      <Sticker size={14} className="text-accent" />
+                    </span>
+                    <span className="font-semibold text-[14px]">{tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}</span>
+                    <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                  </SmartLink>
+                )}
+
+                <SmartLink
+                  to="/services/prints"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/services/prints') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  onClick={navClick('/services/prints', close)}
+                >
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                    <Printer size={14} className="text-accent" />
+                  </span>
+                  <span className="font-semibold text-[14px]">{printsLabel}</span>
+                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                </SmartLink>
+
+                <div className="h-px mobile-drawer-sep mx-2 my-1.5" />
+
+                {/* Services sur mesure */}
+                <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1">
+                  {tx({ fr: 'Services', en: 'Services', es: 'Servicios' })}
+                </p>
+
+                {serviceMenu.map(({ slug, name, Icon }) => {
+                  const active = isActive(`/services/${slug}`);
                   return (
                     <SmartLink
-                      key={service.slug}
-                      to={`/services/${service.slug}`}
+                      key={slug}
+                      to={`/services/${slug}`}
                       className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${active ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                      onClick={navClick(`/services/${service.slug}`, close)}
+                      onClick={navClick(`/services/${slug}`, close)}
                     >
                       {Icon && (
                         <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
                           <Icon size={14} className="text-accent" />
                         </span>
                       )}
-                      <span className="font-semibold text-[14px]">{service.name}</span>
+                      <span className="font-semibold text-[14px]">{name}</span>
                       <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                     </SmartLink>
                   );
@@ -356,7 +413,11 @@ function Header() {
 
                 <div className="h-px mobile-drawer-sep mx-2 my-1.5" />
 
-                {/* Artistes - single link */}
+                {/* Decouvrir */}
+                <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1">
+                  {tx({ fr: 'Découvrir', en: 'Discover', es: 'Descubrir' })}
+                </p>
+
                 <SmartLink
                   to="/artistes"
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
@@ -369,35 +430,7 @@ function Header() {
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </SmartLink>
 
-                {/* STICKERS-SHOP-A : vente de designs (flag). HOME-COLLECTION :
-                    "La Collection" (voir desktop ci-dessus). */}
-                {STICKERS_SHOP_ENABLED && (
-                  <SmartLink
-                    to="/stickers"
-                    className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/stickers') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                    onClick={navClick('/stickers', close)}
-                  >
-                    <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                      <Sticker size={14} className="text-accent" />
-                    </span>
-                    <span className="font-semibold text-[14px]">{tx({ fr: 'La Collection', en: 'The Collection', es: 'La Coleccion' })}</span>
-                    <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                  </SmartLink>
-                )}
-
-                <SmartLink
-                  to="/a-propos"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/a-propos') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={navClick('/a-propos', close)}
-                >
-                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                    <Info size={14} className="text-accent" />
-                  </span>
-                  <span className="font-semibold text-[14px]">{t('nav.aPropos')}</span>
-                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                </SmartLink>
-
-                {/* NAV-01 : suivi de commande, meme entree que le desktop */}
+                {/* NAV-01 : suivi de commande, page client essentielle */}
                 <SmartLink
                   to="/tracking"
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/tracking') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
