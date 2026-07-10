@@ -60,22 +60,6 @@ const PAGE_SIZE = 36
 // legerement la souris en 3D. Mettre a false pour couper l'effet (une ligne).
 const FAMILY_TILT = true
 
-// UI-10 : 1 carte de famille sur ACCENT_EVERY recoit un accent visuel (fond
-// rose + designs centraux plus gros) pour casser la monotonie de la grille.
-const ACCENT_EVERY = 4
-
-// UI-10 : bande vitrine "en situation" entre les familles et le catalogue.
-// CONSTANTE EXTENSIBLE : chaque objet = une tuile. Pour ajouter un laptop ou une
-// vraie photo de pack plus tard, ajouter un objet ici (kind 'product' avec une
-// autre image de fond, designW = largeur du sticker pose dessus). Les images de
-// fond sont chargees en lazy -> zero cout au premier paint (perf UI-10).
-const SHOWCASE = [
-  { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-adian-fumeuse', designW: '44%', cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
-  { kind: 'product', img: '/images/mugs/mug-white.webp', design: 'massive-alien-hot', designW: '40%', cap: { fr: 'Sur ta tasse', en: 'On your mug', es: 'En tu taza' } },
-  { kind: 'pack', slugs: ['massive-dj-skull', 'massive-chameleon', 'massive-fleur-degueu', 'massive-mais', 'massive-jade'], cap: { fr: 'Mystery pack', en: 'Mystery pack', es: 'Mystery pack' } },
-]
-const PACK_POS = [[-70, -8, -10], [-38, 10, 7], [0, -4, 6], [40, 8, -9], [72, -6, 8]]
-
 // Carte d'un design : partagee entre toutes les grilles. Le clic sur le
 // visuel/nom ouvre la fiche produit (UI-02), le bouton +3 $ reste un ajout
 // direct au panier.
@@ -141,30 +125,29 @@ function StickerCard({ s, justAdded, cartQty, onAdd, onOpen, tx }) {
   )
 }
 
-// UI-02/04/10 : carte cliquable d'une famille, collage de 4 designs en eventail.
-// UI-10 : l'eventail est OUVERT par defaut (l'ancien etat survol devient le
-// repos) -> plus rien cache derriere le hover, le probleme tactile est regle. Le
-// nom + le compte sont poses sur le visuel (scrim bas), la carte est plus dense.
-// Le survol ajoute un leger sur-ecartement (--hx) + le lift (CSS) + le tilt 3D.
-// 1 carte sur ACCENT_EVERY est accentuee (fond rose + designs centraux plus
-// gros). Micro-thumbs 160px eager + fetchpriority (les cartes SONT le 1er ecran).
-function FamilleCard({ cat, count, tx, onOpen, accent }) {
+// UI-02/04 : carte cliquable d'une famille, collage de 4 designs en eventail.
+// UI-04 perf : micro-thumbs 160px (au lieu des 400px affiches a ~80px),
+// chargement eager + fetchpriority high (les cartes SONT le premier ecran).
+function FamilleCard({ cat, count, tx, onOpen }) {
   const slugs = FAMILY_COLLAGES[cat.id] || []
-  // 3 etats par vignette via variables CSS (voir .famcard* dans index.css).
-  // UI-10 : REPOS = ouvert ; MEDIAN (tactile/reduced-motion) = meme etat ouvert
-  // (--mx = --rx) ; SURVOL = un peu plus ouvert. Indices 1 & 2 = designs
-  // centraux (au-dessus, plus gros). 100 % transform -> zero reflow au scroll.
-  const REST_X = [-78, -28, 28, 78]
-  const REST_R = [-13, -5, 5, 13]
-  const HOV_X = [-90, -33, 33, 90]
-  const HOV_R = [-16, -7, 7, 16]
-  const DELAY = [0, 40, 80, 120]
-  // Accent : designs centraux plus gros (effet "design vedette").
-  const SIZE = accent ? [80, 116, 116, 80] : [82, 100, 100, 82]
+  // UI-08 (variante A) : eventail qui s'ouvre au survol. 3 etats par vignette
+  // via variables CSS (voir .famcard* dans index.css) : REPOS serre, MEDIAN
+  // (tactile/reduced-motion, legerement ouvert), SURVOL ouvert. Indices 1 & 2
+  // = cartes centrales (au-dessus, un peu plus grandes). Le mouvement est
+  // 100 % transform (translate/rotate) -> zero reflow, aucun cout au scroll.
+  const REST_X = [-14, -5, 5, 14]
+  const REST_R = [-3, -1.5, 1.5, 3]
+  const MID_X = [-46, -16, 16, 46]
+  const MID_R = [-9, -3.5, 3.5, 9]
+  const HOV_X = [-74, -26, 26, 74]
+  const HOV_R = [-15, -6, 6, 15]
+  const DELAY = [0, 45, 90, 135]
+  const SIZE = [60, 72, 72, 60]
   const ZS = [2, 4, 4, 2]
-  // UI-08b : l'eventail (famcard-fan) suit legerement la souris en 3D. rAF pour
-  // ne pas spammer le layout, transform uniquement -> zero reflow. Coupe par CSS
-  // en reduced-motion et sur tactile : transform:none !important bat l'inline.
+  // UI-08b : l'eventail (famcard-fan) suit legerement la souris en 3D (max
+  // ~4 deg). rAF pour ne pas spammer le layout, transform uniquement -> zero
+  // reflow. Coupe par CSS en reduced-motion et sur tactile (voir index.css) :
+  // la regle transform:none !important y bat le style inline.
   const fanRef = useRef(null)
   const rafRef = useRef(0)
   const tilt = (e) => {
@@ -186,9 +169,9 @@ function FamilleCard({ cat, count, tx, onOpen, accent }) {
       onClick={() => onOpen(cat.id)}
       onMouseMove={FAMILY_TILT ? tilt : undefined}
       onMouseLeave={FAMILY_TILT ? untilt : undefined}
-      className={`famcard rounded-2xl border p-2.5 text-left ${accent ? 'famcard-accent' : 'bg-black/20 border-white/5'}`}
+      className="famcard rounded-2xl bg-black/20 border border-white/5 p-3 text-left"
     >
-      <div className="famcard-fanwrap relative h-[116px] sm:h-[124px]">
+      <div className="famcard-fanwrap relative h-24 sm:h-28">
         <div ref={fanRef} className="famcard-fan absolute inset-0">
           {slugs.map((slug, i) => (
             <img
@@ -209,103 +192,21 @@ function FamilleCard({ cat, count, tx, onOpen, accent }) {
                 top: '50%',
                 zIndex: ZS[i],
                 '--rx': `${REST_X[i]}px`, '--rr': `${REST_R[i]}deg`,
-                '--mx': `${REST_X[i]}px`, '--mr': `${REST_R[i]}deg`,
+                '--mx': `${MID_X[i]}px`, '--mr': `${MID_R[i]}deg`,
                 '--hx': `${HOV_X[i]}px`, '--hr': `${HOV_R[i]}deg`,
                 '--d': `${DELAY[i]}ms`,
               }}
             />
           ))}
         </div>
-        {/* UI-10 : nom + compte poses sur le visuel (scrim bas), pointer-events
-            none pour que tout le clic aille au bouton parent. */}
-        <div className="famcard-label absolute inset-x-0 bottom-0 z-10 px-2.5 pt-6 pb-1.5 flex items-baseline justify-between gap-2 pointer-events-none">
-          <h3 className="font-heading font-bold text-[13px] leading-tight text-white">{tx(cat)}</h3>
-          <span className="famcard-cta flex-none text-accent text-[11px] font-bold whitespace-nowrap">
-            {count} <span className="famcard-arrow">&rarr;</span>
-          </span>
-        </div>
       </div>
-    </button>
-  )
-}
-
-// UI-10 : bande vitrine "en situation" (repond au "il manque des mockups"). Rend
-// SHOWCASE (constante extensible). Tuiles produit -> ouvrent la fiche du design
-// pose ; tuile pack -> scroll vers les Mystery Packs. Images de fond en lazy.
-function ShowcaseBand({ tx, onOpenDesign }) {
-  const goPacks = () => document.getElementById('mystery-packs')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  const capBar = (cap) => (
-    <span
-      className="absolute inset-x-0 bottom-0 px-4 py-3 text-white font-bold text-sm text-left"
-      style={{ background: 'linear-gradient(to top, rgba(15,7,25,0.92), transparent)' }}
-    >
-      {tx(cap)} <span className="ml-0.5">&rarr;</span>
-    </span>
-  )
-  const frame = 'relative rounded-2xl overflow-hidden border border-white/[0.08] h-44 sm:h-52 group cursor-pointer transition-transform hover:-translate-y-0.5'
-  const bg = { background: 'linear-gradient(160deg, #2a0a4a, #3D0079)' }
-  return (
-    <div className="mb-10">
-      <div className="flex items-baseline justify-between gap-3 mb-3">
-        <h2 className="font-heading font-bold text-lg sm:text-xl text-heading">
-          {tx({ fr: 'En situation', en: 'In the wild', es: 'En situacion' })}
-        </h2>
-        <span className="text-grey-muted text-xs">
-          {tx({ fr: 'tes stickers, partout', en: 'your stickers, everywhere', es: 'tus stickers, en todas partes' })}
+      <div className="flex items-baseline justify-between gap-2 mt-2.5">
+        <h3 className="font-heading font-bold text-[13.5px] leading-tight text-heading">{tx(cat)}</h3>
+        <span className="famcard-cta flex-none text-accent text-[11px] font-semibold">
+          {count} <span className="famcard-arrow">&rarr;</span>
         </span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        {SHOWCASE.map((tile, i) =>
-          tile.kind === 'pack' ? (
-            <button key={i} type="button" onClick={goPacks} className={frame} style={bg} aria-label={tx(tile.cap)}>
-              <div className="absolute inset-0">
-                {tile.slugs.map((s, j) => (
-                  <img
-                    key={s}
-                    loading="lazy"
-                    decoding="async"
-                    src={`/images/thumbs-mini/stickers-massive/${s}.webp`}
-                    alt=""
-                    aria-hidden="true"
-                    className="sticker-stroke absolute object-contain w-[76px] h-[76px] transition-transform duration-300 group-hover:scale-105"
-                    style={{ left: `calc(50% + ${PACK_POS[j][0]}px)`, top: `calc(48% + ${PACK_POS[j][1]}px)`, marginLeft: -38, marginTop: -38, transform: `rotate(${PACK_POS[j][2]}deg)`, zIndex: j }}
-                  />
-                ))}
-              </div>
-              {capBar(tile.cap)}
-            </button>
-          ) : (
-            <button key={i} type="button" onClick={() => onOpenDesign(tile.design)} className={frame} style={bg} aria-label={tx(tile.cap)}>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative h-[82%] flex items-center justify-center">
-                  <img
-                    loading="lazy"
-                    decoding="async"
-                    src={tile.img}
-                    alt=""
-                    aria-hidden="true"
-                    className="h-full w-auto object-contain transition-transform duration-300 group-hover:scale-[1.04]"
-                    style={{ filter: 'drop-shadow(0 12px 26px rgba(0,0,0,0.45))' }}
-                  />
-                  <div className="absolute" style={{ left: '50%', top: '48%', width: tile.designW, aspectRatio: '1', transform: 'translate(-50%, -50%) rotate(-3deg)' }}>
-                    <img
-                      loading="lazy"
-                      decoding="async"
-                      src={`/images/thumbs-mini/stickers-massive/${tile.design}.webp`}
-                      alt=""
-                      aria-hidden="true"
-                      className="w-full h-full object-contain"
-                      style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))' }}
-                    />
-                  </div>
-                </div>
-              </div>
-              {capBar(tile.cap)}
-            </button>
-          )
-        )}
-      </div>
-    </div>
+    </button>
   )
 }
 
@@ -809,9 +710,8 @@ function MassiveStickers() {
         {/* UI-07 : le widget flottant (rendu plus bas, fixed) remplace l'ancien
             bandeau texte de progression - juge pas assez design. */}
 
-        {/* Mystery Packs : designs choisis par Massive, hors minimum.
-            UI-10 : id ancre pour le scroll depuis la tuile pack de la bande vitrine. */}
-        <div id="mystery-packs" className="max-w-4xl mx-auto mb-10 scroll-mt-24">
+        {/* Mystery Packs : designs choisis par Massive, hors minimum */}
+        <div className="max-w-4xl mx-auto mb-10">
           <h2 className="font-heading font-bold text-xl text-heading text-center mb-1 flex items-center justify-center gap-2">
             <Gift size={18} className="text-accent" />
             {tx({ fr: 'Mystery Packs', en: 'Mystery Packs', es: 'Mystery Packs' })}
@@ -922,20 +822,16 @@ function MassiveStickers() {
           )
         ) : activeCat === 'all' ? (
           <div>
-            {/* Cartes de familles UI-04/10 : eventails ouverts, 1 sur ACCENT_EVERY
-                accentuee. gap-y plus large pour laisser deborder les stickers. */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 sm:gap-x-4 gap-y-6 mb-9">
-              {FAMILY_ORDER.map((catId, i) => {
+            {/* Cartes de familles UI-04 : 4 colonnes desktop / 2 mobile, compactes */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
+              {FAMILY_ORDER.map((catId) => {
                 const cat = MASSIVE_STICKER_CATEGORIES.find((c) => c.id === catId)
                 if (!cat || !countByCat[catId]) return null
                 return (
-                  <FamilleCard key={catId} cat={cat} count={countByCat[catId]} tx={tx} onOpen={setActiveCat} accent={i % ACCENT_EVERY === 2} />
+                  <FamilleCard key={catId} cat={cat} count={countByCat[catId]} tx={tx} onOpen={setActiveCat} />
                 )
               })}
             </div>
-
-            {/* UI-10 : bande vitrine "en situation" entre familles et catalogue */}
-            <ShowcaseBand tx={tx} onOpenDesign={(slug) => setFicheSlug(slug)} />
 
             {/* Grille complete du catalogue, ordre aleatoire a chaque visite */}
             <div className="flex items-baseline justify-between gap-3 mb-4">
