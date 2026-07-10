@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X, ChevronLeft, ChevronRight, Scissors, ArrowRight } from 'lucide-react'
 import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
 import { useCart } from '../contexts/CartContext'
@@ -751,6 +752,38 @@ function MassiveStickers() {
               )
             })}
           </div>
+        </div>
+
+        {/* ARCHI-03 : CTA stickers custom (bandeau contraste, sous les Mystery
+            Packs). Pousse vers le service /services/stickers ; compact (une
+            rangee desktop) pour que la grille reste haute - la page est une
+            boutique d'abord. Pas un popup. */}
+        <div className="max-w-4xl mx-auto mb-10">
+          <Link
+            to="/services/stickers"
+            className="group flex flex-col sm:flex-row items-center gap-4 rounded-2xl px-5 py-4 sm:px-6 transition-all hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(100deg, #F00098, #6a1a5c)', boxShadow: '0 12px 34px rgba(240,0,152,0.25)' }}
+          >
+            <span className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+              <Scissors size={20} className="text-white" />
+            </span>
+            <div className="text-center sm:text-left flex-1 min-w-0">
+              <p className="font-heading font-bold text-white text-lg leading-tight">
+                {tx({ fr: 'Ton design, notre découpe', en: 'Your design, our cut', es: 'Tu diseño, nuestro corte' })}
+              </p>
+              <p className="text-white/85 text-sm mt-0.5">
+                {tx({
+                  fr: 'Stickers custom en vinyle die-cut - ta forme, tes quantités.',
+                  en: 'Custom die-cut vinyl stickers - your shape, your quantity.',
+                  es: 'Stickers custom en vinilo die-cut - tu forma, tus cantidades.',
+                })}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-accent font-bold text-sm whitespace-nowrap flex-shrink-0 group-hover:gap-3 transition-all">
+              {tx({ fr: 'Créer mes stickers custom', en: 'Create my custom stickers', es: 'Crear mis stickers custom' })}
+              <ArrowRight size={16} />
+            </span>
+          </Link>
         </div>
 
         {/* Recherche par nom */}
