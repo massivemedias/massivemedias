@@ -48,13 +48,15 @@ export default function MiniCartDrawer() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/50" onClick={closeCartDrawer} aria-hidden="true" />
+          {/* UI-10 : voile leger (15% + blur subtil) au lieu du rideau gris
+              opaque - la page reste lisible derriere, le tiroir se distingue par
+              son ombre portee. Clic exterieur = fermeture (conserve). */}
+          <div className="absolute inset-0 bg-black/[0.15] backdrop-blur-[2px]" onClick={closeCartDrawer} aria-hidden="true" />
 
           {/* Tiroir : plein ecran mobile (bottom-sheet via items-end), 390px desktop */}
           <motion.aside
             className="relative w-full sm:w-[390px] sm:max-w-[92vw] h-full flex flex-col ml-auto"
-            style={{ background: 'linear-gradient(160deg, #2a0a4a, #3D0079)', borderLeft: '1px solid rgba(240,0,152,0.3)' }}
+            style={{ background: 'linear-gradient(160deg, #2a0a4a, #3D0079)', borderLeft: '1px solid rgba(240,0,152,0.3)', boxShadow: '-24px 0 60px rgba(0,0,0,0.5)' }}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}

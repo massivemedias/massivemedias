@@ -11,7 +11,10 @@
 //   fx           -> "Finitions (Matte / Lustre / Holo / Verre Brise / Etoiles / Points)"
 import { STICKER_GRID } from '../utils/pricingData'
 
-const QUANTITIES = [25, 50, 100, 250, 500]
+// PRICING-VOLUME (9 juillet 2026) : les paliers sont DERIVES du grid (SSOT) au
+// lieu d'etre hardcodes -> les paliers volume 1000/2000 (et tout futur palier)
+// apparaissent automatiquement dans la page publique Tarifs, FR/EN/ES.
+const QUANTITIES = Object.keys(STICKER_GRID.standard.matte).map(Number).sort((a, b) => a - b)
 const TIERS = ['standard', 'medium', 'large']
 const KINDS = ['matte', 'intermediate', 'fx']
 

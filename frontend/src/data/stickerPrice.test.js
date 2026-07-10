@@ -129,3 +129,85 @@ describe('getStickerPrice - finitions v2 (3 groupes, Standard)', () => {
     expect(r.unitPrice).toBeLessThan(1.10)
   })
 })
+
+// PRICING-VOLUME (9 juillet 2026, correctif marche FINAL, decision Mika apres
+// benchmark StickerYou/StickerApp/Sticker Mule). Paliers volume 1000/2000,
+// positionnement premium. Ancres matte (0,55/0,45), fx (0,70/0,60), inter = milieu.
+// SEUIL bulk : 999 reste au taux 500 (0,70), le rabais exige d'ATTEINDRE le palier
+// (floor, pas d'interpolation au-dela de 500). Interpolation retail conservee < 500.
+describe('getStickerPrice - paliers volume 1000/2000 (PRICING-VOLUME final)', () => {
+  // ---- Les 4 verifs NOMMEES par Mika ----
+  it('VERIF 1 : matte 2.5" x 2000 = 900 $ (0,45/u)', () => {
+    expect(getStickerPrice(MATTE, 'die-cut', 2000, STD)).toMatchObject({ tier: 'standard', price: 900, unitPrice: 0.45 })
+    expect(getStickerPriceForTotal(MATTE, 'die-cut', 2000, STD).price).toBe(900)
+  })
+  it('VERIF 2 : matte 2.5" x 1000 = 550 $ (0,55/u)', () => {
+    expect(getStickerPrice(MATTE, 'die-cut', 1000, STD)).toMatchObject({ price: 550, unitPrice: 0.55 })
+    expect(getStickerPriceForTotal(MATTE, 'die-cut', 1000, STD).price).toBe(550)
+  })
+  it('VERIF 3 : fx 2.5" x 2000 = 1200 $ (0,60/u)', () => {
+    expect(getStickerPrice(FX, 'die-cut', 2000, STD)).toMatchObject({ price: 1200, unitPrice: 0.60 })
+  })
+  it('VERIF 4 : matte 2.5" x 999 = taux palier 500 (0,70/u), seuil bulk', () => {
+    const r = getStickerPriceForTotal(MATTE, 'die-cut', 999, STD)
+    expect(r.unitPrice).toBe(0.70)
+    expect(r.price).toBe(699.30) // 999 x 0,70 ; PAS le taux bulk 1000
+  })
+
+  it('fx 1000 = 700 (0,70/u) ; intermediate = milieu (1000 = 620, 2000 = 1040)', () => {
+    expect(getStickerPrice(FX, 'die-cut', 1000, STD)).toMatchObject({ price: 700, unitPrice: 0.70 })
+    expect(getStickerPrice('clear', 'die-cut', 1000, STD).price).toBe(620)
+    expect(getStickerPrice('clear', 'die-cut', 2000, STD).price).toBe(1040)
+  })
+
+  it('degressivite matte : 0,70 (500) > 0,55 (1000) > 0,45 (2000)', () => {
+    const u = [500, 1000, 2000].map(q => getStickerPrice(MATTE, 'die-cut', q, STD).unitPrice)
+    expect(u).toEqual([0.70, 0.55, 0.45])
+    for (let i = 1; i < u.length; i++) expect(u[i]).toBeLessThan(u[i - 1])
+  })
+  it('degressivite fx : 0,80 (500) > 0,70 (1000) > 0,60 (2000)', () => {
+    const u = [500, 1000, 2000].map(q => getStickerPrice(FX, 'die-cut', q, STD).unitPrice)
+    expect(u).toEqual([0.80, 0.70, 0.60])
+    for (let i = 1; i < u.length; i++) expect(u[i]).toBeLessThan(u[i - 1])
+  })
+  it('ecart finitions survit au volume : matte < inter < fx a 1000 et 2000', () => {
+    for (const q of [1000, 2000]) {
+      const m = getStickerPrice(MATTE, 'die-cut', q, STD).unitPrice
+      const i = getStickerPrice('clear', 'die-cut', q, STD).unitPrice
+      const x = getStickerPrice(FX, 'die-cut', q, STD).unitPrice
+      expect(m).toBeLessThan(i)
+      expect(i).toBeLessThan(x)
+    }
+  })
+  it('medium/large gardent leurs ratios (aucune valeur inventee)', () => {
+    // medium/matte 1000 = standard/matte 1000 (550) x (500/350) = 785,71
+    expect(getStickerPrice(MATTE, 'die-cut', 1000, MED).price).toBe(785.71)
+    // large/matte 2000 = standard/matte 2000 (900) x (700/350 = 2,0) = 1800
+    expect(getStickerPrice(MATTE, 'die-cut', 2000, LRG).price).toBe(1800)
+  })
+
+  describe('SEUIL bulk : le rabais exige d atteindre le palier (floor, pas d interpolation)', () => {
+    it('999 = taux 500 (0,70/u = 699,30 $)', () => {
+      const r = getStickerPriceForTotal(MATTE, 'die-cut', 999, STD)
+      expect(r.unitPrice).toBe(0.70)
+      expect(r.price).toBe(699.30)
+    })
+    it('1000 = palier exact (0,55/u = 550 $)', () => {
+      expect(getStickerPriceForTotal(MATTE, 'die-cut', 1000, STD).price).toBe(550)
+    })
+    it('1500 = taux 1000 (0,55/u = 825 $), pas d interpolation', () => {
+      const r = getStickerPriceForTotal(MATTE, 'die-cut', 1500, STD)
+      expect(r.unitPrice).toBe(0.55)
+      expect(r.price).toBe(825)
+    })
+    it('3000 = plafond au taux 2000 (0,45/u = 1350 $)', () => {
+      const r = getStickerPriceForTotal(MATTE, 'die-cut', 3000, STD)
+      expect(r.unitPrice).toBe(0.45)
+      expect(r.price).toBe(1350)
+    })
+    it('retail INCHANGE : 60 clear interpole toujours (< seuil 500)', () => {
+      const r = getStickerPriceForTotal('clear', 'die-cut', 60, STD)
+      expect(r.price).toBe(58.80) // interpolation retail preservee (fix 5 mai)
+    })
+  })
+})

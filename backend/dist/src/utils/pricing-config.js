@@ -49,21 +49,33 @@ exports.FRAME_PRICES_FALLBACK = {
 //   medium = standard x 1.35  (+35%, arrondi a 5$)
 //   large  = standard x 1.85  (+85%, arrondi a 5$)
 // Memes ratios appliques aux finis FX pour proportionnalite.
+//
+// PRICING-VOLUME (9 juillet 2026, correctif marche FINAL, decision Mika apres
+// benchmark StickerYou/StickerApp/Sticker Mule). 2 paliers volume (1000, 2000),
+// positionnement premium assume (~25-30 % au-dessus du marche CA). Ancres STANDARD
+// donnees par Mika ; medium/large = ratios existants appliques, AUCUNE valeur
+// inventee ; intermediate = milieu matte/fx.
+//   standard/matte : 1000 = 550 (0,55/u) ; 2000 = 900 (0,45/u)
+//   standard/inter : 1000 = 620 (0,62/u) ; 2000 = 1040 (0,52/u)
+//   standard/fx    : 1000 = 700 (0,70/u) ; 2000 = 1200 (0,60/u)
+// MIROIR EXACT de frontend/src/utils/pricingData.js STICKER_GRID (sinon checkout
+// rejette). Le checkout valide les paliers EXACTS (999 non achetable). Verifs :
+// matte 2.5" x1000 = 550$, x2000 = 900$ ; fx x2000 = 1200$.
 exports.STICKER_GRID = {
     standard: {
-        matte: { 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 },
-        intermediate: { 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375 },
-        fx: { 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 },
+        matte: { 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350, 1000: 550, 2000: 900 },
+        intermediate: { 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375, 1000: 620, 2000: 1040 },
+        fx: { 25: 30, 50: 55, 100: 100, 250: 225, 500: 400, 1000: 700, 2000: 1200 },
     },
     medium: {
-        matte: { 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 },
-        intermediate: { 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50 },
-        fx: { 25: 50, 50: 80, 100: 135, 250: 305, 500: 575 },
+        matte: { 25: 40, 50: 65, 100: 115, 250: 275, 500: 500, 1000: 785.71, 2000: 1285.71 },
+        intermediate: { 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50, 1000: 888.67, 2000: 1490.67 },
+        fx: { 25: 50, 50: 80, 100: 135, 250: 305, 500: 575, 1000: 1006.25, 2000: 1725 },
     },
     large: {
-        matte: { 25: 55, 50: 90, 100: 160, 250: 375, 500: 700 },
-        intermediate: { 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50 },
-        fx: { 25: 65, 50: 105, 100: 185, 250: 415, 500: 785 },
+        matte: { 25: 55, 50: 90, 100: 160, 250: 375, 500: 700, 1000: 1100, 2000: 1800 },
+        intermediate: { 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50, 1000: 1227.60, 2000: 2059.20 },
+        fx: { 25: 65, 50: 105, 100: 185, 250: 415, 500: 785, 1000: 1373.75, 2000: 2355 },
     },
 };
 // ALIAS RETRO-COMPAT : pointent sur le palier `standard` (= ancien comportement).
