@@ -129,3 +129,65 @@ describe('getStickerPrice - finitions v2 (3 groupes, Standard)', () => {
     expect(r.unitPrice).toBeLessThan(1.10)
   })
 })
+
+// PRICING-VOLUME (9 juillet 2026, decision Mika) : paliers volume 1000 / 2000
+// pour tuer le plafond a 0,80 $/u au-dela de 500 (2000 x 2.5" fx = 1600 $, hors
+// marche). Ancres MATTE (0,65 puis 0,50), fx degresse MOINS (0,80 puis 0,65,
+// l'holo coute plus cher en matiere) -> l'ecart entre finitions survit.
+describe('getStickerPrice - paliers volume 1000/2000 (PRICING-VOLUME)', () => {
+  it('matte standard 1000 -> 650 (0,65/u) et 2000 -> 1000 (0,50/u)', () => {
+    expect(getStickerPrice(MATTE, 'die-cut', 1000, STD)).toMatchObject({ tier: 'standard', price: 650, unitPrice: 0.65 })
+    expect(getStickerPrice(MATTE, 'die-cut', 2000, STD)).toMatchObject({ tier: 'standard', price: 1000, unitPrice: 0.50 })
+  })
+  it('fx standard 1000 -> 800 (0,80/u) et 2000 -> 1300 (0,65/u)', () => {
+    expect(getStickerPrice(FX, 'die-cut', 1000, STD)).toMatchObject({ price: 800, unitPrice: 0.80 })
+    expect(getStickerPrice(FX, 'die-cut', 2000, STD)).toMatchObject({ price: 1300, unitPrice: 0.65 })
+  })
+  it('intermediate (clear) = milieu matte/fx : 1000 -> 725, 2000 -> 1150', () => {
+    expect(getStickerPrice('clear', 'die-cut', 1000, STD).price).toBe(725)
+    expect(getStickerPrice('clear', 'die-cut', 2000, STD).price).toBe(1150)
+  })
+
+  it('VERIF Groove and Bass : matte 2.5" x 2000 = 1000 $ exactement', () => {
+    expect(getStickerPrice(MATTE, 'die-cut', 2000, STD).price).toBe(1000)
+    expect(getStickerPriceForTotal(MATTE, 'die-cut', 2000, STD).price).toBe(1000)
+  })
+
+  it('degressivite matte : 0,70 (500) > 0,65 (1000) > 0,50 (2000)', () => {
+    const u = [500, 1000, 2000].map(q => getStickerPrice(MATTE, 'die-cut', q, STD).unitPrice)
+    expect(u).toEqual([0.70, 0.65, 0.50])
+    for (let i = 1; i < u.length; i++) expect(u[i]).toBeLessThan(u[i - 1])
+  })
+  it('fx degresse MOINS que matte : plat 0,80 (500->1000) puis 0,65 (2000)', () => {
+    const u = [500, 1000, 2000].map(q => getStickerPrice(FX, 'die-cut', q, STD).unitPrice)
+    expect(u).toEqual([0.80, 0.80, 0.65])
+    expect(u[2]).toBeLessThan(u[1])
+  })
+  it('ecart finitions survit au volume : fx > matte a 1000 et 2000', () => {
+    for (const q of [1000, 2000]) {
+      expect(getStickerPrice(FX, 'die-cut', q, STD).unitPrice)
+        .toBeGreaterThan(getStickerPrice(MATTE, 'die-cut', q, STD).unitPrice)
+    }
+  })
+
+  describe('qty custom autour des paliers (999 vs 1000 vs 2000)', () => {
+    it('999 interpole 500->1000 (~0,65/u) - PLUS l ancien plafond 0,70', () => {
+      const r = getStickerPriceForTotal(MATTE, 'die-cut', 999, STD)
+      expect(r.unitPrice).toBeCloseTo(0.65, 2)
+      expect(r.price).toBeLessThan(660) // ancien plafond 0,70 -> 999 = 699,30 exclu
+    })
+    it('1000 = palier exact 650', () => {
+      expect(getStickerPriceForTotal(MATTE, 'die-cut', 1000, STD).price).toBe(650)
+    })
+    it('1500 interpole 1000->2000 (entre 0,50 et 0,65/u)', () => {
+      const r = getStickerPriceForTotal(MATTE, 'die-cut', 1500, STD)
+      expect(r.unitPrice).toBeGreaterThan(0.50)
+      expect(r.unitPrice).toBeLessThan(0.65)
+    })
+    it('au-dela de 2000 : plafond au taux 2000 (3000 matte = 0,50/u = 1500, PLUS 0,70)', () => {
+      const r = getStickerPriceForTotal(MATTE, 'die-cut', 3000, STD)
+      expect(r.unitPrice).toBe(0.50) // taux du palier 2000, pas l'ancien 0,70 (=> 2100)
+      expect(r.price).toBe(1500)
+    })
+  })
+})

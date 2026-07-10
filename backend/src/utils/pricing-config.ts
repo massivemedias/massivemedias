@@ -48,21 +48,31 @@ export const FRAME_PRICES_FALLBACK: Record<string, number> = {
 //   medium = standard x 1.35  (+35%, arrondi a 5$)
 //   large  = standard x 1.85  (+85%, arrondi a 5$)
 // Memes ratios appliques aux finis FX pour proportionnalite.
+//
+// PRICING-VOLUME (9 juillet 2026, decision Mika) : 2 paliers volume (1000, 2000)
+// pour tuer le plafond a 0,80 $/u au-dela de 500 (2000 x 2.5" fx = 1600 $, hors
+// marche). Structure proportionnelle ANCREE MATTE, l'ecart finitions survit
+// (holo degresse moins, materiel plus cher) :
+//   standard/matte : 1000 = 650 (0,65/u) ; 2000 = 1000 (0,50/u)
+//   standard/fx    : 1000 = 800 (0,80/u) ; 2000 = 1300 (0,65/u)
+//   intermediate = milieu matte/fx ; medium/large gardent leurs ratios de taille.
+// MIROIR EXACT de frontend/src/utils/pricingData.js STICKER_GRID (sinon checkout
+// rejette). Verif : matte 2.5" x 2000 = 1000 $ (soumission Groove and Bass).
 export const STICKER_GRID: Record<string, Record<string, Record<number, number>>> = {
   standard: { // taille <= 2.5"
-    matte:        { 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 },
-    intermediate: { 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375 },
-    fx:           { 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 },
+    matte:        { 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350, 1000: 650, 2000: 1000 },
+    intermediate: { 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375, 1000: 725, 2000: 1150 },
+    fx:           { 25: 30, 50: 55, 100: 100, 250: 225, 500: 400, 1000: 800, 2000: 1300 },
   },
   medium: {   // taille <= 3.5"
-    matte:        { 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 },
-    intermediate: { 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50 },
-    fx:           { 25: 50, 50: 80, 100: 135, 250: 305, 500: 575 },
+    matte:        { 25: 40, 50: 65, 100: 115, 250: 275, 500: 500, 1000: 930, 2000: 1420 },
+    intermediate: { 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50, 1000: 1040, 2000: 1640 },
+    fx:           { 25: 50, 50: 80, 100: 135, 250: 305, 500: 575, 1000: 1150, 2000: 1860 },
   },
   large: {    // taille <= 5"
-    matte:        { 25: 55, 50: 90, 100: 160, 250: 375, 500: 700 },
-    intermediate: { 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50 },
-    fx:           { 25: 65, 50: 105, 100: 185, 250: 415, 500: 785 },
+    matte:        { 25: 55, 50: 90, 100: 160, 250: 375, 500: 700, 1000: 1300, 2000: 2000 },
+    intermediate: { 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50, 1000: 1440, 2000: 2280 },
+    fx:           { 25: 65, 50: 105, 100: 185, 250: 415, 500: 785, 1000: 1570, 2000: 2560 },
   },
 };
 

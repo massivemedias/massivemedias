@@ -28,21 +28,31 @@
 // SSOT cote backend : backend/src/utils/pricing-config.ts -> STICKER_GRID.
 // Si vous modifiez les prix ici, modifiez aussi la-bas (sinon le backend
 // rejette des commandes legitimes via validation server-side).
+//
+// PRICING-VOLUME (9 juillet 2026, decision Mika) : ajout de 2 paliers volume
+// (1000, 2000) pour eviter le plafond a 0,80 $/u au-dela de 500 (2000 x 2.5" fx
+// tombait a 1600 $, hors marche). Structure proportionnelle ANCREE SUR LE MATTE,
+// l'ecart entre finitions survit (l'holo coute reellement plus cher en matiere,
+// donc degresse moins) :
+//   standard/matte : 1000 -> 0,65 $/u (650) ; 2000 -> 0,50 $/u (1000)
+//   standard/fx    : 1000 -> 0,80 $/u (800) ; 2000 -> 0,65 $/u (1300)
+//   intermediate = milieu matte/fx ; medium/large gardent leurs ratios de taille.
+// Verif : matte 2.5" x 2000 = 1000 $ (soumission Groove and Bass).
 export const STICKER_GRID = Object.freeze({
   standard: Object.freeze({
-    matte:        Object.freeze({ 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350 }),
-    intermediate: Object.freeze({ 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375 }),
-    fx:           Object.freeze({ 25: 30, 50: 55, 100: 100, 250: 225, 500: 400 }),
+    matte:        Object.freeze({ 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350, 1000: 650, 2000: 1000 }),
+    intermediate: Object.freeze({ 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375, 1000: 725, 2000: 1150 }),
+    fx:           Object.freeze({ 25: 30, 50: 55, 100: 100, 250: 225, 500: 400, 1000: 800, 2000: 1300 }),
   }),
   medium: Object.freeze({
-    matte:        Object.freeze({ 25: 40, 50: 65, 100: 115, 250: 275, 500: 500 }),
-    intermediate: Object.freeze({ 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50 }),
-    fx:           Object.freeze({ 25: 50, 50: 80, 100: 135, 250: 305, 500: 575 }),
+    matte:        Object.freeze({ 25: 40, 50: 65, 100: 115, 250: 275, 500: 500, 1000: 930, 2000: 1420 }),
+    intermediate: Object.freeze({ 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50, 1000: 1040, 2000: 1640 }),
+    fx:           Object.freeze({ 25: 50, 50: 80, 100: 135, 250: 305, 500: 575, 1000: 1150, 2000: 1860 }),
   }),
   large: Object.freeze({
-    matte:        Object.freeze({ 25: 55, 50: 90, 100: 160, 250: 375, 500: 700 }),
-    intermediate: Object.freeze({ 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50 }),
-    fx:           Object.freeze({ 25: 65, 50: 105, 100: 185, 250: 415, 500: 785 }),
+    matte:        Object.freeze({ 25: 55, 50: 90, 100: 160, 250: 375, 500: 700, 1000: 1300, 2000: 2000 }),
+    intermediate: Object.freeze({ 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50, 1000: 1440, 2000: 2280 }),
+    fx:           Object.freeze({ 25: 65, 50: 105, 100: 185, 250: 415, 500: 785, 1000: 1570, 2000: 2560 }),
   }),
 });
 
