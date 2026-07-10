@@ -30,10 +30,10 @@ describe('buildStickerPricingTabs - structure', () => {
     }
   })
 
-  it('5 lignes de quantites 25/50/100/250/500 par table', () => {
+  it('7 lignes 25/50/100/250/500/1000/2000 par table (paliers volume inclus)', () => {
     for (const tab of tabs) {
       for (const table of tab.tables) {
-        expect(table.rows.map((r) => r[0])).toEqual(['25', '50', '100', '250', '500'])
+        expect(table.rows.map((r) => r[0])).toEqual(['25', '50', '100', '250', '500', '1000', '2000'])
       }
     }
   })
@@ -84,9 +84,10 @@ describe('buildStickerPricingTabs - valeurs depuis STICKER_GRID (SSOT)', () => {
     }
   })
 
-  it('ordre strict des groupes a chaque palier : matte < clear < fx', () => {
+  it('ordre strict des groupes a chaque palier (dont volume) : matte < clear < fx', () => {
     for (const tab of tabs) {
-      for (let i = 0; i < 5; i++) {
+      const n = tab.tables[0].rows.length
+      for (let i = 0; i < n; i++) {
         const val = (k) => Number(tab.tables[k].rows[i][1].replace(' $', '').replace(',', '.'))
         expect(val(0)).toBeLessThan(val(1))
         expect(val(1)).toBeLessThan(val(2))

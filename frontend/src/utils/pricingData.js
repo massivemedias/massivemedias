@@ -29,32 +29,40 @@
 // Si vous modifiez les prix ici, modifiez aussi la-bas (sinon le backend
 // rejette des commandes legitimes via validation server-side).
 //
-// PRICING-VOLUME (9 juillet 2026, decision Mika) : ajout de 2 paliers volume
-// (1000, 2000) pour eviter le plafond a 0,80 $/u au-dela de 500 (2000 x 2.5" fx
-// tombait a 1600 $, hors marche). Structure proportionnelle ANCREE SUR LE MATTE,
-// l'ecart entre finitions survit (l'holo coute reellement plus cher en matiere,
-// donc degresse moins) :
-//   standard/matte : 1000 -> 0,65 $/u (650) ; 2000 -> 0,50 $/u (1000)
-//   standard/fx    : 1000 -> 0,80 $/u (800) ; 2000 -> 0,65 $/u (1300)
-//   intermediate = milieu matte/fx ; medium/large gardent leurs ratios de taille.
-// Verif : matte 2.5" x 2000 = 1000 $ (soumission Groove and Bass).
+// PRICING-VOLUME (9 juillet 2026, correctif marche FINAL, decision Mika apres
+// benchmark StickerYou/StickerApp/Sticker Mule). 2 paliers volume (1000, 2000)
+// pour tuer le plafond a 0,80 $/u au-dela de 500. Positionnement premium assume
+// (~25-30 % au-dessus du marche CA, production studio a la main). Ancres STANDARD
+// donnees par Mika ; medium/large = ratios existants (ex: medium500/standard500)
+// appliques aux nouveaux paliers, AUCUNE valeur inventee ; intermediate = milieu
+// matte/fx. SEUIL bulk : le rabais exige d'atteindre le palier (999 reste au taux
+// 500), cf. lookupStickerPriceCustomQty.
+//   standard/matte : 1000 = 550 (0,55/u) ; 2000 = 900 (0,45/u)
+//   standard/inter : 1000 = 620 (0,62/u) ; 2000 = 1040 (0,52/u)
+//   standard/fx    : 1000 = 700 (0,70/u) ; 2000 = 1200 (0,60/u)
+// Verifs : matte 2.5" x1000 = 550$, x2000 = 900$, x999 = 0,70/u ; fx x2000 = 1200$.
 export const STICKER_GRID = Object.freeze({
   standard: Object.freeze({
-    matte:        Object.freeze({ 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350, 1000: 650, 2000: 1000 }),
-    intermediate: Object.freeze({ 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375, 1000: 725, 2000: 1150 }),
-    fx:           Object.freeze({ 25: 30, 50: 55, 100: 100, 250: 225, 500: 400, 1000: 800, 2000: 1300 }),
+    matte:        Object.freeze({ 25: 25, 50: 45, 100: 80, 250: 187.50, 500: 350, 1000: 550, 2000: 900 }),
+    intermediate: Object.freeze({ 25: 27.50, 50: 50, 100: 90, 250: 205, 500: 375, 1000: 620, 2000: 1040 }),
+    fx:           Object.freeze({ 25: 30, 50: 55, 100: 100, 250: 225, 500: 400, 1000: 700, 2000: 1200 }),
   }),
   medium: Object.freeze({
-    matte:        Object.freeze({ 25: 40, 50: 65, 100: 115, 250: 275, 500: 500, 1000: 930, 2000: 1420 }),
-    intermediate: Object.freeze({ 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50, 1000: 1040, 2000: 1640 }),
-    fx:           Object.freeze({ 25: 50, 50: 80, 100: 135, 250: 305, 500: 575, 1000: 1150, 2000: 1860 }),
+    matte:        Object.freeze({ 25: 40, 50: 65, 100: 115, 250: 275, 500: 500, 1000: 785.71, 2000: 1285.71 }),
+    intermediate: Object.freeze({ 25: 45, 50: 72.50, 100: 125, 250: 290, 500: 537.50, 1000: 888.67, 2000: 1490.67 }),
+    fx:           Object.freeze({ 25: 50, 50: 80, 100: 135, 250: 305, 500: 575, 1000: 1006.25, 2000: 1725 }),
   }),
   large: Object.freeze({
-    matte:        Object.freeze({ 25: 55, 50: 90, 100: 160, 250: 375, 500: 700, 1000: 1300, 2000: 2000 }),
-    intermediate: Object.freeze({ 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50, 1000: 1440, 2000: 2280 }),
-    fx:           Object.freeze({ 25: 65, 50: 105, 100: 185, 250: 415, 500: 785, 1000: 1570, 2000: 2560 }),
+    matte:        Object.freeze({ 25: 55, 50: 90, 100: 160, 250: 375, 500: 700, 1000: 1100, 2000: 1800 }),
+    intermediate: Object.freeze({ 25: 60, 50: 97.50, 100: 172.50, 250: 395, 500: 742.50, 1000: 1227.60, 2000: 2059.20 }),
+    fx:           Object.freeze({ 25: 65, 50: 105, 100: 185, 250: 415, 500: 785, 1000: 1373.75, 2000: 2355 }),
   }),
 });
+
+// PRICING-VOLUME : dernier palier RETAIL. Au-dela, les paliers (1000, 2000) sont
+// des SEUILS bulk (floor, pas d'interpolation) : le rabais volume exige d'atteindre
+// le palier. Sous ce seuil, interpolation retail conservee (fix 5 mai).
+export const STICKER_RETAIL_MAX_QTY = 500;
 
 // ALIAS RETRO-COMPAT : pointent sur le palier `standard` (= ancien comportement).
 // Tout le code legacy qui faisait STICKER_GRID_STANDARD[qty] continue de fonctionner.
@@ -237,7 +245,19 @@ export function lookupStickerPriceCustomQty(finish, qty, size) {
     return { qty: q, price: total, unitPrice: maxUnitPrice, tier, exact: false, capped: true };
   }
 
-  // Cas 3 : interpolation lineaire entre les 2 paliers qui encadrent q.
+  // PRICING-VOLUME (correctif final) : au-dela du dernier palier RETAIL, les
+  // paliers volume (1000, 2000) sont des SEUILS bulk, pas des ancres d'interpolation.
+  // Le rabais exige d'ATTEINDRE le palier -> taux du palier le plus haut <= q (floor).
+  // Ex : 999 = taux 500 (0,70/u), 1500 = taux 1000. L'interpolation reste SOUS le
+  // seuil retail (comportement 5 mai). q >= 2000 est deja gere par le Cas 2 (cap).
+  if (q > STICKER_RETAIL_MAX_QTY) {
+    let floorQty = STICKER_RETAIL_MAX_QTY;
+    for (const t of tierQtys) { if (t <= q) floorQty = t; }
+    const unitPrice = Math.round((grid[floorQty] / floorQty) * 100) / 100;
+    return { qty: q, price: Math.round(q * unitPrice * 100) / 100, unitPrice, tier, exact: false, volumeFloor: true };
+  }
+
+  // Cas 3 : interpolation lineaire entre les 2 paliers qui encadrent q (retail).
   let lowQty = tierQtys[0];
   let highQty = tierQtys[1];
   for (let i = 0; i < tierQtys.length - 1; i++) {
