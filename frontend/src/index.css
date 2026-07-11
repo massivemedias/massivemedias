@@ -1254,12 +1254,23 @@ iframe.instagram-media-rendered + * {
 
 /* UI-10 : nom + compte poses sur le visuel de la carte famille (scrim bas). */
 .famcard-label {
-  background: linear-gradient(to top, rgba(15, 7, 25, 0.92), rgba(15, 7, 25, 0.35) 55%, transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.30) 55%, transparent);
   border-radius: 0 0 1rem 1rem;
 }
-/* UI-10 : carte accentuee (1 sur ACCENT_EVERY) - fond rose, se demarque dans la
-   grille. Le hover (border + shadow accent) de .famcard s'y applique aussi. */
+/* UI-10 : carte accentuee (1 sur ACCENT_EVERY), se demarque dans la grille.
+   UI-10c : teinte de l'ACCENT DU THEME (via --accent-rgb), plus de rose code en
+   dur. Le hover (border + shadow accent) de .famcard s'y applique aussi. */
 .famcard-accent {
-  background: linear-gradient(155deg, rgba(240, 0, 152, 0.20), rgba(61, 0, 121, 0.55));
-  border-color: rgba(240, 0, 152, 0.5);
+  background: linear-gradient(155deg, rgba(var(--accent-rgb), 0.24), rgba(var(--accent-rgb), 0.08));
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+/* HOME-03 / UI-10c : banniere Collection - fond et glow hover suivent le THEME
+   (footer toujours sombre sur les 11 palettes = texte blanc lisible partout ;
+   halo accent thematise via --accent-rgb, plus de mauve/rose code en dur). */
+.collection-banner {
+  background: radial-gradient(circle at 50% 30%, rgba(var(--accent-rgb), 0.14), var(--bg-footer) 72%);
+}
+.collection-banner:hover {
+  box-shadow: 0 30px 90px rgba(var(--accent-rgb), 0.20);
 }

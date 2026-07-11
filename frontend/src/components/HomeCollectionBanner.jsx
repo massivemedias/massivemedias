@@ -89,8 +89,7 @@ export default function HomeCollectionBanner() {
         {/* HOME-03 : conteneur SANS bordure au repos. Lift leger + glow rose +
             fine bordure UNIQUEMENT au survol (transitions douces). */}
         <div
-          className="relative overflow-hidden rounded-3xl px-6 sm:px-12 py-12 sm:py-14 transition-all duration-300 shadow-[0_24px_70px_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:shadow-[0_30px_90px_rgba(240,0,152,0.20)] hover:ring-1 hover:ring-accent/20"
-          style={{ background: 'linear-gradient(135deg, #2a0a4a, #3D0079)' }}
+          className="collection-banner relative overflow-hidden rounded-3xl px-6 sm:px-12 py-12 sm:py-14 transition-all duration-300 shadow-[0_24px_70px_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:ring-1 hover:ring-accent/20"
         >
           <div className="grid min-[700px]:grid-cols-[1.5fr_1fr] gap-8 md:gap-10 items-center">
             {/* Colonne texte + eventail */}
@@ -107,7 +106,7 @@ export default function HomeCollectionBanner() {
                   es: 'La Coleccion de Stickers ya esta aqui',
                 })}
               </h2>
-              <p className="text-base sm:text-lg mb-5" style={{ color: '#d9c8f0' }}>
+              <p className="text-base sm:text-lg mb-5 text-white/80">
                 {tx({
                   fr: '270 designs originaux créés à Montréal.',
                   en: '270 original designs made in Montreal.',
@@ -119,7 +118,7 @@ export default function HomeCollectionBanner() {
               <div className="flex flex-wrap items-center justify-center min-[700px]:justify-start gap-x-5 gap-y-2 mb-7">
                 <span className="text-white">
                   <span className="font-heading font-bold text-2xl text-accent">{STICKER_COLLECTION_UNIT_PRICE}&nbsp;$</span>
-                  <span className="text-sm ml-1.5" style={{ color: '#d9c8f0' }}>
+                  <span className="text-sm ml-1.5 text-white/80">
                     {tx({ fr: 'le sticker', en: 'per sticker', es: 'por sticker' })}
                   </span>
                 </span>

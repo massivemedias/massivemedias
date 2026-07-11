@@ -70,8 +70,8 @@ const ACCENT_EVERY = 4
 // autre image de fond, designW = largeur du sticker pose dessus). Les images de
 // fond sont chargees en lazy -> zero cout au premier paint (perf UI-10).
 const SHOWCASE = [
-  { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-adian-fumeuse', designW: '44%', cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
-  { kind: 'product', img: '/images/mugs/mug-white.webp', design: 'massive-alien-hot', designW: '40%', cap: { fr: 'Sur ta tasse', en: 'On your mug', es: 'En tu taza' } },
+  { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-adian-fumeuse', productH: '92%', designH: '42%', cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
+  { kind: 'product', img: '/images/mugs/mug-white.webp', design: 'massive-alien-hot', productH: '84%', designW: '52%', cap: { fr: 'Sur ta tasse', en: 'On your mug', es: 'En tu taza' } },
   { kind: 'pack', slugs: ['massive-dj-skull', 'massive-chameleon', 'massive-fleur-degueu', 'massive-mais', 'massive-jade'], cap: { fr: 'Mystery pack', en: 'Mystery pack', es: 'Mystery pack' } },
 ]
 const PACK_POS = [[-70, -8, -10], [-38, 10, 7], [0, -4, 6], [40, 8, -9], [72, -6, 8]]
@@ -237,13 +237,16 @@ function ShowcaseBand({ tx, onOpenDesign }) {
   const capBar = (cap) => (
     <span
       className="absolute inset-x-0 bottom-0 px-4 py-3 text-white font-bold text-sm text-left"
-      style={{ background: 'linear-gradient(to top, rgba(15,7,25,0.92), transparent)' }}
+      style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }}
     >
       {tx(cap)} <span className="ml-0.5">&rarr;</span>
     </span>
   )
   const frame = 'relative rounded-2xl overflow-hidden border border-white/[0.08] h-44 sm:h-52 group cursor-pointer transition-transform hover:-translate-y-0.5'
-  const bg = { background: 'linear-gradient(160deg, #2a0a4a, #3D0079)' }
+  // UI-10c : fond suivant le THEME. --bg-footer est sombre sur les 11 palettes
+  // (les mockups blancs ressortent partout) + halo accent subtil via --accent-rgb.
+  // Plus de mauve code en dur.
+  const bg = { background: 'radial-gradient(circle at 50% 32%, rgba(var(--accent-rgb), 0.12), var(--bg-footer) 72%)' }
   return (
     <div className="mb-10">
       <div className="flex items-baseline justify-between gap-3 mb-3">
@@ -276,8 +279,8 @@ function ShowcaseBand({ tx, onOpenDesign }) {
             </button>
           ) : (
             <button key={i} type="button" onClick={() => onOpenDesign(tile.design)} className={frame} style={bg} aria-label={tx(tile.cap)}>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative h-[82%] flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center pb-7">
+                <div className="relative flex items-center justify-center" style={{ height: tile.productH || '76%' }}>
                   <img
                     loading="lazy"
                     decoding="async"
@@ -287,7 +290,7 @@ function ShowcaseBand({ tx, onOpenDesign }) {
                     className="h-full w-auto object-contain transition-transform duration-300 group-hover:scale-[1.04]"
                     style={{ filter: 'drop-shadow(0 12px 26px rgba(0,0,0,0.45))' }}
                   />
-                  <div className="absolute" style={{ left: '50%', top: '48%', width: tile.designW, aspectRatio: '1', transform: 'translate(-50%, -50%) rotate(-3deg)' }}>
+                  <div className="absolute" style={{ left: '50%', top: '52%', ...(tile.designH ? { height: tile.designH } : { width: tile.designW }), aspectRatio: '1', transform: 'translate(-50%, -50%) rotate(-3deg)' }}>
                     <img
                       loading="lazy"
                       decoding="async"
@@ -366,7 +369,7 @@ function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, onPrev,
     >
       <div
         className="w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-2xl border border-white/10 p-5 sm:p-7 relative"
-        style={{ backgroundColor: 'var(--bg-body, #3D0079)' }}
+        style={{ backgroundColor: 'var(--bg-body)' }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -630,7 +633,7 @@ function CollectionWidget({ items, onOpen, tx }) {
           es: `${unitCount} sticker${unitCount > 1 ? 's' : ''} en el carrito, abrir el carrito`,
         })}
         className="flex items-center gap-2 sm:gap-3 rounded-full border border-accent/35 shadow-xl pl-2.5 pr-3 sm:pl-3.5 sm:pr-4 py-1.5 sm:py-2 hover:brightness-110 transition-all"
-        style={{ background: 'linear-gradient(135deg, #2a0a4a, #3D0079)' }}
+        style={{ background: 'var(--bg-footer)' }}
       >
         <div className="flex items-center pl-1.5 sm:pl-2">
           {thumbs.map((src, i) => (
@@ -660,7 +663,7 @@ function CollectionWidget({ items, onOpen, tx }) {
             {minMet ? unitCount : `${unitCount}/${MIN}`}
           </span>
           {!minMet && (
-            <span className="hidden sm:block text-[11px]" style={{ color: '#f5b3d4' }}>
+            <span className="hidden sm:block text-[11px] text-white/80">
               {tx({
                 fr: `ajoute ${MIN - unitCount} de plus`,
                 en: `add ${MIN - unitCount} more`,
