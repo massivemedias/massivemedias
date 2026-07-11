@@ -35,7 +35,7 @@ function ConfiguratorDesign() {
               }`}
             >
               <span className="text-heading">
-                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
+                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEs })}
               </span>
               <span className="text-accent font-semibold text-xs whitespace-nowrap ml-2">
                 {s.priceRange}

@@ -47,7 +47,7 @@ const LABELS = {
     kinds: {
       matte: 'Standard',
       intermediate: 'Clear',
-      fx: 'Finitions (Matte laminé / Lustré / Holo / Verre Brisé / Étoiles / Points)',
+      fx: 'Finitions (Matte laminé / Lustré laminé / Holo / Verre Brisé / Étoiles / Points)',
     },
   },
   en: {
@@ -60,7 +60,7 @@ const LABELS = {
     kinds: {
       matte: 'Standard',
       intermediate: 'Clear',
-      fx: 'Finishes (Laminated Matte / Luster / Holo / Broken Glass / Stars / Dots)',
+      fx: 'Finishes (Laminated Matte / Laminated Luster / Holo / Broken Glass / Stars / Dots)',
     },
   },
   es: {
@@ -73,7 +73,7 @@ const LABELS = {
     kinds: {
       matte: 'Estandar',
       intermediate: 'Clear',
-      fx: 'Acabados (Mate laminado / Lustrado / Holo / Vidrio Roto / Estrellas / Puntos)',
+      fx: 'Acabados (Mate laminado / Lustrado laminado / Holo / Vidrio Roto / Estrellas / Puntos)',
     },
   },
 }

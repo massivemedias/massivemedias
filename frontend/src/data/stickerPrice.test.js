@@ -223,8 +223,8 @@ describe('FINISH-LABELS - renommage affichage (3 langues, prix inchange)', () =>
   it('matte-pro -> "Matte laminé" / "Laminated Matte" / "Mate laminado", id inchange', () => {
     expect(byId('matte-pro')).toMatchObject({ labelFr: 'Matte laminé', labelEn: 'Laminated Matte', labelEs: 'Mate laminado' })
   })
-  it('glossy "Vinyle Lustré" INCHANGE (code n indique aucun laminage)', () => {
-    expect(byId('glossy')).toMatchObject({ labelFr: 'Vinyle Lustré', labelEn: 'Luster Vinyl', labelEs: 'Vinilo Lustrado' })
+  it('glossy "Vinyle Lustré" -> "Lustré laminé" (laminage confirme Mika, FR/EN/ES)', () => {
+    expect(byId('glossy')).toMatchObject({ labelFr: 'Lustré laminé', labelEn: 'Laminated Luster', labelEs: 'Lustrado laminado' })
   })
   it('mapping PRIX inchange : "Standard" 2000 = 900$ (matte), "Matte laminé" 2000 = 1200$ (fx)', () => {
     expect(getStickerPrice('matte', 'die-cut', 2000, STD).price).toBe(900)

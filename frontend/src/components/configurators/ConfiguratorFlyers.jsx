@@ -37,7 +37,7 @@ function ConfiguratorFlyers() {
     addToCart({
       productId: 'flyer-a6',
       productName: tx({ fr: 'Flyers A6', en: 'A6 Flyers', es: 'Flyers A6' }),
-      finish: tx({ fr: sideLabel?.labelFr, en: sideLabel?.labelEn, es: sideLabel?.labelEn }),
+      finish: tx({ fr: sideLabel?.labelFr, en: sideLabel?.labelEn, es: sideLabel?.labelEs }),
       shape: null,
       size: 'A6 (4x6")',
       quantity: priceInfo.qty,
@@ -69,7 +69,7 @@ function ConfiguratorFlyers() {
               }`}
             >
               <span className="text-heading leading-tight text-center font-semibold text-sm">
-                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
+                {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEs })}
               </span>
               {s.multiplier > 1 && (
                 <span className="text-grey-muted mt-0.5 text-[10px]">+30%</span>
