@@ -343,7 +343,7 @@ function ConfiguratorFineArt() {
       productId: 'fine-art-print',
       sku: cartSku,
       productName: tx({ fr: 'Impression Fine Art', en: 'Fine Art Print', es: 'Impresion Fine Art' }),
-      finish: tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
+      finish: tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEs }),
       shape: withFrame
         ? tx({
             fr: `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`,
@@ -478,7 +478,7 @@ function ConfiguratorFineArt() {
                   : 'border-transparent bg-white/5 text-grey-muted hover:bg-white/8 hover:text-heading'
                 }`}
               >
-                {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEn })}
+                {tx({ fr: t.labelFr, en: t.labelEn, es: t.labelEs })}
                 <span className="block text-xs font-normal mt-1 opacity-70">
                   {tx({ fr: t.descFr, en: t.descEn, es: t.descEn })}
                 </span>

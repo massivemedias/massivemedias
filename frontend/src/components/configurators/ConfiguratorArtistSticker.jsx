@@ -107,7 +107,7 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [], 
           en: `${artist.name} - ${totalQty} stickers`,
           es: `${artist.name} - ${totalQty} stickers`,
         }),
-        shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn }),
+        shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEs }),
         size: sizeLabel,
         sizeId: size,
         quantity: totalQty,
@@ -274,7 +274,7 @@ function ConfiguratorArtistSticker({ artist, selectedSticker, allStickers = [], 
                   'w-4 h-3.5 border-2 border-current border-dashed rounded-lg'
                 } text-grey-muted`} />
                 <span className="text-heading font-semibold text-[11px]">
-                  {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
+                  {tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEs })}
                 </span>
               </button>
             ))}

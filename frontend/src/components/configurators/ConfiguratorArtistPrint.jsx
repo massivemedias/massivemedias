@@ -106,7 +106,7 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
         productName: `${artist.name} - ${printTitle}`,
         finish: isUnique
           ? tx({ fr: 'Pièce unique', en: 'One of a kind', es: 'Pieza unica' })
-          : tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEn }),
+          : tx({ fr: tierLabel?.labelFr, en: tierLabel?.labelEn, es: tierLabel?.labelEs }),
         shape: withFrame
           ? tx({
               fr: `Cadre ${frameColor === 'black' ? 'noir' : 'blanc'}`,
