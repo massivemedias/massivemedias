@@ -56,7 +56,7 @@ export default function MiniCartDrawer() {
           {/* Tiroir : plein ecran mobile (bottom-sheet via items-end), 390px desktop */}
           <motion.aside
             className="relative w-full sm:w-[390px] sm:max-w-[92vw] h-full flex flex-col ml-auto"
-            style={{ background: 'linear-gradient(160deg, #2a0a4a, #3D0079)', borderLeft: '1px solid rgba(240,0,152,0.3)', boxShadow: '-24px 0 60px rgba(0,0,0,0.5)' }}
+            style={{ background: 'var(--bg-footer)', borderLeft: '1px solid rgba(var(--accent-rgb), 0.3)', boxShadow: '-24px 0 60px rgba(0,0,0,0.5)' }}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -90,7 +90,7 @@ export default function MiniCartDrawer() {
                   </p>
                 ) : (
                   <>
-                    <div className="flex justify-between text-xs mb-1.5" style={{ color: '#f5b3d4' }}>
+                    <div className="flex justify-between text-xs mb-1.5 text-white/80">
                       <span>{tx({ fr: `${prog.units}/${prog.minUnits} stickers`, en: `${prog.units}/${prog.minUnits} stickers`, es: `${prog.units}/${prog.minUnits} stickers` })}</span>
                       <span>{tx({ fr: `ajoute ${prog.unitsRemaining} de plus`, en: `add ${prog.unitsRemaining} more`, es: `agrega ${prog.unitsRemaining} mas` })}</span>
                     </div>
@@ -99,7 +99,7 @@ export default function MiniCartDrawer() {
                     </div>
                   </>
                 )}
-                <p className="text-xs mt-2.5 flex items-center gap-1.5" style={{ color: '#d9c8f0' }}>
+                <p className="text-xs mt-2.5 flex items-center gap-1.5 text-white/80">
                   <Truck size={13} />
                   {prog.freeShippingMet
                     ? tx({ fr: 'Livraison gratuite au Québec 🎉', en: 'Free shipping in Quebec 🎉', es: 'Envio gratis en Quebec 🎉' })
@@ -115,7 +115,7 @@ export default function MiniCartDrawer() {
             {/* Liste des items */}
             <div className="flex-1 overflow-y-auto px-5 py-2">
               {items.length === 0 ? (
-                <p className="text-center py-16" style={{ color: '#a99bc7' }}>
+                <p className="text-center py-16 text-white/55">
                   {tx({ fr: 'Ton panier est vide.', en: 'Your cart is empty.', es: 'Tu carrito esta vacio.' })}
                 </p>
               ) : (
@@ -132,7 +132,7 @@ export default function MiniCartDrawer() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-sm font-semibold truncate">{it.productName}</p>
-                      <p className="text-xs mt-0.5" style={{ color: '#a99bc7' }}>
+                      <p className="text-xs mt-0.5 text-white/55">
                         {it.unitPrice != null ? `${it.unitPrice} $` : `${it.totalPrice} $`}
                         {isCollectionUnit(it) ? tx({ fr: ' / unité', en: ' / unit', es: ' / unidad' }) : ''}
                       </p>
@@ -183,7 +183,7 @@ export default function MiniCartDrawer() {
             {items.length > 0 && (
               <div className="px-5 py-4 border-t border-white/10 flex-shrink-0">
                 <div className="flex justify-between items-baseline mb-3.5">
-                  <span className="text-sm" style={{ color: '#d9c8f0' }}>
+                  <span className="text-sm text-white/80">
                     {tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}
                   </span>
                   <span className="text-white text-xl font-heading font-bold">{prog.subtotal} $</span>

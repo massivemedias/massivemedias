@@ -85,6 +85,11 @@ function darkPalette(base, darker, darkest, accent, hoverBg, hoverText, logoMain
     '--btn-primary-hover-text': hoverText,
     '--btn-primary-shadow': `rgba(${a.r}, ${a.g}, ${a.b}, 0.3)`,
     '--accent-color': accent,
+    // Accent en composantes RGB : permet rgba(var(--accent-rgb), a) pour les
+    // glows/bordures teintes accent qui suivent le theme (le CSS y refere deja,
+    // ex. .famcard:hover, .famcard-accent - sans cette var ils tombaient sur le
+    // fallback rose code en dur 240,0,152 quel que soit le theme).
+    '--accent-rgb': `${a.r}, ${a.g}, ${a.b}`,
     '--active-tab-bg': accent,
     '--filter-active-bg': accent,
     '--filter-hover-bg': hoverBg,
@@ -222,6 +227,7 @@ const PALETTE_8 = {
   '--btn-primary-hover-text': '#FFFFFF',
   '--btn-primary-shadow': 'rgba(42, 34, 32, 0.2)',
   '--accent-color': '#C07830',
+  '--accent-rgb': '192, 120, 48',
   '--filter-active-bg': '#2A2220',
   '--filter-hover-bg': '#C07830',
   '--filter-hover-text': '#FFFFFF',
@@ -294,6 +300,7 @@ const PALETTE_9 = {
   '--btn-primary-hover-text': '#FFFFFF',
   '--btn-primary-shadow': 'rgba(99, 0, 184, 0.25)',
   '--accent-color': '#6300B8',
+  '--accent-rgb': '99, 0, 184',
   '--active-tab-bg': '#6300B8',
   '--filter-active-bg': '#6300B8',
   '--filter-hover-bg': '#5000A0',
