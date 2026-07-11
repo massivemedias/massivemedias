@@ -111,6 +111,18 @@ function ConfiguratorStickers({ onFinishChange }) {
   const shapeLabel = stickerShapes.find(s => s.id === shape);
   const sizeLabel = stickerSizes.find(s => s.id === size)?.label;
 
+  // FINISH-LABELS (9 juillet 2026) : prix/u courant a cote de chaque finition
+  // dans le dropdown (ex "Matte laminé · 0,60 $/u"), pour que le client voie la
+  // difference de prix entre finitions. Calcule pour la qty + taille choisies.
+  const qtyForOptionPrice = isCustom && customQty ? customQty : currentTier.qty;
+  const finishOptionLabel = (f) => {
+    const label = tx({ fr: f.labelFr, en: f.labelEn, es: f.labelEs });
+    const u = lookupStickerPriceCustomQty(f.id, qtyForOptionPrice, size)?.unitPrice;
+    if (u == null) return label;
+    const price = tx({ fr: `${u.toFixed(2).replace('.', ',')} $/u`, en: `$${u.toFixed(2)}/u`, es: `${u.toFixed(2).replace('.', ',')} $/u` });
+    return `${label} · ${price}`;
+  };
+
   // Source brute du sticker (avant detourage eventuel) : upload utilisateur
   // si dispo, sinon l'asset par defaut Massive Sticker.
   const rawSource = localPreviewUrl || DEFAULT_STICKER_URL;
@@ -193,8 +205,8 @@ function ConfiguratorStickers({ onFinishChange }) {
       productId: 'sticker-custom',
       sku: cartSku,
       productName: tx({ fr: 'Sticker Custom', en: 'Custom Sticker', es: 'Sticker Personalizado' }),
-      finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn }),
-      shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEn }),
+      finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEs }),
+      shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEs }),
       size: sizeLabel,
       sizeId: size,
       quantity: priceInfo.qty,
@@ -282,7 +294,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             </div>
             <div className="mt-4 text-center">
               <span className="text-heading text-base font-semibold">
-                {tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEn })}
+                {tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEs })}
               </span>
               <span className="block text-grey-muted text-sm mt-0.5">
                 {sizeLabel} · {tx({ fr: 'Die-cut', en: 'Die-cut', es: 'Die-cut' })}
@@ -314,7 +326,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             value={finish}
             onChange={(v) => { setFinish(v); onFinishChange?.(v); }}
             options={stickerFinishes}
-            getOptionLabel={(f) => tx({ fr: f.labelFr, en: f.labelEn, es: f.labelEn })}
+            getOptionLabel={finishOptionLabel}
           />
 
           {/* Forme - select natif */}
@@ -323,7 +335,7 @@ function ConfiguratorStickers({ onFinishChange }) {
             value={shape}
             onChange={setShape}
             options={stickerShapes}
-            getOptionLabel={(s) => tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEn })}
+            getOptionLabel={(s) => tx({ fr: s.labelFr, en: s.labelEn, es: s.labelEs })}
           />
 
           {/* Taille - select natif */}
