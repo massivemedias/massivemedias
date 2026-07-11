@@ -45,9 +45,9 @@ const LABELS = {
     },
     headers: ['Qté', 'Prix', 'Prix/u'],
     kinds: {
-      matte: 'Sans finition',
+      matte: 'Standard',
       intermediate: 'Clear',
-      fx: 'Finitions (Matte / Lustré / Holo / Verre Brisé / Étoiles / Points)',
+      fx: 'Finitions (Matte laminé / Lustré / Holo / Verre Brisé / Étoiles / Points)',
     },
   },
   en: {
@@ -58,9 +58,9 @@ const LABELS = {
     },
     headers: ['Qty', 'Price', 'Price/u'],
     kinds: {
-      matte: 'No finish',
+      matte: 'Standard',
       intermediate: 'Clear',
-      fx: 'Finishes (Matte / Luster / Holo / Broken Glass / Stars / Dots)',
+      fx: 'Finishes (Laminated Matte / Luster / Holo / Broken Glass / Stars / Dots)',
     },
   },
   es: {
@@ -71,9 +71,9 @@ const LABELS = {
     },
     headers: ['Cant.', 'Precio', 'Precio/u'],
     kinds: {
-      matte: 'Sin acabado',
+      matte: 'Estandar',
       intermediate: 'Clear',
-      fx: 'Acabados (Mate / Lustrado / Holo / Vidrio Roto / Estrellas / Puntos)',
+      fx: 'Acabados (Mate laminado / Lustrado / Holo / Vidrio Roto / Estrellas / Puntos)',
     },
   },
 }

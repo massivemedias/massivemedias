@@ -11,7 +11,7 @@
  * Finitions : fx = holographic / broken-glass / stars. Tout le reste = matte.
  */
 import { describe, it, expect } from 'vitest'
-import { getStickerPrice, getStickerPriceForTotal } from './products'
+import { getStickerPrice, getStickerPriceForTotal, stickerFinishes } from './products'
 
 const STD = '2.5'
 const MED = '3'
@@ -99,7 +99,7 @@ describe('getStickerPrice - taille Standard recalibree', () => {
 // FINITIONS-V2 (juin 2026) : 3 groupes de prix. matte = sans finition (id matte),
 // clear = intermediate (nouvelle grille), matte-pro/glossy/dots deplaces en fx.
 describe('getStickerPrice - finitions v2 (3 groupes, Standard)', () => {
-  it('matte (Sans finition) -> grille matte inchangee (25=25, 250=187.50)', () => {
+  it('matte (Standard) -> grille matte inchangee (25=25, 250=187.50)', () => {
     expect(getStickerPrice('matte', 'die-cut', 25, STD).price).toBe(25)
     expect(getStickerPrice('matte', 'die-cut', 250, STD).price).toBe(187.50)
   })
@@ -209,5 +209,29 @@ describe('getStickerPrice - paliers volume 1000/2000 (PRICING-VOLUME final)', ()
       const r = getStickerPriceForTotal('clear', 'die-cut', 60, STD)
       expect(r.price).toBe(58.80) // interpolation retail preservee (fix 5 mai)
     })
+  })
+})
+
+// FINISH-LABELS (9 juillet 2026) : renommage d'AFFICHAGE des finitions (zero prix,
+// zero id/SKU). "Sans finition"->"Standard", "Matte"(matte-pro)->"Matte laminé".
+// Le mapping id->groupe de prix est INCHANGE. FR/EN/ES.
+describe('FINISH-LABELS - renommage affichage (3 langues, prix inchange)', () => {
+  const byId = (id) => stickerFinishes.find(f => f.id === id)
+  it('matte -> "Standard" (FR/EN) / "Estandar" (ES), id inchange', () => {
+    expect(byId('matte')).toMatchObject({ labelFr: 'Standard', labelEn: 'Standard', labelEs: 'Estandar' })
+  })
+  it('matte-pro -> "Matte laminé" / "Laminated Matte" / "Mate laminado", id inchange', () => {
+    expect(byId('matte-pro')).toMatchObject({ labelFr: 'Matte laminé', labelEn: 'Laminated Matte', labelEs: 'Mate laminado' })
+  })
+  it('glossy "Vinyle Lustré" INCHANGE (code n indique aucun laminage)', () => {
+    expect(byId('glossy')).toMatchObject({ labelFr: 'Vinyle Lustré', labelEn: 'Luster Vinyl', labelEs: 'Vinilo Lustrado' })
+  })
+  it('mapping PRIX inchange : "Standard" 2000 = 900$ (matte), "Matte laminé" 2000 = 1200$ (fx)', () => {
+    expect(getStickerPrice('matte', 'die-cut', 2000, STD).price).toBe(900)
+    expect(getStickerPrice('matte-pro', 'die-cut', 2000, STD).price).toBe(1200)
+  })
+  it('prix/u par option (dropdown) @25u : Standard 1,00 vs Matte laminé 1,20', () => {
+    expect(getStickerPrice('matte', 'die-cut', 25, STD).unitPrice).toBe(1.00)
+    expect(getStickerPrice('matte-pro', 'die-cut', 25, STD).unitPrice).toBe(1.20)
   })
 })

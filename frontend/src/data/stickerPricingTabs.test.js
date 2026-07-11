@@ -21,10 +21,10 @@ describe('buildStickerPricingTabs - structure', () => {
     expect(tabs.map((t) => t.id)).toEqual(TAB_IDS)
   })
 
-  it('3 tables par tab dans l ordre Sans finition / Clear / Finitions', () => {
+  it('3 tables par tab dans l ordre Standard / Clear / Finitions', () => {
     for (const tab of tabs) {
       expect(tab.tables).toHaveLength(3)
-      expect(tab.tables[0].subtitle).toBe('Sans finition')
+      expect(tab.tables[0].subtitle).toBe('Standard')
       expect(tab.tables[1].subtitle).toBe('Clear')
       expect(tab.tables[2].subtitle).toMatch(/^Finitions \(/)
     }
@@ -108,13 +108,13 @@ describe('buildStickerPricingTabs - formats par langue', () => {
     expect(en[0].tables[0].rows[0][1]).toBe('$25')
     expect(en[0].tables[0].rows[3][1]).toBe('$187.50')
     expect(en[0].tables[0].rows[0][2]).toBe('$1.00/u')
-    expect(en[0].tables[0].subtitle).toBe('No finish')
+    expect(en[0].tables[0].subtitle).toBe('Standard')
   })
 
   it('ES : prefixe conserve + libelles espagnols', () => {
     const es = buildStickerPricingTabs('es')
     expect(es[0].tables[0].rows[0][1]).toBe('$25')
-    expect(es[0].tables[0].subtitle).toBe('Sin acabado')
+    expect(es[0].tables[0].subtitle).toBe('Estandar')
     expect(es[0].tables[0].headers).toEqual(['Cant.', 'Precio', 'Precio/u'])
   })
 
