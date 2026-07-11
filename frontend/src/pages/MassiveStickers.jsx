@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X, ChevronLeft, ChevronRight, Scissors, ArrowRight } from 'lucide-react'
+import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X, ChevronLeft, ChevronRight, Scissors, Sticker } from 'lucide-react'
 import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
 import { useCart } from '../contexts/CartContext'
@@ -705,6 +705,16 @@ function MassiveStickers() {
   }, [])
   const catalogue = ordreAleatoire || MASSIVE_STICKERS
 
+  // STICKERS-HERO : sticker vedette du hero. Meme discipline que le shuffle de
+  // la grille -> l'image reste STABLE au prerender/hydratation (premier design
+  // du manifest) et n'est tiree au hasard qu'au runtime client, apres le mount.
+  // Zero mismatch d'hydratation ; le HTML prerendu sert toujours le meme design.
+  const [heroSticker, setHeroSticker] = useState(MASSIVE_STICKERS[0])
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.__MASSIVE_PRERENDER__) return
+    setHeroSticker(MASSIVE_STICKERS[Math.floor(Math.random() * MASSIVE_STICKERS.length)])
+  }, [])
+
   // CART-01 : quantite au panier par slug de design, pour le feedback
   // persistant "N au panier" sur le bouton de chaque carte. Le productId est
   // `sticker-massive-<slug sans prefixe massive->` ; on remonte au slug du
@@ -793,18 +803,100 @@ function MassiveStickers() {
       <CollectionWidget items={cartItems} onOpen={openCartDrawer} tx={tx} />
 
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="font-heading font-bold text-3xl sm:text-4xl text-heading mb-3">
-            {tx({ fr: 'Collection Stickers Massive', en: 'Massive Sticker Collection', es: 'Coleccion de Stickers Massive' })}
-          </h1>
-          <p className="text-grey-muted max-w-2xl mx-auto">
-            {tx({
-              fr: `${MASSIVE_STICKERS.length} designs originaux crees a Montreal. Vinyle die-cut, resistant eau et UV. ${STICKER_COLLECTION_UNIT_PRICE} $ le sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}.`,
-              en: `${MASSIVE_STICKERS.length} original designs made in Montreal. Die-cut vinyl, water and UV resistant. $${STICKER_COLLECTION_UNIT_PRICE} per sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}.`,
-              es: `${MASSIVE_STICKERS.length} disenos originales hechos en Montreal. Vinilo die-cut, resistente al agua y UV. ${STICKER_COLLECTION_UNIT_PRICE} $ por sticker, minimo ${STICKER_COLLECTION_MIN_UNITS}.`,
-            })}
-          </p>
-        </div>
+        {/* STICKERS-HERO : hero facon pages services (ServiceDetail) - breadcrumb,
+            titre + icone, tagline, ligne specs, rangee CTA, et sticker vedette
+            ALEATOIRE a droite. Remplace l'ancien bloc titre centre. Le sticker
+            est tire au hasard parmi les 270 au runtime client (stable au
+            prerender via heroSticker), cliquable vers sa fiche. */}
+        <section className="relative overflow-hidden rounded-3xl mb-10">
+          <div className="absolute inset-0 hero-aurora" aria-hidden="true" />
+          <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 px-6 sm:px-10 py-9 sm:py-11">
+            {/* Colonne texte */}
+            <div className="lg:flex-[1.35] w-full text-center lg:text-left">
+              {/* Breadcrumb */}
+              <div className="flex items-center justify-center lg:justify-start gap-2 mb-3 text-sm">
+                <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
+                  {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
+                </Link>
+                <span className="text-grey-muted">/</span>
+                <span className="text-accent font-semibold">
+                  {tx({ fr: 'Collection Stickers', en: 'Sticker Collection', es: 'Coleccion de Stickers' })}
+                </span>
+              </div>
+              {/* Titre + icone */}
+              <div className="flex items-center justify-center lg:justify-start gap-3 mb-3">
+                <span className="p-2.5 rounded-xl icon-bg-blur flex-shrink-0">
+                  <Sticker size={26} className="text-accent" />
+                </span>
+                <h1 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl text-heading leading-[1.05]">
+                  {tx({ fr: 'Collection Stickers Massive', en: 'Massive Sticker Collection', es: 'Coleccion de Stickers Massive' })}
+                </h1>
+              </div>
+              {/* Tagline #1 (choix Mika) */}
+              <p className="text-base md:text-lg text-grey-light mb-3 max-w-xl mx-auto lg:mx-0">
+                {tx({
+                  fr: "Les chaînes d'usine, c'est pour la paperasse. Ici, on colle pour la culture.",
+                  en: 'Assembly lines are for paperwork. Here, we stick for the culture.',
+                  es: 'Las líneas de montaje son para el papeleo. Aquí, pegamos por la cultura.',
+                })}
+              </p>
+              {/* Ligne specs : reprend l'info de l'ancien sous-titre (SEO + shopper) */}
+              <p className="text-sm text-grey-muted mb-6 max-w-xl mx-auto lg:mx-0">
+                {tx({
+                  fr: `${MASSIVE_STICKERS.length} designs originaux créés à Montréal · vinyle die-cut, résistant eau et UV · ${STICKER_COLLECTION_UNIT_PRICE} $ le sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}`,
+                  en: `${MASSIVE_STICKERS.length} original designs made in Montreal · die-cut vinyl, water & UV proof · $${STICKER_COLLECTION_UNIT_PRICE} per sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}`,
+                  es: `${MASSIVE_STICKERS.length} diseños originales hechos en Montreal · vinilo die-cut, resistente al agua y UV · ${STICKER_COLLECTION_UNIT_PRICE} $ por sticker, mínimo ${STICKER_COLLECTION_MIN_UNITS}`,
+                })}
+              </p>
+              {/* Rangee CTA : (a) explorer la collection (scroll) + (b) custom (service) */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  className="btn-primary justify-center"
+                >
+                  <Sparkles size={18} className="mr-2" />
+                  {tx({ fr: 'Explorer la collection', en: 'Explore the collection', es: 'Explorar la coleccion' })}
+                </button>
+                <Link to="/services/stickers" className="btn-outline justify-center">
+                  <Scissors size={16} className="mr-2" />
+                  {tx({ fr: 'Créer mes stickers custom', en: 'Create custom stickers', es: 'Crear stickers custom' })}
+                </Link>
+              </div>
+            </div>
+            {/* Colonne visuelle : sticker vedette aleatoire, cliquable vers la fiche.
+                min-h reserve la place (les designs die-cut ont des ratios varies)
+                pour limiter le reflow quand l'image charge / change au mount. */}
+            <div className="lg:flex-1 flex flex-col items-center justify-center min-h-[300px]">
+              <button
+                type="button"
+                onClick={() => setFicheSlug(heroSticker.slug)}
+                className="group flex flex-col items-center"
+                aria-label={tx({ fr: `Voir le sticker ${heroSticker.fr}`, en: `View the ${heroSticker.en} sticker`, es: `Ver el sticker ${heroSticker.es}` })}
+              >
+                <span
+                  className="inline-block transition-transform duration-300 group-hover:-translate-y-1"
+                  style={{ transform: 'rotate(-4deg)', filter: 'drop-shadow(0 22px 45px rgba(0,0,0,0.5))' }}
+                >
+                  {/* Above-the-fold : eager pour un affichage prompt. Les die-cut
+                      ont des ratios varies -> on borne par max-w ET max-h (w/h
+                      auto) pour une taille homogene sans deformer. ~60-80 ko webp
+                      800 : assez leger pour rester dans le budget LCP. */}
+                  <img
+                    src={img(`${STICKER_DIR}/${heroSticker.slug}.webp`)}
+                    alt={tx(heroSticker)}
+                    loading="eager"
+                    decoding="async"
+                    className="sticker-stroke w-auto h-auto max-w-[230px] sm:max-w-[260px] max-h-[260px] sm:max-h-[300px] object-contain"
+                  />
+                </span>
+                <span className="text-grey-light text-sm mt-5 group-hover:text-accent transition-colors">
+                  {tx(heroSticker)}
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
 
         {/* UI-07 : le widget flottant (rendu plus bas, fixed) remplace l'ancien
             bandeau texte de progression - juge pas assez design. */}
@@ -854,40 +946,14 @@ function MassiveStickers() {
           </div>
         </div>
 
-        {/* ARCHI-03 : CTA stickers custom (bandeau contraste, sous les Mystery
-            Packs). Pousse vers le service /services/stickers ; compact (une
-            rangee desktop) pour que la grille reste haute - la page est une
-            boutique d'abord. Pas un popup. */}
-        <div className="max-w-4xl mx-auto mb-10">
-          <Link
-            to="/services/stickers"
-            className="group flex flex-col sm:flex-row items-center gap-4 rounded-2xl px-5 py-4 sm:px-6 transition-all hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(100deg, #F00098, #6a1a5c)', boxShadow: '0 12px 34px rgba(240,0,152,0.25)' }}
-          >
-            <span className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-              <Scissors size={20} className="text-white" />
-            </span>
-            <div className="text-center sm:text-left flex-1 min-w-0">
-              <p className="font-heading font-bold text-white text-lg leading-tight">
-                {tx({ fr: 'Ton design, notre découpe', en: 'Your design, our cut', es: 'Tu diseño, nuestro corte' })}
-              </p>
-              <p className="text-white/85 text-sm mt-0.5">
-                {tx({
-                  fr: 'Stickers custom en vinyle die-cut - ta forme, tes quantités.',
-                  en: 'Custom die-cut vinyl stickers - your shape, your quantity.',
-                  es: 'Stickers custom en vinilo die-cut - tu forma, tus cantidades.',
-                })}
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-accent font-bold text-sm whitespace-nowrap flex-shrink-0 group-hover:gap-3 transition-all">
-              {tx({ fr: 'Créer mes stickers custom', en: 'Create my custom stickers', es: 'Crear mis stickers custom' })}
-              <ArrowRight size={16} />
-            </span>
-          </Link>
-        </div>
+        {/* ARCHI-03 : bandeau "stickers custom" RETIRE (STICKERS-HERO, choix
+            Mika). Le message custom est desormais porte par le CTA "Créer mes
+            stickers custom" du hero, au-dessus de la ligne de flottaison -
+            garder les deux dupliquait le message. Le nav "Services" y mene aussi. */}
 
-        {/* Recherche par nom */}
-        <div className="max-w-md mx-auto mb-6 relative">
+        {/* Recherche par nom. STICKERS-HERO : ancre "collection" ciblee par le
+            CTA "Explorer la collection" du hero (scroll doux sous le header). */}
+        <div id="collection" className="max-w-md mx-auto mb-6 relative scroll-mt-24">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-grey-muted pointer-events-none" />
           <input
             type="text"
