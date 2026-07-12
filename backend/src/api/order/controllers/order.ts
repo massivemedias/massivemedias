@@ -906,6 +906,17 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
     const requestId = crypto.randomBytes(4).toString('hex');
 
+    // WEBHOOK-ALERT-NOISE (12 juillet 2026) : une requete SANS header
+    // stripe-signature n'est JAMAIS un vrai webhook Stripe (Stripe l'envoie
+    // TOUJOURS) -> c'est un bot / scanner / probe. On log et on rejette 400
+    // SANS email. L'alerte email reste reservee aux signatures PRESENTES mais
+    // invalides (constructEvent qui echoue plus bas) = le vrai signal d'un
+    // probleme de STRIPE_WEBHOOK_SECRET. Coupe le bruit des scanners.
+    if (!sig) {
+      strapi.log.warn(`[webhook:${requestId}] No stripe-signature header - requete ignoree (bot/scanner/probe), aucune alerte email`);
+      return ctx.badRequest('Missing stripe-signature header');
+    }
+
     if (!endpointSecret || endpointSecret === 'whsec_REPLACE_ME') {
       strapi.log.warn(`[webhook:${requestId}] Stripe webhook secret not configured`);
       // Alert admin - config broken en prod. STRIPE-03 : throttle 60min
