@@ -15,6 +15,7 @@ import {
 } from '../data/products'
 import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb, img } from '../utils/paths'
+import { TUMBLER_DESIGN } from '../utils/tumblerMockup'
 import { NEW_BADGE_ENABLED } from '../config/stickersShopStatus'
 
 /**
@@ -70,7 +71,7 @@ const ACCENT_EVERY = 4
 // autre image de fond, designW = largeur du sticker pose dessus). Les images de
 // fond sont chargees en lazy -> zero cout au premier paint (perf UI-10).
 const SHOWCASE = [
-  { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-adian-fumeuse', productH: '92%', designH: '42%', cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
+  { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-adian-fumeuse', productH: '92%', designH: TUMBLER_DESIGN.height, cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
   { kind: 'product', img: '/images/mugs/mug-white.webp', design: 'massive-alien-hot', productH: '84%', designW: '52%', cap: { fr: 'Sur ta tasse', en: 'On your mug', es: 'En tu taza' } },
   { kind: 'pack', slugs: ['massive-dj-skull', 'massive-chameleon', 'massive-fleur-degueu', 'massive-mais', 'massive-jade'], cap: { fr: 'Mystery pack', en: 'Mystery pack', es: 'Mystery pack' } },
 ]
@@ -421,7 +422,7 @@ function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, onPrev,
                     alt={tx({ fr: 'Gourde avec le sticker', en: 'Bottle with the sticker', es: 'Botella con el sticker' })}
                     className="h-full w-auto object-contain"
                   />
-                  <div className="absolute" style={{ left: '50%', top: '52%', width: '58%', aspectRatio: '1', transform: 'translate(-50%, -50%)' }}>
+                  <div className="absolute" style={{ left: '50%', top: TUMBLER_DESIGN.top, height: TUMBLER_DESIGN.height, aspectRatio: '1', transform: 'translate(-50%, -50%)' }}>
                     <img
                       src={designUrl}
                       alt=""
