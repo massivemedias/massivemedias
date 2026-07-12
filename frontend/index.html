@@ -30,6 +30,38 @@
          autres pages). Cloudflare honore Link headers en HTTP/2 push aussi. -->
     <link rel="preload" as="image" href="/images/cpr-tagline.png" fetchpriority="high" />
 
+    <!-- STICKERS-HERO-PERF (PERF-01, 12 juillet 2026) : le sticker vedette du
+         hero /stickers est choisi AVANT le paint par ce mini-script (avant le
+         bundle module). Il tire un index aleatoire dans HERO_POOL, l'expose sur
+         window, et precharge CETTE image. Le hero (MassiveStickers.jsx) lit le
+         MEME index au mount -> il affiche exactement l'image prechargee : une
+         seule image, chargee tot (LCP ~= FCP au lieu de +2s), ZERO swap, random
+         par visite conserve. Gardes : no-op au prerender et hors /stickers
+         (aucun preload inutile ailleurs). HERO_POOL = liste editable des
+         designs vedettes (les slugs doivent exister dans le manifest). -->
+    <script>
+      (function () {
+        if (window.__MASSIVE_PRERENDER__) return;
+        var p = location.pathname;
+        if (p !== '/stickers' && p !== '/stickers/') return;
+        var POOL = [
+          'massive-adian-fumeuse', 'massive-piece-verte', 'massive-skull-cervo',
+          'massive-dj-skull', 'massive-samourai-violet', 'massive-alien-hot',
+          'massive-chameleon', 'massive-jade', 'massive-fleur-degueu',
+          'massive-art-de-rue', 'massive-biker', 'massive-basketball-man'
+        ];
+        window.__HERO_POOL__ = POOL;
+        var i = Math.floor(Math.random() * POOL.length);
+        window.__HERO_IDX__ = i;
+        var l = document.createElement('link');
+        l.rel = 'preload';
+        l.as = 'image';
+        l.href = '/images/stickers-massive/' + POOL[i] + '.webp';
+        l.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(l);
+      })();
+    </script>
+
     <!-- Preconnect au backend Strapi pour les API calls hot path (site-content
          charge des le boot) - economise ~100ms sur le 1er fetch. -->
     <link rel="preconnect" href="https://massivemedias-api.onrender.com" crossorigin />
