@@ -708,14 +708,21 @@ function MassiveStickers() {
   }, [])
   const catalogue = ordreAleatoire || MASSIVE_STICKERS
 
-  // STICKERS-HERO : sticker vedette du hero. Meme discipline que le shuffle de
-  // la grille -> l'image reste STABLE au prerender/hydratation (premier design
-  // du manifest) et n'est tiree au hasard qu'au runtime client, apres le mount.
-  // Zero mismatch d'hydratation ; le HTML prerendu sert toujours le meme design.
-  const [heroSticker, setHeroSticker] = useState(MASSIVE_STICKERS[0])
+  // STICKERS-HERO-PERF (PERF-01) : le design vedette est choisi AVANT le paint
+  // par le mini-script inline de index.html (window.__HERO_IDX__ + <link preload>
+  // de CETTE image, avant le bundle). On lit le MEME index ici -> le hero affiche
+  // exactement l'image prechargee : une seule image, chargee tot, ZERO swap.
+  // Initial null + garde prerender -> le HTML prerendu ne contient PAS d'image
+  // hero (pas de mismatch d'hydratation, aucun chargement gaspille) ; le client
+  // la pose au mount depuis l'index prechoisi. Random par visite conserve.
+  const [heroSticker, setHeroSticker] = useState(null)
   useEffect(() => {
     if (typeof window !== 'undefined' && window.__MASSIVE_PRERENDER__) return
-    setHeroSticker(MASSIVE_STICKERS[Math.floor(Math.random() * MASSIVE_STICKERS.length)])
+    const pool = (typeof window !== 'undefined' && window.__HERO_POOL__) || null
+    const idx = (typeof window !== 'undefined' && typeof window.__HERO_IDX__ === 'number') ? window.__HERO_IDX__ : 0
+    const slug = pool ? pool[idx] : null
+    const design = (slug && MASSIVE_STICKERS.find((s) => s.slug === slug)) || MASSIVE_STICKERS[0]
+    setHeroSticker(design)
   }, [])
 
   // CART-01 : quantite au panier par slug de design, pour le feedback
@@ -867,36 +874,37 @@ function MassiveStickers() {
                 </Link>
               </div>
             </div>
-            {/* Colonne visuelle : sticker vedette aleatoire, cliquable vers la fiche.
-                min-h reserve la place (les designs die-cut ont des ratios varies)
-                pour limiter le reflow quand l'image charge / change au mount. */}
+            {/* Colonne visuelle : sticker vedette (design prechoisi + precharge
+                par le script inline, cf. heroSticker). Rendu SEULEMENT une fois
+                l'index lu au mount -> pas d'image hero dans le HTML prerendu ; le
+                min-h reserve la place (zero CLS). Cliquable vers la fiche. */}
             <div className="lg:flex-1 flex flex-col items-center justify-center min-h-[300px]">
-              <button
-                type="button"
-                onClick={() => setFicheSlug(heroSticker.slug)}
-                className="group flex flex-col items-center"
-                aria-label={tx({ fr: `Voir le sticker ${heroSticker.fr}`, en: `View the ${heroSticker.en} sticker`, es: `Ver el sticker ${heroSticker.es}` })}
-              >
-                <span
-                  className="inline-block transition-transform duration-300 group-hover:-translate-y-1"
-                  style={{ transform: 'rotate(-4deg)', filter: 'drop-shadow(0 22px 45px rgba(0,0,0,0.5))' }}
+              {heroSticker && (
+                <button
+                  type="button"
+                  onClick={() => setFicheSlug(heroSticker.slug)}
+                  className="group flex flex-col items-center"
+                  aria-label={tx({ fr: `Voir le sticker ${heroSticker.fr}`, en: `View the ${heroSticker.en} sticker`, es: `Ver el sticker ${heroSticker.es}` })}
                 >
-                  {/* Above-the-fold : eager pour un affichage prompt. Les die-cut
-                      ont des ratios varies -> on borne par max-w ET max-h (w/h
-                      auto) pour une taille homogene sans deformer. ~60-80 ko webp
-                      800 : assez leger pour rester dans le budget LCP. */}
-                  <img
-                    src={img(`${STICKER_DIR}/${heroSticker.slug}.webp`)}
-                    alt={tx(heroSticker)}
-                    loading="eager"
-                    decoding="async"
-                    className="sticker-stroke w-auto h-auto max-w-[230px] sm:max-w-[260px] max-h-[260px] sm:max-h-[300px] object-contain"
-                  />
-                </span>
-                <span className="text-grey-light text-sm mt-5 group-hover:text-accent transition-colors">
-                  {tx(heroSticker)}
-                </span>
-              </button>
+                  <span
+                    className="inline-block transition-transform duration-300 group-hover:-translate-y-1"
+                    style={{ transform: 'rotate(-4deg)', filter: 'drop-shadow(0 22px 45px rgba(0,0,0,0.5))' }}
+                  >
+                    {/* Image deja prechargee (script inline, fetchpriority high) ->
+                        paint immediat au mount. Die-cut aux ratios varies : borne
+                        par max-w ET max-h (w/h auto) pour une taille homogene. */}
+                    <img
+                      src={img(`${STICKER_DIR}/${heroSticker.slug}.webp`)}
+                      alt={tx(heroSticker)}
+                      decoding="async"
+                      className="sticker-stroke w-auto h-auto max-w-[230px] sm:max-w-[260px] max-h-[260px] sm:max-h-[300px] object-contain"
+                    />
+                  </span>
+                  <span className="text-grey-light text-sm mt-5 group-hover:text-accent transition-colors">
+                    {tx(heroSticker)}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         </section>
