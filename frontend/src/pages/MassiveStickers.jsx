@@ -850,12 +850,16 @@ function MassiveStickers() {
                   es: 'Las líneas de montaje son para el papeleo. Aquí, pegamos por la cultura.',
                 })}
               </p>
-              {/* Ligne specs : reprend l'info de l'ancien sous-titre (SEO + shopper) */}
-              <p className="text-sm text-grey-muted mb-6 max-w-xl mx-auto lg:mx-0">
+              {/* Ligne specs : reprend l'info de l'ancien sous-titre (SEO + shopper).
+                  MICRO-FIX 12 juillet : texte raccourci + lg:whitespace-nowrap pour
+                  tenir sur UNE ligne au desktop (evite le "5" orphelin). Sur mobile le
+                  wrap reste permis, mais le prix et "minimum X" sont insecables (nbsp
+                   ) -> jamais un chiffre seul sur une ligne. */}
+              <p className="text-sm text-grey-muted mb-6 max-w-xl mx-auto lg:mx-0 lg:whitespace-nowrap lg:text-[13px]">
                 {tx({
-                  fr: `${MASSIVE_STICKERS.length} designs originaux créés à Montréal · vinyle die-cut, résistant eau et UV · ${STICKER_COLLECTION_UNIT_PRICE} $ le sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}`,
-                  en: `${MASSIVE_STICKERS.length} original designs made in Montreal · die-cut vinyl, water & UV proof · $${STICKER_COLLECTION_UNIT_PRICE} per sticker, minimum ${STICKER_COLLECTION_MIN_UNITS}`,
-                  es: `${MASSIVE_STICKERS.length} diseños originales hechos en Montreal · vinilo die-cut, resistente al agua y UV · ${STICKER_COLLECTION_UNIT_PRICE} $ por sticker, mínimo ${STICKER_COLLECTION_MIN_UNITS}`,
+                  fr: `${MASSIVE_STICKERS.length} designs créés à Montréal · vinyle die-cut, résistant eau et UV · ${STICKER_COLLECTION_UNIT_PRICE}\u00A0$, minimum\u00A0${STICKER_COLLECTION_MIN_UNITS}`,
+                  en: `${MASSIVE_STICKERS.length} designs made in Montreal · die-cut vinyl, water & UV proof · $${STICKER_COLLECTION_UNIT_PRICE}, minimum\u00A0${STICKER_COLLECTION_MIN_UNITS}`,
+                  es: `${MASSIVE_STICKERS.length} diseños hechos en Montreal · vinilo die-cut, resistente al agua y UV · ${STICKER_COLLECTION_UNIT_PRICE}\u00A0$, mínimo\u00A0${STICKER_COLLECTION_MIN_UNITS}`,
                 })}
               </p>
               {/* Rangee CTA : (a) explorer la collection (scroll) + (b) custom (service) */}
