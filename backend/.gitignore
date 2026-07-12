@@ -125,7 +125,8 @@ coverage
 license.txt
 exports
 .strapi
-# dist et build sont commites pour eviter OOM sur Render free tier
-# Builder localement: cd backend && npm run build
+# dist/ n'est PLUS commite (obsolete : "commite pour eviter OOM"). Render
+# recompile depuis src a CHAQUE deploy (render.yaml buildCommand: npm run build),
+# le dist commite etait ignore par la prod. En local : npm run build si besoin.
 .strapi-updater.json
 .strapi-cloud.json

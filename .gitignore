@@ -2,8 +2,11 @@
 node_modules/
 
 # Build outputs
+# backend/dist n'est PAS commite : Render recompile depuis src a chaque deploy
+# (render.yaml -> buildCommand: npm install && npm run build). Le dist commite
+# etait ignore par la prod (mythe "prod = dist commite" infirme le 12 juillet 2026,
+# preuves : order.ts require invoice-counter jamais dans dist + API order live).
 dist/
-!backend/dist/
 build/
 .vite/
 *.local
