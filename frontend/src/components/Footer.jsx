@@ -75,6 +75,14 @@ function Footer() {
                 </Link>
               </li>
               <li>
+                {/* ACCOUNT-TRACKING : filet invites. Le Suivi a migre dans /account,
+                    mais les clients sans compte doivent pouvoir suivre leur commande
+                    ici (et via le lien de leur courriel de confirmation). */}
+                <Link to="/tracking" className="hover:text-accent transition-colors duration-300">
+                  {tx({ fr: 'Suivi de commande', en: 'Order tracking', es: 'Seguimiento de pedido' })}
+                </Link>
+              </li>
+              <li>
                 <Link to="/contact?tab=artiste" className="hover:text-accent transition-colors duration-300">
                   {tx({ fr: 'Partenariat artiste', en: 'Artist partnership', es: 'Asociacion artistica' })}
                 </Link>

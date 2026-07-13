@@ -6,7 +6,7 @@ import {
   Eye, EyeOff, ChevronDown, ChevronUp, Shield, Pencil, Save, ShoppingBag,
   ArrowRight, Gift, Copy, Heart, Clock, RotateCcw, MessageCircle, Download,
   Palette, Settings, Menu, X, Banknote, Receipt, BarChart3, DollarSign, Users, ScrollText, ImagePlus, FileText, ExternalLink,
-  LayoutDashboard, Image, MessageSquare, Bot, Tag, StickyNote,
+  LayoutDashboard, Image, MessageSquare, Bot, Tag, StickyNote, Truck,
 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
@@ -25,6 +25,7 @@ import artistsData from '../data/artistPricing';
 import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import FavoriteHeart from '../components/FavoriteHeart';
+import OrderTimeline from '../components/OrderTimeline';
 import { MASSIVE_STICKERS } from '../data/massiveStickers';
 import { getCollectionStickerPrice } from '../data/products';
 import { thumb } from '../utils/paths';
@@ -130,7 +131,7 @@ function Account() {
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
-  const validTabs = ['profile', 'overview', 'orders', 'favoris', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'messages-artiste'];
+  const validTabs = ['profile', 'overview', 'orders', 'suivi', 'favoris', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'messages-artiste'];
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
   const userChangedTab = useRef(false);
@@ -218,6 +219,7 @@ function Account() {
   const baseTabs = [
     { id: 'overview', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: User },
     { id: 'orders', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package },
+    { id: 'suivi', label: tx({ fr: 'Suivi de commande', en: 'Order tracking', es: 'Seguimiento' }), icon: Truck },
     { id: 'favoris', label: tx({ fr: 'Mes favoris', en: 'Favorites', es: 'Favoritos' }), icon: Heart },
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: User },
   ];
@@ -650,6 +652,62 @@ function Account() {
       </div>
     );
   };
+
+  // ACCOUNT-TRACKING : onglet "Suivi de commande". Le user connecte possede deja
+  // ses commandes (fetch getMyOrders) -> on affiche la timeline par commande,
+  // pilotee par le status, sans re-demander numero+courriel. /tracking public
+  // reste le canal des invites (lien en bas + footer + courriels).
+  const renderTrackingContent = () => (
+    <div className="rounded-2xl p-6 md:p-8 card-bg">
+      <h3 className="text-heading font-semibold mb-1 flex items-center gap-2">
+        <Truck size={18} className="text-accent" />
+        {tx({ fr: 'Suivi de commande', en: 'Order tracking', es: 'Seguimiento de pedido' })}
+      </h3>
+      <p className="text-grey-muted text-sm mb-6">
+        {tx({ fr: "L'avancement de tes commandes en temps reel.", en: 'Your orders progress in real time.', es: 'El progreso de tus pedidos en tiempo real.' })}
+      </p>
+      {ordersLoading ? (
+        <div className="flex items-center gap-3 text-grey-muted py-12 justify-center">
+          <Loader2 size={20} className="animate-spin" />
+          <span>{tx({ fr: 'Chargement...', en: 'Loading...', es: 'Cargando...' })}</span>
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-12">
+          <Truck size={48} className="text-grey-muted/20 mx-auto mb-4" />
+          <p className="text-heading font-medium mb-1">{tx({ fr: 'Aucune commande a suivre.', en: 'No order to track.', es: 'Ningun pedido que seguir.' })}</p>
+          <p className="text-grey-muted text-sm">{tx({ fr: 'Tes commandes apparaitront ici.', en: 'Your orders will appear here.', es: 'Tus pedidos apareceran aqui.' })}</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <div key={order.documentId || order.id} className="rounded-xl bg-glass p-4">
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-5">
+                <div>
+                  <p className="text-heading font-semibold text-sm">{formatDate(order.createdAt)}</p>
+                  <p className="text-grey-muted text-xs">
+                    {(order.items?.length || 0)} {(order.items?.length || 0) > 1 ? tx({ fr: 'articles', en: 'items', es: 'articulos' }) : tx({ fr: 'article', en: 'item', es: 'articulo' })}
+                    {' · '}{((order.total || 0) / 100).toFixed(2)}$
+                  </p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[order.status] || 'bg-grey-500/20 text-grey-400'}`}>
+                  {getStatusLabel(order.status)}
+                </span>
+              </div>
+              <div className="overflow-x-auto pb-1">
+                <OrderTimeline status={order.status} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <p className="text-grey-muted text-xs mt-6 pt-4 border-t border-white/5">
+        {tx({ fr: 'Une commande passee sans compte ? ', en: 'An order placed without an account? ', es: 'Un pedido sin cuenta? ' })}
+        <Link to="/tracking" className="text-accent hover:underline">
+          {tx({ fr: 'Suivi par numero', en: 'Track by number', es: 'Seguir por numero' })}
+        </Link>
+      </p>
+    </div>
+  );
 
   const renderOrdersContent = () => (
     <div className="rounded-2xl p-6 md:p-8 card-bg">
@@ -1187,6 +1245,7 @@ function Account() {
                   {activeTab === 'profile' && renderProfileContent()}
                   {activeTab === 'orders' && renderOrdersContent()}
                   {activeTab === 'favoris' && renderFavorisContent()}
+                  {activeTab === 'suivi' && renderTrackingContent()}
                 </motion.div>
               </AnimatePresence>
             </main>
@@ -1519,6 +1578,9 @@ function Account() {
 
                 {/* -- FAVORIS TAB (STICKERS-FAV) -- */}
                 {activeTab === 'favoris' && renderFavorisContent()}
+
+                {/* -- SUIVI TAB (ACCOUNT-TRACKING) -- */}
+                {activeTab === 'suivi' && renderTrackingContent()}
 
                 {/* -- ADDRESS TAB -- */}
 

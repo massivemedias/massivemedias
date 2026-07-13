@@ -14,7 +14,7 @@ function SmartLink({ to, children, ...rest }) {
   }
   return <Link to={to} {...rest}>{children}</Link>;
 }
-import { Menu, X, ShoppingCart, LogIn, User, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, ChevronDown, Bell, PenTool, Camera, Settings, PackageSearch } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, User, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, ChevronDown, Bell, PenTool, Camera, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -202,12 +202,10 @@ function Header() {
                 {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
               </SmartLink>
 
-              {/* NAV-01 : suivi de commande public (/tracking), page client
-                  essentielle -> reste en barre primaire (decision Mika ARCHI-02). */}
-              <SmartLink to="/tracking" onClick={navClick('/tracking')} className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/tracking') ? 'text-accent' : 'nav-link'}`}>
-                {tx({ fr: 'Suivi', en: 'Tracking', es: 'Seguimiento' })}
-              </SmartLink>
-
+              {/* ACCOUNT-TRACKING (13 juillet) : le Suivi migre dans /account
+                  (menu lateral). Barre = Stickers | Prints | Services | Artistes |
+                  Contact. /tracking reste accessible (URL directe + footer + liens
+                  des courriels de confirmation). */}
               <SmartLink to="/contact" onClick={navClick('/contact')} className="btn-primary text-sm !py-1 !px-3.5 whitespace-nowrap">
                 {t('nav.contact')}
               </SmartLink>
@@ -430,19 +428,8 @@ function Header() {
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </SmartLink>
 
-                {/* NAV-01 : suivi de commande, page client essentielle */}
-                <SmartLink
-                  to="/tracking"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/tracking') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={navClick('/tracking', close)}
-                >
-                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                    <PackageSearch size={14} className="text-accent" />
-                  </span>
-                  <span className="font-semibold text-[14px]">{tx({ fr: 'Suivi de commande', en: 'Order tracking', es: 'Seguimiento de pedido' })}</span>
-                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                </SmartLink>
-
+                {/* ACCOUNT-TRACKING : Suivi migre dans /account (voir Header
+                    desktop). /tracking reste joignable via l'URL directe + footer. */}
                 <SmartLink
                   to="/panier"
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/panier') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
