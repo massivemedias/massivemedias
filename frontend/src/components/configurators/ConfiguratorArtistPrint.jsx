@@ -9,6 +9,7 @@ import {
 } from '../../data/artistPricing';
 import { formatPrice } from '../../utils/formatCurrency';
 import { TIER_DESCRIPTION } from '../../constants/printTiers'
+import FavoriteHeart from '../FavoriteHeart';
 
 function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onFrameColorChange }) {
   const { lang, tx } = useLang();
@@ -140,15 +141,19 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
 
   return (
     <div className="space-y-4">
-      {/* Selected print info */}
-      <div className="p-3 rounded-xl bg-glass flex items-center gap-3">
+      {/* Selected print info (= fiche oeuvre). FAV-02 : coeur favori prints a
+          droite de l'en-tete. */}
+      <div className="relative p-3 rounded-xl bg-glass flex items-center gap-3">
+        {selectedPrint.id && (
+          <FavoriteHeart space="prints" slug={selectedPrint.id} className="absolute top-2 right-2 z-10" />
+        )}
         <img
           src={selectedPrint.image}
           alt={printTitle}
           className="w-14 h-14 rounded-lg object-cover"
         />
         <div>
-          <div className="text-heading font-heading font-bold text-sm leading-tight">{printTitle}</div>
+          <div className="text-heading font-heading font-bold text-sm leading-tight pr-8">{printTitle}</div>
           <div className="text-grey-muted text-xs">{artist.name}</div>
           {isUnique && (
             <span className="inline-block mt-1 px-2.5 py-1 rounded-full bg-accent/20 text-accent text-xs font-bold uppercase tracking-wider">

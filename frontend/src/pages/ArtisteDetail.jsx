@@ -9,6 +9,7 @@ import ArtistPrintCard from '../components/ArtistPrintCard';
 import ConfiguratorArtistPrint from '../components/configurators/ConfiguratorArtistPrint';
 import MockupPreview from '../components/MockupPreview';
 import ConfiguratorArtistSticker from '../components/configurators/ConfiguratorArtistSticker';
+import FavoriteHeart from '../components/FavoriteHeart';
 import { useLang } from '../i18n/LanguageContext';
 import { useTheme } from '../i18n/ThemeContext';
 import { useArtists } from '../hooks/useArtists';
@@ -934,9 +935,14 @@ function ArtisteDetail({ subdomainSlug }) {
                       initial={{ opacity: 0 }}
                       whileInView={{ opacity: 1 }}
                       viewport={{ once: true }}
-                      className="flex gap-3 p-3 rounded-xl bg-black/20 cursor-pointer hover:bg-black/30 transition-colors"
+                      className="relative flex gap-3 p-3 rounded-xl bg-black/20 cursor-pointer hover:bg-black/30 transition-colors"
                       onClick={() => handleSelectPrint(print)}
                     >
+                      {/* FAV-02 : coeur favori prints (l'article n'est pas un bouton
+                          -> enfant valide ; le stopPropagation evite la selection). */}
+                      {print.id && (
+                        <FavoriteHeart space="prints" slug={print.id} className="absolute top-2 right-2 z-20" />
+                      )}
                       <img src={print.image} alt={`Impression de ${getItemTitle(print)} par ${artist.name} - Massive Medias`} loading="lazy" className="w-20 h-28 object-cover rounded-lg flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-heading text-sm font-semibold truncate">{getItemTitle(print)}</p>

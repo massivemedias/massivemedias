@@ -107,6 +107,29 @@ async function findClientForUser(strapi: any, userId: string | null, userEmail: 
   return null;
 }
 
+// FAV-02 : les favoris passent d'un tableau plat (stickers seulement, format
+// #95) a DEUX listes { stickers, prints } - catalogues et identifiants
+// differents. Migration DOUCE, sans script DB : un ancien tableau lu ici devient
+// { stickers: [...], prints: [] }, et la prochaine ecriture persiste la nouvelle
+// forme. Aucun favori perdu. Slugs assainis (memes regles qu'avant : slug/id
+// plausible, dedupe, cap 500). L'id de print stable = `${artistSlug}-NNN`
+// (ex. mok-001) qui matche le meme regex que les slugs stickers.
+const FAV_SLUG_RE = /^[a-z0-9-]{1,80}$/i;
+function sanitizeFavList(arr: any): string[] {
+  if (!Array.isArray(arr)) return [];
+  return [...new Set(
+    arr.filter((s: any) => typeof s === 'string' && FAV_SLUG_RE.test(s))
+  )].slice(0, 500);
+}
+function normalizeFavoris(raw: any): { stickers: string[]; prints: string[] } {
+  // Ancien format (tableau plat) => tout en stickers, prints vide (migration).
+  if (Array.isArray(raw)) return { stickers: sanitizeFavList(raw), prints: [] };
+  if (raw && typeof raw === 'object') {
+    return { stickers: sanitizeFavList(raw.stickers), prints: sanitizeFavList(raw.prints) };
+  }
+  return { stickers: [], prints: [] };
+}
+
 export default factories.createCoreController('api::client.client', ({ strapi }) => ({
 
   async findAll(ctx) {
@@ -450,19 +473,20 @@ export default factories.createCoreController('api::client.client', ({ strapi })
     if (!(await requireUserAuth(ctx))) return;
     const { userId, userEmail } = (ctx.state as any).user;
     const client = await findClientForUser(strapi, userId, userEmail);
-    const favoris = Array.isArray((client as any)?.favoris) ? (client as any).favoris : [];
-    ctx.body = { favoris };
+    // Toujours renvoyer la forme deux listes ; migration lue a la volee.
+    ctx.body = { favoris: normalizeFavoris((client as any)?.favoris) };
   },
 
   async updateMyFavoris(ctx) {
     if (!(await requireUserAuth(ctx))) return;
     const { userId, userEmail } = (ctx.state as any).user;
     const incoming = (ctx.request.body as any)?.favoris;
-    if (!Array.isArray(incoming)) return ctx.badRequest('favoris (array de slugs) requis');
-    // Assainir : slugs plausibles uniquement, dedupe, cap a 500 (anti-abus).
-    const favoris = [...new Set(
-      incoming.filter((s: any) => typeof s === 'string' && /^[a-z0-9-]{1,80}$/i.test(s))
-    )].slice(0, 500);
+    // Accepte { stickers, prints } (nouveau front) OU un tableau plat (ancien
+    // front pendant un rollout) - normalizeFavoris migre et assainit les deux.
+    if (incoming == null || typeof incoming !== 'object') {
+      return ctx.badRequest('favoris ({ stickers, prints }) requis');
+    }
+    const favoris = normalizeFavoris(incoming);
     const client = await findClientForUser(strapi, userId, userEmail);
     if (client) {
       await strapi.documents('api::client.client').update({

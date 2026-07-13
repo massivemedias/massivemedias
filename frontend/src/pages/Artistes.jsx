@@ -8,6 +8,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { useArtists } from '../hooks/useArtists';
 import { mediaUrl } from '../utils/cms';
 import TierExplainer from '../components/TierExplainer';
+import FavoriteHeart from '../components/FavoriteHeart';
 
 // Type map for each artist slug
 const ARTIST_TYPES = {
@@ -479,7 +480,13 @@ function Artistes() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: i * 0.05 }}
                     viewport={{ once: true }}
+                    className="relative"
                   >
+                    {/* FAV-02 : coeur favori prints. SIBLING du <Link> (un bouton
+                        dans un <a> = HTML invalide) ; stopPropagation dans le coeur. */}
+                    {work.id && (
+                      <FavoriteHeart space="prints" slug={work.id} className="absolute top-2 right-2 z-20" />
+                    )}
                     <Link to={`/artistes/${work.artistSlug}?print=${work.id}`} className="group relative block rounded-lg overflow-hidden aspect-square">
                       <img
                         src={work.image}

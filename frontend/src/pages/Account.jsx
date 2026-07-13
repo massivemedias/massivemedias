@@ -24,6 +24,7 @@ import AddressAutocomplete from '../components/AddressAutocomplete';
 import artistsData from '../data/artistPricing';
 import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { useArtists } from '../hooks/useArtists';
 import FavoriteHeart from '../components/FavoriteHeart';
 import OrderTimeline from '../components/OrderTimeline';
 import { MASSIVE_STICKERS } from '../data/massiveStickers';
@@ -125,7 +126,8 @@ function Account() {
   const { user, signOut, updateProfile, updatePassword, loading: authLoading } = useAuth();
   const { role: userRole, isAdmin, isArtist, artistSlug, loading: roleLoading } = useUserRole();
   const { addToCart } = useCart();
-  const { favorites } = useFavorites();
+  const { favorites, favoritesPrints } = useFavorites();
+  const { artists: cmsArtistsMap } = useArtists();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const meta = user?.user_metadata || {};
@@ -602,6 +604,19 @@ function Account() {
     const favDesigns = favorites
       .map((slug) => MASSIVE_STICKERS.find((s) => s.slug === slug))
       .filter(Boolean);
+    // FAV-02 : resoudre les prints favoris via le CMS, par print.id stable
+    // (format ${artistSlug}-NNN). Chaque print pointe vers son oeuvre.
+    const printLookup = {};
+    Object.values(cmsArtistsMap || {}).forEach((a) => {
+      (a?.prints || []).forEach((p) => {
+        if (p && p.id) printLookup[p.id] = { print: p, artistSlug: a.slug, artistName: a.name };
+      });
+    });
+    const favPrints = (favoritesPrints || [])
+      .map((id) => printLookup[id])
+      .filter(Boolean);
+    const totalFav = favDesigns.length + favPrints.length;
+    const printTitle = (p) => tx({ fr: p.titleFr, en: p.titleEn, es: p.titleEs || p.titleEn });
     return (
       <div>
         <h2 className="font-heading font-bold text-xl text-heading mb-1">
@@ -609,12 +624,12 @@ function Account() {
         </h2>
         <p className="text-grey-muted text-sm mb-5">
           {tx({
-            fr: `${favDesigns.length} design(s) aime(s). Ajoute-les au panier quand tu veux.`,
-            en: `${favDesigns.length} liked design(s). Add them to your cart anytime.`,
-            es: `${favDesigns.length} diseno(s) favorito(s). Agregalos al carrito cuando quieras.`,
+            fr: `${totalFav} favori(s) : stickers et prints d'artistes.`,
+            en: `${totalFav} favorite(s): stickers and artist prints.`,
+            es: `${totalFav} favorito(s): stickers y prints de artistas.`,
           })}
         </p>
-        {favDesigns.length === 0 ? (
+        {totalFav === 0 ? (
           <div className="text-center py-14">
             <Heart size={30} className="mx-auto text-grey-muted mb-3" />
             <p className="text-grey-muted mb-4">
@@ -626,27 +641,67 @@ function Account() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-            {favDesigns.map((s) => (
-              <div key={s.slug} className="relative rounded-xl bg-black/20 p-3 flex flex-col items-center">
-                <FavoriteHeart slug={s.slug} className="absolute top-2 right-2 z-10" />
-                <img
-                  src={thumb(`/images/stickers-massive/${s.slug}.webp`)}
-                  alt={tx(s)}
-                  loading="lazy"
-                  className="sticker-stroke w-full aspect-square object-contain"
-                />
-                <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={tx(s)}>{tx(s)}</p>
-                <button
-                  type="button"
-                  onClick={() => addFavToCart(s)}
-                  className="mt-2 w-full inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-full text-[11px] font-semibold bg-accent text-white hover:brightness-110 transition-all"
-                >
-                  <ShoppingBag size={12} />
-                  {tx({ fr: 'Au panier', en: 'Add', es: 'Agregar' })}
-                </button>
-              </div>
-            ))}
+          <div className="space-y-8">
+            {/* Groupe STICKERS : garde le pont panier (le PONT PANIER reste
+                STICKERS SEULEMENT - les prints n'ont PAS de bouton panier ici). */}
+            {favDesigns.length > 0 && (
+              <section>
+                <h3 className="font-heading font-bold text-sm text-heading mb-3 uppercase tracking-wide">
+                  {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })} ({favDesigns.length})
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                  {favDesigns.map((s) => (
+                    <div key={s.slug} className="relative rounded-xl bg-black/20 p-3 flex flex-col items-center">
+                      <FavoriteHeart slug={s.slug} className="absolute top-2 right-2 z-10" />
+                      <img
+                        src={thumb(`/images/stickers-massive/${s.slug}.webp`)}
+                        alt={tx(s)}
+                        loading="lazy"
+                        className="sticker-stroke w-full aspect-square object-contain"
+                      />
+                      <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={tx(s)}>{tx(s)}</p>
+                      <button
+                        type="button"
+                        onClick={() => addFavToCart(s)}
+                        className="mt-2 w-full inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-full text-[11px] font-semibold bg-accent text-white hover:brightness-110 transition-all"
+                      >
+                        <ShoppingBag size={12} />
+                        {tx({ fr: 'Au panier', en: 'Add', es: 'Agregar' })}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {/* Groupe PRINTS : cliquables vers l'oeuvre (pas de panier ici, le
+                parcours print passe par le configurateur de l'artiste). Coeur en
+                SIBLING du <Link> (bouton dans <a> = HTML invalide). */}
+            {favPrints.length > 0 && (
+              <section>
+                <h3 className="font-heading font-bold text-sm text-heading mb-3 uppercase tracking-wide">
+                  {tx({ fr: "Prints d'artistes", en: 'Artist prints', es: 'Prints de artistas' })} ({favPrints.length})
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                  {favPrints.map(({ print, artistSlug, artistName }) => (
+                    <div key={print.id} className="relative rounded-xl bg-black/20 overflow-hidden group">
+                      <FavoriteHeart space="prints" slug={print.id} className="absolute top-2 right-2 z-10" />
+                      <Link to={`/artistes/${artistSlug}?print=${print.id}`} className="block">
+                        <img
+                          src={print.image}
+                          alt={printTitle(print)}
+                          loading="lazy"
+                          className="w-full aspect-[4/5] object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="p-2.5">
+                          <p className="text-heading text-xs font-semibold truncate" title={printTitle(print)}>{printTitle(print)}</p>
+                          <p className="text-accent text-[11px] mt-0.5 truncate">{artistName}</p>
+                        </div>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         )}
       </div>

@@ -882,8 +882,11 @@ function MassiveStickers() {
                   es: `${MASSIVE_STICKERS.length} diseños hechos en Montreal · vinilo die-cut, resistente al agua y UV · ${STICKER_COLLECTION_UNIT_PRICE}\u00A0$, mínimo\u00A0${STICKER_COLLECTION_MIN_UNITS}`,
                 })}
               </p>
-              {/* Rangee CTA : (a) explorer la collection (scroll) + (b) custom (service) */}
-              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              {/* Rangee CTA : (a) explorer la collection (scroll) + (b) custom (service)
+                  + (c) FAV-02 : mes favoris (visible des 1 favori sticker). 3 boutons
+                  sur UNE ligne desktop (verifie en ES, le plus long) ; empilent en
+                  mobile (flex-col) et peuvent wrap sur tablette (flex-wrap). */}
+              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-center lg:justify-start">
                 <button
                   type="button"
                   onClick={() => document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
@@ -896,6 +899,21 @@ function MassiveStickers() {
                   <Scissors size={16} className="mr-2" />
                   {tx({ fr: 'Créer mes stickers custom', en: 'Create custom stickers', es: 'Crear stickers custom' })}
                 </Link>
+                {favorites.length >= 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery('')
+                      setActiveCat('favoris')
+                      document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }}
+                    className="btn-outline justify-center !px-5"
+                    aria-label={tx({ fr: 'Voir mes favoris', en: 'View my favorites', es: 'Ver mis favoritos' })}
+                  >
+                    <Heart size={16} className="mr-2" />
+                    {tx({ fr: 'Mes favoris', en: 'My favorites', es: 'Mis favoritos' })} ({favorites.length})
+                  </button>
+                )}
               </div>
             </div>
             {/* Colonne visuelle : sticker vedette (design prechoisi + precharge
