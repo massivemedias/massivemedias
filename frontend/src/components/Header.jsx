@@ -14,7 +14,7 @@ function SmartLink({ to, children, ...rest }) {
   }
   return <Link to={to} {...rest}>{children}</Link>;
 }
-import { Menu, X, ShoppingCart, LogIn, User, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, ChevronDown, Bell, PenTool, Camera, Settings } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, User, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, ChevronDown, Bell, PenTool, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -31,6 +31,7 @@ const SERVICE_ICONS = [Printer, Sticker, Shirt, Globe, Monitor];
 // SITE-ARCHI-02 (9 juillet 2026) : descriptifs courts des services custom pour
 // le mega-menu "Services". Cle = slug. Inline ici pour rester dans Header.jsx.
 const SERVICE_DESC = {
+  prints: { fr: 'Tirages fine art, affiches d\'événements', en: 'Fine art prints, event posters', es: 'Tirages fine art, afiches' },
   design: { fr: 'Identité visuelle, affiches, logos', en: 'Visual identity, posters, logos', es: 'Identidad visual, afiches, logos' },
   web: { fr: 'Sites, boutiques, applications', en: 'Websites, shops, apps', es: 'Sitios, tiendas, aplicaciones' },
   stickers: { fr: 'Vinyle découpé sur mesure', en: 'Custom die-cut vinyl', es: 'Vinilo troquelado a medida' },
@@ -66,10 +67,14 @@ function Header() {
   // Collection" devient le pilier "Stickers" (meme URL /stickers). "A propos"
   // quitte la barre et vit dans le footer. REGLE ABSOLUE : aucune URL ne change.
   const printsLabel = services.find((s) => s.slug === 'prints')?.name || 'Prints';
+  // ARCHI-04 : le service fine art (/services/prints) entre dans le mega-menu
+  // Services (il en etait exclu quand "Prints" etait un pilier autonome). Libelle
+  // distinct "Prints custom" pour ne pas doublonner le pilier "Prints" -> /artistes.
   const serviceMenu = services
     .map((s, i) => ({ ...s, Icon: SERVICE_ICONS[i] }))
-    .filter((s) => s.slug !== 'prints' && !HIDDEN_SERVICE_SLUGS.includes(s.slug));
-  const onServicePage = pathname.startsWith('/services') && !pathname.startsWith('/services/prints');
+    .filter((s) => !HIDDEN_SERVICE_SLUGS.includes(s.slug))
+    .map((s) => ({ ...s, label: s.slug === 'prints' ? tx({ fr: 'Prints custom', en: 'Custom prints', es: 'Prints custom' }) : s.name }));
+  const onServicePage = pathname.startsWith('/services');
 
   // FIX-NAV-SCROLL (27 avril 2026) : helper pour scroller en haut quand on
   // re-clique sur le lien de la page courante. React Router ne re-render pas
@@ -126,11 +131,13 @@ function Header() {
                 </SmartLink>
               )}
 
-              {/* Pilier Prints (route inchangee /services/prints) */}
+              {/* ARCHI-04 : pilier "Prints" -> hub "Prints d'artistes" (/artistes,
+                  URL inchangee). Le service fine art (/services/prints) vit dans le
+                  mega-menu Services sous "Prints custom". */}
               <SmartLink
-                to="/services/prints"
-                onClick={navClick('/services/prints')}
-                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/services/prints') ? 'text-accent' : 'nav-link'}`}
+                to="/artistes"
+                onClick={navClick('/artistes')}
+                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/artistes') || isActive('/boutique') ? 'text-accent' : 'nav-link'}`}
               >
                 {printsLabel}
               </SmartLink>
@@ -165,7 +172,7 @@ function Header() {
                         {tx({ fr: 'Sur mesure', en: 'Custom work', es: 'A medida' })}
                       </p>
                       <div className="grid grid-cols-2 gap-1.5">
-                        {serviceMenu.map(({ slug, name, Icon }) => {
+                        {serviceMenu.map(({ slug, label, Icon }) => {
                           const active = isActive(`/services/${slug}`);
                           return (
                             <SmartLink
@@ -180,7 +187,7 @@ function Header() {
                                 </span>
                               )}
                               <span className="min-w-0">
-                                <span className="block font-semibold text-sm leading-tight">{name}</span>
+                                <span className="block font-semibold text-sm leading-tight">{label}</span>
                                 {SERVICE_DESC[slug] && (
                                   <span className="block text-xs mt-0.5 text-grey-muted leading-snug">{tx(SERVICE_DESC[slug])}</span>
                                 )}
@@ -194,13 +201,8 @@ function Header() {
                 </AnimatePresence>
               </div>
 
-              <SmartLink
-                to="/artistes"
-                onClick={navClick('/artistes')}
-                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/artistes') || isActive('/boutique') ? 'text-accent' : 'nav-link'}`}
-              >
-                {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
-              </SmartLink>
+              {/* ARCHI-04 : pilier "Artistes" supprime -> le pilier "Prints"
+                  ci-dessus est devenu le hub artistes/prints (/artistes). */}
 
               {/* ACCOUNT-TRACKING (13 juillet) : le Suivi migre dans /account
                   (menu lateral). Barre = Stickers | Prints | Services | Artistes |
@@ -371,9 +373,9 @@ function Header() {
                 )}
 
                 <SmartLink
-                  to="/services/prints"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/services/prints') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={navClick('/services/prints', close)}
+                  to="/artistes"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  onClick={navClick('/artistes', close)}
                 >
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
                     <Printer size={14} className="text-accent" />
@@ -389,7 +391,7 @@ function Header() {
                   {tx({ fr: 'Services', en: 'Services', es: 'Servicios' })}
                 </p>
 
-                {serviceMenu.map(({ slug, name, Icon }) => {
+                {serviceMenu.map(({ slug, label, Icon }) => {
                   const active = isActive(`/services/${slug}`);
                   return (
                     <SmartLink
@@ -403,7 +405,7 @@ function Header() {
                           <Icon size={14} className="text-accent" />
                         </span>
                       )}
-                      <span className="font-semibold text-[14px]">{name}</span>
+                      <span className="font-semibold text-[14px]">{label}</span>
                       <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                     </SmartLink>
                   );
@@ -416,17 +418,8 @@ function Header() {
                   {tx({ fr: 'Découvrir', en: 'Discover', es: 'Descubrir' })}
                 </p>
 
-                <SmartLink
-                  to="/artistes"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={navClick('/artistes', close)}
-                >
-                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                    <Camera size={14} className="text-accent" />
-                  </span>
-                  <span className="font-semibold text-[14px]">{tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}</span>
-                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                </SmartLink>
+                {/* ARCHI-04 : "Artistes" retire du drawer (le hub reste accessible
+                    via le pilier "Prints" -> /artistes ci-dessus). */}
 
                 {/* ACCOUNT-TRACKING : Suivi migre dans /account (voir Header
                     desktop). /tracking reste joignable via l'URL directe + footer. */}

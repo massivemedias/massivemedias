@@ -110,7 +110,7 @@ function Artistes() {
   return (
     <>
       <SEO
-        title={tx({ fr: 'Artistes - Photographes & Peintres | Massive', en: 'Artists - Photographers & Painters | Massive', es: 'Artistas - Fotógrafos & Pintores | Massive' })}
+        title={tx({ fr: "Prints d'artistes - Photographes & Peintres | Massive", en: 'Artist Prints - Photographers & Painters | Massive', es: 'Prints de artistas - Fotógrafos & Pintores | Massive' })}
         description={tx({
           fr: 'Découvrez les artistes de Massive Medias. Photographes, peintres. Tirages fine art, impression et distribution en ligne. Montréal.',
           en: 'Discover Massive Medias artists. Photographers, painters. Fine art prints, printing and online distribution. Montreal.',
@@ -118,7 +118,7 @@ function Artistes() {
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
-          { name: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }) },
+          { name: tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' }) },
         ]}
       />
 
@@ -136,12 +136,12 @@ function Artistes() {
               </Link>
               <span className="text-grey-muted">/</span>
               <span className="text-accent">
-                {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
+                {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
               </span>
             </div>
 
             <h1 className="text-4xl md:text-5xl font-heading font-bold text-heading tracking-tight leading-none mb-3">
-              {tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}
+              {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
             </h1>
 
             <p className="text-base md:text-lg text-grey-light max-w-2xl leading-relaxed mb-4">
@@ -166,6 +166,36 @@ function Artistes() {
             </Link>
 
           </motion.div>
+        </div>
+      </section>
+
+      {/* ARCHI-04 : bandeau CTA "prints custom", miroir du CTA custom de /stickers.
+          Place haut (juste sous le hero), vers le service fine art /services/prints.
+          Gradient via --accent-rgb (theme-safe, jamais de rose/mauve code en dur). */}
+      <section className="section-container mb-3">
+        <div
+          className="rounded-2xl px-6 py-5 md:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+          style={{ background: 'linear-gradient(120deg, rgba(var(--accent-rgb),1), rgba(var(--accent-rgb),0.62))', boxShadow: '0 14px 36px rgba(var(--accent-rgb),0.28)' }}
+        >
+          <div>
+            <p className="text-white font-heading font-bold text-xl leading-tight">
+              {tx({ fr: 'Imprime tes œuvres', en: 'Print your work', es: 'Imprime tus obras' })}
+            </p>
+            <p className="text-white/90 text-sm mt-1">
+              {tx({
+                fr: 'Fais tes prints custom en fine art, imprimés à Montréal.',
+                en: 'Make custom fine-art prints, printed in Montreal.',
+                es: 'Haz tus prints custom en fine art, impresos en Montreal.',
+              })}
+            </p>
+          </div>
+          <Link
+            to="/services/prints"
+            className="shrink-0 inline-flex items-center gap-2 bg-white text-accent font-bold text-sm px-5 py-2.5 rounded-full hover:brightness-95 transition-all whitespace-nowrap"
+          >
+            {tx({ fr: 'Faire mes prints custom', en: 'Make custom prints', es: 'Hacer mis prints custom' })}
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
 
