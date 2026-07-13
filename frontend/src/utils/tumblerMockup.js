@@ -15,4 +15,18 @@
 // selon le conteneur). aspectRatio 1 + object-contain : la plus grande dimension
 // du design remplit la boite, donc tout ratio (vertical / carre / horizontal)
 // reste dans les bords du cylindre sans deborder.
-export const TUMBLER_DESIGN = { top: '52%', height: '28%' };
+// Fausse courbure cylindrique (FIX-MOCKUP-TUMBLER, bug 2), rendue par le
+// composant partage <TumblerDesign> :
+//  - scaleX : legere compression horizontale (le design epouse le devant courbe).
+//  - shading : degrade lateral masque a l'alpha du design. Bords gauche/droit
+//    assombris (la surface du cylindre fuit la lumiere), bande claire au centre
+//    (le devant face a nous). Un design etroit centre ne voit que le centre
+//    (peu d'ombre = correct, il est sur le plat) ; un design large touche les
+//    bords sombres (il s'enroule) -> courbure credible sans deformation reelle.
+export const TUMBLER_DESIGN = {
+  top: '52%',
+  height: '28%',
+  scaleX: 0.9,
+  shading:
+    'linear-gradient(90deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.24) 18%, rgba(0,0,0,0.04) 36%, rgba(255,255,255,0.16) 50%, rgba(0,0,0,0.04) 64%, rgba(0,0,0,0.24) 82%, rgba(0,0,0,0.5) 100%)',
+};

@@ -15,7 +15,7 @@ import {
 } from '../data/products'
 import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb, img } from '../utils/paths'
-import { TUMBLER_DESIGN } from '../utils/tumblerMockup'
+import TumblerDesign from '../components/TumblerDesign'
 import { NEW_BADGE_ENABLED } from '../config/stickersShopStatus'
 
 /**
@@ -71,7 +71,7 @@ const ACCENT_EVERY = 4
 // autre image de fond, designW = largeur du sticker pose dessus). Les images de
 // fond sont chargees en lazy -> zero cout au premier paint (perf UI-10).
 const SHOWCASE = [
-  { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-adian-fumeuse', productH: '92%', designH: TUMBLER_DESIGN.height, cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
+  { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-adian-fumeuse', productH: '92%', tumbler: true, cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
   { kind: 'product', img: '/images/mugs/mug-white.webp', design: 'massive-alien-hot', productH: '84%', designW: '52%', cap: { fr: 'Sur ta tasse', en: 'On your mug', es: 'En tu taza' } },
   { kind: 'pack', slugs: ['massive-dj-skull', 'massive-chameleon', 'massive-fleur-degueu', 'massive-mais', 'massive-jade'], cap: { fr: 'Mystery pack', en: 'Mystery pack', es: 'Mystery pack' } },
 ]
@@ -291,17 +291,21 @@ function ShowcaseBand({ tx, onOpenDesign }) {
                     className="h-full w-auto object-contain transition-transform duration-300 group-hover:scale-[1.04]"
                     style={{ filter: 'drop-shadow(0 12px 26px rgba(0,0,0,0.45))' }}
                   />
-                  <div className="absolute" style={{ left: '50%', top: '52%', ...(tile.designH ? { height: tile.designH } : { width: tile.designW }), aspectRatio: '1', transform: 'translate(-50%, -50%) rotate(-3deg)' }}>
-                    <img
-                      loading="lazy"
-                      decoding="async"
-                      src={`/images/thumbs-mini/stickers-massive/${tile.design}.webp`}
-                      alt=""
-                      aria-hidden="true"
-                      className="w-full h-full object-contain"
-                      style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))' }}
-                    />
-                  </div>
+                  {tile.tumbler ? (
+                    <TumblerDesign design={`/images/thumbs-mini/stickers-massive/${tile.design}.webp`} rotate={-3} />
+                  ) : (
+                    <div className="absolute" style={{ left: '50%', top: '52%', width: tile.designW, aspectRatio: '1', transform: 'translate(-50%, -50%) rotate(-3deg)' }}>
+                      <img
+                        loading="lazy"
+                        decoding="async"
+                        src={`/images/thumbs-mini/stickers-massive/${tile.design}.webp`}
+                        alt=""
+                        aria-hidden="true"
+                        className="w-full h-full object-contain"
+                        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))' }}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
               {capBar(tile.cap)}
@@ -422,31 +426,7 @@ function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, onPrev,
                     alt={tx({ fr: 'Gourde avec le sticker', en: 'Bottle with the sticker', es: 'Botella con el sticker' })}
                     className="h-full w-auto object-contain"
                   />
-                  <div className="absolute" style={{ left: '50%', top: TUMBLER_DESIGN.top, height: TUMBLER_DESIGN.height, aspectRatio: '1', transform: 'translate(-50%, -50%)' }}>
-                    <img
-                      src={designUrl}
-                      alt=""
-                      aria-hidden="true"
-                      className="w-full h-full object-contain"
-                      style={{ transform: 'rotate(-2deg)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))' }}
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0"
-                      style={{
-                        background: 'linear-gradient(90deg, rgba(0,0,0,0.16), rgba(255,255,255,0.06) 28%, transparent 45%, transparent 60%, rgba(0,0,0,0.18) 96%)',
-                        WebkitMaskImage: `url(${designUrl})`,
-                        WebkitMaskSize: 'contain',
-                        WebkitMaskRepeat: 'no-repeat',
-                        WebkitMaskPosition: 'center',
-                        maskImage: `url(${designUrl})`,
-                        maskSize: 'contain',
-                        maskRepeat: 'no-repeat',
-                        maskPosition: 'center',
-                        transform: 'rotate(-2deg)',
-                      }}
-                    />
-                  </div>
+                  <TumblerDesign design={designUrl} />
                 </div>
               )}
             </div>
