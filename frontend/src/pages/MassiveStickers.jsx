@@ -79,6 +79,9 @@ const SHOWCASE = [
   // cette ligne pour la ramener. Le composant mug + l'asset mug-white.webp sont
   // CONSERVES (pas de suppression). Les 3 langues suivent (l'entree porte ses caps).
   // { kind: 'product', img: '/images/mugs/mug-white.webp', design: 'massive-alien-hot', productH: '84%', designW: '52%', cap: { fr: 'Sur ta tasse', en: 'On your mug', es: 'En tu taza' } },
+  // FUTUR (Mika) : une VRAIE PHOTO = UNE entree, zero dev. Deposer l'image dans
+  // public/images/, decommenter, remplir img + href + cap FR/EN/ES :
+  // { kind: 'photo', img: '/images/situations/laptop.webp', href: '/stickers', cap: { fr: 'Sur ton laptop', en: 'On your laptop', es: 'En tu laptop' } },
   { kind: 'pack', slugs: ['massive-dj-skull', 'massive-chameleon', 'massive-fleur-degueu', 'massive-mais', 'massive-jade'], cap: { fr: 'Mystery pack', en: 'Mystery pack', es: 'Mystery pack' } },
 ]
 const PACK_POS = [[-70, -8, -10], [-38, 10, 7], [0, -4, 6], [40, 8, -9], [72, -6, 8]]
@@ -287,6 +290,19 @@ function ShowcaseBand({ tx, onOpenDesign }) {
               </div>
               {capBar(tile.cap)}
             </button>
+          ) : tile.kind === 'photo' ? (
+            /* STICKERS-UI-11 : carte "vraie photo". Ajouter une photo = UNE entree
+               SHOWCASE { kind:'photo', img, href, cap:{fr,en,es} }, zero dev. */
+            <a key={i} href={tile.href || undefined} className={frame} style={bg} aria-label={tx(tile.cap)}>
+              <img
+                loading="lazy"
+                decoding="async"
+                src={tile.img}
+                alt={tx(tile.cap)}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              {capBar(tile.cap)}
+            </a>
           ) : (
             <button key={i} type="button" onClick={() => onOpenDesign(tile.design)} className={frame} style={bg} aria-label={tx(tile.cap)}>
               <div className="absolute inset-0 flex items-center justify-center pb-7">
