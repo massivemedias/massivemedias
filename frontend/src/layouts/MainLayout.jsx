@@ -7,6 +7,7 @@ import CookieBanner from '../components/CookieBanner';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import GoogleOneTap from '../components/GoogleOneTap';
 import MiniCartDrawer from '../components/MiniCartDrawer';
+import FavoritesDrawer from '../components/FavoritesDrawer';
 import { useAnalytics } from '../hooks/useAnalytics';
 
 function MainLayout() {
@@ -21,8 +22,11 @@ function MainLayout() {
           <Outlet />
         </main>
         <Footer />
-        {/* CART-01 : mini-panier lateral, s'ouvre a chaque ajout collection */}
+        {/* CART-01 : mini-panier lateral, s'ouvre a chaque ajout collection.
+            FAV-04 : tiroir favoris jumeau, s'ouvre au clic d'un coeur. Un seul
+            panneau a la fois (priorite panier, coordonne dans FavoritesContext). */}
         <MiniCartDrawer />
+        <FavoritesDrawer />
         <CookieBanner />
         {/* GOOGLE-ONE-TAP (3 mai 2026) : prompt non-bloquant qui apparait
             en haut a droite si l'user est anonyme et VITE_GOOGLE_CLIENT_ID
