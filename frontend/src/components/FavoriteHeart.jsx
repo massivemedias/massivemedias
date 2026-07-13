@@ -14,7 +14,7 @@ import { useLang } from '../i18n/LanguageContext'
  * un meme identifiant ne peut pas collisionner entre les deux catalogues.
  */
 export default function FavoriteHeart({ slug, className = '', size = 16, space = 'stickers' }) {
-  const { isFavorite, toggleFavorite, isFavoritePrint, toggleFavoritePrint } = useFavorites()
+  const { isFavorite, toggleFavorite, isFavoritePrint, toggleFavoritePrint, openFavDrawer } = useFavorites()
   const { tx } = useLang()
   const [pop, setPop] = useState(false)
   const isPrint = space === 'prints'
@@ -23,7 +23,13 @@ export default function FavoriteHeart({ slug, className = '', size = 16, space =
   const onClick = (e) => {
     e.stopPropagation()
     e.preventDefault()
-    if (!faved) { setPop(true); setTimeout(() => setPop(false), 320) }
+    // Sur AJOUT seulement : pop + ouverture du tiroir favoris (comme l'ajout au
+    // panier ouvre le tiroir panier). Effet de bord dans le handler, PAS dans un
+    // updater (StrictMode double-invoque les updaters). Au retrait : rien.
+    if (!faved) {
+      setPop(true); setTimeout(() => setPop(false), 320)
+      openFavDrawer()
+    }
     if (isPrint) toggleFavoritePrint(slug)
     else toggleFavorite(slug)
   }

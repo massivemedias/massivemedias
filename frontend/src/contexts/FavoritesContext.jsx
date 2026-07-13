@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { Heart, X } from 'lucide-react'
 import { useAuth } from './AuthContext'
+import { useCart } from './CartContext'
 import { useLang } from '../i18n/LanguageContext'
 import api from '../services/api'
 
@@ -53,11 +54,24 @@ function saveList(key, a) {
 
 export function FavoritesProvider({ children }) {
   const { user } = useAuth()
+  const { isCartDrawerOpen } = useCart()
   const [stickers, setStickers] = useState(() => loadList(LS_STICKERS))
   const [prints, setPrints] = useState(() => loadList(LS_PRINTS))
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [favDrawerOpen, setFavDrawerOpen] = useState(false)
   const mergedRef = useRef(false) // le merge au login a-t-il deja eu lieu cette session ?
   const debounceRef = useRef(0)
+
+  // FAV-04 : tiroir lateral des favoris (pattern CART-01). Un SEUL panneau a la
+  // fois, PRIORITE PANIER : le tiroir favoris ne s'ouvre jamais par-dessus le
+  // tiroir panier, et se ferme si le panier s'ouvre. (CartProvider enveloppe
+  // FavoritesProvider dans main.jsx -> useCart dispo ici.)
+  const openFavDrawer = useCallback(() => {
+    if (isCartDrawerOpen) return
+    setFavDrawerOpen(true)
+  }, [isCartDrawerOpen])
+  const closeFavDrawer = useCallback(() => setFavDrawerOpen(false), [])
+  useEffect(() => { if (isCartDrawerOpen) setFavDrawerOpen(false) }, [isCartDrawerOpen])
 
   // Persistance locale a chaque changement (source de verite pour l'anonyme).
   useEffect(() => { saveList(LS_STICKERS, stickers) }, [stickers])
@@ -152,7 +166,11 @@ export function FavoritesProvider({ children }) {
     toggleFavoritePrint,
     inviteOpen,
     dismissInvite,
-  }), [stickers, prints, isFavorite, toggleFavorite, isFavoritePrint, toggleFavoritePrint, inviteOpen, dismissInvite])
+    // Tiroir lateral (FAV-04).
+    favDrawerOpen,
+    openFavDrawer,
+    closeFavDrawer,
+  }), [stickers, prints, isFavorite, toggleFavorite, isFavoritePrint, toggleFavoritePrint, inviteOpen, dismissInvite, favDrawerOpen, openFavDrawer, closeFavDrawer])
 
   return (
     <FavoritesContext.Provider value={value}>

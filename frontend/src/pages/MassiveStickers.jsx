@@ -690,7 +690,7 @@ function CollectionWidget({ items, onOpen, tx }) {
 function MassiveStickers() {
   const { tx } = useLang()
   const { items: cartItems, addToCart, openCartDrawer } = useCart()
-  const { favorites } = useFavorites()
+  const { favorites, openFavDrawer } = useFavorites()
   const [activeCat, setActiveCat] = useState('all')
   const [query, setQuery] = useState('')
   // Feedback visuel apres un ajout (cle = slug du design ou 'pack-N')
@@ -903,9 +903,12 @@ function MassiveStickers() {
                   <button
                     type="button"
                     onClick={() => {
+                      // FAV-04 : ouvre le tiroir favoris (comme le clic coeur), ET
+                      // arme le filtre favoris de la grille -> en fermant le tiroir,
+                      // la grille dessous montre les favoris.
                       setQuery('')
                       setActiveCat('favoris')
-                      document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      openFavDrawer()
                     }}
                     className="btn-outline justify-center !px-5"
                     aria-label={tx({ fr: 'Voir mes favoris', en: 'View my favorites', es: 'Ver mis favoritos' })}
@@ -1017,25 +1020,9 @@ function MassiveStickers() {
           />
         </div>
 
-        {/* STICKERS-FAV : chip "Mes favoris", visible des 1 favori, a cote des
-            familles. Toggle entre la vue favoris et l'accueil. */}
-        {favorites.length > 0 && (
-          <div className="flex justify-center mb-6">
-            <button
-              type="button"
-              onClick={() => { setQuery(''); setActiveCat(activeCat === 'favoris' ? 'all' : 'favoris') }}
-              aria-pressed={activeCat === 'favoris'}
-              className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                activeCat === 'favoris'
-                  ? 'bg-accent text-white shadow-md'
-                  : 'text-accent ring-1 ring-accent/40 bg-[rgba(var(--accent-rgb),0.12)] hover:bg-[rgba(var(--accent-rgb),0.2)]'
-              }`}
-            >
-              <Heart size={13} fill="currentColor" />
-              {tx({ fr: 'Mes favoris', en: 'My favorites', es: 'Mis favoritos' })} ({favorites.length})
-            </button>
-          </div>
-        )}
+        {/* FAV-04 : chip flottant "Mes favoris" RETIRE (doublon du bouton hero,
+            choix Mika). Le filtre favoris reste accessible par le bouton hero ;
+            la vue favoris ci-dessous a son propre en-tete de sortie. */}
 
         {/* STICKERS-UI-02 : trois vues.
             1. Recherche active -> grille globale de resultats.
@@ -1097,8 +1084,21 @@ function MassiveStickers() {
           </div>
         ) : activeCat === 'favoris' ? (
           <div>
-            {/* STICKERS-FAV : vue favoris. Le chip "Mes favoris" ci-dessus (actif)
-                sert de titre + toggle retour. */}
+            {/* FAV-04 : en-tete propre de la vue favoris (le chip qui servait de
+                titre + retour a ete retire). Titre + sortie "Toute la collection". */}
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <h3 className="font-heading font-bold text-lg text-heading flex items-center gap-2">
+                <Heart size={16} className="text-accent" fill="currentColor" />
+                {tx({ fr: 'Mes favoris', en: 'My favorites', es: 'Mis favoritos' })} ({favorites.length})
+              </h3>
+              <button
+                type="button"
+                onClick={() => setActiveCat('all')}
+                className="px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all bg-black/20 text-grey-muted hover:text-heading"
+              >
+                &larr; {tx({ fr: 'Toute la collection', en: 'Back to collection', es: 'Toda la coleccion' })}
+              </button>
+            </div>
             {visibles.length === 0 ? (
               <p className="text-center text-grey-muted py-16">
                 {tx({ fr: 'Aucun favori pour l\'instant. Touche le coeur sur un design.', en: 'No favorites yet. Tap the heart on a design.', es: 'Aun no hay favoritos. Toca el corazon en un diseno.' })}
