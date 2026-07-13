@@ -4,7 +4,7 @@ import { Sparkles, ArrowRight } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { STICKERS_SHOP_ENABLED } from '../config/stickersShopStatus'
 import { STICKER_COLLECTION_UNIT_PRICE, MYSTERY_PACK_PRICES } from '../data/products'
-import { TUMBLER_DESIGN } from '../utils/tumblerMockup'
+import TumblerDesign from './TumblerDesign'
 
 /**
  * HOME-COLLECTION (9 juillet 2026, agrandie HOME-02) : section a de la
@@ -178,17 +178,7 @@ export default function HomeCollectionBanner() {
                   loading="lazy"
                   decoding="async"
                 />
-                <div className="absolute" style={{ left: '50%', top: TUMBLER_DESIGN.top, height: TUMBLER_DESIGN.height, aspectRatio: '1', transform: 'translate(-50%, -50%)' }}>
-                  <img
-                    src={`${MINI}/${VEDETTE}.webp`}
-                    alt=""
-                    aria-hidden="true"
-                    className="w-full h-full object-contain"
-                    style={{ transform: 'rotate(-2deg)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))' }}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
+                <TumblerDesign design={`${MINI}/${VEDETTE}.webp`} />
               </div>
             </div>
           </div>
