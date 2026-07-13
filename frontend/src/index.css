@@ -261,6 +261,15 @@ input[type="number"] {
   100% { transform: translateX(400%); }
 }
 
+/* STICKERS-FAV : coeur favori sur les cartes / fiche */
+.fav-heart { width: 30px; height: 30px; }
+.fav-heart-pop { animation: fav-pop .32s ease; }
+@keyframes fav-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
 /* =============================================
    Styles globaux
    ============================================= */

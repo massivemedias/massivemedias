@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { LanguageProvider } from './i18n/LanguageContext'
 import { ThemeProvider } from './i18n/ThemeContext'
 import { CartProvider } from './contexts/CartContext'
+import { FavoritesProvider } from './contexts/FavoritesContext'
 import { AuthProvider } from './contexts/AuthContext'
 import { UserRoleProvider } from './contexts/UserRoleContext'
 import { NotificationProvider } from './contexts/NotificationContext'
@@ -27,7 +28,9 @@ createRoot(document.getElementById('root')).render(
             <UserRoleProvider>
               <NotificationProvider>
                 <CartProvider>
-                  <App />
+                  <FavoritesProvider>
+                    <App />
+                  </FavoritesProvider>
                 </CartProvider>
               </NotificationProvider>
             </UserRoleProvider>

@@ -1,6 +1,6 @@
 import { factories } from '@strapi/strapi';
 import { sendNewUserNotificationEmail } from '../../../utils/email';
-import { requireAdminAuth } from '../../../utils/auth'
+import { requireAdminAuth, requireUserAuth } from '../../../utils/auth'
 
 // Statuts de commande qui comptent comme "paye reellement"
 const PAID_STATUSES = ['paid', 'processing', 'ready', 'shipped', 'delivered'];
@@ -91,6 +91,20 @@ async function reconcileClientsFromOrders(strapi: any) {
   } catch (err) {
     strapi.log.warn('reconcileClientsFromOrders failed:', err);
   }
+}
+
+// STICKERS-FAV : trouve la fiche client du user connecte (par supabaseUserId
+// d'abord, sinon par email). Retourne null si aucune.
+async function findClientForUser(strapi: any, userId: string | null, userEmail: string | null) {
+  if (userId) {
+    const byId = await strapi.documents('api::client.client').findMany({ filters: { supabaseUserId: userId }, limit: 1 });
+    if (byId[0]) return byId[0];
+  }
+  if (userEmail) {
+    const byEmail = await strapi.documents('api::client.client').findMany({ filters: { email: userEmail.toLowerCase() }, limit: 1 });
+    if (byEmail[0]) return byEmail[0];
+  }
+  return null;
 }
 
 export default factories.createCoreController('api::client.client', ({ strapi }) => ({
@@ -426,5 +440,42 @@ export default factories.createCoreController('api::client.client', ({ strapi })
       ctx.status = 500;
       ctx.body = { error: 'Impossible de supprimer l\'utilisateur' };
     }
+  },
+
+  // STICKERS-FAV : favoris de l'utilisateur connecte, stockes dans le champ JSON
+  // `favoris` de sa fiche client (lie par supabaseUserId/email). User-self :
+  // requireUserAuth + on ne touche QUE le client du user authentifie (aucun
+  // :documentId expose). Le merge anonyme<->serveur se fait cote front au login.
+  async getMyFavoris(ctx) {
+    if (!(await requireUserAuth(ctx))) return;
+    const { userId, userEmail } = (ctx.state as any).user;
+    const client = await findClientForUser(strapi, userId, userEmail);
+    const favoris = Array.isArray((client as any)?.favoris) ? (client as any).favoris : [];
+    ctx.body = { favoris };
+  },
+
+  async updateMyFavoris(ctx) {
+    if (!(await requireUserAuth(ctx))) return;
+    const { userId, userEmail } = (ctx.state as any).user;
+    const incoming = (ctx.request.body as any)?.favoris;
+    if (!Array.isArray(incoming)) return ctx.badRequest('favoris (array de slugs) requis');
+    // Assainir : slugs plausibles uniquement, dedupe, cap a 500 (anti-abus).
+    const favoris = [...new Set(
+      incoming.filter((s: any) => typeof s === 'string' && /^[a-z0-9-]{1,80}$/i.test(s))
+    )].slice(0, 500);
+    const client = await findClientForUser(strapi, userId, userEmail);
+    if (client) {
+      await strapi.documents('api::client.client').update({
+        documentId: (client as any).documentId,
+        data: { favoris } as any,
+      });
+    } else if (userEmail) {
+      // User connecte sans fiche client (aucune commande) : creer une fiche
+      // minimale pour persister ses favoris.
+      await strapi.documents('api::client.client').create({
+        data: { email: userEmail, name: (userEmail.split('@')[0] || 'Client'), supabaseUserId: userId || '', favoris } as any,
+      });
+    }
+    ctx.body = { favoris };
   },
 }));
