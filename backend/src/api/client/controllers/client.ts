@@ -96,6 +96,10 @@ async function reconcileClientsFromOrders(strapi: any) {
 export default factories.createCoreController('api::client.client', ({ strapi }) => ({
 
   async findAll(ctx) {
+    // SEC-CLIENTS (12 juillet 2026) : liste complete des fiches clients = PII
+    // (email, tel, notes, montants — Loi 25). Garde admin obligatoire. Non
+    // appele par le front (l'admin passe par adminList).
+    if (!(await requireAdminAuth(ctx))) return;
     // Auto-reconcile avec les vraies commandes avant de retourner (auto-cree les clients manquants, corrige les desyncs)
     await reconcileClientsFromOrders(strapi);
     const sort = ((ctx.query.sort as string) || 'createdAt:desc') as any;
@@ -105,6 +109,9 @@ export default factories.createCoreController('api::client.client', ({ strapi })
   },
 
   async updateOne(ctx) {
+    // SEC-CLIENTS : edition d'une fiche client = admin uniquement (sinon
+    // n'importe qui pouvait modifier n'importe quel client). Non appele par le front.
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { data } = ctx.request.body as any;
     if (!data) return ctx.badRequest('data is required');
@@ -113,12 +120,18 @@ export default factories.createCoreController('api::client.client', ({ strapi })
   },
 
   async deleteOne(ctx) {
+    // SEC-CLIENTS : suppression d'une fiche client = admin uniquement.
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     await strapi.documents('api::client.client').delete({ documentId });
     ctx.body = { success: true };
   },
 
   async adminList(ctx) {
+    // SEC-CLIENTS : CRM clients (PII + adresses + montants depenses) = admin
+    // uniquement. Le front admin (adminService.getClients) envoie deja le Bearer
+    // Supabase admin via l'interceptor api.js -> rien ne casse.
+    if (!(await requireAdminAuth(ctx))) return;
     // Auto-reconcile avec les vraies commandes avant de retourner
     await reconcileClientsFromOrders(strapi);
 
@@ -306,6 +319,34 @@ export default factories.createCoreController('api::client.client', ({ strapi })
     // Linker les guest orders avec cet email au nouveau supabaseUserId
     let linkedCount = 0;
     if (supabaseUserId) {
+      // SEC-CLIENTS (12 juillet 2026) : endpoint public (appele au signup, avant
+      // meme la session sur inscription email -> on ne peut pas exiger un JWT).
+      // Avant de relier des commandes, verifier que le supabaseUserId correspond
+      // REELLEMENT a cet email cote Supabase, sinon un anonyme pourrait relier les
+      // commandes d'une victime a SON propre compte (hijack). Fail-closed : en cas
+      // de doute on ne relie pas (les commandes restent visibles par email de
+      // toute facon dans /orders/my-orders). Meme API REST que deleteSupabaseUser.
+      let idMatchesEmail = false;
+      try {
+        const supabaseUrl = process.env.SUPABASE_API_URL || process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_API_KEY || process.env.SUPABASE_SERVICE_KEY;
+        if (supabaseUrl && supabaseKey) {
+          const res = await fetch(`${supabaseUrl}/auth/v1/admin/users/${supabaseUserId}`, {
+            headers: { Authorization: `Bearer ${supabaseKey}`, apikey: supabaseKey },
+          });
+          if (res.ok) {
+            const u: any = await res.json();
+            idMatchesEmail = String(u?.email || '').toLowerCase() === String(email).toLowerCase();
+          }
+        }
+      } catch (verifErr) {
+        strapi.log.warn('notify-signup: verification supabaseUserId echouee:', verifErr);
+      }
+      if (!idMatchesEmail) {
+        strapi.log.warn(`notify-signup: supabaseUserId ne correspond pas a l'email ${email} - linking ignore (anti-hijack)`);
+        ctx.body = { success: true, linkedCount: 0 };
+        return;
+      }
       try {
         const orders = await strapi.documents('api::order.order').findMany({
           filters: {
@@ -348,6 +389,9 @@ export default factories.createCoreController('api::client.client', ({ strapi })
 
   // Supprimer un utilisateur Supabase
   async deleteSupabaseUser(ctx) {
+    // SEC-CLIENTS : suppression d'un compte Supabase = admin uniquement. Le front
+    // (AdminUtilisateurs) envoie deja le Bearer admin -> rien ne casse.
+    if (!(await requireAdminAuth(ctx))) return;
     const supabaseUrl = process.env.SUPABASE_API_URL;
     const supabaseKey = process.env.SUPABASE_API_KEY;
     if (!supabaseUrl || !supabaseKey) {
