@@ -19,6 +19,7 @@ import HomePrintsSection from '../components/HomePrintsSection';
 import HomeOffersSection from '../components/HomeOffersSection';
 import FavoriteHeart from '../components/FavoriteHeart';
 import HomeServicesTeaser from '../components/HomeServicesTeaser';
+import MagazineSection from '../components/MagazineSection';
 import SEO from '../components/SEO';
 import { getOrganizationSchema, getLocalBusinessSchema, getWebSiteSchema } from '../components/seo/schemas';
 import MassiveLogo from '../components/MassiveLogo';
@@ -31,6 +32,14 @@ import { getIcon } from '../utils/iconMap';
 import api from '../services/api';
 import { WORKSHOP_ADDRESS_FULL } from '../constants/workshop';
 import ClosureNotice from '../components/ClosureNotice';
+
+// HOME-04 : retour a l'esprit pre-HOME-02. Les ajouts HOME-02 qui diluaient la
+// presentation de base sont retires par FLAG (reversible), remplaces par UNE
+// section editoriale "magazine" (MagazineSection) placee juste apres la banniere
+// Collection. Rideau + banniere Collection conserves (choix Mika).
+const HOME04_SHOW_PRINTS_SECTION = false;   // ex-HomePrintsSection (oeuvres absorbees dans le magazine)
+const HOME04_SHOW_ARTWORK_GRID = false;     // grille d'oeuvres de "Massive Artistes" (absorbee) ; les AVATARS restent
+const HOME04_SHOW_SERVICES_TEASER = false;  // teaser services (le mega-menu Services de la nav suffit)
 
 // Fallback icons & data if CMS not available
 const fallbackAdvantageIcons = [Truck, Award, Users, Zap, DollarSign, Music];
@@ -242,10 +251,20 @@ function Home() {
           STICKERS_SHOP_ENABLED (retourne null et disparait si le flag tombe). */}
       <HomeCollectionBanner />
 
-      {/* ============ b. PRINTS & FINE ART ============
-          Showcase sobre : petites vignettes d'oeuvres encadrees (pas de
-          scenes de piece). Prend les prints artistes deja charges par la home. */}
-      <HomePrintsSection artworks={displayArtworks.slice(0, 6)} />
+      {/* ============ SECTION MAGAZINE (HOME-04) ============
+          Section editoriale unique (stickers + prints melanges), juste apres la
+          banniere Collection. Remplace HomePrintsSection + teaser services + la
+          grille d'oeuvres, tous retires par flag. */}
+      <MagazineSection />
+
+      {/* ============ b. PRINTS & FINE ART (HOME-04 : retire par flag, absorbe dans le magazine) ============ */}
+      {HOME04_SHOW_PRINTS_SECTION && <HomePrintsSection artworks={displayArtworks.slice(0, 6)} />}
+
+      {/* ============ OFFRE DE BIENVENUE (HOME-04) ============
+          Remontee ici pour retrouver l'esprit pre-HOME-02 (le LeadMagnet venait
+          tot, apres la banniere). Packages retires (choix Mika) ; offre de
+          bienvenue seule, centree, via welcomeOnly. */}
+      <HomeOffersSection welcomeOnly />
 
       {/* ============ ARTISTES & OEUVRES ============ */}
       <section className="section-container">
@@ -287,7 +306,9 @@ function Home() {
           ))}
         </div>
 
-        {/* Grille oeuvres */}
+        {/* Grille oeuvres (HOME-04 : retiree par flag, absorbee dans le magazine ;
+            les AVATARS artistes ci-dessus restent, c'est le roster). */}
+        {HOME04_SHOW_ARTWORK_GRID && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
           {displayArtworks.map((work, i) => (
             <motion.div
@@ -321,6 +342,7 @@ function Home() {
             </motion.div>
           ))}
         </div>
+        )}
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -335,15 +357,8 @@ function Home() {
         </div>
       </section>
 
-      {/* ============ d. OFFRES & PACKAGES ============
-          Offre de bienvenue en 1re carte (deplacee depuis l'ancien
-          LeadMagnetCTA autonome) + packages (prix a remplir par Mika). */}
-      <HomeOffersSection />
-
-      {/* ============ e. SERVICES EN TEASER ============
-          Rangee sobre, noms de services actuels, vers les pages existantes.
-          Remplace la grille de services complete qui vivait apres le hero. */}
-      <HomeServicesTeaser />
+      {/* ============ e. SERVICES EN TEASER (HOME-04 : retire par flag, le mega-menu Services de la nav suffit) ============ */}
+      {HOME04_SHOW_SERVICES_TEASER && <HomeServicesTeaser />}
 
       {/* ============ CHIFFRES ============ */}
       <section className="section-container">

@@ -147,9 +147,24 @@ function PackageCard({ pkg, tx, index }) {
   )
 }
 
-export default function HomeOffersSection() {
+export default function HomeOffersSection({ welcomeOnly = false }) {
   const { tx } = useLang()
   const { user } = useAuth()
+
+  // HOME-04 : mode "offre de bienvenue seule" - packages retires (choix Mika),
+  // on garde la carte offre de bienvenue (ex-LeadMagnetCTA) centree, sans le
+  // titre "Offres & Packages" qui n'a plus de sens sans les forfaits. Rien pour
+  // les connectes (deja inscrits).
+  if (welcomeOnly) {
+    if (user) return null
+    return (
+      <section className="section-container">
+        <div className="max-w-md mx-auto">
+          <WelcomeCard tx={tx} />
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="section-container">
