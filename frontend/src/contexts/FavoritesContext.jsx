@@ -5,60 +5,74 @@ import { useLang } from '../i18n/LanguageContext'
 import api from '../services/api'
 
 /**
- * STICKERS-FAV : favoris de la collection stickers.
+ * FAVORIS : deux espaces separes - stickers (collection) et prints (oeuvres
+ * d'artistes). Catalogues et identifiants differents, donc DEUX listes.
  *
- * ANONYME D'ABORD : les favoris vivent en localStorage (`massive-favorites`),
- * exactement comme le panier (`massive-cart`) - zero compte requis, persistant.
+ * ANONYME D'ABORD : chaque liste vit en localStorage (`massive-favorites` pour
+ * les stickers - cle historique #95 inchangee ; `massive-favorites-prints` pour
+ * les prints), comme le panier (`massive-cart`) - zero compte requis, persistant.
  * Voir la lecon BUG-CRITICAL-FIX dans CartContext : JAMAIS de donnees dans le
  * JWT/user_metadata Supabase. Le sync connecte passe par une table Strapi.
  *
- * CONNECTE : au login, merge union(local, serveur) -> serveur devient la source
- * (champ JSON `favoris` du content-type client, via /clients/me/favoris garde).
- * Les ecritures suivantes sont debouncees (jamais 1 requete par toggle).
+ * CONNECTE : au login, merge union(local, serveur) sur les DEUX listes -> serveur
+ * devient la source (champ JSON `favoris` = { stickers, prints } du content-type
+ * client, via /clients/me/favoris garde). Migration douce cote backend : un ancien
+ * tableau plat devient la liste stickers, aucun favori perdu. Les ecritures
+ * suivantes sont debouncees (jamais 1 requete par toggle).
  *
  * INVITATION DOUCE : pas de mur de login. Le coeur marche tout de suite pour
- * l'anonyme ; au 2e favori, un toast discret invite (UNE fois) a creer un compte.
+ * l'anonyme ; au 2e favori (stickers + prints confondus), un toast discret
+ * invite (UNE fois) a creer un compte.
+ *
+ * API : l'API stickers historique (`favorites`, `favCount`, `isFavorite`,
+ * `toggleFavorite`) est INCHANGEE (retro-compat des consommateurs #95). Les
+ * prints ajoutent `favoritesPrints`, `favPrintCount`, `isFavoritePrint`,
+ * `toggleFavoritePrint`. Le PONT PANIER reste STICKERS SEULEMENT (les prints ont
+ * leur propre parcours configurateur) - aucune liste prints branchee au panier.
  */
 const FavoritesContext = createContext()
 
-const LS_KEY = 'massive-favorites'
+const LS_STICKERS = 'massive-favorites'
+const LS_PRINTS = 'massive-favorites-prints'
 const INVITE_KEY = 'massive-fav-invite-seen'
-const INVITE_AT = 2 // le 2e favori declenche l'invitation
+const INVITE_AT = 2 // le 2e favori (toutes listes) declenche l'invitation
 const SYNC_DEBOUNCE = 800
 
-function loadFavs() {
+function loadList(key) {
   try {
-    const s = localStorage.getItem(LS_KEY)
+    const s = localStorage.getItem(key)
     const a = s ? JSON.parse(s) : []
     return Array.isArray(a) ? a.filter((x) => typeof x === 'string') : []
   } catch {
     return []
   }
 }
-function saveFavs(a) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(a)) } catch {}
+function saveList(key, a) {
+  try { localStorage.setItem(key, JSON.stringify(a)) } catch {}
 }
 
 export function FavoritesProvider({ children }) {
   const { user } = useAuth()
-  const [favorites, setFavorites] = useState(loadFavs)
+  const [stickers, setStickers] = useState(() => loadList(LS_STICKERS))
+  const [prints, setPrints] = useState(() => loadList(LS_PRINTS))
   const [inviteOpen, setInviteOpen] = useState(false)
   const mergedRef = useRef(false) // le merge au login a-t-il deja eu lieu cette session ?
   const debounceRef = useRef(0)
 
   // Persistance locale a chaque changement (source de verite pour l'anonyme).
-  useEffect(() => { saveFavs(favorites) }, [favorites])
+  useEffect(() => { saveList(LS_STICKERS, stickers) }, [stickers])
+  useEffect(() => { saveList(LS_PRINTS, prints) }, [prints])
 
-  // Push serveur debounce (connectes seulement).
-  const pushToServer = useCallback((favs) => {
+  // Push serveur debounce (connectes seulement) : les DEUX listes ensemble.
+  const pushToServer = useCallback((s, p) => {
     if (!user) return
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      api.put('/clients/me/favoris', { favoris: favs }).catch(() => {})
+      api.put('/clients/me/favoris', { favoris: { stickers: s, prints: p } }).catch(() => {})
     }, SYNC_DEBOUNCE)
   }, [user])
 
-  // Merge au login : union(local, serveur) -> serveur devient la source.
+  // Merge au login : union(local, serveur) sur les DEUX listes -> serveur = source.
   useEffect(() => {
     if (!user) { mergedRef.current = false; return }
     if (mergedRef.current) return
@@ -67,14 +81,19 @@ export function FavoritesProvider({ children }) {
     ;(async () => {
       try {
         const { data } = await api.get('/clients/me/favoris')
-        const server = Array.isArray(data?.favoris) ? data.favoris : []
-        const local = loadFavs()
-        const union = [...new Set([...server, ...local])]
+        const raw = data?.favoris
+        // Le backend renvoie deja { stickers, prints } (migre a la lecture) ; on
+        // tolere l'ancien tableau plat par prudence (=> tout en stickers).
+        const srvStickers = Array.isArray(raw) ? raw : (Array.isArray(raw?.stickers) ? raw.stickers : [])
+        const srvPrints = Array.isArray(raw?.prints) ? raw.prints : []
+        const uS = [...new Set([...srvStickers, ...loadList(LS_STICKERS)])]
+        const uP = [...new Set([...srvPrints, ...loadList(LS_PRINTS)])]
         if (cancelled) return
-        setFavorites(union)
+        setStickers(uS)
+        setPrints(uP)
         // Ecrire l'union cote serveur si le local a apporte quelque chose.
-        if (union.length !== server.length) {
-          api.put('/clients/me/favoris', { favoris: union }).catch(() => {})
+        if (uS.length !== srvStickers.length || uP.length !== srvPrints.length) {
+          api.put('/clients/me/favoris', { favoris: { stickers: uS, prints: uP } }).catch(() => {})
         }
       } catch {
         // Hors-ligne / erreur : on garde le local, re-sync a la prochaine action.
@@ -83,26 +102,31 @@ export function FavoritesProvider({ children }) {
     return () => { cancelled = true }
   }, [user])
 
-  const isFavorite = useCallback((slug) => favorites.includes(slug), [favorites])
-
-  // Toggle = updater PUR : aucun effet de bord dedans (StrictMode double-invoque
+  // Toggles = updaters PURS : aucun effet de bord dedans (StrictMode double-invoque
   // les updaters -> les effets doivent vivre ailleurs). Les effets (push serveur,
-  // invitation) sont declenches par le changement de `favorites` ci-dessous.
+  // invitation) sont declenches par le changement des listes ci-dessous.
+  const isFavorite = useCallback((slug) => stickers.includes(slug), [stickers])
   const toggleFavorite = useCallback((slug) => {
     if (!slug) return
-    setFavorites((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]))
+    setStickers((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]))
+  }, [])
+  const isFavoritePrint = useCallback((id) => prints.includes(id), [prints])
+  const toggleFavoritePrint = useCallback((id) => {
+    if (!id) return
+    setPrints((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]))
   }, [])
 
   // Effets de bord des favoris : push serveur (debounce) + invitation douce au
-  // passage a INVITE_AT favoris (anonyme, jamais vue). Ignore le tout premier
-  // render (chargement initial depuis localStorage / avant merge login).
+  // passage a INVITE_AT favoris TOTAUX (stickers + prints), anonyme, jamais vue.
+  // Ignore le tout premier render (chargement initial localStorage / avant merge).
   const firstRun = useRef(true)
-  const prevLen = useRef(favorites.length)
+  const prevTotal = useRef(stickers.length + prints.length)
   useEffect(() => {
-    if (firstRun.current) { firstRun.current = false; prevLen.current = favorites.length; return }
-    pushToServer(favorites)
-    const crossedUp = prevLen.current < INVITE_AT && favorites.length >= INVITE_AT
-    prevLen.current = favorites.length
+    const total = stickers.length + prints.length
+    if (firstRun.current) { firstRun.current = false; prevTotal.current = total; return }
+    pushToServer(stickers, prints)
+    const crossedUp = prevTotal.current < INVITE_AT && total >= INVITE_AT
+    prevTotal.current = total
     if (crossedUp && !user) {
       try {
         if (!localStorage.getItem(INVITE_KEY)) {
@@ -111,18 +135,24 @@ export function FavoritesProvider({ children }) {
         }
       } catch {}
     }
-  }, [favorites, user, pushToServer])
+  }, [stickers, prints, user, pushToServer])
 
   const dismissInvite = useCallback(() => setInviteOpen(false), [])
 
   const value = useMemo(() => ({
-    favorites,
-    favCount: favorites.length,
+    // Stickers (API historique #95, inchangee pour les consommateurs existants).
+    favorites: stickers,
+    favCount: stickers.length,
     isFavorite,
     toggleFavorite,
+    // Prints (FAV-02) - espace separe.
+    favoritesPrints: prints,
+    favPrintCount: prints.length,
+    isFavoritePrint,
+    toggleFavoritePrint,
     inviteOpen,
     dismissInvite,
-  }), [favorites, isFavorite, toggleFavorite, inviteOpen, dismissInvite])
+  }), [stickers, prints, isFavorite, toggleFavorite, isFavoritePrint, toggleFavoritePrint, inviteOpen, dismissInvite])
 
   return (
     <FavoritesContext.Provider value={value}>

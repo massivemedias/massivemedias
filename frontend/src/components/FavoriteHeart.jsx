@@ -4,22 +4,28 @@ import { useFavorites } from '../contexts/FavoritesContext'
 import { useLang } from '../i18n/LanguageContext'
 
 /**
- * STICKERS-FAV : coeur favori reutilisable (grille + fiche produit).
+ * FAVORIS : coeur favori reutilisable (grille + fiche produit + oeuvres).
  * Toggle en localStorage (via FavoritesContext), AUCUN ajout panier.
  * Repos = contour blanc discret sur pastille sombre ; favori = rose plein.
  * Micro "pop" uniquement quand on AJOUTE (pas au montage d'un deja-favori).
+ *
+ * `space` route vers le bon espace de favoris : 'stickers' (defaut, collection)
+ * ou 'prints' (oeuvres d'artistes). Les deux espaces sont separes (cf FAV-02) :
+ * un meme identifiant ne peut pas collisionner entre les deux catalogues.
  */
-export default function FavoriteHeart({ slug, className = '', size = 16 }) {
-  const { isFavorite, toggleFavorite } = useFavorites()
+export default function FavoriteHeart({ slug, className = '', size = 16, space = 'stickers' }) {
+  const { isFavorite, toggleFavorite, isFavoritePrint, toggleFavoritePrint } = useFavorites()
   const { tx } = useLang()
   const [pop, setPop] = useState(false)
-  const faved = isFavorite(slug)
+  const isPrint = space === 'prints'
+  const faved = isPrint ? isFavoritePrint(slug) : isFavorite(slug)
 
   const onClick = (e) => {
     e.stopPropagation()
     e.preventDefault()
     if (!faved) { setPop(true); setTimeout(() => setPop(false), 320) }
-    toggleFavorite(slug)
+    if (isPrint) toggleFavoritePrint(slug)
+    else toggleFavorite(slug)
   }
 
   return (
