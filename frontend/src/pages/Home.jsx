@@ -17,6 +17,7 @@ import Counter from '../components/Counter';
 import HomeCollectionBanner from '../components/HomeCollectionBanner';
 import HomePrintsSection from '../components/HomePrintsSection';
 import HomeOffersSection from '../components/HomeOffersSection';
+import FavoriteHeart from '../components/FavoriteHeart';
 import HomeServicesTeaser from '../components/HomeServicesTeaser';
 import SEO from '../components/SEO';
 import { getOrganizationSchema, getLocalBusinessSchema, getWebSiteSchema } from '../components/seo/schemas';
@@ -295,7 +296,13 @@ function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.06 }}
               viewport={{ once: true }}
+              className="relative"
             >
+              {/* FAV-03 : coeur favori prints (section Massive Artistes). SIBLING
+                  du <Link> (un bouton dans un <a> = HTML invalide). */}
+              {work.id && (
+                <FavoriteHeart space="prints" slug={work.id} className="absolute top-2 right-2 z-20" />
+              )}
               <Link to={`/artistes/${work.artistSlug}`} className="group relative block rounded-lg overflow-hidden aspect-square">
                 <img
                   src={work.image}
