@@ -693,7 +693,7 @@ function ArtisteDetail({ subdomainSlug }) {
         ogImage={`/images/og/og-${artist.slug}.jpg`}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
-          { name: tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' }), url: '/artistes' },
+          { name: tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' }), url: '/artistes' },
           { name: artist.name },
         ]}
         jsonLd={[getArtistSchema({
@@ -725,7 +725,7 @@ function ArtisteDetail({ subdomainSlug }) {
               <div className="flex items-center gap-2 mb-6 text-sm">
                 <Link to="/" className="text-grey-muted hover:text-accent transition-colors">{tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}</Link>
                 <span className="text-grey-muted">/</span>
-                <Link to="/artistes" className="text-grey-muted hover:text-accent transition-colors">{tx({ fr: 'Artistes', en: 'Artists', es: 'Artistas' })}</Link>
+                <Link to="/artistes" className="text-grey-muted hover:text-accent transition-colors">{tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}</Link>
                 <span className="text-grey-muted">/</span>
                 <span className="text-accent">{artist.name}</span>
               </div>
