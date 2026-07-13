@@ -74,7 +74,11 @@ const ACCENT_EVERY = 4
 // fond sont chargees en lazy -> zero cout au premier paint (perf UI-10).
 const SHOWCASE = [
   { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-adian-fumeuse', productH: '92%', tumbler: true, cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
-  { kind: 'product', img: '/images/mugs/mug-white.webp', design: 'massive-alien-hot', productH: '84%', designW: '52%', cap: { fr: 'Sur ta tasse', en: 'On your mug', es: 'En tu taza' } },
+  // STICKERS-UI-11 (13 juillet) : carte TASSE retiree de la bande (decision Mika :
+  // sans interet, sera remplacee par de vraies photos). REVERSIBLE : decommenter
+  // cette ligne pour la ramener. Le composant mug + l'asset mug-white.webp sont
+  // CONSERVES (pas de suppression). Les 3 langues suivent (l'entree porte ses caps).
+  // { kind: 'product', img: '/images/mugs/mug-white.webp', design: 'massive-alien-hot', productH: '84%', designW: '52%', cap: { fr: 'Sur ta tasse', en: 'On your mug', es: 'En tu taza' } },
   { kind: 'pack', slugs: ['massive-dj-skull', 'massive-chameleon', 'massive-fleur-degueu', 'massive-mais', 'massive-jade'], cap: { fr: 'Mystery pack', en: 'Mystery pack', es: 'Mystery pack' } },
 ]
 const PACK_POS = [[-70, -8, -10], [-38, 10, 7], [0, -4, 6], [40, 8, -9], [72, -6, 8]]
@@ -261,7 +265,9 @@ function ShowcaseBand({ tx, onOpenDesign }) {
           {tx({ fr: 'tes stickers, partout', en: 'your stickers, everywhere', es: 'tus stickers, en todas partes' })}
         </span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      {/* STICKERS-UI-11 : bande a 2 cartes (gourde + mystery pack), centree et
+          plus large. Le grid s'adapte automatiquement au nombre d'entrees SHOWCASE. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-2xl mx-auto">
         {SHOWCASE.map((tile, i) =>
           tile.kind === 'pack' ? (
             <button key={i} type="button" onClick={goPacks} className={frame} style={bg} aria-label={tx(tile.cap)}>
