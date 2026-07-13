@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X, ChevronLeft, ChevronRight, Scissors, Sticker } from 'lucide-react'
+import { Search, Sparkles, Plus, Check, Gift, ShoppingCart, X, ChevronLeft, ChevronRight, Scissors, Sticker, Heart } from 'lucide-react'
 import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
 import { useCart } from '../contexts/CartContext'
@@ -16,6 +16,8 @@ import {
 import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb, img } from '../utils/paths'
 import TumblerDesign from '../components/TumblerDesign'
+import FavoriteHeart from '../components/FavoriteHeart'
+import { useFavorites } from '../contexts/FavoritesContext'
 import { NEW_BADGE_ENABLED } from '../config/stickersShopStatus'
 
 /**
@@ -92,6 +94,7 @@ function StickerCard({ s, justAdded, cartQty, onAdd, onOpen, tx }) {
         inCart ? 'bg-accent/10 ring-2 ring-accent' : 'bg-black/20 hover:bg-black/30'
       }`}
     >
+      <FavoriteHeart slug={s.slug} className="absolute top-2 right-2 z-20" />
       {inCart && (
         <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-0.5 pl-1 pr-1.5 py-0.5 rounded-full bg-accent text-white text-[10px] font-bold shadow">
           <Check size={10} />
@@ -451,7 +454,10 @@ function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, onPrev,
             </div>
           </div>
           <div className="flex flex-col justify-center">
-            <h2 className="font-heading font-bold text-2xl text-heading">{tx(s)}</h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="font-heading font-bold text-2xl text-heading">{tx(s)}</h2>
+              <FavoriteHeart slug={s.slug} size={20} className="shrink-0 !w-10 !h-10 mt-0.5" />
+            </div>
             <p className="text-grey-muted text-sm mt-1">{catLabel}</p>
             <p className="text-accent font-heading font-bold text-3xl mt-4">
               {tx({ fr: `${STICKER_COLLECTION_UNIT_PRICE} $`, en: `$${STICKER_COLLECTION_UNIT_PRICE}`, es: `${STICKER_COLLECTION_UNIT_PRICE} $` })}
@@ -662,6 +668,7 @@ function CollectionWidget({ items, onOpen, tx }) {
 function MassiveStickers() {
   const { tx } = useLang()
   const { items: cartItems, addToCart, openCartDrawer } = useCart()
+  const { favorites } = useFavorites()
   const [activeCat, setActiveCat] = useState('all')
   const [query, setQuery] = useState('')
   // Feedback visuel apres un ajout (cle = slug du design ou 'pack-N')
@@ -762,16 +769,26 @@ function MassiveStickers() {
   // Recherche active = grille globale (la recherche ignore la famille).
   const isSearching = normalizeSearchText(query).trim().length > 0
 
+  const favSet = useMemo(() => new Set(favorites), [favorites])
   const visibles = useMemo(() => {
     const q = normalizeSearchText(query).trim()
     return MASSIVE_STICKERS.filter((s) => {
+      // STICKERS-FAV : le filtre favoris est un filtre DUR (s'applique meme
+      // pendant une recherche -> la recherche est scopee aux favoris).
+      if (activeCat === 'favoris' && !favSet.has(s.slug)) return false
       // STICKERS-NAMES : la recherche matche les TROIS langues, peu importe
       // l'interface active (chercher "skull" trouve les designs en interface FR).
       if (q) return [s.fr, s.en, s.es].some((n) => normalizeSearchText(n).includes(q))
-      if (activeCat !== 'all' && s.cat !== activeCat) return false
+      if (activeCat !== 'all' && activeCat !== 'favoris' && s.cat !== activeCat) return false
       return true
     })
-  }, [activeCat, query])
+  }, [activeCat, query, favSet])
+
+  // STICKERS-FAV : si on retire son dernier favori en etant sur la vue favoris,
+  // revenir a l'accueil (le chip disparait aussi sous 1 favori).
+  useEffect(() => {
+    if (activeCat === 'favoris' && favorites.length === 0) setActiveCat('all')
+  }, [favorites.length, activeCat])
 
   const countByCat = useMemo(() => {
     const counts = { all: MASSIVE_STICKERS.length }
@@ -960,6 +977,26 @@ function MassiveStickers() {
           />
         </div>
 
+        {/* STICKERS-FAV : chip "Mes favoris", visible des 1 favori, a cote des
+            familles. Toggle entre la vue favoris et l'accueil. */}
+        {favorites.length > 0 && (
+          <div className="flex justify-center mb-6">
+            <button
+              type="button"
+              onClick={() => { setQuery(''); setActiveCat(activeCat === 'favoris' ? 'all' : 'favoris') }}
+              aria-pressed={activeCat === 'favoris'}
+              className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                activeCat === 'favoris'
+                  ? 'bg-accent text-white shadow-md'
+                  : 'text-accent ring-1 ring-accent/40 bg-[rgba(var(--accent-rgb),0.12)] hover:bg-[rgba(var(--accent-rgb),0.2)]'
+              }`}
+            >
+              <Heart size={13} fill="currentColor" />
+              {tx({ fr: 'Mes favoris', en: 'My favorites', es: 'Mis favoritos' })} ({favorites.length})
+            </button>
+          </div>
+        )}
+
         {/* STICKERS-UI-02 : trois vues.
             1. Recherche active -> grille globale de resultats.
             2. Accueil -> cartes de familles (collages en eventail) PUIS la
@@ -1017,6 +1054,26 @@ function MassiveStickers() {
               onOpen={(d) => setFicheSlug(d.slug)}
               tx={tx}
             />
+          </div>
+        ) : activeCat === 'favoris' ? (
+          <div>
+            {/* STICKERS-FAV : vue favoris. Le chip "Mes favoris" ci-dessus (actif)
+                sert de titre + toggle retour. */}
+            {visibles.length === 0 ? (
+              <p className="text-center text-grey-muted py-16">
+                {tx({ fr: 'Aucun favori pour l\'instant. Touche le coeur sur un design.', en: 'No favorites yet. Tap the heart on a design.', es: 'Aun no hay favoritos. Toca el corazon en un diseno.' })}
+              </p>
+            ) : (
+              <InfiniteGrid
+                key="favoris"
+                items={visibles}
+                cartQtyBySlug={cartQtyBySlug}
+                justAdded={justAdded}
+                onAdd={addUnitToCart}
+                onOpen={(d) => setFicheSlug(d.slug)}
+                tx={tx}
+              />
+            )}
           </div>
         ) : (
           <div>

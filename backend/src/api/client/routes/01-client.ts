@@ -1,5 +1,19 @@
 export default {
   routes: [
+    // STICKERS-FAV : favoris de l'utilisateur connecte (user-self, garde par
+    // requireUserAuth dans le handler). Places avant /clients/:documentId.
+    {
+      method: 'GET',
+      path: '/clients/me/favoris',
+      handler: 'client.getMyFavoris',
+      config: { auth: false },
+    },
+    {
+      method: 'PUT',
+      path: '/clients/me/favoris',
+      handler: 'client.updateMyFavoris',
+      config: { auth: false },
+    },
     {
       method: 'GET',
       path: '/clients',

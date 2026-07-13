@@ -73,6 +73,9 @@
     "savedFlashs": {
       "type": "json"
     },
+    "favoris": {
+      "type": "json"
+    },
     "avatar": {
       "type": "media",
       "multiple": false,

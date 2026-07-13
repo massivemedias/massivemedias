@@ -1,10 +1,14 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ShoppingCart, Plus, Minus, Trash2, Truck } from 'lucide-react'
+import { X, ShoppingCart, Plus, Minus, Trash2, Truck, Heart } from 'lucide-react'
 import { useCart } from '../contexts/CartContext'
+import { useFavorites } from '../contexts/FavoritesContext'
 import { useLang } from '../i18n/LanguageContext'
 import { collectionProgress, isCollectionUnit, isMysteryPack } from '../utils/collectionCart'
+import { MASSIVE_STICKERS } from '../data/massiveStickers'
+import { getCollectionStickerPrice } from '../data/products'
+import { thumb } from '../utils/paths'
 
 /**
  * CART-01 (9 juillet 2026) : mini-panier lateral. S'ouvre a chaque ajout
@@ -17,7 +21,8 @@ import { collectionProgress, isCollectionUnit, isMysteryPack } from '../utils/co
  * contenu, ancre en bas). Monte une fois dans MainLayout.
  */
 export default function MiniCartDrawer() {
-  const { items, isCartDrawerOpen, closeCartDrawer, updateQuantity, removeFromCart } = useCart()
+  const { items, isCartDrawerOpen, closeCartDrawer, updateQuantity, removeFromCart, addToCart } = useCart()
+  const { favorites } = useFavorites()
   const { tx } = useLang()
   const navigate = useNavigate()
 
@@ -31,6 +36,27 @@ export default function MiniCartDrawer() {
   }, [isCartDrawerOpen, closeCartDrawer])
 
   const prog = collectionProgress(items)
+
+  // STICKERS-FAV : pont favoris -> vente. Favoris pas encore au panier, proposes
+  // en vignettes cliquables pour completer vers le minimum de 5.
+  const cartSkus = new Set(items.map((it) => it.sku))
+  const favSuggestions = favorites
+    .filter((slug) => !cartSkus.has(slug))
+    .map((slug) => MASSIVE_STICKERS.find((s) => s.slug === slug))
+    .filter(Boolean)
+    .slice(0, 8)
+  const addFavToCart = (s) => {
+    const info = getCollectionStickerPrice(1)
+    addToCart({
+      productId: `sticker-massive-${s.slug.replace(/^massive-/, '')}`,
+      sku: s.slug,
+      productName: tx({ fr: `Sticker ${s.fr}`, en: `Sticker ${s.en}`, es: `Sticker ${s.es}` }),
+      quantity: 1,
+      unitPrice: info.unitPrice,
+      totalPrice: info.price,
+      image: thumb(`/images/stickers-massive/${s.slug}.webp`),
+    })
+  }
 
   const goCheckout = () => {
     if (!prog.minMet) return
@@ -182,6 +208,33 @@ export default function MiniCartDrawer() {
             {/* Footer : total + actions */}
             {items.length > 0 && (
               <div className="px-5 py-4 border-t border-white/10 flex-shrink-0">
+                {/* STICKERS-FAV : pont favoris -> vente. Minimum pas atteint +
+                    favoris hors panier -> vignettes cliquables pour completer. */}
+                {!prog.minMet && favSuggestions.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs text-white/70 mb-2 flex items-center gap-1.5">
+                      <Heart size={12} className="text-accent" fill="currentColor" />
+                      {tx({ fr: 'Complete avec tes favoris', en: 'Complete with your favorites', es: 'Completa con tus favoritos' })}
+                    </p>
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {favSuggestions.map((s) => (
+                        <button
+                          key={s.slug}
+                          type="button"
+                          onClick={() => addFavToCart(s)}
+                          title={tx(s)}
+                          aria-label={`${tx({ fr: 'Ajouter', en: 'Add', es: 'Agregar' })} ${tx(s)}`}
+                          className="relative shrink-0 w-14 h-14 rounded-lg bg-black/30 p-1 hover:ring-2 hover:ring-accent transition-all group"
+                        >
+                          <img src={thumb(`/images/stickers-massive/${s.slug}.webp`)} alt="" className="w-full h-full object-contain" />
+                          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-white grid place-items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Plus size={10} />
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-between items-baseline mb-3.5">
                   <span className="text-sm text-white/80">
                     {tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}

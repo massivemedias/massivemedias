@@ -22,6 +22,12 @@ import { AccountSidebarNav } from '../components/AdminSidebar';
 const loadGenerateInvoice = () => import('../utils/generateInvoice').then(m => m.generateInvoicePDF);
 import AddressAutocomplete from '../components/AddressAutocomplete';
 import artistsData from '../data/artistPricing';
+import { useCart } from '../contexts/CartContext';
+import { useFavorites } from '../contexts/FavoritesContext';
+import FavoriteHeart from '../components/FavoriteHeart';
+import { MASSIVE_STICKERS } from '../data/massiveStickers';
+import { getCollectionStickerPrice } from '../data/products';
+import { thumb } from '../utils/paths';
 
 const AccountArtistDashboard = lazy(() => import('../components/AccountArtistDashboard'));
 
@@ -117,12 +123,14 @@ function Account() {
   const { t, lang, tx } = useLang();
   const { user, signOut, updateProfile, updatePassword, loading: authLoading } = useAuth();
   const { role: userRole, isAdmin, isArtist, artistSlug, loading: roleLoading } = useUserRole();
+  const { addToCart } = useCart();
+  const { favorites } = useFavorites();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const meta = user?.user_metadata || {};
 
   const tabFromUrl = searchParams.get('tab');
-  const validTabs = ['profile', 'overview', 'orders', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'messages-artiste'];
+  const validTabs = ['profile', 'overview', 'orders', 'favoris', 'artist', 'dashboard', 'profil-artiste', 'contrat', 'tarifs', 'ventes', 'messages-artiste'];
   const initialTab = (tabFromUrl && validTabs.includes(tabFromUrl)) ? tabFromUrl : (isAdmin ? 'profile' : isArtist ? 'dashboard' : 'overview');
   const [activeTab, setActiveTab] = useState(initialTab);
   const userChangedTab = useRef(false);
@@ -210,6 +218,7 @@ function Account() {
   const baseTabs = [
     { id: 'overview', label: tx({ fr: 'Tableau de bord', en: 'Dashboard', es: 'Panel' }), icon: User },
     { id: 'orders', label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), icon: Package },
+    { id: 'favoris', label: tx({ fr: 'Mes favoris', en: 'Favorites', es: 'Favoritos' }), icon: Heart },
     { id: 'profile', label: tx({ fr: 'Profil', en: 'Profile', es: 'Perfil' }), icon: User },
   ];
 
@@ -571,6 +580,76 @@ function Account() {
       </div>
     </form>
   );
+
+  // STICKERS-FAV : ajout au panier d'une unite collection depuis les favoris
+  // (meme forme d'item que la grille ; le prix est re-resolu serveur via le SKU).
+  const addFavToCart = (s) => {
+    const info = getCollectionStickerPrice(1);
+    addToCart({
+      productId: `sticker-massive-${s.slug.replace(/^massive-/, '')}`,
+      sku: s.slug,
+      productName: tx({ fr: `Sticker ${s.fr}`, en: `Sticker ${s.en}`, es: `Sticker ${s.es}` }),
+      quantity: 1,
+      unitPrice: info.unitPrice,
+      totalPrice: info.price,
+      image: thumb(`/images/stickers-massive/${s.slug}.webp`),
+    });
+  };
+
+  const renderFavorisContent = () => {
+    const favDesigns = favorites
+      .map((slug) => MASSIVE_STICKERS.find((s) => s.slug === slug))
+      .filter(Boolean);
+    return (
+      <div>
+        <h2 className="font-heading font-bold text-xl text-heading mb-1">
+          {tx({ fr: 'Mes favoris', en: 'My favorites', es: 'Mis favoritos' })}
+        </h2>
+        <p className="text-grey-muted text-sm mb-5">
+          {tx({
+            fr: `${favDesigns.length} design(s) aime(s). Ajoute-les au panier quand tu veux.`,
+            en: `${favDesigns.length} liked design(s). Add them to your cart anytime.`,
+            es: `${favDesigns.length} diseno(s) favorito(s). Agregalos al carrito cuando quieras.`,
+          })}
+        </p>
+        {favDesigns.length === 0 ? (
+          <div className="text-center py-14">
+            <Heart size={30} className="mx-auto text-grey-muted mb-3" />
+            <p className="text-grey-muted mb-4">
+              {tx({ fr: "Aucun favori pour l'instant.", en: 'No favorites yet.', es: 'Aun no hay favoritos.' })}
+            </p>
+            <Link to="/stickers" className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-accent text-white text-sm font-semibold hover:brightness-110">
+              {tx({ fr: 'Explorer la collection', en: 'Explore the collection', es: 'Explorar la coleccion' })}
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+            {favDesigns.map((s) => (
+              <div key={s.slug} className="relative rounded-xl bg-black/20 p-3 flex flex-col items-center">
+                <FavoriteHeart slug={s.slug} className="absolute top-2 right-2 z-10" />
+                <img
+                  src={thumb(`/images/stickers-massive/${s.slug}.webp`)}
+                  alt={tx(s)}
+                  loading="lazy"
+                  className="sticker-stroke w-full aspect-square object-contain"
+                />
+                <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={tx(s)}>{tx(s)}</p>
+                <button
+                  type="button"
+                  onClick={() => addFavToCart(s)}
+                  className="mt-2 w-full inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded-full text-[11px] font-semibold bg-accent text-white hover:brightness-110 transition-all"
+                >
+                  <ShoppingBag size={12} />
+                  {tx({ fr: 'Au panier', en: 'Add', es: 'Agregar' })}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderOrdersContent = () => (
     <div className="rounded-2xl p-6 md:p-8 card-bg">
@@ -1107,6 +1186,7 @@ function Account() {
                   )}
                   {activeTab === 'profile' && renderProfileContent()}
                   {activeTab === 'orders' && renderOrdersContent()}
+                  {activeTab === 'favoris' && renderFavorisContent()}
                 </motion.div>
               </AnimatePresence>
             </main>
@@ -1436,6 +1516,9 @@ function Account() {
 
                 {/* -- ORDERS TAB -- */}
                 {activeTab === 'orders' && renderOrdersContent()}
+
+                {/* -- FAVORIS TAB (STICKERS-FAV) -- */}
+                {activeTab === 'favoris' && renderFavorisContent()}
 
                 {/* -- ADDRESS TAB -- */}
 
