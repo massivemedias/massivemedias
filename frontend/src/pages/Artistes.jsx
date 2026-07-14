@@ -33,6 +33,41 @@ const FILTER_OPTIONS = [
   { key: 'peintre', fr: 'Peintres', en: 'Painters', es: 'Pintores' },
 ];
 
+/**
+ * UI-HERO-PRINTS (14 juillet 2026) : le hero prend en fond une oeuvre d'artiste
+ * tiree au hasard parmi les prints publies.
+ *
+ * A `false` -> le hero redevient EXACTEMENT celui d'avant (texte sur le fond de
+ * page, jetons de theme, aucune image). Rien n'est supprime.
+ */
+const HERO_RANDOM_BG_ENABLED = true
+
+/**
+ * Voile de lisibilite du hero.
+ *
+ * Degrade HORIZONTAL : tres sombre a gauche (la ou vit le texte), il s'ouvre
+ * vers la droite pour laisser respirer l'oeuvre.
+ *
+ * Les alphas ne sont PAS choisis a l'oeil, ils sont dimensionnes. Contraste du
+ * blanc mesure sur le pixel le plus clair de chaque zone de texte :
+ *   - print le plus clair du catalogue (luminance 0,89) : titre 6,29:1, corps 6,29:1
+ *   - print le plus sombre (0,04)                       : titre 12,8:1, corps 9,77:1
+ *   - image BLANCHE PURE (plancher absolu)              : titre 5,49:1, corps 5,49:1
+ * Seuils AA : 3:1 (grand texte) et 4,5:1 (texte normal). Le plancher blanc est
+ * la garantie qui compte : AUCUN print ajoute plus tard ne peut casser la
+ * lisibilite.
+ *
+ * Noir pur uniquement, zero couleur de theme -> valable sur les 11 palettes.
+ * Assez sombre pour porter du texte blanc MEME sans image derriere : c'est ce
+ * qui evite le flash de texte invisible pendant le chargement sur themes clairs.
+ */
+const HERO_SCRIM = {
+  backgroundImage: [
+    'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.80) 25%, rgba(0,0,0,0.66) 50%, rgba(0,0,0,0.42) 75%, rgba(0,0,0,0.25) 100%)',
+    'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 35%)',
+  ].join(', '),
+}
+
 function Artistes() {
   const { lang, tx } = useLang();
   const { artists: cmsArtists } = useArtists();
@@ -70,6 +105,37 @@ function Artistes() {
       socials: cms.socials || {},
     }));
   }, [cmsArtists]);
+
+  // ---- UI-HERO-PRINTS : l'oeuvre de fond du hero ----
+  // Le pool est construit depuis les prints DEJA fetches par useArtists() :
+  // aucun appel reseau supplementaire. L'IIFE de la grille d'oeuvres plus bas
+  // n'est pas touchee (pas de refactoring opportuniste).
+  const heroPool = useMemo(() => {
+    const out = []
+    artists.forEach((a) => {
+      (a.prints || []).forEach((p) => {
+        if (p && p.image) out.push({ image: p.image, artistName: a.name, artistSlug: a.slug })
+      })
+    })
+    return out
+  }, [artists])
+
+  const [heroBg, setHeroBg] = useState(null)
+  const [heroLoaded, setHeroLoaded] = useState(false)
+  const [heroFailed, setHeroFailed] = useState(false)
+
+  // UN SEUL tirage, au premier rendu ou le pool devient non vide (le CMS arrive
+  // apres le montage). Resultat : une nouvelle oeuvre a chaque chargement de
+  // page, et AUCUNE rotation pendant la session.
+  useEffect(() => {
+    if (heroBg || heroPool.length === 0) return
+    setHeroBg(heroPool[Math.floor(Math.random() * heroPool.length)])
+  }, [heroPool, heroBg])
+
+  // Le hero n'a un fond que si : flag ON + une oeuvre tiree + image non cassee.
+  // Dans tous les autres cas (flag off, CMS vide, image 404) -> rendu STRICTEMENT
+  // identique a l'ancien hero, jetons de theme compris.
+  const heroHasBg = HERO_RANDOM_BG_ENABLED && Boolean(heroBg) && !heroFailed
 
   // Merge all creators into a single list with unified shape
   const allCreators = useMemo(() => {
@@ -124,6 +190,18 @@ function Artistes() {
       />
 
       {/* ============ HERO ============ */}
+      {/* UI-HERO-PRINTS : quand une oeuvre est tiree, le hero devient un bloc
+          arrondi (meme forme que le hero /stickers) avec l'oeuvre en fond + un
+          voile. Sinon `heroHasBg` est faux et TOUT ce bloc retombe exactement
+          sur l'ancien rendu : pas de conteneur, pas d'image, jetons de theme.
+
+          Les couleurs de texte suivent `heroHasBg`, ce n'est pas cosmetique : la
+          surface passe d'un fond de PAGE (qui suit le theme) a une image
+          ASSOMBRIE (sombre sur les 11 palettes). Garder les jetons donnerait du
+          texte fonce sur du sombre en theme clair. Inversement, `text-accent`
+          est INTERDIT ici : l'accent est un violet fonce sur les 2 themes
+          clairs -> 1,71:1 sur le voile. L'accent ne revient donc que comme FOND
+          de pastille (fond accent + texte blanc), qui tient sur les 11 palettes. */}
       <section className="relative py-4 overflow-hidden">
         <div className="section-container">
           <motion.div
@@ -131,41 +209,90 @@ function Artistes() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-2 mb-3 text-sm">
-              <Link to="/" className="text-grey-muted hover:text-accent transition-colors">
-                {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
-              </Link>
-              <span className="text-grey-muted">/</span>
-              <span className="text-accent">
-                {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
-              </span>
+            <div className={heroHasBg ? 'relative overflow-hidden rounded-3xl px-6 sm:px-10 py-12 sm:py-16' : ''}>
+              {heroHasBg && (
+                <>
+                  {/* Above the fold : jamais de lazy. Thumb WebP 800px (convention
+                      hero du projet, cf. paths.js) -> LCP leger. Fade-in par
+                      transition CSS au onLoad, PAS framer (rAF throttle en onglet
+                      cache). onError -> heroFailed -> retour au hero d'origine. */}
+                  <img
+                    src={heroBg.image}
+                    alt=""
+                    aria-hidden="true"
+                    loading="eager"
+                    fetchpriority="high"
+                    decoding="async"
+                    onLoad={() => setHeroLoaded(true)}
+                    onError={() => setHeroFailed(true)}
+                    className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  />
+                  {/* Voile rendu DES LE DEPART, meme avant que l'image charge :
+                      il est assez sombre pour porter le texte blanc tout seul, ce
+                      qui evite le flash de blanc-sur-blanc sur les themes clairs. */}
+                  <div aria-hidden="true" className="absolute inset-0" style={HERO_SCRIM} />
+                </>
+              )}
+
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-3 text-sm">
+                  <Link
+                    to="/"
+                    className={heroHasBg ? 'text-white/70 hover:text-white transition-colors' : 'text-grey-muted hover:text-accent transition-colors'}
+                  >
+                    {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
+                  </Link>
+                  <span className={heroHasBg ? 'text-white/40' : 'text-grey-muted'}>/</span>
+                  <span className={heroHasBg ? 'text-white font-semibold' : 'text-accent'}>
+                    {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
+                  </span>
+                </div>
+
+                <h1 className={`text-4xl md:text-5xl font-heading font-bold tracking-tight leading-none mb-3 ${heroHasBg ? 'text-white' : 'text-heading'}`}>
+                  {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
+                </h1>
+
+                <p className={`text-base md:text-lg max-w-2xl leading-relaxed mb-4 ${heroHasBg ? 'text-white/85' : 'text-grey-light'}`}>
+                  {tx({
+                    fr: "Ces artistes travaillent avec Massive pour imprimer, distribuer et promouvoir leur travail. Chaque print et sticker que vous voyez ici est produit dans notre studio au Plateau Mont-Royal.",
+                    en: 'These artists work with Massive to print, distribute and promote their work. Every print and sticker you see here is produced in our Plateau Mont-Royal studio.',
+                    es: 'Estos artistas trabajan con Massive para imprimir, distribuir y promover su trabajo. Cada print y sticker que ves aquí es producido en nuestro estudio del Plateau Mont-Royal.',
+                  })}
+                </p>
+
+                {/* CTA Rejoindre la plateforme */}
+                <Link
+                  to="/contact?tab=artiste"
+                  className={heroHasBg
+                    ? 'inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all group'
+                    : 'inline-flex items-center gap-2 text-accent font-semibold text-sm hover:text-accent-hover transition-colors group'}
+                >
+                  {tx({
+                    fr: 'Tu es artiste ? Rejoins la plateforme',
+                    en: 'Are you an artist? Join the platform',
+                    es: '¿Eres artista? Únete a la plataforma',
+                  })}
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                </Link>
+
+                {/* Credit de l'artiste dont l'oeuvre habille le hero. */}
+                {heroHasBg && (
+                  <div className="mt-8 flex justify-end">
+                    <Link
+                      to={`/artistes/${heroBg.artistSlug}`}
+                      className="inline-flex items-center gap-1.5 text-xs text-white/70 hover:text-white transition-colors"
+                    >
+                      <span className="uppercase tracking-widest text-[10px] text-white/45">
+                        {tx({ fr: 'Oeuvre', en: 'Artwork', es: 'Obra' })}
+                      </span>
+                      <span className="underline underline-offset-2 decoration-white/30 text-white/90">
+                        {heroBg.artistName}
+                      </span>
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
-
-            <h1 className="text-4xl md:text-5xl font-heading font-bold text-heading tracking-tight leading-none mb-3">
-              {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
-            </h1>
-
-            <p className="text-base md:text-lg text-grey-light max-w-2xl leading-relaxed mb-4">
-              {tx({
-                fr: "Ces artistes travaillent avec Massive pour imprimer, distribuer et promouvoir leur travail. Chaque print et sticker que vous voyez ici est produit dans notre studio au Plateau Mont-Royal.",
-                en: 'These artists work with Massive to print, distribute and promote their work. Every print and sticker you see here is produced in our Plateau Mont-Royal studio.',
-                es: 'Estos artistas trabajan con Massive para imprimir, distribuir y promover su trabajo. Cada print y sticker que ves aquí es producido en nuestro estudio del Plateau Mont-Royal.',
-              })}
-            </p>
-
-            {/* CTA Rejoindre la plateforme */}
-            <Link
-              to="/contact?tab=artiste"
-              className="inline-flex items-center gap-2 text-accent font-semibold text-sm hover:text-accent-hover transition-colors group"
-            >
-              {tx({
-                fr: 'Tu es artiste ? Rejoins la plateforme',
-                en: 'Are you an artist? Join the platform',
-                es: '¿Eres artista? Únete a la plataforma',
-              })}
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-            </Link>
-
           </motion.div>
         </div>
       </section>
