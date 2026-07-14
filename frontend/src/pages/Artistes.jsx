@@ -45,28 +45,41 @@ const HERO_RANDOM_BG_ENABLED = true
 /**
  * Voile de lisibilite du hero.
  *
- * Degrade HORIZONTAL : tres sombre a gauche (la ou vit le texte), il s'ouvre
- * vers la droite pour laisser respirer l'oeuvre.
+ * MICRO-FIX (retour Mika : "on dirait un filtre nuit, l'oeuvre est a peine
+ * visible"). Le 1er jet avait deux defauts : le degrade ne descendait JAMAIS
+ * sous 0,25 d'alpha (donc l'oeuvre n'etait claire NULLE PART), et un 2e degrade
+ * assombrissait tout le bas. C'est cette page qui est la vitrine des artistes :
+ * l'oeuvre doit se voir.
  *
- * Les alphas ne sont PAS choisis a l'oeil, ils sont dimensionnes. Contraste du
- * blanc mesure sur le pixel le plus clair de chaque zone de texte :
- *   - print le plus clair du catalogue (luminance 0,89) : titre 6,29:1, corps 6,29:1
- *   - print le plus sombre (0,04)                       : titre 12,8:1, corps 9,77:1
- *   - image BLANCHE PURE (plancher absolu)              : titre 5,49:1, corps 5,49:1
+ * Maintenant : un seul degrade LATERAL, fort uniquement la ou vit le texte
+ * (gauche), qui TOMBE A ZERO a 85 % -> toute la partie droite de l'oeuvre est
+ * parfaitement nette. Plus de degrade bas : le credit recoit sa propre pastille.
+ *
+ * Les alphas restent DIMENSIONNES, pas choisis a l'oeil. Contraste du blanc
+ * mesure sur le pixel le plus clair de chaque zone de texte :
+ *   - print le plus clair du catalogue (luminance 0,89) : titre 6,10:1, corps 6,10:1
+ *   - print median (0,35)                               : titre 5,76:1, corps 6,87:1
+ *   - print le plus sombre (0,04)                       : titre 5,92:1, corps 8,44:1
+ *   - image BLANCHE PURE (plancher absolu)              : titre 5,33:1, corps 5,33:1
  * Seuils AA : 3:1 (grand texte) et 4,5:1 (texte normal). Le plancher blanc est
  * la garantie qui compte : AUCUN print ajoute plus tard ne peut casser la
  * lisibilite.
  *
  * Noir pur uniquement, zero couleur de theme -> valable sur les 11 palettes.
- * Assez sombre pour porter du texte blanc MEME sans image derriere : c'est ce
- * qui evite le flash de texte invisible pendant le chargement sur themes clairs.
+ * Assez sombre a gauche pour porter du texte blanc MEME sans image derriere :
+ * c'est ce qui evite le flash de blanc-sur-blanc pendant le chargement sur les
+ * themes clairs.
  */
 const HERO_SCRIM = {
-  backgroundImage: [
-    'linear-gradient(to right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.80) 25%, rgba(0,0,0,0.66) 50%, rgba(0,0,0,0.42) 75%, rgba(0,0,0,0.25) 100%)',
-    'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 35%)',
-  ].join(', '),
+  backgroundImage:
+    'linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.68) 35%, rgba(0,0,0,0.58) 55%, rgba(0,0,0,0.22) 72%, rgba(0,0,0,0) 85%)',
 }
+
+// Ombre portee legere : ne compte pas dans le calcul WCAG (c'est le fond qui
+// porte le contraste, cf. HERO_SCRIM), mais elle detache le texte des zones
+// chargees d'une oeuvre. Filet de securite perceptuel, pas une bequille.
+const HERO_TITLE_SHADOW = { textShadow: '0 2px 14px rgba(0,0,0,0.55)' }
+const HERO_BODY_SHADOW = { textShadow: '0 1px 10px rgba(0,0,0,0.5)' }
 
 function Artistes() {
   const { lang, tx } = useLang();
@@ -248,11 +261,17 @@ function Artistes() {
                   </span>
                 </div>
 
-                <h1 className={`text-4xl md:text-5xl font-heading font-bold tracking-tight leading-none mb-3 ${heroHasBg ? 'text-white' : 'text-heading'}`}>
+                <h1
+                  className={`text-4xl md:text-5xl font-heading font-bold tracking-tight leading-none mb-3 ${heroHasBg ? 'text-white' : 'text-heading'}`}
+                  style={heroHasBg ? HERO_TITLE_SHADOW : undefined}
+                >
                   {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
                 </h1>
 
-                <p className={`text-base md:text-lg max-w-2xl leading-relaxed mb-4 ${heroHasBg ? 'text-white/85' : 'text-grey-light'}`}>
+                <p
+                  className={`text-base md:text-lg max-w-2xl leading-relaxed mb-4 ${heroHasBg ? 'text-white/85' : 'text-grey-light'}`}
+                  style={heroHasBg ? HERO_BODY_SHADOW : undefined}
+                >
                   {tx({
                     fr: "Ces artistes travaillent avec Massive pour imprimer, distribuer et promouvoir leur travail. Chaque print et sticker que vous voyez ici est produit dans notre studio au Plateau Mont-Royal.",
                     en: 'These artists work with Massive to print, distribute and promote their work. Every print and sticker you see here is produced in our Plateau Mont-Royal studio.',
@@ -275,17 +294,21 @@ function Artistes() {
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                 </Link>
 
-                {/* Credit de l'artiste dont l'oeuvre habille le hero. */}
+                {/* Credit de l'artiste dont l'oeuvre habille le hero.
+                    Il vit dans la zone DEGAGEE (a droite, ou le voile est a
+                    zero pour laisser voir l'oeuvre), donc il porte sa propre
+                    pastille sombre : c'est elle qui garantit son contraste, sans
+                    avoir a assombrir toute l'image comme avant. */}
                 {heroHasBg && (
                   <div className="mt-8 flex justify-end">
                     <Link
                       to={`/artistes/${heroBg.artistSlug}`}
-                      className="inline-flex items-center gap-1.5 text-xs text-white/70 hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-sm hover:bg-black/80 transition-colors"
                     >
-                      <span className="uppercase tracking-widest text-[10px] text-white/45">
+                      <span className="uppercase tracking-widest text-[10px] text-white/70">
                         {tx({ fr: 'Oeuvre', en: 'Artwork', es: 'Obra' })}
                       </span>
-                      <span className="underline underline-offset-2 decoration-white/30 text-white/90">
+                      <span className="underline underline-offset-2 decoration-white/30 text-white">
                         {heroBg.artistName}
                       </span>
                     </Link>
