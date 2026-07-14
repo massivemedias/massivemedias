@@ -34,13 +34,25 @@ const FILTER_OPTIONS = [
 ];
 
 /**
- * UI-HERO-PRINTS (14 juillet 2026) : le hero prend en fond une oeuvre d'artiste
- * tiree au hasard parmi les prints publies.
+ * HERO-PRINTS-V1 : l'oeuvre en FOND PLEIN ECRAN du hero.
  *
- * A `false` -> le hero redevient EXACTEMENT celui d'avant (texte sur le fond de
- * page, jetons de theme, aucune image). Rien n'est supprime.
+ * ETEINT (14 juillet 2026, choix Mika : "le fond plein ecran ne me plait pas").
+ * Le code n'est PAS supprime : remettre ce flag a `true` restaure la V1 (image
+ * plein ecran + voile HERO_SCRIM + texte blanc), et eteint automatiquement la V2.
+ * Les 168 variantes 1400px generees restent en place (scripts/generate-hero-prints.mjs).
  */
-const HERO_RANDOM_BG_ENABLED = true
+const HERO_RANDOM_BG_ENABLED = false
+
+/**
+ * HERO-PRINTS-V2 : l'oeuvre en MOCKUP DE PRINT ENCADRE, a droite du titre.
+ *
+ * Retour au pattern du hero /stickers : fond sobre du site (hero-aurora, qui suit
+ * le theme), texte a gauche avec les JETONS de theme, et a droite l'objet vedette
+ * (ici un print encadre, la-bas le sticker). Fini le texte blanc en dur et le
+ * voile : la surface redevient le fond de page, donc les regles de couleur
+ * normales du site s'appliquent.
+ */
+const HERO_FRAMED_MOCKUP_ENABLED = true
 
 /**
  * Voile de lisibilite du hero.
@@ -102,8 +114,72 @@ const heroSharpSrc = (fullImage) =>
 // Ombre portee legere : ne compte pas dans le calcul WCAG (c'est le fond qui
 // porte le contraste, cf. HERO_SCRIM), mais elle detache le texte des zones
 // chargees d'une oeuvre. Filet de securite perceptuel, pas une bequille.
+// (V1 seulement : la V2 pose le texte sur le fond de page, aucun besoin d'ombre.)
 const HERO_TITLE_SHADOW = { textShadow: '0 2px 14px rgba(0,0,0,0.55)' }
 const HERO_BODY_SHADOW = { textShadow: '0 1px 10px rgba(0,0,0,0.5)' }
+
+/**
+ * HERO-PRINTS-V2 : l'oeuvre vedette, en mockup de print encadre.
+ *
+ * Reprend le langage visuel du `FramePreview` des configurateurs
+ * (ConfiguratorFineArt.jsx) : bordure noire, passe-partout blanc, fond blanc.
+ * Le cadre est un OBJET PHYSIQUE, sa couleur ne suit donc pas le theme, tout
+ * comme la gourde blanche des mockups /stickers. Et le duo bordure noire +
+ * passe-partout blanc tient sur les 11 palettes : le blanc ressort sur les
+ * palettes sombres, la bordure noire delimite le cadre sur les 2 claires.
+ *
+ * Rotation legere + ombre portee : meme traitement que le sticker vedette du
+ * hero /stickers. Le credit de l'artiste vit sous le cadre, exactement comme le
+ * nom du design sous le sticker.
+ *
+ * L'image servie est `print.image` (Supabase, 800px) : a ~260px d'affichage
+ * elle est largement nette, inutile de charger la variante 1400px de la V1 ici.
+ */
+function HeroPrintFrame({ print, tx }) {
+  const [charge, setCharge] = useState(false)
+
+  return (
+    <Link
+      to={`/artistes/${print.artistSlug}`}
+      className="group flex flex-col items-center shrink-0"
+      aria-label={tx({
+        fr: `Voir les prints de ${print.artistName}`,
+        en: `See prints by ${print.artistName}`,
+        es: `Ver los prints de ${print.artistName}`,
+      })}
+    >
+      <div
+        className="transition-transform duration-500 ease-out group-hover:-translate-y-1.5"
+        style={{ transform: 'rotate(-3deg)', filter: 'drop-shadow(0 22px 45px rgba(0,0,0,0.45))' }}
+      >
+        {/* Le cadre epouse le ratio de l'oeuvre (portrait, paysage ou carre) : il
+            se dimensionne sur l'image qu'il entoure.
+            La contrainte porte sur le PLUS GRAND COTE (max-w == max-h), pas sur la
+            largeur seule : sinon un print paysage sortait minuscule (bride par la
+            largeur) pendant qu'un portrait remplissait tout. Avec cette borne
+            carree, portrait et paysage ont le meme poids visuel, et surtout AUCUN
+            cadre ne peut depasser en hauteur -> la hauteur du hero ne depend pas de
+            l'oeuvre tiree (sinon : CLS). */}
+        <div style={{ border: '10px solid #1a1a1a', padding: 14, background: '#ffffff' }}>
+          <img
+            src={print.image}
+            alt={print.artistName}
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            onLoad={() => setCharge(true)}
+            className={`block w-auto h-auto max-w-[200px] max-h-[200px] sm:max-w-[260px] sm:max-h-[260px] object-contain transition-opacity duration-500 ${charge ? 'opacity-100' : 'opacity-0'}`}
+          />
+        </div>
+      </div>
+
+      {/* Credit de l'artiste, cliquable vers sa page (le Link enveloppe tout). */}
+      <span className="text-grey-light text-sm mt-5 group-hover:text-accent transition-colors">
+        {print.artistName}
+      </span>
+    </Link>
+  )
+}
 
 function Artistes() {
   const { lang, tx } = useLang();
@@ -187,10 +263,11 @@ function Artistes() {
   // il retardait l'affichage au lieu de le proteger. Une seule requete, la bonne.
   const heroSrc = heroBg && (heroBg.sharp || heroBg.image)
 
-  // Le hero n'a un fond que si : flag ON + une oeuvre tiree + image non cassee.
-  // Dans tous les autres cas (flag off, CMS vide, image 404) -> rendu STRICTEMENT
-  // identique a l'ancien hero, jetons de theme compris.
+  // V1 (fond plein ecran) : eteinte par flag. V2 (mockup encadre a droite) : ON.
+  // Dans tous les cas, si le CMS est vide ou l'image cassee, les deux retombent
+  // sur le hero d'origine (texte seul sur le fond de page, jetons de theme).
   const heroHasBg = HERO_RANDOM_BG_ENABLED && Boolean(heroBg) && !heroFailed
+  const heroHasMockup = HERO_FRAMED_MOCKUP_ENABLED && !heroHasBg && Boolean(heroBg) && !heroFailed
 
   // Merge all creators into a single list with unified shape
   const allCreators = useMemo(() => {
@@ -245,18 +322,18 @@ function Artistes() {
       />
 
       {/* ============ HERO ============ */}
-      {/* UI-HERO-PRINTS : quand une oeuvre est tiree, le hero devient un bloc
-          arrondi (meme forme que le hero /stickers) avec l'oeuvre en fond + un
-          voile. Sinon `heroHasBg` est faux et TOUT ce bloc retombe exactement
-          sur l'ancien rendu : pas de conteneur, pas d'image, jetons de theme.
-
-          Les couleurs de texte suivent `heroHasBg`, ce n'est pas cosmetique : la
-          surface passe d'un fond de PAGE (qui suit le theme) a une image
-          ASSOMBRIE (sombre sur les 11 palettes). Garder les jetons donnerait du
-          texte fonce sur du sombre en theme clair. Inversement, `text-accent`
-          est INTERDIT ici : l'accent est un violet fonce sur les 2 themes
-          clairs -> 1,71:1 sur le voile. L'accent ne revient donc que comme FOND
-          de pastille (fond accent + texte blanc), qui tient sur les 11 palettes. */}
+      {/* HERO-PRINTS-V2 (pivot Mika : "le fond plein ecran ne me plait pas").
+          Retour au pattern du hero /stickers :
+            - fond SOBRE du site (`hero-aurora`, qui suit le theme)
+            - texte a gauche, avec les JETONS de theme : plus de blanc en dur, plus
+              de voile. La surface redevient le fond de PAGE, donc les regles de
+              couleur normales du site s'appliquent a nouveau (c'est toute la
+              complexite de la V1 qui disparait)
+            - a droite, l'oeuvre tiree au hasard en MOCKUP DE PRINT ENCADRE, comme
+              le sticker vedette de /stickers
+          La V1 (oeuvre en fond plein ecran + voile HERO_SCRIM + texte blanc) n'est
+          PAS supprimee : remettre HERO_RANDOM_BG_ENABLED a `true` la restaure et
+          eteint la V2. */}
       <section className="relative py-4 overflow-hidden">
         <div className="section-container">
           <motion.div
@@ -264,20 +341,10 @@ function Artistes() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* CLS : la boite du hero garde EXACTEMENT la meme taille avec ou sans
-                oeuvre. L'oeuvre arrive apres le fetch CMS ; si le conteneur ne
-                prenait ses paddings qu'a ce moment-la, il grandissait de ~200px et
-                toute la page sautait -> CLS 0,336 mesure en prod. Les paddings sont
-                donc TOUJOURS appliques ; seuls le fond arrondi et l'image sont
-                conditionnels. */}
-            <div className={`relative overflow-hidden px-6 sm:px-10 py-12 sm:py-16 ${heroHasBg ? 'rounded-3xl' : ''}`}>
-              {heroHasBg && (
+            <div className="relative overflow-hidden rounded-3xl px-6 sm:px-10 py-9 sm:py-11">
+              {heroHasBg ? (
                 <>
-                  {/* L'oeuvre : variante hero LOCALE 1400px (nette sur les 1248px
-                      du conteneur). Above the fold -> eager + priorite haute,
-                      jamais de lazy. Fade-in par transition CSS au onLoad, PAS
-                      framer (rAF throttle en onglet cache).
-                      onError -> heroFailed -> retour au hero d'origine. */}
+                  {/* V1 : l'oeuvre en fond (variante locale 1400px). Eteinte. */}
                   <img
                     src={heroSrc}
                     alt=""
@@ -289,16 +356,17 @@ function Artistes() {
                     onError={() => setHeroFailed(true)}
                     className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
                   />
-                  {/* Voile rendu DES LE DEPART, meme avant que l'image charge :
-                      il est assez sombre a gauche pour porter le texte blanc tout
-                      seul. Donc pas de trou blanc pendant le chargement, et pas de
-                      flash de blanc-sur-blanc sur les themes clairs. */}
                   <div aria-hidden="true" className="absolute inset-0" style={HERO_SCRIM} />
                 </>
+              ) : (
+                /* V2 : le fond sobre du site, exactement celui du hero /stickers. */
+                <div className="absolute inset-0 hero-aurora" aria-hidden="true" />
               )}
 
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-3 text-sm">
+              <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
+                {/* ---- GAUCHE : le texte (contenu inchange) ---- */}
+                <div className="lg:flex-[1.35] w-full text-center lg:text-left">
+                <div className="flex items-center justify-center lg:justify-start gap-2 mb-3 text-sm">
                   <Link
                     to="/"
                     className={heroHasBg ? 'text-white/70 hover:text-white transition-colors' : 'text-grey-muted hover:text-accent transition-colors'}
@@ -306,7 +374,7 @@ function Artistes() {
                     {tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' })}
                   </Link>
                   <span className={heroHasBg ? 'text-white/40' : 'text-grey-muted'}>/</span>
-                  <span className={heroHasBg ? 'text-white font-semibold' : 'text-accent'}>
+                  <span className={heroHasBg ? 'text-white font-semibold' : 'text-accent font-semibold'}>
                     {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
                   </span>
                 </div>
@@ -318,15 +386,13 @@ function Artistes() {
                   {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
                 </h1>
 
-                {/* Colonne de texte RESSERREE a max-w-lg. C'est ce qui permet au
-                    voile de se limiter au tiers gauche : avec 672px (max-w-2xl) il
-                    devait couvrir 57 % de la largeur ; avec 512px il s'arrete a
-                    44 %, et toute la droite de l'oeuvre reste A NU.
-                    Largeur CONSTANTE (pas conditionnee a heroHasBg) : sinon le
-                    paragraphe se re-enroulait quand l'oeuvre arrivait -> la boite
-                    grandissait -> CLS. */}
+                {/* V2 : largeur naturelle du pattern /stickers (max-w-xl, centre sur
+                    mobile). En V1 le paragraphe etait resserre a max-w-lg pour que
+                    le voile tienne dans le tiers gauche ; ce besoin disparait avec
+                    le fond sobre. `heroHasBg` etant une CONSTANTE (flag module), il
+                    n'y a aucun basculement au runtime, donc aucun reflow. */}
                 <p
-                  className={`text-base md:text-lg leading-relaxed mb-4 max-w-lg ${heroHasBg ? 'text-white/85' : 'text-grey-light'}`}
+                  className={`text-base md:text-lg leading-relaxed mb-5 ${heroHasBg ? 'max-w-lg text-white/85' : 'max-w-xl mx-auto lg:mx-0 text-grey-light'}`}
                   style={heroHasBg ? HERO_BODY_SHADOW : undefined}
                 >
                   {tx({
@@ -336,25 +402,37 @@ function Artistes() {
                   })}
                 </p>
 
-                {/* CTA. Pastille accent dans les DEUX etats : `text-accent` serait
-                    illisible sur le voile (violet fonce sur les themes clairs,
-                    1,71:1), et une pastille est plus haute qu'un lien texte -> en
-                    changer de forme quand l'oeuvre arrive ferait grandir la boite
-                    et sauter la page (CLS). Une seule forme, stable. */}
-                <Link
-                  to="/contact?tab=artiste"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all group"
-                >
-                  {tx({
-                    fr: 'Tu es artiste ? Rejoins la plateforme',
-                    en: 'Are you an artist? Join the platform',
-                    es: '¿Eres artista? Únete a la plataforma',
-                  })}
-                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                </Link>
+                {/* CTA en pastille accent : c'est la forme du site, et elle tient
+                    sur les 11 palettes (fond accent sature + texte blanc). */}
+                <div className="flex justify-center lg:justify-start">
+                  <Link
+                    to="/contact?tab=artiste"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all group"
+                  >
+                    {tx({
+                      fr: 'Tu es artiste ? Rejoins la plateforme',
+                      en: 'Are you an artist? Join the platform',
+                      es: '¿Eres artista? Únete a la plataforma',
+                    })}
+                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </div>
               </div>
 
-              {/* Credit de l'artiste dont l'oeuvre habille le hero.
+              {/* ---- DROITE : l'oeuvre tiree au hasard, en print encadre ----
+                  La colonne GARDE SA PLACE meme vide (`min-h`). L'oeuvre n'arrive
+                  qu'apres le fetch CMS ; sans hauteur reservee, la page sauterait a
+                  cet instant. C'est exactement le CLS 0,336 qu'on a paye en V1 :
+                  tout element dont l'apparition depend d'un fetch doit avoir sa
+                  place reservee d'avance. */}
+              {!heroHasBg && (
+                <div className="lg:flex-1 w-full flex items-center justify-center min-h-[290px] sm:min-h-[350px]">
+                  {heroHasMockup && <HeroPrintFrame print={heroBg} tx={tx} />}
+                </div>
+              )}
+              </div>
+
+              {/* V1 : credit de l'artiste dont l'oeuvre habille le fond.
                   Il vit dans la zone DEGAGEE (a droite, ou le voile est a zero pour
                   laisser voir l'oeuvre), donc il porte sa propre pastille sombre :
                   c'est elle qui garantit son contraste, sans avoir a assombrir
