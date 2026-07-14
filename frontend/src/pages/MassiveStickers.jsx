@@ -245,19 +245,32 @@ function FamilleCard({ cat, count, tx, onOpen, accent }) {
 // pose ; tuile pack -> scroll vers les Mystery Packs. Images de fond en lazy.
 function ShowcaseBand({ tx, onOpenDesign }) {
   const goPacks = () => document.getElementById('mystery-packs')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  const capBar = (cap) => (
+  // La legende. Sur une tuile PRODUIT ou PACK, elle est posee sur la surface de la
+  // carte -> JETONS DE THEME (elle suit les 11 palettes). Sur une tuile PHOTO
+  // (future, cf. SHOWCASE), elle est posee sur l'image -> il lui faut son voile
+  // sombre et du blanc, sinon elle serait illisible sur une photo claire.
+  const capBar = (cap, surPhoto = false) => (
     <span
-      className="absolute inset-x-0 bottom-0 px-4 py-3 text-white font-bold text-sm text-left"
-      style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }}
+      className={`absolute inset-x-0 bottom-0 px-4 py-3 font-bold text-sm text-left ${surPhoto ? 'text-white' : 'text-heading'}`}
+      style={surPhoto ? { background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' } : undefined}
     >
       {tx(cap)} <span className="ml-0.5">&rarr;</span>
     </span>
   )
-  const frame = 'relative rounded-2xl overflow-hidden border border-white/[0.08] h-44 sm:h-52 group cursor-pointer transition-transform hover:-translate-y-0.5'
-  // UI-10c : fond suivant le THEME. --bg-footer est sombre sur les 11 palettes
-  // (les mockups blancs ressortent partout) + halo accent subtil via --accent-rgb.
-  // Plus de mauve code en dur.
-  const bg = { background: 'radial-gradient(circle at 50% 32%, rgba(var(--accent-rgb), 0.12), var(--bg-footer) 72%)' }
+
+  // HOME-BG-STICKERS (14 juillet 2026, retour Mika : "encore des boites noires
+  // qui se creusent dans la page"). Les tuiles prennent le PATTERN DE REFERENCE
+  // du site (celui adopte en #103) : `.surface-vitrine` (= var(--bg-glass) + halo
+  // accent) + `card-shadow`. Elles se POSENT desormais sur la page, comme toutes
+  // les cartes du site, au lieu d'y creuser un trou.
+  //
+  // C'est precisement cette bande que #103 avait volontairement EPARGNEE, au motif
+  // que les mockups produits sont BLANCS et qu'un fond clair les rendrait
+  // invisibles. Le motif etait juste, mais la parade est ailleurs : la gourde
+  // porte DEJA une ombre portee (drop-shadow, plus bas) et son PNG est DETOURE
+  // (canal alpha) -> l'ombre epouse sa silhouette et la detache meme sur un fond
+  // clair. Verifie sur les 11 palettes.
+  const frame = 'surface-vitrine card-shadow relative rounded-2xl overflow-hidden border border-white/5 h-44 sm:h-52 group cursor-pointer transition-transform hover:-translate-y-0.5'
   return (
     <div className="mb-10">
       <div className="flex items-baseline justify-between gap-3 mb-3">
@@ -273,7 +286,7 @@ function ShowcaseBand({ tx, onOpenDesign }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-2xl mx-auto">
         {SHOWCASE.map((tile, i) =>
           tile.kind === 'pack' ? (
-            <button key={i} type="button" onClick={goPacks} className={frame} style={bg} aria-label={tx(tile.cap)}>
+            <button key={i} type="button" onClick={goPacks} className={frame} aria-label={tx(tile.cap)}>
               <div className="absolute inset-0">
                 {tile.slugs.map((s, j) => (
                   <img
@@ -293,7 +306,7 @@ function ShowcaseBand({ tx, onOpenDesign }) {
           ) : tile.kind === 'photo' ? (
             /* STICKERS-UI-11 : carte "vraie photo". Ajouter une photo = UNE entree
                SHOWCASE { kind:'photo', img, href, cap:{fr,en,es} }, zero dev. */
-            <a key={i} href={tile.href || undefined} className={frame} style={bg} aria-label={tx(tile.cap)}>
+            <a key={i} href={tile.href || undefined} className={frame} aria-label={tx(tile.cap)}>
               <img
                 loading="lazy"
                 decoding="async"
@@ -301,10 +314,12 @@ function ShowcaseBand({ tx, onOpenDesign }) {
                 alt={tx(tile.cap)}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
-              {capBar(tile.cap)}
+              {/* surPhoto : la legende est posee sur l'IMAGE (pas sur la carte),
+                  elle garde donc son voile sombre + texte blanc. */}
+              {capBar(tile.cap, true)}
             </a>
           ) : (
-            <button key={i} type="button" onClick={() => onOpenDesign(tile.design)} className={frame} style={bg} aria-label={tx(tile.cap)}>
+            <button key={i} type="button" onClick={() => onOpenDesign(tile.design)} className={frame} aria-label={tx(tile.cap)}>
               <div className="absolute inset-0 flex items-center justify-center pb-7">
                 <div className="relative flex items-center justify-center" style={{ height: tile.productH || '76%' }}>
                   <img
