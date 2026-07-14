@@ -72,8 +72,32 @@ const HERO_RANDOM_BG_ENABLED = true
  */
 const HERO_SCRIM = {
   backgroundImage:
-    'linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.68) 35%, rgba(0,0,0,0.58) 55%, rgba(0,0,0,0.22) 72%, rgba(0,0,0,0) 85%)',
+    'linear-gradient(to right, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.60) 30%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.18) 58%, rgba(0,0,0,0) 68%)',
 }
+
+/**
+ * L'image NETTE du hero.
+ *
+ * Le champ `print.image` sert une image Supabase plafonnee a **800px de large**.
+ * Or `.section-container` est en `max-width: 1280px`, donc le hero est rendu a
+ * ~1248px : le 800 est etire x1,56 -> la bouillie que Mika a vue. Le fond ne
+ * peut PAS etre net avec cette source.
+ *
+ * On sert donc une variante dediee, generee depuis `fullImage` (la meilleure
+ * source locale) : plafond 1400px de large (au-dessus des 1248 necessaires),
+ * qualite 74, JAMAIS d'upscale -> 168 fichiers, 135 ko de moyenne.
+ * `scripts/generate-hero-prints.mjs` la regenere (a relancer si des prints sont
+ * ajoutes).
+ *
+ * Limite ASSUMEE : 54 des 175 prints ont une source locale sous 1248px (jusqu'a
+ * 795px). Pour ceux-la la variante fait la taille de la source : on ne peut pas
+ * inventer du detail qui n'existe nulle part. Ils ne sont pas PIRES qu'avant,
+ * juste pas nets. 7 prints n'ont aucun fichier local -> on reste sur le 800.
+ */
+const heroSharpSrc = (fullImage) =>
+  fullImage && fullImage.includes('/posters-trimmed/')
+    ? fullImage.replace('/posters-trimmed/', '/hero/')
+    : null
 
 // Ombre portee legere : ne compte pas dans le calcul WCAG (c'est le fond qui
 // porte le contraste, cf. HERO_SCRIM), mais elle detache le texte des zones
@@ -127,7 +151,14 @@ function Artistes() {
     const out = []
     artists.forEach((a) => {
       (a.prints || []).forEach((p) => {
-        if (p && p.image) out.push({ image: p.image, artistName: a.name, artistSlug: a.slug })
+        if (p && p.image) {
+          out.push({
+            image: p.image,                    // 800px, leger : le placeholder (et le LCP)
+            sharp: heroSharpSrc(p.fullImage),  // 1400px, net : arrive apres
+            artistName: a.name,
+            artistSlug: a.slug,
+          })
+        }
       })
     })
     return out
@@ -144,6 +175,17 @@ function Artistes() {
     if (heroBg || heroPool.length === 0) return
     setHeroBg(heroPool[Math.floor(Math.random() * heroPool.length)])
   }, [heroPool, heroBg])
+
+  // UNE SEULE image : la variante nette LOCALE, avec l'image CMS 800px en simple
+  // repli quand aucune source locale n'existe (7 prints sur 175).
+  //
+  // On a d'abord tente un blur-up (800px en placeholder, puis la nette par
+  // dessus). MESURE faite, c'etait a l'envers : la nette locale charge en ~36 ms
+  // (meme origine, connexion HTTP/2 deja ouverte) tandis que le "placeholder
+  // leger" Supabase met ~294 ms (origine distante = DNS + TLS en plus). Le
+  // placeholder etait donc 8x plus LENT que l'image qu'il etait cense couvrir :
+  // il retardait l'affichage au lieu de le proteger. Une seule requete, la bonne.
+  const heroSrc = heroBg && (heroBg.sharp || heroBg.image)
 
   // Le hero n'a un fond que si : flag ON + une oeuvre tiree + image non cassee.
   // Dans tous les autres cas (flag off, CMS vide, image 404) -> rendu STRICTEMENT
@@ -222,15 +264,22 @@ function Artistes() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className={heroHasBg ? 'relative overflow-hidden rounded-3xl px-6 sm:px-10 py-12 sm:py-16' : ''}>
+            {/* CLS : la boite du hero garde EXACTEMENT la meme taille avec ou sans
+                oeuvre. L'oeuvre arrive apres le fetch CMS ; si le conteneur ne
+                prenait ses paddings qu'a ce moment-la, il grandissait de ~200px et
+                toute la page sautait -> CLS 0,336 mesure en prod. Les paddings sont
+                donc TOUJOURS appliques ; seuls le fond arrondi et l'image sont
+                conditionnels. */}
+            <div className={`relative overflow-hidden px-6 sm:px-10 py-12 sm:py-16 ${heroHasBg ? 'rounded-3xl' : ''}`}>
               {heroHasBg && (
                 <>
-                  {/* Above the fold : jamais de lazy. Thumb WebP 800px (convention
-                      hero du projet, cf. paths.js) -> LCP leger. Fade-in par
-                      transition CSS au onLoad, PAS framer (rAF throttle en onglet
-                      cache). onError -> heroFailed -> retour au hero d'origine. */}
+                  {/* L'oeuvre : variante hero LOCALE 1400px (nette sur les 1248px
+                      du conteneur). Above the fold -> eager + priorite haute,
+                      jamais de lazy. Fade-in par transition CSS au onLoad, PAS
+                      framer (rAF throttle en onglet cache).
+                      onError -> heroFailed -> retour au hero d'origine. */}
                   <img
-                    src={heroBg.image}
+                    src={heroSrc}
                     alt=""
                     aria-hidden="true"
                     loading="eager"
@@ -238,11 +287,12 @@ function Artistes() {
                     decoding="async"
                     onLoad={() => setHeroLoaded(true)}
                     onError={() => setHeroFailed(true)}
-                    className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-500 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
                   />
                   {/* Voile rendu DES LE DEPART, meme avant que l'image charge :
-                      il est assez sombre pour porter le texte blanc tout seul, ce
-                      qui evite le flash de blanc-sur-blanc sur les themes clairs. */}
+                      il est assez sombre a gauche pour porter le texte blanc tout
+                      seul. Donc pas de trou blanc pendant le chargement, et pas de
+                      flash de blanc-sur-blanc sur les themes clairs. */}
                   <div aria-hidden="true" className="absolute inset-0" style={HERO_SCRIM} />
                 </>
               )}
@@ -268,8 +318,15 @@ function Artistes() {
                   {tx({ fr: "Prints d'artistes", en: 'Artist Prints', es: 'Prints de artistas' })}
                 </h1>
 
+                {/* Colonne de texte RESSERREE a max-w-lg. C'est ce qui permet au
+                    voile de se limiter au tiers gauche : avec 672px (max-w-2xl) il
+                    devait couvrir 57 % de la largeur ; avec 512px il s'arrete a
+                    44 %, et toute la droite de l'oeuvre reste A NU.
+                    Largeur CONSTANTE (pas conditionnee a heroHasBg) : sinon le
+                    paragraphe se re-enroulait quand l'oeuvre arrivait -> la boite
+                    grandissait -> CLS. */}
                 <p
-                  className={`text-base md:text-lg max-w-2xl leading-relaxed mb-4 ${heroHasBg ? 'text-white/85' : 'text-grey-light'}`}
+                  className={`text-base md:text-lg leading-relaxed mb-4 max-w-lg ${heroHasBg ? 'text-white/85' : 'text-grey-light'}`}
                   style={heroHasBg ? HERO_BODY_SHADOW : undefined}
                 >
                   {tx({
@@ -279,12 +336,14 @@ function Artistes() {
                   })}
                 </p>
 
-                {/* CTA Rejoindre la plateforme */}
+                {/* CTA. Pastille accent dans les DEUX etats : `text-accent` serait
+                    illisible sur le voile (violet fonce sur les themes clairs,
+                    1,71:1), et une pastille est plus haute qu'un lien texte -> en
+                    changer de forme quand l'oeuvre arrive ferait grandir la boite
+                    et sauter la page (CLS). Une seule forme, stable. */}
                 <Link
                   to="/contact?tab=artiste"
-                  className={heroHasBg
-                    ? 'inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all group'
-                    : 'inline-flex items-center gap-2 text-accent font-semibold text-sm hover:text-accent-hover transition-colors group'}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white font-semibold text-sm hover:brightness-110 transition-all group"
                 >
                   {tx({
                     fr: 'Tu es artiste ? Rejoins la plateforme',
@@ -293,28 +352,30 @@ function Artistes() {
                   })}
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                 </Link>
-
-                {/* Credit de l'artiste dont l'oeuvre habille le hero.
-                    Il vit dans la zone DEGAGEE (a droite, ou le voile est a
-                    zero pour laisser voir l'oeuvre), donc il porte sa propre
-                    pastille sombre : c'est elle qui garantit son contraste, sans
-                    avoir a assombrir toute l'image comme avant. */}
-                {heroHasBg && (
-                  <div className="mt-8 flex justify-end">
-                    <Link
-                      to={`/artistes/${heroBg.artistSlug}`}
-                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-sm hover:bg-black/80 transition-colors"
-                    >
-                      <span className="uppercase tracking-widest text-[10px] text-white/70">
-                        {tx({ fr: 'Oeuvre', en: 'Artwork', es: 'Obra' })}
-                      </span>
-                      <span className="underline underline-offset-2 decoration-white/30 text-white">
-                        {heroBg.artistName}
-                      </span>
-                    </Link>
-                  </div>
-                )}
               </div>
+
+              {/* Credit de l'artiste dont l'oeuvre habille le hero.
+                  Il vit dans la zone DEGAGEE (a droite, ou le voile est a zero pour
+                  laisser voir l'oeuvre), donc il porte sa propre pastille sombre :
+                  c'est elle qui garantit son contraste, sans avoir a assombrir
+                  toute l'image comme avant.
+                  Positionne en ABSOLU, donc HORS DU FLUX : il n'ajoute aucune
+                  hauteur quand il apparait -> aucun saut de page (CLS). */}
+              {heroHasBg && (
+                <div className="absolute bottom-4 right-4 sm:bottom-5 sm:right-6 z-10">
+                  <Link
+                    to={`/artistes/${heroBg.artistSlug}`}
+                    className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-sm hover:bg-black/80 transition-colors"
+                  >
+                    <span className="uppercase tracking-widest text-[10px] text-white/70">
+                      {tx({ fr: 'Oeuvre', en: 'Artwork', es: 'Obra' })}
+                    </span>
+                    <span className="underline underline-offset-2 decoration-white/30 text-white">
+                      {heroBg.artistName}
+                    </span>
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
