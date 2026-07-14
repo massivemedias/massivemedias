@@ -1,140 +1,307 @@
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useReducedMotion } from 'framer-motion'
+import { ArrowRight, Instagram, Play } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
+import { useArtists } from '../hooks/useArtists'
+import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import TumblerDesign from './TumblerDesign'
 
 /**
- * HOME-04 (#) : section editoriale "magazine" unique de la home, stickers ET
- * prints d'artistes MELANGES. Composition asymetrique (colonne texte a gauche +
- * collage dense a droite : dominant + satellites, chevauchements, rotations
- * subtiles, typo d'appoint), PAS une grille. Remplace HomePrintsSection + le
- * teaser services + la grille d'oeuvres, absorbes ici.
+ * HOME-05 : la section magazine devient un VRAI magazine editorial qu'on
+ * DECOUVRE au scroll. Trois "tranches" a la hierarchie claire (titre + 2-3
+ * lignes + lien), apparitions douces (reduced-motion respecte), et un CONTENU
+ * ALEATOIRE a chaque visite (comme la grille /stickers). Deux variantes de
+ * composition (prop `variant` A|B) pour le choix Mika.
  *
- * Contenu pilote par la constante MAGAZINE : Mika change les vedettes ici, zero
- * dev. Desktop : collage absolu. Mobile : 2 colonnes organiques, chevauchements
- * reduits mais pas disparus. Lazy strict sur toutes les images (la home protege
- * son LCP = mockup gourde du rideau, precharge par HOME-PERF-01b, inchange).
+ * ALEATOIRE prerender-stable : etat initial DETERMINISTE (premiers du pool) rendu
+ * au prerender, puis shuffle client APRES mount (useEffect) - meme lecon que la
+ * grille 270. La gourde porte un design surprise (comme le sticker vedette du
+ * hero /stickers). Les oeuvres viennent du CMS (useArtists) ; fallback local si
+ * le CMS n'a pas encore repondu (et pour la maquette hors-ligne).
+ *
+ * PERF : tout en lazy, le LCP de la home (image hero prechargee) est inchange.
  */
 
-// Vedettes (rotation possible : editer cette constante).
-const MAGAZINE = {
-  gourdeDesign: 'massive-adian-fumeuse',                 // design pose sur la gourde
-  framed: '/images/prints/Adrift1.webp',                 // print encadre (oeuvre AdriftVision)
-  raw: '/images/prints/Adrift11.webp',                   // oeuvre brute
-  stickers: ['massive-racoon', 'massive-dj-skull', 'massive-alien-hot', 'massive-biker'],
+const STICKER_DIR = '/images/stickers-massive'
+const st = (slug) => `${STICKER_DIR}/${slug}.webp`
+const stThumb = (slug) => `/images/thumbs/stickers-massive/${slug}.webp`
+
+// Oeuvres de secours (varie, 6 artistes) : sert quand le CMS n'a pas repondu
+// et pour la maquette locale (CORS). En prod le pool vient de useArtists().
+const LOCAL_ARTWORKS = [
+  '/images/artists/psyqu33n/posters-trimmed/Psyqu33n1.webp',
+  '/images/artists/psyqu33n/posters-trimmed/Psyqu33n10.webp',
+  '/images/artists/mok/posters-trimmed/Mok-A-flot.webp',
+  '/images/artists/cornelia-rose/posters-trimmed/CorneliaRose1.webp',
+  '/images/artists/cornelia-rose/posters-trimmed/CorneliaRose10.webp',
+  '/images/artists/no-pixl/posters-trimmed/NoPixl1.webp',
+  '/images/artists/gallium/posters-trimmed/dancing-warrior-16x20.webp',
+  '/images/artists/eric-sanchez/posters-trimmed/EricSanchez-001.webp',
+]
+
+const IG_URL = 'https://www.instagram.com/massivemedias/'
+
+// REELS Instagram (option MANUELLE : zero script Meta, zero cookie tiers, Loi 25
+// clean). Mika edite cette constante : cover 9:16 de chaque reel + legende + lien
+// du reel. Rendu en cartes verticales facon reel (bouton play + badge IG).
+// MAQUETTE : covers = oeuvres locales (portrait) en attendant les vraies
+// vignettes de reels ; les liens pointent le profil.
+const REELS = [
+  { cover: LOCAL_ARTWORKS[2], fr: 'Dans l\'atelier', en: 'In the studio', es: 'En el taller', url: IG_URL },
+  { cover: LOCAL_ARTWORKS[0], fr: 'Découpe die-cut en direct', en: 'Die-cut, live', es: 'Corte die-cut en vivo', url: IG_URL },
+  { cover: LOCAL_ARTWORKS[5], fr: 'Nouveau drop de designs', en: 'Fresh design drop', es: 'Nuevo drop de diseños', url: IG_URL },
+  { cover: LOCAL_ARTWORKS[7], fr: 'Prints fine art', en: 'Fine art prints', es: 'Prints fine art', url: IG_URL },
+]
+
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]] }
+  return a
 }
-const st = (slug) => `/images/stickers-massive/${slug}.webp`
 
-// ---- briques reutilisables -------------------------------------------------
-
-function Sticker({ slug, className = '', style }) {
+// Reveal doux au scroll, reduced-motion respecte. IntersectionObserver + CSS
+// transition (PAS whileInView/rAF) : robuste meme si l'animation ne tourne pas
+// (onglet en arriere-plan -> rAF throttle) - un fallback timeout montre le
+// contenu quoi qu'il arrive. La LISIBILITE ne depend jamais de l'animation.
+function Reveal({ children, delay = 0, className = '' }) {
+  const ref = useRef(null)
+  const reduce = useReducedMotion()
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    if (reduce) { setShown(true); return }
+    const el = ref.current
+    if (!el) return
+    const fallback = setTimeout(() => setShown(true), 1200) // filet : visible meme sans intersection
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { setShown(true); io.disconnect(); clearTimeout(fallback) }
+    }, { rootMargin: '-70px 0px' })
+    io.observe(el)
+    return () => { io.disconnect(); clearTimeout(fallback) }
+  }, [reduce])
   return (
-    <Link to="/stickers" className={`block group ${className}`} style={style} aria-label="Voir la collection de stickers">
+    <div
+      ref={ref}
+      className={`transition-all duration-[600ms] ease-out ${shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-7'} ${className}`}
+      style={{ transitionDelay: shown ? `${delay}s` : '0s' }}
+    >{children}</div>
+  )
+}
+
+function Kicker({ children }) {
+  return <p className="text-[11px] font-bold uppercase tracking-[0.35em] text-accent mb-3">{children}</p>
+}
+
+// Sticker geant "langage hero /stickers" : stroke + rotation, dominant.
+function GiantSticker({ slug, rotate = -4, className = '' }) {
+  return (
+    <Link to="/stickers" className={`block group ${className}`} aria-label="Voir la collection de stickers">
       <img
-        src={st(slug)}
-        alt=""
-        loading="lazy"
-        className="sticker-stroke w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-[0_6px_18px_rgba(0,0,0,0.45)]"
+        src={st(slug)} alt="" loading="lazy"
+        className="sticker-stroke w-full h-full object-contain transition-transform duration-500 group-hover:-translate-y-2 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+        style={{ transform: `rotate(${rotate}deg)` }}
       />
     </Link>
   )
 }
 
-function Framed({ src, to = '/artistes', className = '', style, label }) {
-  // Print encadre : passe-partout blanc + fine bordure + ombre portee = "accroche au mur".
+function FloatSticker({ slug, className = '', style }) {
   return (
-    <Link to={to} className={`block group ${className}`} style={style} aria-label={label || 'Voir les prints d\'artistes'}>
-      <div className="bg-white p-[6%] rounded-[3px] shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] ring-1 ring-black/10 transition-transform duration-300 group-hover:-translate-y-1">
-        <img src={src} alt="" loading="lazy" className="w-full h-full object-cover" />
-      </div>
+    <Link to="/stickers" className={`block group ${className}`} style={style} aria-label="Voir la collection de stickers">
+      <img src={stThumb(slug)} alt="" loading="lazy"
+        className="sticker-stroke w-full h-full object-contain transition-transform duration-300 group-hover:scale-105 drop-shadow-[0_6px_18px_rgba(0,0,0,0.45)]" />
     </Link>
   )
 }
 
-function RawArt({ src, to = '/artistes', className = '', style, label }) {
+function Artwork({ src, framed = false, className = '', style }) {
+  if (framed) {
+    return (
+      <Link to="/artistes" className={`block group ${className}`} style={style} aria-label="Voir les prints d'artistes">
+        <div className="bg-white p-[6%] rounded-[3px] shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)] ring-1 ring-black/10 transition-transform duration-300 group-hover:-translate-y-1">
+          <img src={src} alt="" loading="lazy" className="w-full h-full object-cover" />
+        </div>
+      </Link>
+    )
+  }
   return (
-    <Link to={to} className={`block group overflow-hidden rounded-sm ${className}`} style={style} aria-label={label || 'Voir les prints d\'artistes'}>
+    <Link to="/artistes" className={`block group overflow-hidden rounded-sm ${className}`} style={style} aria-label="Voir les prints d'artistes">
       <img src={src} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 shadow-[0_16px_40px_rgba(0,0,0,0.5)]" />
     </Link>
   )
 }
 
-function Gourde({ rotate = -4, className = '', style }) {
+function Gourde({ design, rotate = -4, className = '' }) {
   return (
-    <Link to="/stickers" className={`block group ${className}`} style={style} aria-label="Stickers sur ta gourde">
+    <Link to="/stickers" className={`block group ${className}`} aria-label="Stickers sur ta gourde">
       <div className="relative h-full flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1">
         <img src="/images/mugs/tumbler-white.webp" alt="" loading="lazy" className="h-full object-contain drop-shadow-[0_20px_44px_rgba(0,0,0,0.55)]" />
-        <TumblerDesign design={st(MAGAZINE.gourdeDesign)} rotate={rotate} />
+        {design && <TumblerDesign design={st(design)} rotate={rotate} />}
       </div>
     </Link>
   )
 }
 
-export default function MagazineSection() {
-  const { tx } = useLang()
+// ---- hook contenu aleatoire (shuffle apres mount, prerender-stable) ---------
 
-  const eyebrow = tx({ fr: 'En vrac', en: 'The mix', es: 'A granel' })
-  const explore = tx({ fr: 'Explorer', en: 'Explore', es: 'Explorar' })
-  const captionText = tx({
-    fr: 'Vinyle découpé, tirages fine art, une gourde qui traîne. Ce qu\'on colle, ce qu\'on encadre.',
-    en: 'Die-cut vinyl, fine art prints, a bottle lying around. What we stick, what we frame.',
-    es: 'Vinilo troquelado, impresiones fine art, una botella por ahí. Lo que pegamos, lo que enmarcamos.',
-  })
-  const Heading = (
-    <h2 className="font-heading font-black text-heading leading-[0.95] text-4xl sm:text-5xl md:text-6xl">
-      {tx({ fr: 'Stickers & prints,', en: 'Stickers & prints,', es: 'Stickers & prints,' })}<br />
-      <span className="text-gradient">{tx({ fr: 'faits à Montréal.', en: 'made in Montreal.', es: 'hechos en Montreal.' })}</span>
-    </h2>
-  )
+function useMagazineContent() {
+  const { artists } = useArtists()
+  // pool d'oeuvres CMS (aplati) sinon fallback local.
+  const artworkPool = useMemo(() => {
+    const cms = []
+    Object.values(artists || {}).forEach((a) => (a?.prints || []).forEach((p) => { if (p?.image) cms.push(p.image) }))
+    return cms.length >= 4 ? cms : LOCAL_ARTWORKS
+  }, [artists])
+  const stickerPool = useMemo(() => MASSIVE_STICKERS.map((s) => s.slug), [])
 
+  // Etat DETERMINISTE au prerender (premiers), shuffle client apres mount.
+  const [picks, setPicks] = useState(() => ({
+    stickers: stickerPool.slice(0, 8),
+    artworks: artworkPool.slice(0, 4),
+    gourde: stickerPool[0],
+  }))
+  useEffect(() => {
+    setPicks({
+      stickers: shuffle(stickerPool).slice(0, 8),
+      artworks: shuffle(artworkPool).slice(0, 4),
+      gourde: shuffle(stickerPool)[0],
+    })
+  }, [stickerPool, artworkPool])
+  return picks
+}
+
+// ---- textes editoriaux (i18n) ----------------------------------------------
+
+function useTranches(tx) {
+  return {
+    t1: {
+      kicker: tx({ fr: 'Ce qu\'on fait', en: 'What we do', es: 'Lo que hacemos' }),
+      title: tx({ fr: 'On dessine, on imprime, tu colles.', en: 'We design, we print, you stick.', es: 'Diseñamos, imprimimos, tú pegas.' }),
+      body: tx({
+        fr: '270 designs originaux en vinyle découpé à la main, et les tirages fine art de nos artistes. Tout est imprimé ici, à Montréal.',
+        en: '270 original designs in hand-cut vinyl, plus fine art prints from our artists. All printed right here in Montreal.',
+        es: '270 diseños originales en vinilo cortado a mano, más impresiones fine art de nuestros artistas. Todo impreso aquí, en Montreal.',
+      }),
+    },
+    t2: {
+      kicker: tx({ fr: 'Comment ça marche', en: 'How it works', es: 'Cómo funciona' }),
+      title: tx({ fr: 'Trois étapes, pas plus.', en: 'Three steps, no more.', es: 'Tres pasos, no más.' }),
+      steps: [
+        { n: '1', t: tx({ fr: 'Tu choisis', en: 'You pick', es: 'Eliges' }), d: tx({ fr: 'Parmi 270 designs, ou tu envoies les tiens.', en: 'From 270 designs, or send your own.', es: 'Entre 270 diseños, o envías los tuyos.' }) },
+        { n: '2', t: tx({ fr: 'On imprime au Plateau', en: 'We print in the Plateau', es: 'Imprimimos en el Plateau' }), d: tx({ fr: 'Vinyle die-cut résistant eau et UV, ou fine art sur papier coton.', en: 'Die-cut vinyl, water & UV proof, or fine art on cotton paper.', es: 'Vinilo die-cut resistente al agua y UV, o fine art en papel de algodón.' }) },
+        { n: '3', t: tx({ fr: 'Tu reçois ou tu ramasses', en: 'You get it or grab it', es: 'Recibes o recoges' }), d: tx({ fr: 'Livraison partout au Québec, ou cueillette à Montréal.', en: 'Shipping across Quebec, or pickup in Montreal.', es: 'Envío por todo Quebec, o recogida en Montreal.' }) },
+      ],
+    },
+    t3: {
+      kicker: tx({ fr: 'Nouveautés', en: 'What\'s new', es: 'Novedades' }),
+      title: tx({ fr: 'Les derniers arrivés.', en: 'Fresh off the press.', es: 'Recién salidos.' }),
+      body: tx({ fr: 'De nouveaux designs chaque mois. Suis-nous pour ne rien manquer.', en: 'New designs every month. Follow us so you don\'t miss a thing.', es: 'Nuevos diseños cada mes. Síguenos para no perderte nada.' }),
+    },
+  }
+}
+
+// ---- boutons liens partages ------------------------------------------------
+
+function LinkRow({ tx }) {
   return (
-    <section className="section-container py-16 md:py-24 overflow-hidden">
-      <div className="max-w-6xl mx-auto">
-        {/* DESKTOP : colonne texte gauche + collage dense a droite (spread magazine) */}
-        <div className="hidden md:grid grid-cols-[35%_1fr] gap-8 items-center">
-          {/* colonne texte */}
-          <div className="relative">
-            <p className="text-[11px] font-bold uppercase tracking-[0.35em] text-accent mb-3">{eyebrow}</p>
-            {Heading}
-            <p className="text-sm text-grey-light max-w-xs leading-relaxed mt-7">{captionText}</p>
-            <Link to="/stickers" className="btn-primary justify-center mt-7 inline-flex">{explore}</Link>
-            <span className="absolute right-0 -bottom-16 font-heading font-black text-[92px] leading-none text-white/[0.05] select-none pointer-events-none">01</span>
-          </div>
+    <div className="flex flex-wrap gap-3 mt-6">
+      <Link to="/stickers" className="btn-primary justify-center">{tx({ fr: 'Voir les stickers', en: 'See the stickers', es: 'Ver los stickers' })}</Link>
+      <Link to="/artistes" className="btn-outline justify-center">{tx({ fr: 'Voir les prints', en: 'See the prints', es: 'Ver los prints' })}</Link>
+    </div>
+  )
+}
 
-          {/* collage : cadre + gourde (agrandie) + oeuvre brute + 4 stickers, chevauches/tournes */}
-          <div className="relative h-[560px]">
-            <span className="absolute right-[2%] top-[-5%] -rotate-90 origin-right text-[12px] font-bold uppercase tracking-[0.45em] text-accent/40 select-none pointer-events-none">Atelier</span>
-            <Framed src={MAGAZINE.framed} className="absolute left-[3%] top-[5%] w-[260px] z-10" style={{ transform: 'rotate(-2deg)' }} label="Prints" />
-            <Gourde rotate={-4} className="absolute left-[33%] top-[22%] h-[360px] z-20" />
-            <RawArt src={MAGAZINE.raw} className="absolute left-[1%] bottom-[0%] w-[184px] h-[210px] z-0" style={{ transform: 'rotate(-3deg)' }} />
-            <Sticker slug={MAGAZINE.stickers[1]} className="absolute left-[18%] top-[-3%] w-[112px] z-30" style={{ transform: 'rotate(-9deg)' }} />
-            <Sticker slug={MAGAZINE.stickers[0]} className="absolute right-[3%] top-[3%] w-[152px] z-30" style={{ transform: 'rotate(9deg)' }} />
-            <Sticker slug={MAGAZINE.stickers[2]} className="absolute right-[1%] top-[46%] w-[160px] z-20" style={{ transform: 'rotate(5deg)' }} />
-            <Sticker slug={MAGAZINE.stickers[3]} className="absolute right-[27%] bottom-[0%] w-[130px] z-30" style={{ transform: 'rotate(-6deg)' }} />
-          </div>
-        </div>
+// Reels Instagram en cartes verticales 9:16 (bouton play + badge IG). Ouvrent le
+// reel sur Instagram (nouvel onglet). Aucun script/cookie tiers.
+function Reels({ tx }) {
+  return (
+    <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x">
+      {REELS.map((r, i) => (
+        <Reveal key={i} delay={i * 0.06} className="snap-start shrink-0 w-[150px] sm:w-[184px]">
+          <a href={r.url} target="_blank" rel="noopener noreferrer" className="block group" aria-label={tx(r)}>
+            <div className="relative rounded-2xl overflow-hidden aspect-[9/16] bg-black/30 ring-1 ring-white/10">
+              <img src={r.cover} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <span className="absolute top-2.5 right-2.5 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]"><Instagram size={17} /></span>
+              <span className="absolute inset-0 grid place-items-center">
+                <span className="w-11 h-11 rounded-full bg-black/35 backdrop-blur-sm grid place-items-center text-white group-hover:bg-accent transition-colors">
+                  <Play size={17} fill="currentColor" className="ml-0.5" />
+                </span>
+              </span>
+              <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/75 via-black/20 to-transparent">
+                <p className="text-white text-[13px] font-medium leading-snug line-clamp-2">{tx(r)}</p>
+              </div>
+            </div>
+          </a>
+        </Reveal>
+      ))}
+    </div>
+  )
+}
 
-        {/* MOBILE : en-tete + 2 colonnes organiques, chevauchements reduits */}
-        <div className="md:hidden">
-          <p className="text-[11px] font-bold uppercase tracking-[0.35em] text-accent mb-3">{eyebrow}</p>
-          {Heading}
-          <div className="mt-6 grid grid-cols-2 gap-3 items-start">
-            <Framed src={MAGAZINE.framed} className="col-span-1 mt-4" style={{ transform: 'rotate(-2deg)' }} label="Prints" />
-            <div className="flex flex-col gap-3">
-              <Sticker slug={MAGAZINE.stickers[0]} className="w-[66%] ml-auto" style={{ transform: 'rotate(7deg)' }} />
-              <Gourde rotate={-4} className="h-[210px] -mt-4" />
-            </div>
-            <RawArt src={MAGAZINE.raw} className="h-[150px] -mt-2" style={{ transform: 'rotate(-2deg)' }} />
-            <div className="flex items-start gap-2 -mt-1">
-              <Sticker slug={MAGAZINE.stickers[1]} className="w-[46%]" style={{ transform: 'rotate(-6deg)' }} />
-              <Sticker slug={MAGAZINE.stickers[3]} className="w-[46%] mt-6" style={{ transform: 'rotate(5deg)' }} />
-            </div>
-          </div>
-          <div className="mt-7 flex flex-col items-center gap-3 text-center">
-            <p className="text-sm text-grey-light max-w-xs leading-relaxed">{captionText}</p>
-            <Link to="/stickers" className="btn-primary justify-center">{explore}</Link>
-          </div>
+// ---- Le magazine editorial : collage vivant (composition retenue par Mika),
+//      sticker geant qui deborde, 3 tranches decouvertes au scroll ------------
+
+function Magazine({ tx, picks }) {
+  const T = useTranches(tx)
+  return (
+    <section className="section-container py-16 md:py-24 overflow-hidden space-y-20 md:space-y-28">
+      {/* Tranche 1 : sticker geant dominant qui deborde + texte + collage */}
+      <div className="relative">
+        <div className="grid md:grid-cols-[1.1fr_1fr] gap-8 items-center">
+          <Reveal delay={0.1} className="relative h-[400px] md:h-[500px] order-2 md:order-1">
+            <GiantSticker slug={picks.stickers[0]} rotate={-6} className="absolute left-[-4%] top-[6%] w-[72%] max-h-[86%] z-20" />
+            <Artwork src={picks.artworks[0]} className="absolute right-[4%] top-[10%] w-[38%] h-[58%] z-10" style={{ transform: 'rotate(4deg)' }} />
+            <FloatSticker slug={picks.stickers[1]} className="absolute right-[1%] bottom-[6%] w-[28%] z-30" style={{ transform: 'rotate(10deg)' }} />
+            <FloatSticker slug={picks.stickers[2]} className="absolute left-[38%] bottom-[3%] w-[22%] z-30" style={{ transform: 'rotate(-8deg)' }} />
+            <div className="absolute right-[12%] top-[-2%] h-[120px] z-0"><Gourde design={picks.gourde} className="h-full" /></div>
+          </Reveal>
+          <Reveal className="order-1 md:order-2">
+            <Kicker>{T.t1.kicker}</Kicker>
+            <h2 className="font-heading font-black text-heading leading-[0.98] text-4xl sm:text-5xl md:text-6xl">{T.t1.title}</h2>
+            <p className="text-base text-grey-light leading-relaxed mt-5 max-w-md">{T.t1.body}</p>
+            <LinkRow tx={tx} />
+          </Reveal>
         </div>
+      </div>
+
+      {/* Tranche 2 : comment ca marche, etapes decalees */}
+      <div>
+        <Reveal className="mb-8">
+          <Kicker>{T.t2.kicker}</Kicker>
+          <h3 className="font-heading font-black text-heading text-3xl sm:text-4xl">{T.t2.title}</h3>
+        </Reveal>
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+          {T.t2.steps.map((s, i) => (
+            <Reveal key={i} delay={i * 0.1} className={`relative flex-1 rounded-2xl p-6 card-bg-bordered ${i === 1 ? 'sm:mt-8' : i === 2 ? 'sm:mt-16' : ''}`}>
+              <span className="font-heading font-black text-5xl text-accent/25 leading-none">{s.n}</span>
+              <h4 className="text-heading font-heading font-bold text-lg mt-2 mb-1.5">{s.t}</h4>
+              <p className="text-sm text-grey-light leading-relaxed">{s.d}</p>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+
+      {/* Tranche 3 : nouveautes en cartes */}
+      <div>
+        <Reveal className="flex flex-wrap items-end justify-between gap-4 mb-6">
+          <div>
+            <Kicker>{T.t3.kicker}</Kicker>
+            <h3 className="font-heading font-black text-heading text-3xl sm:text-4xl">{T.t3.title}</h3>
+            <p className="text-base text-grey-light leading-relaxed mt-3 max-w-lg">{T.t3.body}</p>
+          </div>
+          <a href="https://instagram.com/massivemedias" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-accent font-semibold hover:brightness-110">
+            <Instagram size={18} /> @massivemedias <ArrowRight size={15} />
+          </a>
+        </Reveal>
+        <Reveal delay={0.1}><Reels tx={tx} /></Reveal>
       </div>
     </section>
   )
+}
+
+export default function MagazineSection() {
+  const { tx } = useLang()
+  const picks = useMagazineContent()
+  // Composition retenue par Mika : "collage magazine" (sticker geant qui deborde).
+  return <Magazine tx={tx} picks={picks} />
 }
