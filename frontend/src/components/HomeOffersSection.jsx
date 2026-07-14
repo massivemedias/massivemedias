@@ -58,8 +58,17 @@ const PACKAGES = [
   },
 ]
 
-// Carte de l'offre de bienvenue (1re carte, arbitrage HOME-02). Fond accent,
-// visuellement distincte des packages.
+// Carte de l'offre de bienvenue (1re carte, arbitrage HOME-02). Reste
+// visuellement distincte des packages par sa BORDURE accent, plus par un fond
+// a elle.
+//
+// HOME-BG (14 juillet 2026) : c'etait LA carte "degrade mauve tres fonce" du
+// constat client. Son fond etait code EN DUR (linear-gradient #3D0079 ->
+// #2a0a4a), donc il ne suivait AUCUN theme : boite mauve sombre sur les
+// palettes sombres, et carrement une boite sombre posee sur du blanc sur les 2
+// themes clairs (piege UI-10c). Elle prend maintenant .surface-vitrine, le meme
+// voile que toutes les cartes du site, et ses textes passent aux jetons de
+// theme. Le halo accent est thematise via --accent-rgb.
 function WelcomeCard({ tx }) {
   return (
     <motion.div
@@ -67,18 +76,17 @@ function WelcomeCard({ tx }) {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       viewport={{ once: true }}
-      className="flex flex-col h-full rounded-2xl p-6 border border-accent/40 relative overflow-hidden"
-      style={{ background: 'linear-gradient(150deg, #3D0079, #2a0a4a)' }}
+      className="surface-vitrine card-shadow flex flex-col h-full rounded-2xl p-6 border border-accent/40 relative overflow-hidden"
     >
-      <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, #F00098 0%, transparent 70%)' }} />
+      <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(var(--accent-rgb), 1) 0%, transparent 70%)' }} />
       <span className="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 border border-accent/40 text-accent text-[11px] font-bold uppercase tracking-wider w-fit mb-3">
         <Sparkles size={12} />
         {tx({ fr: 'Offre de bienvenue', en: 'Welcome offer', es: 'Oferta de bienvenida' })}
       </span>
-      <h3 className="relative font-heading font-bold text-xl text-white mb-1.5">
+      <h3 className="relative font-heading font-bold text-xl text-heading mb-1.5">
         {tx({ fr: '10% sur ta 1re commande', en: '10% off your 1st order', es: '10% en tu 1er pedido' })}
       </h3>
-      <p className="relative text-sm flex-1" style={{ color: '#d9c8f0' }}>
+      <p className="relative text-sm flex-1 text-grey-light">
         {tx({
           fr: 'Crée ton compte gratuit : code appliqué automatiquement, suivi de production et rabais de volume.',
           en: 'Create your free account: code auto-applied, production tracking and volume discounts.',
@@ -129,7 +137,7 @@ function PackageCard({ pkg, tx, index }) {
             )}
           </div>
         ) : (
-          <span className="text-sm font-semibold" style={{ color: '#d9c8f0' }}>
+          <span className="text-sm font-semibold text-grey-light">
             {tx({ fr: 'Sur devis', en: 'On quote', es: 'Bajo cotizacion' })}
           </span>
         )}

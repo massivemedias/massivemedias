@@ -87,10 +87,15 @@ export default function HomeCollectionBanner() {
         viewport={{ once: true }}
         className="max-w-5xl mx-auto"
       >
-        {/* HOME-03 : conteneur SANS bordure au repos. Lift leger + glow rose +
-            fine bordure UNIQUEMENT au survol (transitions douces). */}
+        {/* HOME-BG (14 juillet 2026) : le conteneur passe au PATTERN DE REFERENCE
+            du site (.surface-vitrine = var(--bg-glass) + halo accent, le meme
+            voile que les cartes Avantages / PackageCard) au lieu de l'ancien
+            var(--bg-footer) qui en faisait une boite quasi noire flottant sur la
+            page. L'ombre noire codee en dur cede la place a card-shadow (jeton
+            de theme). Lift + glow au survol conserves (HOME-03).
+            Le CONTENU ne bouge pas : badge, titre, prix, eventail, gourde, CTA. */}
         <div
-          className="collection-banner relative overflow-hidden rounded-3xl px-6 sm:px-12 py-12 sm:py-14 transition-all duration-300 shadow-[0_24px_70px_rgba(0,0,0,0.4)] hover:-translate-y-1 hover:ring-1 hover:ring-accent/20"
+          className="surface-vitrine surface-vitrine-hover card-shadow border border-white/5 relative overflow-hidden rounded-3xl px-6 sm:px-12 py-12 sm:py-14 transition-all duration-300 hover:-translate-y-1 hover:ring-1 hover:ring-accent/20"
         >
           <div className="grid min-[700px]:grid-cols-[1.5fr_1fr] gap-8 md:gap-10 items-center">
             {/* Colonne texte + eventail */}
@@ -100,14 +105,14 @@ export default function HomeCollectionBanner() {
                 {tx({ fr: 'Nouveau', en: 'New', es: 'Nuevo' })}
               </span>
 
-              <h2 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl text-white leading-tight mb-3">
+              <h2 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl text-heading leading-tight mb-3">
                 {tx({
                   fr: 'La Collection Stickers est arrivée',
                   en: 'The Sticker Collection is here',
                   es: 'La Coleccion de Stickers ya esta aqui',
                 })}
               </h2>
-              <p className="text-base sm:text-lg mb-5 text-white/80">
+              <p className="text-base sm:text-lg mb-5 text-grey-light">
                 {tx({
                   fr: '270 designs originaux créés à Montréal.',
                   en: '270 original designs made in Montreal.',
@@ -115,16 +120,18 @@ export default function HomeCollectionBanner() {
                 })}
               </p>
 
-              {/* Prix visibles (dual-source) */}
+              {/* Prix visibles (dual-source). HOME-BG : jetons de theme au lieu
+                  du blanc en dur (obligatoire sur le fond .surface-vitrine, qui
+                  devient clair sur les 2 themes clairs). */}
               <div className="flex flex-wrap items-center justify-center min-[700px]:justify-start gap-x-5 gap-y-2 mb-7">
-                <span className="text-white">
+                <span className="text-heading">
                   <span className="font-heading font-bold text-2xl text-accent">{STICKER_COLLECTION_UNIT_PRICE}&nbsp;$</span>
-                  <span className="text-sm ml-1.5 text-white/80">
+                  <span className="text-sm ml-1.5 text-grey-light">
                     {tx({ fr: 'le sticker', en: 'per sticker', es: 'por sticker' })}
                   </span>
                 </span>
-                <span className="hidden sm:inline text-white/25">|</span>
-                <span className="text-white">
+                <span className="hidden sm:inline text-grey-muted">|</span>
+                <span className="text-heading">
                   <span className="font-heading font-bold text-2xl text-accent">
                     {tx({ fr: `Packs dès ${packFrom} $`, en: `Packs from $${packFrom}`, es: `Packs desde ${packFrom} $` })}
                   </span>
