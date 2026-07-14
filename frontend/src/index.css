@@ -1277,9 +1277,41 @@ iframe.instagram-media-rendered + * {
 /* HOME-03 / UI-10c : banniere Collection - fond et glow hover suivent le THEME
    (footer toujours sombre sur les 11 palettes = texte blanc lisible partout ;
    halo accent thematise via --accent-rgb, plus de mauve/rose code en dur). */
-.collection-banner {
-  background: radial-gradient(circle at 50% 30%, rgba(var(--accent-rgb), 0.14), var(--bg-footer) 72%);
+/* HOME-BG (14 juillet 2026) : surface "vitrine" PARTAGEE.
+   Utilisee par la banniere Collection (home) et la carte Offre de bienvenue.
+
+   AVANT, ces conteneurs avaient chacun leur fond a eux :
+     - banniere : var(--bg-footer), soit #100020 sur la palette Massive, la
+       couleur la PLUS SOMBRE de la palette. Resultat : une boite quasi noire
+       qui se CREUSAIT dans la page mauve au lieu de s'y poser (et une dalle
+       noire posee sur du blanc sur les 2 themes clairs).
+     - offre de bienvenue : un degrade mauve CODE EN DUR (#3D0079 -> #2a0a4a)
+       qui ne suivait aucun theme (piege UI-10c).
+
+   APRES : les deux prennent var(--bg-glass), exactement le meme voile que
+   toutes les cartes du site (cartes Avantages, PackageCard, cartes services).
+   La surface SOULEVE le fond de page (x1,41) au lieu de le creuser. On garde
+   par-dessus un halo accent discret (10 %) pour que ces conteneurs restent
+   des vitrines sans jamais retomber vers le noir.
+
+   Zero couleur en dur : surface via --bg-glass, halo via --accent-rgb. Suit
+   les 11 palettes, themes clairs compris.
+
+   ATTENTION : tout texte pose sur .surface-vitrine DOIT utiliser les jetons de
+   theme (text-heading / text-grey-light / text-grey-muted). Du blanc code en
+   dur tombe a 1,06:1 (blanc sur blanc, invisible) sur les 2 themes clairs. */
+/* NB : background-color et background-image sont poses SEPAREMENT, jamais via
+   le raccourci `background: <gradient>, var(--bg-glass)`. Dans ce raccourci, le
+   navigateur traite le var() final comme une 2e COUCHE D'IMAGE (resolue en
+   `none`) au lieu de la couleur de fond -> la surface restait transparente et
+   le voile de verre disparaissait. Verifie au navigateur. */
+.surface-vitrine {
+  background-color: var(--bg-glass);
+  background-image: radial-gradient(circle at 50% 30%, rgba(var(--accent-rgb), 0.10), transparent 70%);
 }
-.collection-banner:hover {
+
+/* Glow accent au survol, reserve aux conteneurs qui levent au survol
+   (la banniere). Comportement inchange par rapport a .collection-banner. */
+.surface-vitrine-hover:hover {
   box-shadow: 0 30px 90px rgba(var(--accent-rgb), 0.20);
 }
