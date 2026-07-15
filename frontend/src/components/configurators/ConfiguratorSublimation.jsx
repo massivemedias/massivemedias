@@ -455,7 +455,7 @@ function ConfiguratorSublimation() {
           </label>
 
           {bringOwnGarment && (
-            <div className="mt-2 rounded-lg bg-accent/5 border border-accent/20 p-3 md:p-4 flex items-start gap-3">
+            <div className="mt-2 rounded-lg bg-accent/5 p-3 md:p-4 flex items-start gap-3">
               <span className="text-xl md:text-2xl flex-shrink-0" aria-hidden="true">👕</span>
               <p className="text-xs md:text-sm text-grey-muted leading-relaxed">
                 {tx({

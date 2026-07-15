@@ -905,7 +905,7 @@ function Account() {
           {/* Header */}
           <div className="max-w-7xl mx-auto mb-6">
             <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
                 <Settings size={24} className="text-white" />
               </div>
               <div className="flex-grow min-w-0">
@@ -1077,9 +1077,9 @@ function Account() {
           <div className="max-w-7xl mx-auto mb-6">
             <div className="flex items-center gap-4">
               {artistAvatar ? (
-                <img src={artistAvatar} alt={initials} className="w-11 h-11 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
+                <img src={artistAvatar} alt={initials} className="w-11 h-11 rounded-full object-cover flex-shrink-0" />
               ) : (
-                <div className="w-11 h-11 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+                <div className="w-11 h-11 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
                   <span className="text-sm font-bold text-white">{initials}</span>
                 </div>
               )}
@@ -1330,9 +1330,9 @@ function Account() {
               {(() => {
                 const av = artistSlug && artistsData[artistSlug]?.avatar;
                 return av ? (
-                  <img src={av} alt={initials} className="w-11 h-11 rounded-full object-cover border-2 border-accent/40 flex-shrink-0" />
+                  <img src={av} alt={initials} className="w-11 h-11 rounded-full object-cover flex-shrink-0" />
                 ) : (
-                  <div className="w-11 h-11 rounded-full bg-accent/20 border-2 border-accent/40 flex items-center justify-center flex-shrink-0">
+                  <div className="w-11 h-11 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-bold text-white">{initials}</span>
                   </div>
                 );

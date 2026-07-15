@@ -322,7 +322,7 @@ function Panier() {
           const prog = collectionProgress(items);
           if (!prog.hasCollection || prog.minMet) return null;
           return (
-            <div className="mb-4 px-4 py-3 rounded-xl border border-accent/30 bg-accent/10 flex items-center gap-3">
+            <div className="mb-4 px-4 py-3 rounded-xl bg-accent/10 flex items-center gap-3">
               <AlertTriangle size={18} className="text-accent flex-shrink-0" />
               <p className="text-sm text-heading">
                 {tx({

@@ -103,7 +103,7 @@ function LandingLocal() {
             transition={{ duration: 0.6 }}
           >
             {/* Badge geo */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/15 border border-accent/30 mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/15 mb-6">
               <MapPin size={14} className="text-accent" />
               <span className="text-accent text-xs font-bold uppercase tracking-wider">
                 {page.geo}
@@ -237,7 +237,7 @@ function LandingLocal() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto rounded-2xl border border-accent/30 bg-gradient-to-br from-accent/10 via-accent/5 to-transparent p-8 sm:p-12 text-center"
+          className="max-w-4xl mx-auto rounded-2xl bg-gradient-to-br from-accent/10 via-accent/5 to-transparent p-8 sm:p-12 text-center"
         >
           <Sparkles size={32} className="text-accent mx-auto mb-4" />
           <h2 className="text-3xl sm:text-4xl font-heading font-bold text-heading mb-3">

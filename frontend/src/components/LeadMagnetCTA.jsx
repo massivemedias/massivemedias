@@ -84,7 +84,7 @@ function LeadMagnetCTA() {
           <div className="relative z-10 px-6 py-10 sm:px-10 sm:py-14 md:px-16 md:py-16">
             {/* Badge promo */}
             <div className="flex justify-center mb-5">
-              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/15 border border-accent/40 backdrop-blur-sm">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/15 backdrop-blur-sm">
                 <Sparkles size={14} className="text-accent" />
                 <span className="text-accent text-xs font-bold uppercase tracking-[0.18em]">
                   {tx({ fr: 'Offre de bienvenue', en: 'Welcome offer', es: 'Oferta de bienvenida' })}

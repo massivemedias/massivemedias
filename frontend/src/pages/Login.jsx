@@ -348,7 +348,7 @@ function Login() {
                   LeadMagnetCTA en mode register (?welcome=1). Disparait des
                   que le code est applique pour laisser place au toast. */}
               {isWelcomeFlow && mode === 'register' && !welcomeApplied && (
-                <div className="mb-6 p-4 rounded-xl border border-accent/40 bg-accent/10 flex items-start gap-3">
+                <div className="mb-6 p-4 rounded-xl bg-accent/10 flex items-start gap-3">
                   <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-accent/20 flex items-center justify-center">
                     <Sparkles size={18} className="text-accent" />
                   </div>

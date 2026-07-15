@@ -203,7 +203,8 @@ input[type="number"] {
 }
 
 [data-theme="vibrant"] .price-table th {
-  border-bottom: 2px solid var(--accent-color, #F00098);
+  /* FIX-COULEURS : separateur neutre, plus de soulignement rose permanent. */
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
 }
 
 [data-theme="vibrant"] .price-table tr:hover td.text-gradient {
@@ -865,10 +866,10 @@ select.input-field option {
   background: var(--highlight-bg);
 }
 
-/* Glass bordered with top accent */
+/* FIX-COULEURS : ex "glass avec bordure accent" - la bordure rose permanente
+   est retiree (decision Mika : aucune bordure rose au repos), le voile reste. */
 .glass-accent-top {
   background: var(--bg-glass);
-  border-top: 2px solid var(--accent-color, #F00098);
 }
 
 /* CTA text bg with border */
@@ -1256,8 +1257,9 @@ iframe.instagram-media-rendered + * {
    UI-10c : teinte de l'ACCENT DU THEME (via --accent-rgb), plus de rose code en
    dur. Le hover (border + shadow accent) de .famcard s'y applique aussi. */
 .famcard-accent {
+  /* FIX-COULEURS : le fond accent reste (c'est un FOND), la bordure rose
+     permanente part. */
   background: linear-gradient(155deg, rgba(var(--accent-rgb), 0.24), rgba(var(--accent-rgb), 0.08));
-  border-color: rgba(var(--accent-rgb), 0.5);
 }
 
 /* HOME-03 / UI-10c : banniere Collection - fond et glow hover suivent le THEME
@@ -1267,7 +1269,7 @@ iframe.instagram-media-rendered + * {
    Utilisee par la banniere Collection (home) et la carte Offre de bienvenue.
 
    AVANT, ces conteneurs avaient chacun leur fond a eux :
-     - banniere : var(--bg-footer), soit #100020 sur la palette Massive, la
+     - banniere : var(--bg-footer), soit #100020 a l'epoque (#1f003f depuis FIX-COULEURS), la
        couleur la PLUS SOMBRE de la palette. Resultat : une boite quasi noire
        qui se CREUSAIT dans la page mauve au lieu de s'y poser (et une dalle
        noire posee sur du blanc sur les 2 themes clairs).

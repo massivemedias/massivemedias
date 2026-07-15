@@ -196,7 +196,7 @@ function CheckoutSuccess() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="mb-8 p-6 rounded-xl bg-glass border border-accent/20 text-left"
+              className="mb-8 p-6 rounded-xl bg-glass card-shadow text-left"
             >
               <h3 className="text-heading font-heading font-bold text-lg mb-2 text-center">
                 {tx({ fr: 'Sauvegarder vos infos pour la prochaine fois?', en: 'Save your info for next time?', es: 'Guardar tus datos para la proxima vez?' })}
@@ -261,7 +261,7 @@ function CheckoutSuccess() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="mb-8 p-6 rounded-xl bg-glass border border-accent/20 text-center"
+              className="mb-8 p-6 rounded-xl bg-glass card-shadow text-center"
             >
               <p className="text-heading font-semibold text-base mb-2">
                 {tx({ fr: 'Vous avez deja un compte!', en: 'You already have an account!', es: 'Ya tienes una cuenta!' })}

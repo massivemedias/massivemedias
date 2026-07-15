@@ -223,7 +223,7 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
               )}
 
               {showLoginPrompt && (
-                <div className="rounded-xl bg-accent/10 border border-accent/30 p-4 text-center space-y-3">
+                <div className="rounded-xl bg-accent/10 p-4 text-center space-y-3">
                   <LogIn size={24} className="mx-auto text-accent" />
                   <p className="text-heading text-sm font-medium">
                     {tx({ fr: 'Connectez-vous pour reserver ce flash', en: 'Sign in to reserve this flash' })}

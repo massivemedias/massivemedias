@@ -173,7 +173,7 @@ function MerchPreview({ productImageUrl, logoUrl, logoPosition, onLogoPositionCh
         {/* Drop zone placeholder (quand pas de logo) */}
         {!logoUrl && (
           <div className="absolute inset-x-0 bottom-0 flex flex-col items-center pb-4 gap-1.5 pointer-events-none">
-            <div className="w-10 h-10 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center">
               <Upload size={18} className="text-accent" />
             </div>
             <span className="text-sm font-bold text-accent">

@@ -58,9 +58,8 @@ const PACKAGES = [
   },
 ]
 
-// Carte de l'offre de bienvenue (1re carte, arbitrage HOME-02). Reste
-// visuellement distincte des packages par sa BORDURE accent, plus par un fond
-// a elle.
+// Carte de l'offre de bienvenue (1re carte, arbitrage HOME-02). Distincte des
+// packages par son halo accent (FIX-COULEURS : plus aucune bordure rose au repos).
 //
 // HOME-BG (14 juillet 2026) : c'etait LA carte "degrade mauve tres fonce" du
 // constat client. Son fond etait code EN DUR (linear-gradient #3D0079 ->
@@ -76,10 +75,10 @@ function WelcomeCard({ tx }) {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       viewport={{ once: true }}
-      className="surface-vitrine card-shadow flex flex-col h-full rounded-2xl p-6 border border-accent/40 relative overflow-hidden"
+      className="surface-vitrine card-shadow flex flex-col h-full rounded-2xl p-6 border border-white/5 relative overflow-hidden"
     >
       <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(var(--accent-rgb), 1) 0%, transparent 70%)' }} />
-      <span className="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 border border-accent/40 text-accent text-[11px] font-bold uppercase tracking-wider w-fit mb-3">
+      <span className="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent text-[11px] font-bold uppercase tracking-wider w-fit mb-3">
         <Sparkles size={12} />
         {tx({ fr: 'Offre de bienvenue', en: 'Welcome offer', es: 'Oferta de bienvenida' })}
       </span>

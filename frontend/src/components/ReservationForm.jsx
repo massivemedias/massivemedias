@@ -119,7 +119,7 @@ export default function ReservationForm({ flash, tatoueur, onClose, onSuccess })
             )}
 
             {/* Booking info message */}
-            <div className="rounded-xl bg-accent/10 border border-accent/20 p-4 space-y-2">
+            <div className="rounded-xl bg-accent/10 p-4 space-y-2">
               <p className="text-heading text-sm font-medium flex items-center gap-2">
                 <AlertCircle size={16} className="text-accent flex-shrink-0" />
                 {tx({ fr: 'Booking Flash', en: 'Flash Booking' })}

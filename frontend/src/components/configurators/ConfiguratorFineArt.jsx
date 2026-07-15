@@ -625,7 +625,7 @@ function ConfiguratorFineArt() {
             Visible uniquement en mode affiche-standard, sous l'emplacement du
             Cadre (cache). Calcul issu de palierInfo (current + next + saving). */}
         {isAfficheStandard && palierInfo && (
-          <div className="rounded-lg bg-accent/5 border border-accent/20 px-3 py-2.5">
+          <div className="rounded-lg bg-accent/5 px-3 py-2.5">
             <p className="text-heading text-sm font-semibold">
               {tx({
                 fr: `${quantity} unite${quantity > 1 ? 's' : ''} a ${palierInfo.current.unit}$/u = ${quantity * palierInfo.current.unit}$`,

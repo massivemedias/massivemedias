@@ -148,7 +148,7 @@ function ArtistPartnershipForm() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex flex-col sm:flex-row items-center gap-4 p-6 rounded-2xl border-2 border-accent/40 bg-accent/5 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-4 p-6 rounded-2xl bg-accent/5 text-center sm:text-left">
             <LogIn size={32} className="text-accent flex-shrink-0" />
             <div className="flex-1">
               <p className="text-heading font-bold text-lg mb-1">

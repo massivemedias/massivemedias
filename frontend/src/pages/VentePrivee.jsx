@@ -256,7 +256,7 @@ function VentePrivee() {
           )}
 
           {/* Bloc prix */}
-          <div className="rounded-2xl p-5 card-bg border border-accent/20 space-y-4">
+          <div className="rounded-2xl p-5 card-bg card-shadow space-y-4">
             {sale.allowCustomPrice ? (
               <>
                 <div>

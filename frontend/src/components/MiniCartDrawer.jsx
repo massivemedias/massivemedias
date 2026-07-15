@@ -82,7 +82,7 @@ export default function MiniCartDrawer() {
           {/* Tiroir : plein ecran mobile (bottom-sheet via items-end), 390px desktop */}
           <motion.aside
             className="relative w-full sm:w-[390px] sm:max-w-[92vw] h-full flex flex-col ml-auto"
-            style={{ background: 'var(--bg-footer)', borderLeft: '1px solid rgba(var(--accent-rgb), 0.3)', boxShadow: '-24px 0 60px rgba(0,0,0,0.5)' }}
+            style={{ background: 'var(--bg-footer)', boxShadow: '-24px 0 60px rgba(0,0,0,0.5)' }}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}

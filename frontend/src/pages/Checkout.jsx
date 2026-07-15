@@ -263,7 +263,7 @@ function Checkout() {
                       </div>
 
                       {deliveryMethod === 'pickup' ? (
-                        <div className="p-4 rounded-xl bg-accent/5 border border-accent/20 mb-2">
+                        <div className="p-4 rounded-xl bg-accent/5 mb-2">
                           <p className="text-heading font-semibold text-sm mb-1">{tx({ fr: 'Adresse de ramassage', en: 'Pickup address', es: 'Direccion de recogida' })}</p>
                           <p className="text-grey-muted text-sm">{tx({ fr: 'Plateau Mont-Royal, Montreal - adresse exacte envoyee a la confirmation', en: 'Plateau Mont-Royal, Montreal - exact address sent at confirmation', es: 'Plateau Mont-Royal, Montreal - direccion exacta enviada al confirmar' })}</p>
                           <p className="text-grey-muted text-xs mt-2">{tx({ fr: 'Sur rendez-vous uniquement. Nous vous contacterons pour fixer un creneau.', en: 'By appointment only. We will contact you to schedule a pickup slot.', es: 'Solo con cita previa. Te contactaremos para programar un horario.' })}</p>

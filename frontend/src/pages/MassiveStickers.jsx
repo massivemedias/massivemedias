@@ -656,20 +656,20 @@ function CollectionWidget({ items, onOpen, tx }) {
           en: `${unitCount} sticker${unitCount > 1 ? 's' : ''} in cart, open cart`,
           es: `${unitCount} sticker${unitCount > 1 ? 's' : ''} en el carrito, abrir el carrito`,
         })}
-        className="flex items-center gap-2 sm:gap-3 rounded-full border border-accent/35 shadow-xl pl-2.5 pr-3 sm:pl-3.5 sm:pr-4 py-1.5 sm:py-2 hover:brightness-110 transition-all"
+        className="flex items-center gap-2 sm:gap-3 rounded-full border border-white/10 shadow-xl pl-2.5 pr-3 sm:pl-3.5 sm:pr-4 py-1.5 sm:py-2 hover:brightness-110 transition-all"
         style={{ background: 'var(--bg-footer)' }}
       >
         <div className="flex items-center pl-1.5 sm:pl-2">
           {thumbs.map((src, i) => (
             <div
               key={i}
-              className="-ml-1.5 sm:-ml-2 w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 border-accent/50 bg-black/30 overflow-hidden flex items-center justify-center"
+              className="-ml-1.5 sm:-ml-2 w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 border-white/25 bg-black/30 overflow-hidden flex items-center justify-center"
             >
               <img src={src} alt="" aria-hidden="true" className="sticker-stroke w-full h-full object-contain" />
             </div>
           ))}
           {extra > 0 && (
-            <div className="-ml-1.5 sm:-ml-2 w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 border-accent/50 bg-black/50 flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">
+            <div className="-ml-1.5 sm:-ml-2 w-7 h-7 sm:w-10 sm:h-10 rounded-full border-2 border-white/25 bg-black/50 flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">
               +{extra}
             </div>
           )}
