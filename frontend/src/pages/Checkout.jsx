@@ -257,7 +257,7 @@ function Checkout() {
                           >
                             <Store size={20} className={deliveryMethod === 'pickup' ? 'text-accent mb-2' : 'text-grey-muted mb-2'} />
                             <p className="text-heading font-semibold text-sm">{tx({ fr: 'Ramassage sur place', en: 'Pickup', es: 'Recoger en tienda' })}</p>
-                            <p className="text-grey-muted text-xs">{tx({ fr: 'Gratuit - 5338 Marquette (sur RDV)', en: 'Free - 5338 Marquette (by appt)', es: 'Gratis - 5338 Marquette (con cita)' })}</p>
+                            <p className="text-grey-muted text-xs">{tx({ fr: 'Gratuit - Plateau Mont-Royal (sur RDV)', en: 'Free - Plateau Mont-Royal (by appt)', es: 'Gratis - Plateau Mont-Royal (con cita)' })}</p>
                           </button>
                         </div>
                       </div>
@@ -265,7 +265,7 @@ function Checkout() {
                       {deliveryMethod === 'pickup' ? (
                         <div className="p-4 rounded-xl bg-accent/5 border border-accent/20 mb-2">
                           <p className="text-heading font-semibold text-sm mb-1">{tx({ fr: 'Adresse de ramassage', en: 'Pickup address', es: 'Direccion de recogida' })}</p>
-                          <p className="text-grey-muted text-sm">5338 rue Marquette, Montreal, QC H2J 3Z3</p>
+                          <p className="text-grey-muted text-sm">{tx({ fr: 'Plateau Mont-Royal, Montreal - adresse exacte envoyee a la confirmation', en: 'Plateau Mont-Royal, Montreal - exact address sent at confirmation', es: 'Plateau Mont-Royal, Montreal - direccion exacta enviada al confirmar' })}</p>
                           <p className="text-grey-muted text-xs mt-2">{tx({ fr: 'Sur rendez-vous uniquement. Nous vous contacterons pour fixer un creneau.', en: 'By appointment only. We will contact you to schedule a pickup slot.', es: 'Solo con cita previa. Te contactaremos para programar un horario.' })}</p>
                         </div>
                       ) : (
@@ -404,7 +404,7 @@ function Checkout() {
                       {formData.telephone && <p className="text-grey-muted text-sm">{formData.telephone}</p>}
                       <p className="text-grey-muted text-sm mt-2">
                         {deliveryMethod === 'pickup'
-                          ? tx({ fr: 'Ramassage sur RDV - 5338 rue Marquette, Montreal', en: 'Pickup by appointment - 5338 rue Marquette, Montreal', es: 'Recoger con cita - 5338 rue Marquette, Montreal' })
+                          ? tx({ fr: 'Ramassage sur RDV - Plateau Mont-Royal, Montreal', en: 'Pickup by appointment - Plateau Mont-Royal, Montreal', es: 'Recoger con cita - Plateau Mont-Royal, Montreal' })
                           : `${formData.adresse}, ${formData.ville}, ${formData.province} ${formData.codePostal}`
                         }
                       </p>

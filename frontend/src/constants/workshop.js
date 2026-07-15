@@ -16,7 +16,7 @@ export const WORKSHOP_NOTICE_SHORT = {
 };
 
 export const WORKSHOP_ADDRESS_FULL = {
-  fr: 'Atelier sur rendez-vous uniquement, 5338 rue Marquette, Plateau Mont-Royal, Montreal',
-  en: 'Workshop by appointment only, 5338 rue Marquette, Plateau Mont-Royal, Montreal',
-  es: 'Taller solo con cita previa, 5338 rue Marquette, Plateau Mont-Royal, Montreal',
+  fr: 'Atelier sur rendez-vous uniquement, Plateau Mont-Royal, Montreal',
+  en: 'Workshop by appointment only, Plateau Mont-Royal, Montreal',
+  es: 'Taller solo con cita previa, Plateau Mont-Royal, Montreal',
 };

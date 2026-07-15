@@ -201,7 +201,7 @@ const translations = {
       space: {
         location: 'Plateau Mont-Royal, Montréal',
         title: "L'espace Age of Union",
-        description: "On opere depuis le 5338 rue Marquette dans le Plateau Mont-Royal. Pick-up disponible sur rendez-vous.",
+        description: "On opere depuis le Plateau Mont-Royal. Pick-up disponible sur rendez-vous (adresse exacte communiquee a la confirmation).",
       },
       universe: {
         title: "Aussi dans l'univers Massive",
@@ -561,7 +561,7 @@ const translations = {
       space: {
         location: 'Plateau Mont-Royal, Montreal',
         title: 'The Age of Union Space',
-        description: "We operate from 5338 rue Marquette in the Plateau Mont-Royal. Pick-up available by appointment.",
+        description: "We operate from the Plateau Mont-Royal. Pick-up available by appointment (exact address shared at confirmation).",
       },
       universe: {
         title: 'Also in the Massive Universe',
@@ -921,7 +921,7 @@ const translations = {
       space: {
         location: 'Plateau Mont-Royal, Montreal',
         title: 'El espacio Age of Union',
-        description: 'Operamos desde el 5338 rue Marquette en el Plateau Mont-Royal. Recogida disponible con cita previa.',
+        description: 'Operamos desde el Plateau Mont-Royal. Recogida disponible con cita previa (direccion exacta al confirmar).',
       },
       universe: {
         title: 'También en el universo Massive',

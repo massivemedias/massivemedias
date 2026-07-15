@@ -192,9 +192,9 @@ function Panier() {
                 <MapPin size={14} className="text-grey-muted flex-shrink-0 mt-0.5" />
                 <p className="text-grey-muted text-xs">
                   {tx({
-                    fr: 'Frais de livraison en sus. Pickup gratuit sur RDV au 5338 Marquette, Montreal.',
-                    en: 'Shipping fees extra. Free pickup by appointment at 5338 Marquette, Montreal.',
-                    es: 'Gastos de envio adicionales. Recogida gratis con cita en 5338 Marquette, Montreal.',
+                    fr: 'Frais de livraison en sus. Pickup gratuit sur RDV au Plateau Mont-Royal, Montreal.',
+                    en: 'Shipping fees extra. Free pickup by appointment in Plateau Mont-Royal, Montreal.',
+                    es: 'Gastos de envio adicionales. Recogida gratis con cita en Plateau Mont-Royal, Montreal.',
                   })}
                 </p>
               </div>

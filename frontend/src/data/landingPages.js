@@ -31,7 +31,7 @@ export const LANDING_PAGES = {
       },
       {
         h2: 'Pourquoi imprimer sur le Plateau plutôt qu\'en ligne ailleurs',
-        body: 'On valide chaque proof avec toi avant de lancer la production. On répond aux courriels en moins de 24h. On accepte les commandes urgentes (24-48h pour les stickers). Tu peux passer chercher tes prints au studio (5338 rue Marquette) sans frais de livraison. Et chaque dollar reste dans l\'économie locale du quartier.',
+        body: 'On valide chaque proof avec toi avant de lancer la production. On répond aux courriels en moins de 24h. On accepte les commandes urgentes (24-48h pour les stickers). Tu peux passer chercher tes prints au studio du Plateau Mont-Royal sans frais de livraison (adresse exacte au rendez-vous). Et chaque dollar reste dans l\'économie locale du quartier.',
       },
       {
         h2: 'Production locale, encres premium, finitions soignées',
@@ -41,7 +41,7 @@ export const LANDING_PAGES = {
     faq: [
       {
         q: 'Où êtes-vous situés exactement sur le Plateau Mont-Royal ?',
-        a: 'Au 5338 rue Marquette, Montréal H2J 3Z3, dans le secteur est du Plateau (proche métro Joliette/Préfontaine). Sur rendez-vous uniquement (lundi au vendredi, 9h-18h). Stationnement libre sur la rue.',
+        a: 'Dans le secteur est du Plateau Mont-Royal (proche métro Joliette/Préfontaine). Sur rendez-vous uniquement (lundi au vendredi, 9h-18h) - l\'adresse exacte est communiquée à la prise de rendez-vous. Stationnement libre sur la rue.',
       },
       {
         q: 'Quel est le délai de production typique ?',
@@ -70,7 +70,8 @@ export const LANDING_PAGES = {
   // mile end", l'URL doit vivre. Coexiste avec imprimeur-plateau-mont-royal
   // (requetes differentes), contenu VOLONTAIREMENT reformule pour eviter le
   // duplicate content avec l'entree plateau.
-  // Wording obligatoire : le studio est BASE au Plateau (rue Marquette) et
+  // Wording obligatoire : le studio est BASE au Plateau (SANS l'adresse exacte,
+  // regle ADRESSE-PRIVEE du 14 juillet 2026 - quartier seulement en public) et
   // DESSERT le Mile-End. Jamais "situe au Mile-End", pas de marque
   // d'equipement, pas de garantie inventee (CONVENTIONS section 3).
   'imprimeur-mile-end': {
@@ -79,7 +80,7 @@ export const LANDING_PAGES = {
     title: 'Imprimeur Mile-End Montréal | Stickers, Prints, Sublimation | Massive Medias',
     description: 'Imprimeur indépendant qui dessert le Mile-End à Montréal : stickers personnalisés, prints fine art, sublimation textile, design graphique. Studio au Plateau voisin, livraison à vélo, ramassage sur rendez-vous.',
     h1: 'Imprimeur pour le Mile-End, Montréal',
-    intro: 'Massive Medias est un studio d\'impression indépendant basé au Plateau Mont-Royal (rue Marquette), à quelques minutes du Mile-End qu\'on dessert au quotidien. Depuis 2022, on imprime stickers, prints fine art, merch et matériel événementiel pour les artistes, ateliers et commerces du Mile-End et des quartiers voisins. Production 100% montréalaise, proof numérique validé avant chaque impression, livraison à vélo ou ramassage au studio.',
+    intro: 'Massive Medias est un studio d\'impression indépendant basé au Plateau Mont-Royal, à quelques minutes du Mile-End qu\'on dessert au quotidien. Depuis 2022, on imprime stickers, prints fine art, merch et matériel événementiel pour les artistes, ateliers et commerces du Mile-End et des quartiers voisins. Production 100% montréalaise, proof numérique validé avant chaque impression, livraison à vélo ou ramassage au studio.',
     sections: [
       {
         h2: 'Le Mile-End, on connaît : artistes, studios et commerces indépendants',
@@ -87,7 +88,7 @@ export const LANDING_PAGES = {
       },
       {
         h2: 'À dix minutes du Mile-End, sans les délais du web-to-print',
-        body: 'On valide chaque proof numérique avec toi avant de lancer la production. Les stickers urgents sortent en 24-48h. Livraison gratuite à vélo dans le Mile-End et le reste de Montréal pour les commandes de 50$ et plus, ou ramassage sans frais au studio du Plateau (5338 rue Marquette), sur rendez-vous. Chaque dollar reste dans l\'économie locale montréalaise.',
+        body: 'On valide chaque proof numérique avec toi avant de lancer la production. Les stickers urgents sortent en 24-48h. Livraison gratuite à vélo dans le Mile-End et le reste de Montréal pour les commandes de 50$ et plus, ou ramassage sans frais au studio du Plateau Mont-Royal, sur rendez-vous (adresse exacte au rendez-vous). Chaque dollar reste dans l\'économie locale montréalaise.',
       },
       {
         h2: 'Encres pigmentaires, découpe de précision, sublimation',
@@ -97,7 +98,7 @@ export const LANDING_PAGES = {
     faq: [
       {
         q: 'Où est votre studio par rapport au Mile-End ?',
-        a: 'Le studio est au Plateau Mont-Royal, au 5338 rue Marquette (Montréal H2J 3Z3), à une dizaine de minutes du Mile-End. On dessert le quartier au quotidien : livraison à vélo ou ramassage au studio sur rendez-vous, du lundi au vendredi, 9h à 18h.',
+        a: 'Le studio est au Plateau Mont-Royal, à une dizaine de minutes du Mile-End (adresse exacte communiquée à la prise de rendez-vous). On dessert le quartier au quotidien : livraison à vélo ou ramassage au studio sur rendez-vous, du lundi au vendredi, 9h à 18h.',
       },
       {
         q: 'Quels délais pour une commande du Mile-End ?',

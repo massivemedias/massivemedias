@@ -28,10 +28,12 @@ export function getOrganizationSchema() {
     ],
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '5338 rue Marquette',
-      addressLocality: 'Montreal',
+      // ADRESSE-PRIVEE (14 juillet 2026, incident walk-in) : l'adresse exacte
+      // ne se donne qu'au dernier moment (confirmation de commande, facture).
+      // Publiquement : le quartier seulement. Le code postal cible un pate de
+      // maisons -> retire aussi.
+      addressLocality: 'Plateau Mont-Royal, Montreal',
       addressRegion: 'QC',
-      postalCode: 'H2J 3Z3',
       addressCountry: 'CA',
     },
     contactPoint: {
@@ -66,18 +68,21 @@ export function getLocalBusinessSchema(lang) {
     paymentAccepted: 'Credit Card, Debit Card, Apple Pay, Google Pay',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '5338 rue Marquette',
-      addressLocality: 'Montreal',
+      // ADRESSE-PRIVEE (14 juillet 2026, incident walk-in) : l'adresse exacte
+      // ne se donne qu'au dernier moment (confirmation de commande, facture).
+      // Publiquement : le quartier seulement. Le code postal cible un pate de
+      // maisons -> retire aussi.
+      addressLocality: 'Plateau Mont-Royal, Montreal',
       addressRegion: 'QC',
-      postalCode: 'H2J 3Z3',
       addressCountry: 'CA',
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: 45.5335,
-      longitude: -73.5734,
+      // ADRESSE-PRIVEE : coordonnees arrondies au quartier (~1 km), pas l'atelier.
+      latitude: 45.53,
+      longitude: -73.58,
     },
-    hasMap: 'https://www.google.com/maps/place/5338+Rue+Marquette,+Montr%C3%A9al,+QC+H2J+3Z3',
+    hasMap: 'https://www.google.com/maps/place/Le+Plateau-Mont-Royal,+Montr%C3%A9al,+QC',
     areaServed: [
       { '@type': 'City', name: 'Montreal' },
       { '@type': 'AdministrativeArea', name: 'Quebec' },
