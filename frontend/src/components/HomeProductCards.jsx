@@ -1,57 +1,59 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
-import { thumb } from '../utils/paths'
-import { mediaUrl } from '../utils/cms'
 import { ETIQUETTES_VISIBLE } from '../config/etiquettesStatus'
 
 /**
- * HOME-CARTES (15 juillet 2026) : rangee de 3 cartes produits qui remplace la
- * grosse banniere Collection sous le hero. Pattern etabli du site : surface
- * `surface-vitrine` (bg-glass), ZERO bordure permanente, lift + halo au survol.
- * 3 colonnes desktop, empilees en mobile. FR/EN/ES.
- *
- * Toutes les images sont des micro/petits thumbs LAZY : les cartes sont
- * sous le pli (revelees au scroll apres le rideau), elles ne doivent PAS
- * devenir le LCP. Le preload LCP de la home est gere dans Home.jsx.
+ * HOME-CARTES (15 juillet 2026) : 3 cartes produits (Stickers / Prints / Mini
+ * Massive) au pattern etabli (surface-vitrine, ZERO bordure permanente, lift +
+ * ombre au survol 200ms). STRUCTURE IDENTIQUE sur les 3 : zone image 4:3 en
+ * haut + titre + texte 1 ligne + CTA ; hauteurs egales (flex, CTA en bas).
+ * VRAIS visuels produit (aucun placeholder) :
+ *   - Stickers : eventail de 3 designs.
+ *   - Prints   : une oeuvre d'artiste dans un CADRE (CSS : passe-partout blanc +
+ *     bordure epaisse + ombre portee), legerement inclinee -> "print encadre".
+ *   - Mini Massive : l'etiquette panda EN SITUATION (mockup boite a lunch).
+ * 3 colonnes desktop, empilees mobile. Images LAZY (sous le pli). FR/EN/ES.
  */
 
-// eventail compact de la carte Stickers (3 designs forts, stroke via CSS).
 const STICKER_FAN = ['massive-dj-skull', 'massive-chameleon', 'massive-alien-hot']
 const MINI = '/images/thumbs-mini/stickers-massive'
+// oeuvre vedette de la carte Prints (swappable). Thumb leger dedie.
+const PRINT_CARD = '/images/home/print-card.webp'
+// etiquette en situation (panda sur boite a lunch, deja composee).
+const ETI_MOCKUP = '/images/etiquettes/mockup-lunchbox.webp'
 
-// carte Mini Massive : petit sticker + prenom exemple dans une pastille.
-const ETI_DESIGN = 'massive-panda-cute'
-const ETI_NAME = 'Léa'
-
-function Card({ children, to, title, desc, cta }) {
+function Card({ to, title, desc, cta, zoneClass = '', children }) {
   return (
     <Link
       to={to}
-      className="surface-vitrine card-shadow rounded-3xl p-5 sm:p-6 flex flex-col group transition-all duration-200 hover:-translate-y-1"
+      className="surface-vitrine card-shadow rounded-3xl overflow-hidden flex flex-col group transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
     >
-      <div className="h-32 flex items-center justify-center mb-4">{children}</div>
-      <h3 className="font-heading font-bold text-heading text-lg mb-1.5">{title}</h3>
-      <p className="text-grey-light text-sm leading-snug mb-4 flex-1">{desc}</p>
-      <span className="inline-flex items-center gap-1.5 text-accent font-semibold text-sm">
-        {cta}
-        <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
-      </span>
+      <div className={`aspect-[4/3] w-full overflow-hidden relative flex items-center justify-center ${zoneClass}`}>
+        {children}
+      </div>
+      <div className="p-5 flex flex-col flex-1">
+        <h3 className="section-title-sm text-heading text-lg mb-1.5">{title}</h3>
+        <p className="text-grey-light text-sm leading-snug mb-3 flex-1">{desc}</p>
+        <span className="inline-flex items-center gap-1.5 text-accent font-semibold text-sm">
+          {cta}
+          <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+        </span>
+      </div>
     </Link>
   )
 }
 
-export default function HomeProductCards({ artworks = [] }) {
+export default function HomeProductCards() {
   const { tx } = useLang()
-  const artwork = artworks.find((a) => a?.image) || null
-  const artworkSrc = artwork ? (mediaUrl(artwork.image, null) || thumb(artwork.image)) : null
 
   return (
     <section className="section-container py-4">
-      <div className="grid gap-4 sm:gap-5 sm:grid-cols-3 max-w-5xl mx-auto">
+      <div className="grid gap-4 sm:gap-5 sm:grid-cols-3 max-w-5xl mx-auto items-stretch">
         {/* --- Stickers : eventail de 3 designs --- */}
         <Card
           to="/stickers"
+          zoneClass="bg-black/10"
           title={tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
           desc={tx({
             fr: '270 designs originaux dès 3 $, résistants à l’eau, imprimés à Montréal.',
@@ -60,28 +62,27 @@ export default function HomeProductCards({ artworks = [] }) {
           })}
           cta={tx({ fr: 'Voir la collection', en: 'See the collection', es: 'Ver la colección' })}
         >
-          <div className="relative w-full flex items-center justify-center">
-            {STICKER_FAN.map((slug, i) => {
-              const t = i - 1
-              return (
-                <img
-                  key={slug}
-                  src={`${MINI}/${slug}.webp`}
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                  decoding="async"
-                  className="sticker-stroke w-20 h-20 object-contain drop-shadow-lg"
-                  style={{ transform: `translateX(${t * 34}px) rotate(${t * 8}deg)`, zIndex: 10 - Math.abs(t) }}
-                />
-              )
-            })}
-          </div>
+          {STICKER_FAN.map((slug, i) => {
+            const t = i - 1
+            return (
+              <img
+                key={slug}
+                src={`${MINI}/${slug}.webp`}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                className="sticker-stroke absolute w-24 h-24 object-contain drop-shadow-xl"
+                style={{ transform: `translateX(${t * 42}px) rotate(${t * 8}deg)`, zIndex: 10 - Math.abs(t) }}
+              />
+            )
+          })}
         </Card>
 
-        {/* --- Prints : une oeuvre encadree --- */}
+        {/* --- Prints : oeuvre encadree, legerement inclinee --- */}
         <Card
           to="/artistes"
+          zoneClass="bg-gradient-to-br from-white/5 to-black/15"
           title={tx({ fr: 'Prints d’artistes', en: 'Artist prints', es: 'Prints de artistas' })}
           desc={tx({
             fr: 'Les œuvres d’artistes d’ici, en tirage fine art encadré.',
@@ -90,16 +91,22 @@ export default function HomeProductCards({ artworks = [] }) {
           })}
           cta={tx({ fr: 'Découvrir les artistes', en: 'Meet the artists', es: 'Conocer los artistas' })}
         >
-          {artworkSrc ? (
-            <div className="bg-white p-1.5 shadow-xl rotate-[-2deg]" style={{ border: '3px solid #1a1a1a' }}>
-              <img src={artworkSrc} alt="" aria-hidden="true" loading="lazy" decoding="async" className="h-24 w-auto object-cover" />
-            </div>
-          ) : (
-            <div className="bg-white p-1.5 shadow-xl rotate-[-2deg] h-24 w-20" style={{ border: '3px solid #1a1a1a' }} />
-          )}
+          <div
+            className="bg-white p-2 shadow-2xl"
+            style={{ border: '5px solid #14141a', transform: 'rotate(-2deg)' }}
+          >
+            <img
+              src={PRINT_CARD}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              className="h-36 w-28 object-cover object-top block"
+            />
+          </div>
         </Card>
 
-        {/* --- Mini Massive : etiquette exemple (sticker + prenom) --- */}
+        {/* --- Mini Massive : etiquette EN SITUATION (boite a lunch) --- */}
         {ETIQUETTES_VISIBLE && (
           <Card
             to="/etiquettes"
@@ -111,13 +118,14 @@ export default function HomeProductCards({ artworks = [] }) {
             })}
             cta={tx({ fr: 'Créer une étiquette', en: 'Create a label', es: 'Crear una etiqueta' })}
           >
-            <div
-              className="flex items-center gap-2 rounded-full pl-2 pr-4 py-1.5 rotate-[-3deg] shadow-xl"
-              style={{ background: '#d4d3d7', border: '3px solid #3b3849' }}
-            >
-              <img src={`${MINI}/${ETI_DESIGN}.webp`} alt="" aria-hidden="true" loading="lazy" decoding="async" className="w-11 h-11 object-contain shrink-0" />
-              <span className="font-heading font-bold text-2xl" style={{ color: '#20202d' }}>{ETI_NAME}</span>
-            </div>
+            <img
+              src={ETI_MOCKUP}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
+            />
           </Card>
         )}
       </div>

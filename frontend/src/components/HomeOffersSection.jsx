@@ -77,7 +77,9 @@ function WelcomeCard({ tx }) {
       viewport={{ once: true }}
       className="surface-vitrine card-shadow flex flex-col h-full rounded-2xl p-6 border border-white/5 relative overflow-hidden"
     >
-      <div aria-hidden className="absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-30 blur-3xl" style={{ background: 'radial-gradient(circle, rgba(var(--accent-rgb), 1) 0%, transparent 70%)' }} />
+      {/* CHANTIER FOND PROPRE : halo accent flou (blur-3xl) retire -> carte nette,
+          coherente avec le hero simplifie. La surface-vitrine porte deja son
+          propre fond de theme. */}
       <span className="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent text-[11px] font-bold uppercase tracking-wider w-fit mb-3">
         <Sparkles size={12} />
         {tx({ fr: 'Offre de bienvenue', en: 'Welcome offer', es: 'Oferta de bienvenida' })}

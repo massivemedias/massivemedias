@@ -257,27 +257,40 @@ function Magazine({ tx, picks }) {
           </Reveal>
           <Reveal className="order-1 md:order-2">
             <Kicker>{T.t1.kicker}</Kicker>
-            <h2 className="font-heading font-black text-heading leading-[0.98] text-4xl sm:text-5xl md:text-6xl">{T.t1.title}</h2>
+            <h2 className="section-title-lg text-heading">{T.t1.title}</h2>
             <p className="text-base text-grey-light leading-relaxed mt-5 max-w-md">{T.t1.body}</p>
             <LinkRow tx={tx} />
           </Reveal>
         </div>
       </div>
 
-      {/* Tranche 2 : comment ca marche, etapes decalees */}
+      {/* Tranche 2 : comment ca marche = TIMELINE (cercles numerotes relies).
+          Desktop : 3 colonnes egales, cercles relies par une ligne horizontale.
+          Mobile : timeline verticale, ligne a gauche, etapes empilees. AUCUNE
+          image (fini le chevauchement). */}
       <div>
-        <Reveal className="mb-8">
+        <Reveal className="mb-10">
           <Kicker>{T.t2.kicker}</Kicker>
-          <h3 className="font-heading font-black text-heading text-3xl sm:text-4xl">{T.t2.title}</h3>
+          <h3 className="section-title-lg text-heading">{T.t2.title}</h3>
         </Reveal>
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-          {T.t2.steps.map((s, i) => (
-            <Reveal key={i} delay={i * 0.1} className={`relative flex-1 rounded-2xl p-6 card-bg-bordered ${i === 1 ? 'sm:mt-8' : i === 2 ? 'sm:mt-16' : ''}`}>
-              <span className="font-heading font-black text-5xl text-accent/25 leading-none">{s.n}</span>
-              <h4 className="text-heading font-heading font-bold text-lg mt-2 mb-1.5">{s.t}</h4>
-              <p className="text-sm text-grey-light leading-relaxed">{s.d}</p>
-            </Reveal>
-          ))}
+        <div className="relative">
+          {/* ligne horizontale desktop (derriere les cercles, a hauteur de leur centre) */}
+          <div className="hidden sm:block absolute top-7 left-[16.6%] right-[16.6%] h-0.5 bg-white/15" aria-hidden="true" />
+          <div className="grid gap-8 sm:grid-cols-3">
+            {T.t2.steps.map((s, i) => (
+              <Reveal key={i} delay={i * 0.12} className="relative flex sm:flex-col items-start sm:items-center sm:text-center gap-4">
+                {/* ligne verticale mobile entre les etapes */}
+                {i < T.t2.steps.length - 1 && (
+                  <div className="sm:hidden absolute left-7 top-16 -bottom-8 w-0.5 bg-white/15" aria-hidden="true" />
+                )}
+                <span className="relative z-10 w-14 h-14 shrink-0 rounded-full bg-accent text-white font-heading font-black text-xl grid place-items-center shadow-lg">{s.n}</span>
+                <div className="pt-1 sm:pt-3">
+                  <h4 className="text-heading font-heading font-bold text-lg mb-1">{s.t}</h4>
+                  <p className="text-sm text-grey-light leading-relaxed max-w-xs sm:mx-auto">{s.d}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -286,7 +299,7 @@ function Magazine({ tx, picks }) {
         <Reveal className="flex flex-wrap items-end justify-between gap-4 mb-6">
           <div>
             <Kicker>{T.t3.kicker}</Kicker>
-            <h3 className="font-heading font-black text-heading text-3xl sm:text-4xl">{T.t3.title}</h3>
+            <h3 className="section-title-lg text-heading">{T.t3.title}</h3>
             <p className="text-base text-grey-light leading-relaxed mt-3 max-w-lg">{T.t3.body}</p>
           </div>
           <a href="https://instagram.com/massivemedias" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-accent font-semibold hover:brightness-110">
