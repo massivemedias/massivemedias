@@ -5,6 +5,7 @@ import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
 import { useCart } from '../contexts/CartContext'
 import { MASSIVE_STICKERS, MASSIVE_STICKER_CATEGORIES } from '../data/massiveStickers'
+import { filterHidden, filterHiddenSlugs } from '../data/stickersModeration'
 import {
   getCollectionStickerPrice,
   getMysteryPackPrice,
@@ -52,7 +53,7 @@ const FAMILY_COLLAGES = {
   asiatique: ['massive-adian-fumeuse', 'massive-asian-muerte', 'massive-samourai-violet', 'massive-geisha1'],
   personnages: ['massive-jade', 'massive-tv-man', 'massive-robot-qui-court', 'massive-punk-rose'],
   aliens: ['massive-alien-hot', 'massive-alien-calote', 'massive-soucoupe', 'massive-savant-vert'],
-  'street-art': ['massive-art-de-rue', 'massive-tagueur', 'massive-art-libre', 'massive-fuckyou'],
+  'street-art': ['massive-art-de-rue', 'massive-tagueur', 'massive-art-libre', 'massive-elephant-graf'],
   fun: ['massive-mais', 'massive-lunette-duck', 'massive-pig-chapeau', 'massive-hotdog'],
 }
 
@@ -724,14 +725,17 @@ function MassiveStickers() {
     // manifest pour le SEO et des builds reproductibles ; les visiteurs
     // reels n'ont jamais ce flag et recoivent l'ordre aleatoire.
     if (typeof window !== 'undefined' && window.__MASSIVE_PRERENDER__) return
-    const arr = [...MASSIVE_STICKERS]
+    // MODERATION : retire les designs masques (Tier 1 NSFW/gore) AVANT le shuffle.
+    const arr = filterHidden(MASSIVE_STICKERS)
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[arr[i], arr[j]] = [arr[j], arr[i]]
     }
     setOrdreAleatoire(arr)
   }, [])
-  const catalogue = ordreAleatoire || MASSIVE_STICKERS
+  // filterHidden aussi sur le fallback (rendu initial + prerender) -> jamais de
+  // design masque, meme avant le shuffle client.
+  const catalogue = ordreAleatoire || filterHidden(MASSIVE_STICKERS)
 
   // STICKERS-HERO-PERF (PERF-01) : le design vedette est choisi AVANT le paint
   // par le mini-script inline de index.html (window.__HERO_IDX__ + <link preload>
@@ -743,10 +747,15 @@ function MassiveStickers() {
   const [heroSticker, setHeroSticker] = useState(null)
   useEffect(() => {
     if (typeof window !== 'undefined' && window.__MASSIVE_PRERENDER__) return
-    const pool = (typeof window !== 'undefined' && window.__HERO_POOL__) || null
+    // MODERATION : le pool hero (index.html) est filtre des designs masques ;
+    // idx module la longueur filtree pour rester valide. Fallback = 1er design
+    // public (jamais masque).
+    const rawPool = (typeof window !== 'undefined' && window.__HERO_POOL__) || null
+    const pool = rawPool ? filterHiddenSlugs(rawPool) : null
     const idx = (typeof window !== 'undefined' && typeof window.__HERO_IDX__ === 'number') ? window.__HERO_IDX__ : 0
-    const slug = pool ? pool[idx] : null
-    const design = (slug && MASSIVE_STICKERS.find((s) => s.slug === slug)) || MASSIVE_STICKERS[0]
+    const slug = (pool && pool.length) ? pool[idx % pool.length] : null
+    const safe = filterHidden(MASSIVE_STICKERS)
+    const design = (slug && safe.find((s) => s.slug === slug)) || safe[0]
     setHeroSticker(design)
   }, [])
 
@@ -809,7 +818,9 @@ function MassiveStickers() {
   const favSet = useMemo(() => new Set(favorites), [favorites])
   const visibles = useMemo(() => {
     const q = normalizeSearchText(query).trim()
-    return MASSIVE_STICKERS.filter((s) => {
+    // MODERATION : recherche + filtres categorie/favoris partent du catalogue
+    // MODERE (sinon un design masque ressortait via une recherche ou une famille).
+    return filterHidden(MASSIVE_STICKERS).filter((s) => {
       // STICKERS-FAV : le filtre favoris est un filtre DUR (s'applique meme
       // pendant une recherche -> la recherche est scopee aux favoris).
       if (activeCat === 'favoris' && !favSet.has(s.slug)) return false
