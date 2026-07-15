@@ -15,6 +15,7 @@ import {
 import { useArtists } from '../hooks/useArtists';
 import Counter from '../components/Counter';
 import HomeCollectionBanner from '../components/HomeCollectionBanner';
+import HomeProductCards from '../components/HomeProductCards';
 import HomePrintsSection from '../components/HomePrintsSection';
 import HomeOffersSection from '../components/HomeOffersSection';
 import FavoriteHeart from '../components/FavoriteHeart';
@@ -37,6 +38,10 @@ import ClosureNotice from '../components/ClosureNotice';
 // presentation de base sont retires par FLAG (reversible), remplaces par UNE
 // section editoriale "magazine" (MagazineSection) placee juste apres la banniere
 // Collection. Rideau + banniere Collection conserves (choix Mika).
+// HOME-CARTES (15 juillet 2026) : la grosse banniere Collection est remplacee
+// par une rangee de 3 cartes produits (Stickers / Prints / Mini Massive).
+// Flag REVERSIBLE : remettre true pour revenir a la banniere.
+const HOME_SHOW_COLLECTION_BANNER = false;
 const HOME04_SHOW_PRINTS_SECTION = false;   // ex-HomePrintsSection (oeuvres absorbees dans le magazine)
 const HOME04_SHOW_ARTWORK_GRID = false;     // grille d'oeuvres de "Massive Artistes" (absorbee) ; les AVATARS restent
 const HOME04_SHOW_SERVICES_TEASER = false;  // teaser services (le mega-menu Services de la nav suffit)
@@ -139,7 +144,10 @@ function Home() {
         description={content?.homeSeo ? bl(content.homeSeo, 'description', lang) || t('home.seo.description') : t('home.seo.description')}
         breadcrumbs={[{ name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }) }]}
         jsonLd={[getOrganizationSchema(), getLocalBusinessSchema(lang), getWebSiteSchema()]}
-        preloadImages={[{ href: '/images/mugs/tumbler-white.webp', media: '(min-width: 768px)' }]}
+        /* HOME-CARTES : la banniere Collection (et sa gourde = ancien LCP
+           desktop) est retiree. Les 3 cartes sont sous le pli + lazy. Preload
+           re-evalue par mesure : le LCP retombe sur le hero (cpr-tagline),
+           deja rendu inline -> aucun preload d'image necessaire. */
       />
 
       {/* HOME-02 : le rideau enveloppe hero + vitrine. Le hero (1er enfant)
@@ -246,10 +254,11 @@ function Home() {
         <div className="absolute bottom-0 left-0 right-0 h-40 hero-fade"></div>
       </section>
 
-      {/* ============ HOME-COLLECTION : annonce de la vente de designs ============
-          Juste apres le hero, placee haut. Conditionnelle au flag
-          STICKERS_SHOP_ENABLED (retourne null et disparait si le flag tombe). */}
-      <HomeCollectionBanner />
+      {/* ============ HOME-CARTES : 3 cartes produits (remplace la banniere) ====
+          Stickers / Prints / Mini Massive au pattern etabli (bg-glass, sans
+          bordure, lift au survol). La banniere Collection est gardee derriere
+          un flag reversible. */}
+      {HOME_SHOW_COLLECTION_BANNER ? <HomeCollectionBanner /> : <HomeProductCards artworks={displayArtworks} />}
 
       {/* ============ SECTION MAGAZINE (HOME-04) ============
           Section editoriale unique (stickers + prints melanges), juste apres la
