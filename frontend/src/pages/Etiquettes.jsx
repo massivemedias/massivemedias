@@ -518,60 +518,65 @@ export default function Etiquettes() {
       </section>
 
 
-      {/* ============ EN SITUATION (mockups factices) ============
-          Objets composes/reutilises (gourde + tasse du repo, crayon compose en
-          CSS) avec l'etiquette posee dessus. La ligne sous la section leve toute
-          ambiguite : Massive vend LES ETIQUETTES, pas les objets. */}
+      {/* ============ EN SITUATION (mockups sur VRAIES photos) ============
+          Photos PEXELS (licence Pexels : usage commercial libre, modification
+          permise) recadrees en dur au ratio 4:3 des tuiles -> les ancres en %
+          ne glissent jamais. L'etiquette configuree (le vrai EtiquettePreview)
+          est POSEE sur l'objet : courbure perspective selon la surface, double
+          ombre de contact (serree + douce) pour l'effet colle. Sources :
+          gourde = pexels.com/photo/8611290 (RDNE Stock project),
+          verre = pexels.com/photo/38380651 (Ann H),
+          crayons = pexels.com/photo/730704 (Jess Bailey Designs).
+          La ligne sous la section leve toute ambiguite : Massive vend LES
+          ETIQUETTES, pas les objets. */}
       <section className="section-container">
         <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-8 text-center">
           {tx({ fr: 'En situation', en: 'In the wild', es: 'En situación' })}
         </h2>
         <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
-          {/* gourde */}
-          <div className="surface-vitrine card-shadow rounded-2xl h-56 relative overflow-hidden flex items-center justify-center">
-            <img src="/images/mugs/tumbler-white.webp" alt="" aria-hidden="true" loading="lazy" decoding="async"
-              className="h-[88%] w-auto object-contain drop-shadow-xl" />
-            <div className="absolute" style={{ transform: 'translate(2%, 12%) rotate(-4deg) scale(0.52)' }}>
-              <EtiquettePreview slug="massive-renard" combo={(ETIQUETTES_PALETTES['massive-renard'] || [])[0] || { bg: '#fff', stroke: '#333', text: '#222' }}
-                format={ETIQUETTE_FORMATS[1]} font={ETIQUETTE_FONTS[0]} line1={SAMPLE_NAMES[lang]} line2="" lang={lang} showDims={false} />
-            </div>
-            <span className="absolute bottom-2.5 left-0 right-0 text-center text-grey-muted text-xs">
-              {tx({ fr: 'Sur sa gourde', en: 'On their bottle', es: 'En su botella' })}
-            </span>
-          </div>
-          {/* tasse / contenant */}
-          <div className="surface-vitrine card-shadow rounded-2xl h-56 relative overflow-hidden flex items-center justify-center">
-            <img src="/images/mugs/mug-white.webp" alt="" aria-hidden="true" loading="lazy" decoding="async"
-              className="h-[74%] w-auto object-contain drop-shadow-xl" />
-            <div className="absolute" style={{ transform: 'translate(-4%, 6%) rotate(3deg) scale(0.46)' }}>
-              <EtiquettePreview slug="massive-alien-vert" combo={(ETIQUETTES_PALETTES['massive-alien-vert'] || [])[0] || { bg: '#fff', stroke: '#333', text: '#222' }}
-                format={ETIQUETTE_FORMATS[1]} font={ETIQUETTE_FONTS[0]} line1={SAMPLE_NAMES[lang]} line2="" lang={lang} showDims={false} />
-            </div>
-            <span className="absolute bottom-2.5 left-0 right-0 text-center text-grey-muted text-xs">
-              {tx({ fr: 'Sur son verre ou contenant', en: 'On their cup or container', es: 'En su vaso o envase' })}
-            </span>
-          </div>
-          {/* crayon compose en CSS + etiquette MINI */}
-          <div className="surface-vitrine card-shadow rounded-2xl h-56 relative overflow-hidden flex items-center justify-center">
-            <div className="relative" style={{ transform: 'rotate(-18deg)' }}>
-              {/* corps du crayon */}
-              <div className="flex items-center">
-                <div style={{ width: 14, height: 26, background: '#e8b7c2', borderRadius: '4px 0 0 4px' }} />
-                <div style={{ width: 10, height: 26, background: '#c9cdd6' }} />
-                <div style={{ width: 150, height: 26, background: 'linear-gradient(180deg, #f7c948 0 33%, #f0b429 33% 66%, #de911d 66%)' }} />
-                <div style={{ width: 0, height: 0, borderTop: '13px solid transparent', borderBottom: '13px solid transparent', borderLeft: '26px solid #e8cfa2' }} />
-                <div style={{ width: 0, height: 0, borderTop: '5px solid transparent', borderBottom: '5px solid transparent', borderLeft: '11px solid #3b3540', marginLeft: -14 }} />
+          {[
+            {
+              img: '/images/etiquettes/mockup-gourde.webp',
+              slug: 'massive-renard', formatIdx: 1,
+              anchor: { left: '63%', top: '56%' },
+              pose: 'perspective(420px) rotateY(10deg) rotate(-2deg) scale(0.28)',
+              legend: { fr: 'Sur sa gourde', en: 'On their bottle', es: 'En su botella' },
+            },
+            {
+              img: '/images/etiquettes/mockup-verre.webp',
+              slug: 'massive-alien-vert', formatIdx: 1,
+              anchor: { left: '48%', top: '62%' },
+              pose: 'perspective(520px) rotateY(-6deg) rotateX(3deg) rotate(1deg) scale(0.42)',
+              legend: { fr: 'Sur son verre', en: 'On their cup', es: 'En su vaso' },
+            },
+            {
+              img: '/images/etiquettes/mockup-crayons.webp',
+              slug: 'massive-tortue', formatIdx: 0,
+              anchor: { left: '42%', top: '57%' },
+              pose: 'rotate(-3deg) scale(0.62)',
+              legend: { fr: 'Sur ses crayons (format mini)', en: 'On their pencils (mini size)', es: 'En sus lápices (formato mini)' },
+            },
+          ].map((m) => (
+            <div key={m.img} className="surface-vitrine card-shadow rounded-2xl relative overflow-hidden aspect-[4/3] w-full max-w-[340px] mx-auto">
+              <img src={m.img} alt="" aria-hidden="true" loading="lazy" decoding="async"
+                className="absolute inset-0 w-full h-full object-cover" />
+              <div
+                className="absolute"
+                style={{
+                  left: m.anchor.left, top: m.anchor.top,
+                  transform: `translate(-50%, -50%) ${m.pose}`,
+                  filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.35)) drop-shadow(0 4px 8px rgba(0,0,0,0.18))',
+                }}
+              >
+                <EtiquettePreview slug={m.slug} combo={(ETIQUETTES_PALETTES[m.slug] || [])[0] || { bg: '#fff', stroke: '#333', text: '#222' }}
+                  format={ETIQUETTE_FORMATS[m.formatIdx]} font={ETIQUETTE_FONTS[0]} line1={SAMPLE_NAMES[lang]} line2="" lang={lang} showDims={false} />
               </div>
-              {/* etiquette MINI posee sur le corps */}
-              <div className="absolute" style={{ left: 34, top: -22, transform: 'scale(0.5)', transformOrigin: 'left top' }}>
-                <EtiquettePreview slug="massive-tortue" combo={(ETIQUETTES_PALETTES['massive-tortue'] || [])[0] || { bg: '#fff', stroke: '#333', text: '#222' }}
-                  format={ETIQUETTE_FORMATS[0]} font={ETIQUETTE_FONTS[0]} line1={SAMPLE_NAMES[lang]} line2="" lang={lang} showDims={false} />
-              </div>
+              <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" aria-hidden="true" />
+              <span className="absolute bottom-2 left-0 right-0 text-center text-white/95 text-xs font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]">
+                {tx(m.legend)}
+              </span>
             </div>
-            <span className="absolute bottom-2.5 left-0 right-0 text-center text-grey-muted text-xs">
-              {tx({ fr: 'Sur ses crayons (format mini)', en: 'On their pencils (mini size)', es: 'En sus lápices (formato mini)' })}
-            </span>
-          </div>
+          ))}
         </div>
         <p className="text-grey-muted text-xs text-center mt-4 max-w-xl mx-auto">
           {tx({
