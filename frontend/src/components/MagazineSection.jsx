@@ -5,6 +5,7 @@ import { ArrowRight, Instagram, Play } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { useArtists } from '../hooks/useArtists'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
+import { KIDS_SAFE } from '../data/etiquettes'
 import TumblerDesign from './TumblerDesign'
 
 /**
@@ -96,8 +97,11 @@ function Kicker({ children }) {
 function GiantSticker({ slug, rotate = -4, className = '' }) {
   return (
     <Link to="/stickers" className={`block group ${className}`} aria-label="Voir la collection de stickers">
+      {/* thumb PROPRE (400, non filigrane) : affiche a ~300px = trop petit pour
+          reimprimer, donc pas besoin du filigrane 800 -> home 100% sans le
+          "MASSIVE" fantome. Le filigrane reste sur la vue produit/lightbox. */}
       <img
-        src={st(slug)} alt="" loading="lazy"
+        src={stThumb(slug)} alt="" loading="lazy"
         className="sticker-stroke w-full h-full object-contain transition-transform duration-500 group-hover:-translate-y-2 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
         style={{ transform: `rotate(${rotate}deg)` }}
       />
@@ -152,7 +156,15 @@ function useMagazineContent() {
     Object.values(artists || {}).forEach((a) => (a?.prints || []).forEach((p) => { if (p?.image) cms.push(p.image) }))
     return cms.length >= 4 ? cms : LOCAL_ARTWORKS
   }, [artists])
-  const stickerPool = useMemo(() => MASSIVE_STICKERS.map((s) => s.slug), [])
+  // Pool restreint a la curation KIDS_SAFE (deja validee par Mika) : le sticker
+  // hero du magazine est tire au sort, il ne doit JAMAIS tomber sur un design
+  // NSFW/pin-up sur la page d'accueil grand public. Intersection avec le
+  // catalogue reel -> uniquement des slugs valides ET surs.
+  const stickerPool = useMemo(() => {
+    const safe = new Set(KIDS_SAFE)
+    const inter = MASSIVE_STICKERS.map((s) => s.slug).filter((slug) => safe.has(slug))
+    return inter.length ? inter : MASSIVE_STICKERS.map((s) => s.slug)
+  }, [])
 
   // Etat DETERMINISTE au prerender (premiers), shuffle client apres mount.
   const [picks, setPicks] = useState(() => ({
@@ -248,12 +260,12 @@ function Magazine({ tx, picks }) {
       {/* Tranche 1 : sticker geant dominant qui deborde + texte + collage */}
       <div className="relative">
         <div className="grid md:grid-cols-[1.1fr_1fr] gap-8 items-center">
-          <Reveal delay={0.1} className="relative h-[400px] md:h-[500px] order-2 md:order-1">
-            <GiantSticker slug={picks.stickers[0]} rotate={-6} className="absolute left-[-4%] top-[6%] w-[72%] max-h-[86%] z-20" />
-            <Artwork src={picks.artworks[0]} className="absolute right-[4%] top-[10%] w-[38%] h-[58%] z-10" style={{ transform: 'rotate(4deg)' }} />
-            <FloatSticker slug={picks.stickers[1]} className="absolute right-[1%] bottom-[6%] w-[28%] z-30" style={{ transform: 'rotate(10deg)' }} />
-            <FloatSticker slug={picks.stickers[2]} className="absolute left-[38%] bottom-[3%] w-[22%] z-30" style={{ transform: 'rotate(-8deg)' }} />
-            <div className="absolute right-[12%] top-[-2%] h-[120px] z-0"><Gourde design={picks.gourde} className="h-full" /></div>
+          {/* CHANTIER "calme le sticker geant" (Mika) : fini le collage qui
+              debordait et se chevauchait. UN seul sticker, CONTENU dans sa
+              colonne, centre, zero chevauchement a tout breakpoint (375/768/
+              1440). Plus d'absolute, plus de bleed negatif. */}
+          <Reveal delay={0.1} className="relative h-[260px] md:h-[400px] order-2 md:order-1 flex items-center justify-center">
+            <GiantSticker slug={picks.stickers[0]} rotate={-4} className="w-[66%] max-w-[300px] h-full" />
           </Reveal>
           <Reveal className="order-1 md:order-2">
             <Kicker>{T.t1.kicker}</Kicker>
