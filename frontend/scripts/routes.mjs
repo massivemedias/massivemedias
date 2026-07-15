@@ -32,6 +32,9 @@ export const STATIC_ROUTES = [
   // ALLUMAGE STICKERS (8 juillet 2026) : la collection est en vente,
   // la page entre au prerender + sitemap avec le flag STICKERS_SHOP_ENABLED.
   '/stickers',
+  // LANCEMENT MINI MASSIVE (15 juillet 2026) : etiquettes enfants, checkout
+  // branche (SEC-04), flag ETIQUETTES_ENABLED=true.
+  '/etiquettes',
   // Pages services (5)
   '/services/prints',
   '/services/stickers',

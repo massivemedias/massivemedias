@@ -14,7 +14,7 @@ function SmartLink({ to, children, ...rest }) {
   }
   return <Link to={to} {...rest}>{children}</Link>;
 }
-import { Menu, X, ShoppingCart, LogIn, User, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, ChevronDown, Bell, PenTool, Settings } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogIn, User, Printer, Sticker, Shirt, Globe, Monitor, Store, Info, Phone, ChevronRight, ChevronDown, Bell, PenTool, Settings, Tag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MassiveLogo from './MassiveLogo';
 import { useLang } from '../i18n/LanguageContext';
@@ -22,6 +22,7 @@ import BrightnessFader from './BrightnessFader';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { STICKERS_SHOP_ENABLED } from '../config/stickersShopStatus'
+import { ETIQUETTES_VISIBLE } from '../config/etiquettesStatus'
 import { useUserRole } from '../contexts/UserRoleContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { HIDDEN_SERVICE_SLUGS } from '../config/merchStatus';
@@ -128,6 +129,17 @@ function Header() {
                   className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/stickers') ? 'text-accent' : 'nav-link'}`}
                 >
                   {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
+                </SmartLink>
+              )}
+
+              {/* Pilier Mini Massive (etiquettes enfants) apres Stickers, gated. */}
+              {ETIQUETTES_VISIBLE && (
+                <SmartLink
+                  to="/etiquettes"
+                  onClick={navClick('/etiquettes')}
+                  className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/etiquettes') ? 'text-accent' : 'nav-link'}`}
+                >
+                  {tx({ fr: 'Mini Massive', en: 'Mini Massive', es: 'Mini Massive' })}
                 </SmartLink>
               )}
 
@@ -368,6 +380,20 @@ function Header() {
                       <Sticker size={14} className="text-accent" />
                     </span>
                     <span className="font-semibold text-[14px]">{tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}</span>
+                    <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                  </SmartLink>
+                )}
+
+                {ETIQUETTES_VISIBLE && (
+                  <SmartLink
+                    to="/etiquettes"
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/etiquettes') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                    onClick={navClick('/etiquettes', close)}
+                  >
+                    <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                      <Tag size={14} className="text-accent" />
+                    </span>
+                    <span className="font-semibold text-[14px]">Mini Massive</span>
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                   </SmartLink>
                 )}
