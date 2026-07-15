@@ -188,11 +188,31 @@ export const ETIQUETTE_PACKS = [
  * 3 jumelles libres (Google Fonts, chargees dans index.html). Mika tranche en
  * Phase 1 ; l'architecture accepte d'autres familles (ajouter ici + le <link>).
  */
+/**
+ * POLICES au choix du client (DECISION Mika 15 juillet : le configurateur
+ * offre plusieurs fonts, pattern du marche).
+ * - Baloo 2 : gardee (Google Fonts, OFL).
+ * - Homemade Apple : ajoutee (Google Fonts, Apache 2.0 = OK commercial).
+ * - Amelina Colette : ECARTEE - l'EULA 1001Fonts fournie est "Free For
+ *   PERSONAL Use", usage commercial interdit sans licence achetee a l'auteur.
+ *   Jamais de font sans droit commercial sur un produit vendu. Si Mika achete
+ *   la licence : subsetter le TTF en woff2 local et l'ajouter ici.
+ * `tooThinFormats` : formats ou la font est illisible A TAILLE REELLE
+ * (traits trop fins pour impression + lamination + decoupe) -> grisee dans le
+ * selecteur avec une note, pour qu'un parent ne commande jamais d'illisible.
+ * Chargement SCOPE a la page Mini Massive via ETIQUETTE_FONTS_CSS_URL
+ * (rien dans index.html, zero poids pour le reste du site).
+ */
 export const ETIQUETTE_FONTS = [
-  { id: 'nunito', label: 'Nunito', family: "'Nunito', sans-serif", weight: 800 },
-  { id: 'varela', label: 'Varela Round', family: "'Varela Round', sans-serif", weight: 400 },
-  { id: 'baloo', label: 'Baloo 2', family: "'Baloo 2', sans-serif", weight: 700 },
+  { id: 'baloo', label: 'Baloo 2', family: "'Baloo 2', sans-serif", weight: 700, tooThinFormats: [] },
+  { id: 'homemade-apple', label: 'Homemade Apple', family: "'Homemade Apple', cursive", weight: 400, tooThinFormats: ['mini'] },
 ]
+export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Homemade+Apple&display=swap'
+export const FONT_TOO_THIN_NOTE = {
+  fr: 'trop fine pour ce format',
+  en: 'too thin for this size',
+  es: 'demasiado fina para este formato',
+}
 
 /**
  * NOM DE PAGE : "Mini Massive" (DECISION Mika, 15 juillet 2026).

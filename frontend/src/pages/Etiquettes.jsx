@@ -8,7 +8,7 @@ import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import {
-  KIDS_SAFE, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS,
+  KIDS_SAFE, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS, ETIQUETTE_FONTS_CSS_URL, FONT_TOO_THIN_NOTE,
   PAGE_NAME_OPTIONS, PAGE_NAME_CHOICE, PAGE_SEO_PRODUCT, ETIQUETTE_CLAIMS, ETIQUETTE_CLAIM_LAVE_VAISSELLE,
   formatDims, formatDimsShort, SAMPLE_NAMES,
 } from '../data/etiquettes'
@@ -45,12 +45,16 @@ const stickerBySlug = Object.fromEntries(MASSIVE_STICKERS.map((s) => [s.slug, s]
  * ------------------------------------------------------------------------ */
 function useAutoFit(text, fontFamily, fontWeight, maxWidthPx, maxHeightPx) {
   const [size, setSize] = useState(12)
-  const [fontsReady, setFontsReady] = useState(false)
+  const [fontsReady, setFontsReady] = useState(0)
   useEffect(() => {
     let alive = true
-    if (document.fonts?.ready) document.fonts.ready.then(() => { if (alive) setFontsReady(true) })
-    else setFontsReady(true)
-    return () => { alive = false }
+    if (document.fonts?.ready) document.fonts.ready.then(() => { if (alive) setFontsReady((t) => t + 1) })
+    else setFontsReady(1)
+    // les webfonts du configurateur sont injectees PAR la page (chargement
+    // scoped) : elles peuvent arriver apres fonts.ready -> re-mesurer
+    const onDone = () => { if (alive) setFontsReady((t) => t + 1) }
+    document.fonts?.addEventListener?.('loadingdone', onDone)
+    return () => { alive = false; document.fonts?.removeEventListener?.('loadingdone', onDone) }
   }, [])
   useEffect(() => {
     if (!text || maxWidthPx <= 0) return
@@ -58,9 +62,13 @@ function useAutoFit(text, fontFamily, fontWeight, maxWidthPx, maxHeightPx) {
     const ctx = canvas.getContext('2d')
     const probe = 100
     ctx.font = `${fontWeight} ${probe}px ${fontFamily}`
-    const w = ctx.measureText(text).width || 1
-    // taille qui remplit la largeur, plafonnee par la hauteur de ligne dispo
-    const fit = Math.min((maxWidthPx / w) * probe, maxHeightPx)
+    const m = ctx.measureText(text)
+    const w = m.width || 1
+    // hauteur REELLE du texte rendu (ascendantes + descendantes mesurees) :
+    // une cursive expressive (Homemade Apple) depasse largement sa boite em,
+    // borner fontSize a maxHeight ne suffit pas - c'est le trace qui doit tenir
+    const hReal = ((m.actualBoundingBoxAscent || probe * 0.8) + (m.actualBoundingBoxDescent || 0)) || probe
+    const fit = Math.min((maxWidthPx / w) * probe, (maxHeightPx / hReal) * probe)
     setSize(Math.max(7, Math.floor(fit)))
   }, [text, fontFamily, fontWeight, maxWidthPx, maxHeightPx, fontsReady])
   return size
@@ -158,6 +166,16 @@ function ConfigurateurEtiquettes() {
   const combo = combos[Math.min(comboIdx, combos.length - 1)] || { bg: '#fff', stroke: '#333', text: '#222' }
   const format = ETIQUETTE_FORMATS.find((f) => f.id === formatId)
   const font = ETIQUETTE_FONTS.find((f) => f.id === fontId)
+
+  // la font selectionnee devient interdite quand on passe a un format trop
+  // petit pour elle -> bascule sur la premiere font permise (jamais d'apercu
+  // dans une font non commandable)
+  useEffect(() => {
+    if ((font?.tooThinFormats || []).includes(formatId)) {
+      const ok = ETIQUETTE_FONTS.find((f) => !(f.tooThinFormats || []).includes(formatId))
+      if (ok) setFontId(ok.id)
+    }
+  }, [formatId, font])
   const designs = useMemo(() => (showAll ? KIDS_SAFE : KIDS_SAFE.slice(0, 24)), [showAll])
 
   return (
@@ -221,24 +239,36 @@ function ConfigurateurEtiquettes() {
             </div>
           </div>
 
-          {/* police : les 3 candidates, rendues dans leur propre police */}
+          {/* police : au choix du client, chaque bouton rendu dans sa propre
+              police avec le prenom tape. Une font trop fine pour le format
+              courant est GRISEE (jamais d'illisible commandable). */}
           <div className="mt-5">
             <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2">
               {tx({ fr: 'Police', en: 'Font', es: 'Tipografía' })}
             </p>
             <div className="flex flex-wrap gap-2">
-              {ETIQUETTE_FONTS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFontId(f.id)}
-                  className={`px-4 py-2 rounded-full text-sm transition-all border ${fontId === f.id ? 'border-accent text-accent bg-accent/10' : 'border-white/10 text-grey-light hover:border-white/25'}`}
-                  style={{ fontFamily: f.family, fontWeight: f.weight }}
-                >
-                  {line1.trim() || f.label}
-                </button>
-              ))}
+              {ETIQUETTE_FONTS.map((f) => {
+                const tooThin = (f.tooThinFormats || []).includes(formatId)
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    disabled={tooThin}
+                    onClick={() => setFontId(f.id)}
+                    className={`px-4 py-2 rounded-full text-sm transition-all border ${tooThin ? 'border-white/5 text-grey-muted opacity-40 cursor-not-allowed' : fontId === f.id ? 'border-accent text-accent bg-accent/10' : 'border-white/10 text-grey-light hover:border-white/25'}`}
+                    style={{ fontFamily: f.family, fontWeight: f.weight }}
+                    title={tooThin ? `${f.label} : ${tx(FONT_TOO_THIN_NOTE)}` : undefined}
+                  >
+                    {line1.trim() || f.label}
+                  </button>
+                )
+              })}
             </div>
+            {ETIQUETTE_FONTS.some((f) => (f.tooThinFormats || []).includes(formatId)) && (
+              <p className="text-grey-muted text-xs mt-2">
+                {ETIQUETTE_FONTS.filter((f) => (f.tooThinFormats || []).includes(formatId)).map((f) => f.label).join(', ')} : {tx(FONT_TOO_THIN_NOTE)}
+              </p>
+            )}
           </div>
 
           {/* format */}
@@ -316,6 +346,17 @@ export default function Etiquettes() {
   const { lang, tx } = useLang()
   const pageName = PAGE_NAME_OPTIONS[PAGE_NAME_CHOICE]
   const goConfig = () => document.getElementById('configurateur')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+  // Webfonts du configurateur chargees ICI seulement (rien dans index.html,
+  // zero poids pour le reste du site). Idempotent, le link reste pose.
+  useEffect(() => {
+    if (document.getElementById('etiquettes-fonts')) return
+    const link = document.createElement('link')
+    link.id = 'etiquettes-fonts'
+    link.rel = 'stylesheet'
+    link.href = ETIQUETTE_FONTS_CSS_URL
+    document.head.appendChild(link)
+  }, [])
 
   const claims = ETIQUETTE_CLAIMS.filter((c) => !c.pending || ETIQUETTE_CLAIM_LAVE_VAISSELLE)
   const claimIcons = { droplets: Droplets, sun: Sun, shield: Shield, scissors: Scissors, washing: WashingMachine, truck: Truck }
