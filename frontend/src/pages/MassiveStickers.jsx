@@ -705,7 +705,7 @@ function CollectionWidget({ items, onOpen, tx }) {
 function MassiveStickers() {
   const { tx } = useLang()
   const { items: cartItems, addToCart, openCartDrawer } = useCart()
-  const { favorites, openFavDrawer } = useFavorites()
+  const { favorites, openFavDrawer, favDrawerOpen, closeFavDrawer } = useFavorites()
   const [activeCat, setActiveCat] = useState('all')
   const [query, setQuery] = useState('')
   // Feedback visuel apres un ajout (cle = slug du design ou 'pack-N')
@@ -918,9 +918,12 @@ function MassiveStickers() {
                   <button
                     type="button"
                     onClick={() => {
-                      // FAV-04 : ouvre le tiroir favoris (comme le clic coeur), ET
-                      // arme le filtre favoris de la grille -> en fermant le tiroir,
-                      // la grille dessous montre les favoris.
+                      // FAV-05 : le bouton hero TOGGLE le tiroir (en desktop le
+                      // panneau est non-modal, il faut un moyen de le fermer sans
+                      // clic-exterieur). A l'OUVERTURE seulement (FAV-04) : arme
+                      // aussi le filtre favoris de la grille -> en fermant, la
+                      // grille dessous montre les favoris.
+                      if (favDrawerOpen) { closeFavDrawer(); return }
                       setQuery('')
                       setActiveCat('favoris')
                       openFavDrawer()
