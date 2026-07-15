@@ -82,9 +82,11 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr'
   const padX = hPx * 0.22
   const textZoneW = wPx - stickerSide - padX * 3
   const hasLine2 = Boolean(line2.trim())
-  // hauteur allouee a chaque ligne (la ligne 2 est plus petite)
-  const line1MaxH = hasLine2 ? hPx * 0.5 : hPx * 0.66
-  const line2MaxH = hPx * 0.3
+  // hauteur allouee a chaque ligne : les 2 lignes + l'ecart DOIVENT tenir dans
+  // la hauteur du rectangle, sinon le texte deborde. Budgets serres (somme
+  // ~0,66 h) et l'ecart est minimal -> l'ecriture reste centree, jamais coupee.
+  const line1MaxH = hasLine2 ? hPx * 0.38 : hPx * 0.62
+  const line2MaxH = hPx * 0.23
 
   const t1 = line1.trim() || SAMPLE_NAMES[lang] || SAMPLE_NAMES.fr
   const t2 = line2.trim()
@@ -111,12 +113,15 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr'
           className="sticker-stroke object-contain shrink-0"
           style={{ width: stickerSide, height: stickerSide }}
         />
-        <div className="flex-1 min-w-0 text-center leading-none" style={{ paddingLeft: padX * 0.5 }}>
-          <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size1, color: combo.text, whiteSpace: 'nowrap' }}>
+        <div
+          className="flex-1 min-w-0 flex flex-col items-center justify-center text-center"
+          style={{ height: hPx, paddingLeft: padX * 0.5, gap: hasLine2 ? hPx * 0.015 : 0 }}
+        >
+          <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size1, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap' }}>
             {t1}
           </div>
           {hasLine2 && (
-            <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size2, color: combo.text, whiteSpace: 'nowrap', opacity: 0.82, marginTop: hPx * 0.04 }}>
+            <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size2, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap', opacity: 0.82 }}>
               {t2}
             </div>
           )}
@@ -534,14 +539,13 @@ export default function Etiquettes() {
         <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-8 text-center">
           {tx({ fr: 'En situation', en: 'In the wild', es: 'En situación' })}
         </h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+        <div className="grid sm:grid-cols-3 gap-4 max-w-5xl mx-auto">
           {[
             { img: '/images/etiquettes/mockup-gourde.webp', legend: { fr: 'Sur sa gourde', en: 'On their bottle', es: 'En su botella' } },
             { img: '/images/etiquettes/mockup-verre.webp', legend: { fr: 'Sur son verre', en: 'On their cup', es: 'En su vaso' } },
-            { img: '/images/etiquettes/mockup-crayon.webp', legend: { fr: 'Sur ses crayons (format mini)', en: 'On their pencils (mini size)', es: 'En sus lápices (mini)' } },
-            { img: '/images/etiquettes/mockup-cahier.webp', legend: { fr: 'Sur ses cahiers', en: 'On their notebooks', es: 'En sus cuadernos' } },
+            { img: '/images/etiquettes/mockup-lunchbox.webp', legend: { fr: 'Sur sa boîte à lunch', en: 'On their lunch box', es: 'En su lonchera' } },
           ].map((m) => (
-            <div key={m.img} className="surface-vitrine card-shadow rounded-2xl relative overflow-hidden aspect-[4/3] w-full max-w-[340px] mx-auto">
+            <div key={m.img} className="surface-vitrine card-shadow rounded-2xl relative overflow-hidden aspect-[4/3] w-full max-w-[360px] mx-auto">
               <img src={m.img} alt={tx(m.legend)} loading="lazy" decoding="async"
                 className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" aria-hidden="true" />
@@ -553,9 +557,9 @@ export default function Etiquettes() {
         </div>
         <p className="text-grey-muted text-xs text-center mt-4 max-w-xl mx-auto">
           {tx({
-            fr: 'Les objets sont montrés à titre d\u2019exemple seulement : Massive fournit les étiquettes, pas les gourdes, verres, crayons ou cahiers.',
-            en: 'Objects are shown as examples only: Massive supplies the labels, not the bottles, cups, pencils or notebooks.',
-            es: 'Los objetos se muestran solo como ejemplo: Massive suministra las etiquetas, no las botellas, vasos, lápices ni cuadernos.',
+            fr: 'Les objets sont montrés à titre d\u2019exemple seulement : Massive fournit les étiquettes, pas les gourdes, verres ou boîtes à lunch.',
+            en: 'Objects are shown as examples only: Massive supplies the labels, not the bottles, cups or lunch boxes.',
+            es: 'Los objetos se muestran solo como ejemplo: Massive suministra las etiquetas, no las botellas, vasos ni loncheras.',
           })}
         </p>
       </section>
