@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Amelina Colette : police du configurateur Mini Massive, self-hostee (woff2
+   sous-ensemble local). Le fichier n'est telecharge QUE quand un texte utilise
+   cette famille (page Mini Massive) - zero poids ailleurs. `swap` : Baloo 2
+   rend d'abord, l'auto-fit re-mesure sur document.fonts loadingdone.
+   LICENCE personal-use a regler avant vente publique - voir data/etiquettes.js. */
+@font-face {
+  font-family: 'Amelina Colette';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/amelina-colette.woff2') format('woff2');
+}
+
 /* Global: all buttons and clickable elements get pointer cursor */
 button, [role="button"], a, label[class*="cursor"], select, input[type="checkbox"], input[type="radio"] {
   cursor: pointer;
