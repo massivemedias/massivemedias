@@ -9,6 +9,7 @@ import ScrollToTopButton from './components/ScrollToTopButton';
 import BackendHealthBanner from './components/BackendHealthBanner';
 import { MERCH_HIDDEN } from './config/merchStatus';
 import { STICKERS_SHOP_ENABLED } from './config/stickersShopStatus'
+import { ETIQUETTES_VISIBLE } from './config/etiquettesStatus'
 import { sendVisitorBeacon } from './utils/visitorBeacon';
 import './index.css';
 
@@ -56,6 +57,9 @@ const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 // data centralisee dans src/data/landingPages.js.
 const LandingLocal = lazyWithRetry(() => import('./pages/LandingLocal'));
 const MassiveStickers = lazyWithRetry(() => import('./pages/MassiveStickers'))
+// ETIQUETTES (Phase 1) : page derriere flag, invisible en prod tant que le test
+// lave-vaisselle de Mika n'est pas concluant (cf. config/etiquettesStatus.js).
+const Etiquettes = lazyWithRetry(() => import('./pages/Etiquettes'))
 const MmAdmin = lazyWithRetry(() => import('./pages/MmAdmin'));
 // AdminLayout est importe STATIQUEMENT (pas lazy) pour eviter les problemes
 // de cache Cloudflare ou le sidebar n'affiche pas les nouveaux onglets au premier chargement.
@@ -299,6 +303,11 @@ function App() {
                 (404), rien d'autre a debrancher. */}
             {STICKERS_SHOP_ENABLED && (
               <Route path="/stickers" element={<MassiveStickers />} />
+            )}
+            {/* ETIQUETTES : flag false en prod (test lave-vaisselle = gate),
+                visible en DEV pour construire et valider (Phases 1-2). */}
+            {ETIQUETTES_VISIBLE && (
+              <Route path="/etiquettes" element={<Etiquettes />} />
             )}
             <Route path="/stickers-personnalises-montreal" element={<LandingLocal />} />
             <Route path="/print-fine-art-quebec" element={<LandingLocal />} />
