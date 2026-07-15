@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, Heart, Plus, ShoppingBag } from 'lucide-react'
 import FavoriteHeart from './FavoriteHeart'
@@ -11,26 +11,48 @@ import { getCollectionStickerPrice, STICKER_COLLECTION_MIN_UNITS } from '../data
 import { thumb } from '../utils/paths'
 
 /**
- * FAV-04 : tiroir lateral des favoris, jumeau visuel du mini-panier (CART-01) -
- * meme voile leger (15% + blur), meme slide 390px desktop / bottom-sheet mobile,
- * meme fermeture (voile / X / Escape). S'ouvre au clic d'un coeur (ajout) et au
- * clic du bouton hero "Mes favoris". PRIORITE PANIER : ne s'affiche jamais
- * par-dessus le tiroir panier (coordonne dans FavoritesContext).
+ * FAV-04 : tiroir lateral des favoris, jumeau visuel du mini-panier (CART-01).
+ * S'ouvre au clic d'un coeur (ajout) et au bouton hero "Mes favoris". PRIORITE
+ * PANIER : ne s'affiche jamais par-dessus le tiroir panier (coordonne dans
+ * FavoritesContext) ; le tiroir PANIER, lui, reste modal (l'achat merite le
+ * focus) et n'est pas touche par ce qui suit.
+ *
+ * FAV-05 (retours Mika) : en DESKTOP le tiroir devient un PANNEAU COMPAGNON
+ * NON-MODAL. Plus de voile bloquant : la page reste interactive, on peut aimer
+ * ou retirer d'autres designs pendant qu'il est ouvert et il se met a jour en
+ * direct. Fermeture par X et par le bouton hero (toggle) ; le clic-exterieur-
+ * ferme disparait en desktop (incompatible avec "cliquer un autre coeur"). Il
+ * est aussi REDIMENSIONNABLE : grip sur le bord gauche, drag entre 320px et
+ * 50 % du viewport, largeur persistee (localStorage massive-fav-drawer-width),
+ * double-clic sur le grip = retour a la largeur par defaut. Les grilles
+ * internes sont en auto-fill : plus large = plus de colonnes.
+ * MOBILE : inchange (feuille modale plein ecran, voile, clic-voile ferme,
+ * scroll de fond bloque). Le mode est choisi par matchMedia 640px (= breakpoint
+ * `sm` de Tailwind, celui que le tiroir utilisait deja).
  *
  * IMPORTANT - pourquoi transitions CSS et PAS AnimatePresence : ce tiroir est
- * MONTE EN PERMANENCE, ferme via classe (translate-x-full + opacity 0 +
- * pointer-events none), ouvert via classe (visible). Choix DEFENSIF : l'etat
- * ferme (pointer-events none = zero blocage) est applique IMMEDIATEMENT par la
- * classe, sans dependre qu'une animation JS se termine. Un tiroir base sur
- * AnimatePresence ne se demonte qu'a la fin de l'animation d'exit (pilotee par
- * requestAnimationFrame) ; si l'onglet est en arriere-plan, rAF est throttle,
- * l'exit stalle et le voile plein ecran reste monte -> bloque les clics. Le
- * montage permanent + CSS evite ce piege quel que soit l'etat de l'onglet.
+ * MONTE EN PERMANENCE, ferme via classe (translate-x-full + pointer-events
+ * none), ouvert via classe (visible). Choix DEFENSIF : l'etat ferme (zero
+ * blocage) est applique IMMEDIATEMENT par la classe, sans dependre qu'une
+ * animation JS se termine. Un tiroir base sur AnimatePresence ne se demonte
+ * qu'a la fin de l'animation d'exit (pilotee par requestAnimationFrame) ; si
+ * l'onglet est en arriere-plan, rAF est throttle, l'exit stalle et le voile
+ * plein ecran reste monte -> bloque les clics. Le montage permanent + CSS
+ * evite ce piege quel que soit l'etat de l'onglet.
  *
  * Deux groupes : stickers (retirables + ajout panier + pont "ajouter au panier"
  * avec rappel du minimum 5) et prints d'artistes (retirables + cliquables vers
  * l'oeuvre). Le PONT PANIER reste STICKERS SEULEMENT. Monte dans MainLayout.
  */
+const FAV_WIDTH_KEY = 'massive-fav-drawer-width'
+const FAV_WIDTH_DEFAULT = 390
+const FAV_WIDTH_MIN = 320
+// Le breakpoint du mode compagnon = `sm` Tailwind, deja utilise par le tiroir.
+const DESKTOP_QUERY = '(min-width: 640px)'
+
+const clampWidth = (w) =>
+  Math.min(Math.max(w, FAV_WIDTH_MIN), Math.round(window.innerWidth * 0.5))
+
 export default function FavoritesDrawer() {
   const { favorites, favoritesPrints, favDrawerOpen, closeFavDrawer } = useFavorites()
   const { addToCart } = useCart()
@@ -38,14 +60,70 @@ export default function FavoritesDrawer() {
   const { tx } = useLang()
   const navigate = useNavigate()
 
-  // Escape ferme, et on bloque le scroll de fond quand le tiroir est ouvert.
+  // Mode compagnon (desktop) vs feuille modale (mobile), vivant au resize.
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(DESKTOP_QUERY).matches,
+  )
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_QUERY)
+    const onChange = () => setIsDesktop(mq.matches)
+    mq.addEventListener('change', onChange)
+    // Filet DEFENSIF : dans un onglet en arriere-plan, Chrome differe les
+    // evenements matchMedia 'change' (meme famille que le throttle rAF, cf.
+    // lecon FAV-04). Le resize de window, lui, arrive -> on re-lit mq.matches.
+    // setState a valeur identique = no-op React, ca ne coute rien.
+    window.addEventListener('resize', onChange)
+    return () => { mq.removeEventListener('change', onChange); window.removeEventListener('resize', onChange) }
+  }, [])
+
+  // Largeur du panneau (desktop) : persistee, clampee a l'application (le
+  // viewport d'aujourd'hui n'est pas celui d'hier).
+  const [width, setWidth] = useState(() => {
+    if (typeof window === 'undefined') return FAV_WIDTH_DEFAULT
+    const saved = parseInt(localStorage.getItem(FAV_WIDTH_KEY) || '', 10)
+    return Number.isFinite(saved) ? saved : FAV_WIDTH_DEFAULT
+  })
+  const [dragging, setDragging] = useState(false)
+
+  const startDrag = useCallback((e) => {
+    e.preventDefault()
+    setDragging(true)
+    const onMove = (ev) => setWidth(clampWidth(window.innerWidth - ev.clientX))
+    const onUp = (ev) => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      setDragging(false)
+      const w = clampWidth(window.innerWidth - ev.clientX)
+      setWidth(w)
+      try { localStorage.setItem(FAV_WIDTH_KEY, String(w)) } catch { /* prive */ }
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }, [])
+
+  const resetWidth = useCallback(() => {
+    setWidth(FAV_WIDTH_DEFAULT)
+    try { localStorage.removeItem(FAV_WIDTH_KEY) } catch { /* prive */ }
+  }, [])
+
+  // Pendant le drag : curseur global + pas de selection de texte (sinon le
+  // drag surligne la page), et la transition du panneau est coupee (suivi 1:1).
+  useEffect(() => {
+    if (!dragging) return
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    return () => { document.body.style.cursor = ''; document.body.style.userSelect = '' }
+  }, [dragging])
+
+  // Escape ferme (les deux modes). Le scroll de fond n'est bloque qu'en MOBILE :
+  // en desktop le panneau est un compagnon, la page doit rester utilisable.
   useEffect(() => {
     if (!favDrawerOpen) return
     const onKey = (e) => { if (e.key === 'Escape') closeFavDrawer() }
     document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
+    if (!isDesktop) document.body.style.overflow = 'hidden'
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
-  }, [favDrawerOpen, closeFavDrawer])
+  }, [favDrawerOpen, closeFavDrawer, isDesktop])
 
   // Resolution stickers (data locale) + prints (CMS, par print.id stable).
   const favStickers = favorites
@@ -81,22 +159,56 @@ export default function FavoritesDrawer() {
   const goPrint = (artistSlug, id) => { closeFavDrawer(); navigate(`/artistes/${artistSlug}?print=${id}`) }
 
   return (
+    // FAV-05 : le wrapper est TOUJOURS transparent aux clics (pointer-events
+    // none) ; seuls le voile (mobile) et le panneau reactivent les leurs quand
+    // ouverts. C'est ce qui rend la page interactive sous le panneau desktop :
+    // les coeurs de la grille restent cliquables, le tiroir se met a jour en
+    // direct.
     <div
-      className={`fixed inset-0 z-[60] flex justify-end transition-opacity duration-200 ${favDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      className="fixed inset-0 z-[60] flex justify-end pointer-events-none"
       aria-hidden={!favDrawerOpen}
     >
-      {/* Voile leger (15% + blur). Clic exterieur = fermeture. */}
-      <div className="absolute inset-0 bg-black/[0.15] backdrop-blur-[2px]" onClick={closeFavDrawer} aria-hidden="true" />
+      {/* Voile leger (15% + blur) : MOBILE SEULEMENT (feuille modale). En
+          desktop il n'existe plus - le clic-exterieur-ferme disparait avec lui
+          (incompatible avec "aimer un autre design tiroir ouvert"). */}
+      {!isDesktop && (
+        <div
+          className={`absolute inset-0 bg-black/[0.15] backdrop-blur-[2px] transition-opacity duration-200 ${favDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0'}`}
+          onClick={closeFavDrawer}
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Tiroir : plein ecran mobile (bottom-sheet via ml-auto), 390px desktop.
-          Slide par transform CSS (ferme = hors ecran a droite). */}
+      {/* Panneau : plein ecran mobile, largeur reglable desktop (drag du grip).
+          Slide par transform CSS (ferme = hors ecran a droite). La transition
+          est coupee pendant le drag pour un suivi 1:1 du pointeur. */}
       <aside
-        className={`relative w-full sm:w-[390px] sm:max-w-[92vw] h-full flex flex-col ml-auto transition-transform duration-[250ms] ease-out ${favDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
-        style={{ background: 'var(--bg-footer)', borderLeft: '1px solid rgba(var(--accent-rgb), 0.3)', boxShadow: '-24px 0 60px rgba(0,0,0,0.5)' }}
+        className={`relative w-full h-full flex flex-col ml-auto ${dragging ? '' : 'transition-transform duration-[250ms] ease-out'} ${favDrawerOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-full'}`}
+        style={{
+          width: isDesktop && typeof window !== 'undefined' ? `${clampWidth(width)}px` : undefined,
+          background: 'var(--bg-footer)',
+          borderLeft: '1px solid rgba(var(--accent-rgb), 0.3)',
+          boxShadow: '-24px 0 60px rgba(0,0,0,0.5)',
+        }}
         role="dialog"
+        aria-modal={!isDesktop || undefined}
         aria-label={tx({ fr: 'Mes favoris', en: 'My favorites', es: 'Mis favoritos' })}
         aria-hidden={!favDrawerOpen}
       >
+        {/* FAV-05 : grip de redimensionnement (desktop). Drag = largeur entre
+            320px et 50 % du viewport ; double-clic = retour a 390px. */}
+        {isDesktop && (
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label={tx({ fr: 'Redimensionner le panneau (double-clic : reinitialiser)', en: 'Resize the panel (double-click: reset)', es: 'Redimensionar el panel (doble clic: restablecer)' })}
+            onPointerDown={startDrag}
+            onDoubleClick={resetWidth}
+            className="absolute left-0 top-0 h-full w-2.5 -ml-1 cursor-col-resize z-10 group/grip"
+          >
+            <div className="absolute left-[3px] top-1/2 -translate-y-1/2 h-14 w-1 rounded-full bg-white/25 group-hover/grip:bg-accent transition-colors" />
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
           <h3 className="text-white font-heading font-bold text-lg flex items-center gap-2">
@@ -134,7 +246,9 @@ export default function FavoritesDrawer() {
                   <h4 className="text-white/70 text-[11px] font-bold uppercase tracking-wider mb-2.5">
                     {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })} ({favStickers.length})
                   </h4>
-                  <div className="grid grid-cols-3 gap-2">
+                  {/* FAV-05 : auto-fill -> le nombre de colonnes suit la largeur
+                      du panneau (~3 a 390px, davantage une fois elargi). */}
+                  <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))' }}>
                     {favStickers.map((s) => (
                       <div key={s.slug} className="relative rounded-lg bg-black/25 p-2 flex flex-col items-center">
                         <FavoriteHeart slug={s.slug} size={13} className="absolute top-1 right-1 z-10" />
@@ -165,7 +279,7 @@ export default function FavoritesDrawer() {
                   <h4 className="text-white/70 text-[11px] font-bold uppercase tracking-wider mb-2.5">
                     {tx({ fr: 'Prints d\'artistes', en: 'Artist prints', es: 'Prints de artistas' })} ({favPrints.length})
                   </h4>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))' }}>
                     {favPrints.map(({ print, artistSlug, artistName }) => (
                       <div key={print.id} className="relative rounded-lg bg-black/25 overflow-hidden group">
                         <FavoriteHeart space="prints" slug={print.id} size={13} className="absolute top-1 right-1 z-10" />
