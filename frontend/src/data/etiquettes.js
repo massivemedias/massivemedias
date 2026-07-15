@@ -259,9 +259,9 @@ export const ETIQUETTE_CLAIMS = [
   { icon: 'sun', fr: 'Résiste aux UV', en: 'UV resistant', es: 'Resistente a los UV', pending: false },
   { icon: 'shield', fr: 'Vinyle laminé premium', en: 'Premium laminated vinyl', es: 'Vinilo laminado premium', pending: false },
   { icon: 'scissors', fr: 'Découpe à la forme, coins arrondis', en: 'Die-cut, rounded corners', es: 'Corte a medida, esquinas redondeadas', pending: false },
-  // Livraison : UNIQUEMENT ce qu'on tient (regle collection existante) - pas de
-  // "livraison gratuite" generique a la Colle a Moi.
-  { icon: 'truck', fr: 'Livraison gratuite à Montréal (codes postaux H) ou retrait au Plateau', en: 'Free delivery in Montreal (H postal codes) or Plateau pickup', es: 'Entrega gratis en Montreal (códigos H) o recogida en el Plateau', pending: false },
+  // Livraison : UNIQUEMENT ce qu'on tient (regle collection existante). Libelle
+  // SIMPLIFIE (Mika, 15 juillet) - la verification codes H reste au checkout.
+  { icon: 'truck', fr: 'Livraison gratuite à Montréal', en: 'Free delivery in Montreal', es: 'Entrega gratis en Montreal', pending: false },
   // PLACEHOLDER Phase 3 (s'active au verdict du test physique de Mika, 10 cycles en cours) :
   { icon: 'washing', fr: 'Passe au lave-vaisselle', en: 'Dishwasher safe', es: 'Apto lavavajillas', pending: true },
 ]
