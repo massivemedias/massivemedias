@@ -195,8 +195,12 @@ export const ETIQUETTE_FONTS = [
 ]
 
 /**
- * NOMS DE PAGE proposes (Mika tranche en Phase 1).
- * Le H1/SEO/breadcrumb de la page utilisent PAGE_NAME_OPTIONS[PAGE_NAME_CHOICE].
+ * NOM DE PAGE : "Mini Massive" (DECISION Mika, 15 juillet 2026).
+ * Le H1/breadcrumb utilisent PAGE_NAME_OPTIONS[PAGE_NAME_CHOICE] ; le title/meta
+ * SEO composent nom de marque + requete Google ("Mini Massive - Étiquettes
+ * personnalisées pour enfants | Massive") - les deux vivent ensemble.
+ * L'entree de menu future (Phase 3 seulement) = "Mini Massive".
+ * Les 2 options non retenues restent la, temoin de l'arbitrage.
  */
 export const PAGE_NAME_OPTIONS = [
   {
@@ -211,11 +215,18 @@ export const PAGE_NAME_OPTIONS = [
   },
   {
     id: 'sous-marque',
-    fr: 'Mini Massive — Étiquettes', en: 'Mini Massive — Labels', es: 'Mini Massive — Etiquetas',
-    note: 'Sous-marque extensible (Mini Massive pourrait couvrir d’autres produits enfants)',
+    fr: 'Mini Massive', en: 'Mini Massive', es: 'Mini Massive',
+    note: 'Sous-marque extensible (pourra couvrir d’autres produits enfants)',
   },
 ]
-export const PAGE_NAME_CHOICE = 0 // Mika tranche : index dans PAGE_NAME_OPTIONS
+export const PAGE_NAME_CHOICE = 2 // "Mini Massive" (verdict Mika)
+
+/** La requete Google, accolee au nom de marque dans le title/meta SEO. */
+export const PAGE_SEO_PRODUCT = {
+  fr: 'Étiquettes personnalisées pour enfants',
+  en: 'Custom Kids Name Labels',
+  es: 'Etiquetas personalizadas para niños',
+}
 
 /**
  * ARGUMENTS PRODUIT HONNETES - AUCUNE promesse lave-vaisselle/laveuse tant que

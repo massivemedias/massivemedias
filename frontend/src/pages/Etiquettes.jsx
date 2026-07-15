@@ -9,7 +9,7 @@ import { useLang } from '../i18n/LanguageContext'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import {
   KIDS_SAFE, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS,
-  PAGE_NAME_OPTIONS, PAGE_NAME_CHOICE, ETIQUETTE_CLAIMS, ETIQUETTE_CLAIM_LAVE_VAISSELLE,
+  PAGE_NAME_OPTIONS, PAGE_NAME_CHOICE, PAGE_SEO_PRODUCT, ETIQUETTE_CLAIMS, ETIQUETTE_CLAIM_LAVE_VAISSELLE,
   formatDims, formatDimsShort, SAMPLE_NAMES,
 } from '../data/etiquettes'
 import { ETIQUETTES_PALETTES } from '../data/etiquettesPalettes'
@@ -324,11 +324,15 @@ export default function Etiquettes() {
   return (
     <>
       <SEO
-        title={tx({ fr: `${pageName.fr} | Massive`, en: `${pageName.en} | Massive`, es: `${pageName.es} | Massive` })}
+        title={tx({
+          fr: `${pageName.fr} - ${PAGE_SEO_PRODUCT.fr} | Massive`,
+          en: `${pageName.en} - ${PAGE_SEO_PRODUCT.en} | Massive`,
+          es: `${pageName.es} - ${PAGE_SEO_PRODUCT.es} | Massive`,
+        })}
         description={tx({
-          fr: 'Étiquettes d’identification personnalisées pour enfants : un design de la collection Massive + le nom de ton enfant, couleurs assorties automatiquement. Résistantes à l’eau et aux UV, imprimées à Montréal.',
-          en: 'Personalized kids name labels: a Massive collection design + your kid’s name, colors matched automatically. Water and UV resistant, printed in Montreal.',
-          es: 'Etiquetas personalizadas para niños: un diseño de la colección Massive + el nombre de tu peque, colores a juego automáticos. Resistentes al agua y UV, impresas en Montreal.',
+          fr: 'Mini Massive : étiquettes d’identification personnalisées pour enfants. Un design de la collection Massive + le nom de ton enfant, couleurs assorties automatiquement. Résistantes à l’eau et aux UV, imprimées à Montréal.',
+          en: 'Mini Massive: personalized kids name labels. A Massive collection design + your kid’s name, colors matched automatically. Water and UV resistant, printed in Montreal.',
+          es: 'Mini Massive: etiquetas personalizadas para niños. Un diseño de la colección Massive + el nombre de tu peque, colores a juego automáticos. Resistentes al agua y UV, impresas en Montreal.',
         })}
         breadcrumbs={[
           { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
@@ -358,9 +362,9 @@ export default function Etiquettes() {
                 </div>
                 <p className="text-base md:text-lg text-grey-light mb-5 max-w-xl mx-auto lg:mx-0">
                   {tx({
-                    fr: 'Son design préféré, son nom, des couleurs qui s’assortissent toutes seules. Découpées à la forme et imprimées à Montréal, prêtes pour l’école et la garderie.',
-                    en: 'Their favorite design, their name, colors that match themselves. Die-cut and printed in Montreal, ready for school and daycare.',
-                    es: 'Su diseño favorito, su nombre, colores que combinan solos. Cortadas a medida e impresas en Montreal, listas para la escuela y la guardería.',
+                    fr: 'Des étiquettes personnalisées pour enfants : son design préféré, son nom, des couleurs qui s’assortissent toutes seules. Découpées à la forme et imprimées à Montréal, prêtes pour l’école et la garderie.',
+                    en: 'Custom name labels for kids: their favorite design, their name, colors that match themselves. Die-cut and printed in Montreal, ready for school and daycare.',
+                    es: 'Etiquetas personalizadas para niños: su diseño favorito, su nombre, colores que combinan solos. Cortadas a medida e impresas en Montreal, listas para la escuela y la guardería.',
                   })}
                 </p>
                 <div className="flex justify-center lg:justify-start">
