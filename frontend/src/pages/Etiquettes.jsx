@@ -518,59 +518,32 @@ export default function Etiquettes() {
       </section>
 
 
-      {/* ============ EN SITUATION (mockups sur VRAIES photos) ============
-          Photos PEXELS (licence Pexels : usage commercial libre, modification
-          permise) recadrees en dur au ratio 4:3 des tuiles -> les ancres en %
-          ne glissent jamais. L'etiquette configuree (le vrai EtiquettePreview)
-          est POSEE sur l'objet : courbure perspective selon la surface, double
-          ombre de contact (serree + douce) pour l'effet colle. Sources :
-          gourde = pexels.com/photo/8611290 (RDNE Stock project),
-          verre = pexels.com/photo/38380651 (Ann H),
-          crayons = pexels.com/photo/730704 (Jess Bailey Designs).
+      {/* ============ EN SITUATION (mockups STATIQUES composes) ============
+          Round 2 (verdict Mika : "les stickers doivent s'adapter a la forme") :
+          l'etiquette exemple est CUITE dans la photo par
+          scripts/generate-etiquettes-mockups.mjs - vrai warp cylindrique
+          (Plane2Cylinder), shading des bords enroules, echelle reelle relative
+          a l'objet, ombre de contact. Ces cartes sont ILLUSTRATIVES : le
+          configurateur garde son apercu live a lui. Photos Pexels (licence
+          Pexels, commercial libre) : gourde 8611290 (RDNE Stock project),
+          verre 38380651 (Ann H), crayon 4237814, cahier 7054764. Etiquettes :
+          4 designs, prenom Lyse. RELANCER le script apres tout changement.
           La ligne sous la section leve toute ambiguite : Massive vend LES
           ETIQUETTES, pas les objets. */}
       <section className="section-container">
         <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-8 text-center">
           {tx({ fr: 'En situation', en: 'In the wild', es: 'En situación' })}
         </h2>
-        <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
           {[
-            {
-              img: '/images/etiquettes/mockup-gourde.webp',
-              slug: 'massive-renard', formatIdx: 1,
-              anchor: { left: '63%', top: '56%' },
-              pose: 'perspective(420px) rotateY(10deg) rotate(-2deg) scale(0.28)',
-              legend: { fr: 'Sur sa gourde', en: 'On their bottle', es: 'En su botella' },
-            },
-            {
-              img: '/images/etiquettes/mockup-verre.webp',
-              slug: 'massive-alien-vert', formatIdx: 1,
-              anchor: { left: '48%', top: '62%' },
-              pose: 'perspective(520px) rotateY(-6deg) rotateX(3deg) rotate(1deg) scale(0.42)',
-              legend: { fr: 'Sur son verre', en: 'On their cup', es: 'En su vaso' },
-            },
-            {
-              img: '/images/etiquettes/mockup-crayons.webp',
-              slug: 'massive-tortue', formatIdx: 0,
-              anchor: { left: '42%', top: '57%' },
-              pose: 'rotate(-3deg) scale(0.62)',
-              legend: { fr: 'Sur ses crayons (format mini)', en: 'On their pencils (mini size)', es: 'En sus lápices (formato mini)' },
-            },
+            { img: '/images/etiquettes/mockup-gourde.webp', legend: { fr: 'Sur sa gourde', en: 'On their bottle', es: 'En su botella' } },
+            { img: '/images/etiquettes/mockup-verre.webp', legend: { fr: 'Sur son verre', en: 'On their cup', es: 'En su vaso' } },
+            { img: '/images/etiquettes/mockup-crayon.webp', legend: { fr: 'Sur ses crayons (format mini)', en: 'On their pencils (mini size)', es: 'En sus lápices (mini)' } },
+            { img: '/images/etiquettes/mockup-cahier.webp', legend: { fr: 'Sur ses cahiers', en: 'On their notebooks', es: 'En sus cuadernos' } },
           ].map((m) => (
             <div key={m.img} className="surface-vitrine card-shadow rounded-2xl relative overflow-hidden aspect-[4/3] w-full max-w-[340px] mx-auto">
-              <img src={m.img} alt="" aria-hidden="true" loading="lazy" decoding="async"
+              <img src={m.img} alt={tx(m.legend)} loading="lazy" decoding="async"
                 className="absolute inset-0 w-full h-full object-cover" />
-              <div
-                className="absolute"
-                style={{
-                  left: m.anchor.left, top: m.anchor.top,
-                  transform: `translate(-50%, -50%) ${m.pose}`,
-                  filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.35)) drop-shadow(0 4px 8px rgba(0,0,0,0.18))',
-                }}
-              >
-                <EtiquettePreview slug={m.slug} combo={(ETIQUETTES_PALETTES[m.slug] || [])[0] || { bg: '#fff', stroke: '#333', text: '#222' }}
-                  format={ETIQUETTE_FORMATS[m.formatIdx]} font={ETIQUETTE_FONTS[0]} line1={SAMPLE_NAMES[lang]} line2="" lang={lang} showDims={false} />
-              </div>
               <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/50 to-transparent" aria-hidden="true" />
               <span className="absolute bottom-2 left-0 right-0 text-center text-white/95 text-xs font-medium [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]">
                 {tx(m.legend)}
@@ -580,9 +553,9 @@ export default function Etiquettes() {
         </div>
         <p className="text-grey-muted text-xs text-center mt-4 max-w-xl mx-auto">
           {tx({
-            fr: 'Les objets sont montrés à titre d’exemple seulement : Massive fournit les étiquettes, pas les gourdes, verres ou crayons.',
-            en: 'Objects are shown as examples only: Massive supplies the labels, not the bottles, cups or pencils.',
-            es: 'Los objetos se muestran solo como ejemplo: Massive suministra las etiquetas, no las botellas, vasos ni lápices.',
+            fr: 'Les objets sont montrés à titre d\u2019exemple seulement : Massive fournit les étiquettes, pas les gourdes, verres, crayons ou cahiers.',
+            en: 'Objects are shown as examples only: Massive supplies the labels, not the bottles, cups, pencils or notebooks.',
+            es: 'Los objetos se muestran solo como ejemplo: Massive suministra las etiquetas, no las botellas, vasos, lápices ni cuadernos.',
           })}
         </p>
       </section>
