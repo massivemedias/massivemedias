@@ -1506,9 +1506,14 @@ function ArtisteDetail({ subdomainSlug }) {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="relative watermark-lightbox rounded-lg overflow-hidden"
+                className="relative rounded-lg overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* WATERMARK-BAKE : plus de `watermark-lightbox` CSS ici. Le
+                    filigrane est CUIT dans le fichier servi (fullImage /
+                    posters-trimmed via generate-watermarks.mjs) -> un clic droit
+                    telecharge une image REELLEMENT filigranee, pas une copie
+                    propre sous un overlay CSS. */}
                 <img loading="lazy"
                   src={item.fullImage || toFull(item.image)}
                   alt={tx({ fr: item.titleFr, en: item.titleEn, es: item.titleEs || item.titleEn })}
