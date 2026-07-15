@@ -93,9 +93,15 @@ export const KIDS_SAFE = [
  * occupe le reste, moins la gouttiere.
  */
 export const ETIQUETTE_FORMATS = [
+  // `w/h` en mm (production Cameo) ; `inW/inH` = equivalents POUCES commerciaux
+  // (46mm=1,8 po, 9=0,35, 60=2,4, 18=0,7, 76=3, 25=1). AFFICHAGE PAR LANGUE
+  // (decision Mika 1b) : FR/EN en pouces avec le mm discret en secondaire,
+  // ES en metrique. Cf. formatDims() plus bas.
+  // Les SACS ont disparu des usages (decision Mika 1b : tenue sur sac non
+  // validee, aucune promesse tant que ce n'est pas teste).
   {
     id: 'mini',
-    w: 46, h: 9, // mm
+    w: 46, h: 9, inW: '1,8', inH: '0,35', inWEn: '1.8', inHEn: '0.35',
     fr: 'Mini', en: 'Mini', es: 'Mini',
     usageFr: 'Crayons, ustensiles, petits objets',
     usageEn: 'Pencils, utensils, small items',
@@ -103,7 +109,7 @@ export const ETIQUETTE_FORMATS = [
   },
   {
     id: 'moyenne',
-    w: 60, h: 18,
+    w: 60, h: 18, inW: '2,4', inH: '0,7', inWEn: '2.4', inHEn: '0.7',
     fr: 'Moyenne', en: 'Medium', es: 'Mediana',
     usageFr: 'Cahiers, gourdes, boites a collation',
     usageEn: 'Notebooks, bottles, snack boxes',
@@ -111,13 +117,30 @@ export const ETIQUETTE_FORMATS = [
   },
   {
     id: 'grande',
-    w: 76, h: 25,
+    w: 76, h: 25, inW: '3', inH: '1', inWEn: '3', inHEn: '1',
     fr: 'Grande', en: 'Large', es: 'Grande',
-    usageFr: 'Sacs, boites a lunch, bacs',
-    usageEn: 'Bags, lunch boxes, bins',
-    usageEs: 'Mochilas, loncheras, cajas',
+    usageFr: 'Boites a lunch, bacs, contenants',
+    usageEn: 'Lunch boxes, bins, containers',
+    usageEs: 'Loncheras, cajas, envases',
   },
 ]
+
+/**
+ * Dimensions affichees PAR LANGUE (decision Mika 1b) :
+ *  FR : pouces (virgule) + mm discret  -> "2,4 × 0,7 po · 60 × 18 mm"
+ *  EN : pouces (point) + mm discret    -> "2.4 × 0.7 in · 60 × 18 mm"
+ *  ES : metrique                        -> "60 × 18 mm"
+ */
+export function formatDims(f, lang) {
+  if (lang === 'es') return `${f.w} × ${f.h} mm`
+  if (lang === 'en') return `${f.inWEn} × ${f.inHEn} in · ${f.w} × ${f.h} mm`
+  return `${f.inW} × ${f.inH} po · ${f.w} × ${f.h} mm`
+}
+export function formatDimsShort(f, lang) {
+  if (lang === 'es') return `${f.w} × ${f.h} mm`
+  if (lang === 'en') return `${f.inWEn} × ${f.inHEn} in`
+  return `${f.inW} × ${f.inH} po`
+}
 
 /**
  * PACKS : structure alignee sur le marche quebecois (Colle a Moi vend des
@@ -144,9 +167,9 @@ export const ETIQUETTE_PACKS = [
     total: 60,
     price: 34,
     populaire: true,
-    dFr: 'Tout le materiel scolaire couvert, de l’etui au sac.',
-    dEn: 'Every school supply covered, from pencil case to backpack.',
-    dEs: 'Todo el material escolar cubierto, del estuche a la mochila.',
+    dFr: 'Tout le materiel scolaire couvert, de l’etui a la boite a lunch.',
+    dEn: 'Every school supply covered, from pencil case to lunch box.',
+    dEs: 'Todo el material escolar cubierto, del estuche a la lonchera.',
   },
   {
     id: 'complet',
@@ -205,6 +228,12 @@ export const ETIQUETTE_CLAIMS = [
   { icon: 'sun', fr: 'Résiste aux UV', en: 'UV resistant', es: 'Resistente a los UV', pending: false },
   { icon: 'shield', fr: 'Vinyle laminé premium', en: 'Premium laminated vinyl', es: 'Vinilo laminado premium', pending: false },
   { icon: 'scissors', fr: 'Découpe à la forme, coins arrondis', en: 'Die-cut, rounded corners', es: 'Corte a medida, esquinas redondeadas', pending: false },
-  // PLACEHOLDER Phase 3 (apres le test lave-vaisselle de Mika) :
-  { icon: 'waves', fr: 'Passe au lave-vaisselle', en: 'Dishwasher safe', es: 'Apto lavavajillas', pending: true },
+  // Livraison : UNIQUEMENT ce qu'on tient (regle collection existante) - pas de
+  // "livraison gratuite" generique a la Colle a Moi.
+  { icon: 'truck', fr: 'Livraison gratuite à Montréal (codes postaux H) ou retrait au Plateau', en: 'Free delivery in Montreal (H postal codes) or Plateau pickup', es: 'Entrega gratis en Montreal (códigos H) o recogida en el Plateau', pending: false },
+  // PLACEHOLDER Phase 3 (s'active au verdict du test physique de Mika, 10 cycles en cours) :
+  { icon: 'washing', fr: 'Passe au lave-vaisselle', en: 'Dishwasher safe', es: 'Apto lavavajillas', pending: true },
 ]
+
+/** Prenoms d'exemple par langue (decision Mika 1b). */
+export const SAMPLE_NAMES = { fr: 'Lyse', en: 'Kevin', es: 'Paolo' }

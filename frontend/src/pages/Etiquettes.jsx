@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Tag, Droplets, Sun, Shield, Scissors, Waves,
-  Pencil, NotebookPen, Backpack, Sparkles, ChevronDown,
+  Tag, Droplets, Sun, Shield, Scissors, WashingMachine, Truck,
+  Pencil, NotebookPen, Box, Sparkles, ChevronDown,
 } from 'lucide-react'
 import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
@@ -10,6 +10,7 @@ import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import {
   KIDS_SAFE, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS,
   PAGE_NAME_OPTIONS, PAGE_NAME_CHOICE, ETIQUETTE_CLAIMS, ETIQUETTE_CLAIM_LAVE_VAISSELLE,
+  formatDims, formatDimsShort, SAMPLE_NAMES,
 } from '../data/etiquettes'
 import { ETIQUETTES_PALETTES } from '../data/etiquettesPalettes'
 
@@ -65,7 +66,7 @@ function useAutoFit(text, fontFamily, fontWeight, maxWidthPx, maxHeightPx) {
   return size
 }
 
-function EtiquettePreview({ slug, combo, format, font, line1, line2 }) {
+function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr', showDims = true }) {
   const wPx = format.w * PX_PER_MM
   const hPx = format.h * PX_PER_MM
   const radius = hPx / 2.6                     // border-radius genereux (die-cut)
@@ -77,7 +78,7 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2 }) {
   const line1MaxH = hasLine2 ? hPx * 0.5 : hPx * 0.66
   const line2MaxH = hPx * 0.3
 
-  const t1 = line1.trim() || 'Prénom'
+  const t1 = line1.trim() || SAMPLE_NAMES[lang] || SAMPLE_NAMES.fr
   const t2 = line2.trim()
   const size1 = useAutoFit(t1, font.family, font.weight, textZoneW, line1MaxH)
   const size2 = useAutoFit(t2 || ' ', font.family, font.weight, textZoneW, line2MaxH)
@@ -113,10 +114,30 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2 }) {
           )}
         </div>
       </div>
-      <p className="text-grey-muted text-[11px]">
-        {format.w} × {format.h} mm
-      </p>
+      {showDims && (
+        <p className="text-grey-muted text-[11px]">
+          {formatDims(format, lang)}
+        </p>
+      )}
     </div>
+  )
+}
+
+
+/**
+ * Fleur de lys STYLISEE ORIGINALE (badge "Fabrique a Montreal").
+ * DROITS : dessin original minimaliste - ni le logo officiel de la Ville de
+ * Montreal, ni le drapeau/armoiries (marques protegees). Un lys generique
+ * au trait rond, coherent avec lucide.
+ */
+function FleurDeLys({ className = '', fill = 'currentColor', style }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} style={style} aria-hidden="true">
+      <path
+        fill={fill}
+        d="M12 2c1.5 2 2.4 3.8 2.4 5.6 0 1.5-.7 2.9-1.6 4h2.4c2 0 3.4-1.2 3.9-2.9.8 1 1.2 2.1 1.2 3.2 0 2.3-1.9 4-4.3 4h-1.9c.2 1.4 1 2.6 2.4 3.4-1 .5-2.1.7-3 .5-.4.9-.9 1.6-1.5 2.2-.6-.6-1.1-1.3-1.5-2.2-.9.2-2 0-3-.5 1.4-.8 2.2-2 2.4-3.4H8c-2.4 0-4.3-1.7-4.3-4 0-1.1.4-2.2 1.2-3.2.5 1.7 1.9 2.9 3.9 2.9h2.4c-.9-1.1-1.6-2.5-1.6-4C9.6 5.8 10.5 4 12 2Z"
+      />
+    </svg>
   )
 }
 
@@ -124,7 +145,7 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2 }) {
  * LE CONFIGURATEUR : design -> nom (+ ligne 2) -> combo -> format -> police.
  * ------------------------------------------------------------------------ */
 function ConfigurateurEtiquettes() {
-  const { tx } = useLang()
+  const { lang, tx } = useLang()
   const [slug, setSlug] = useState('massive-panda-cute')
   const [line1, setLine1] = useState('')
   const [line2, setLine2] = useState('')
@@ -156,7 +177,7 @@ function ConfigurateurEtiquettes() {
         {/* ---- gauche : l'apercu + les reglages texte ---- */}
         <div className="surface-vitrine card-shadow rounded-2xl p-6 sm:p-8">
           <div className="flex items-center justify-center min-h-[150px] overflow-x-auto py-2">
-            <EtiquettePreview slug={slug} combo={combo} format={format} font={font} line1={line1} line2={line2} />
+            <EtiquettePreview slug={slug} combo={combo} format={format} font={font} line1={line1} line2={line2} lang={lang} />
           </div>
 
           {/* nom + ligne 2 */}
@@ -234,7 +255,7 @@ function ConfigurateurEtiquettes() {
                   className={`rounded-xl px-3 py-2.5 text-left border transition-all ${formatId === f.id ? 'border-accent bg-accent/10' : 'border-white/10 hover:border-white/25'}`}
                 >
                   <span className={`block text-sm font-semibold ${formatId === f.id ? 'text-accent' : 'text-heading'}`}>{tx(f)}</span>
-                  <span className="block text-grey-muted text-[11px]">{f.w} × {f.h} mm</span>
+                  <span className="block text-grey-muted text-[11px]">{formatDimsShort(f, lang)}</span>
                 </button>
               ))}
             </div>
@@ -292,13 +313,13 @@ function ConfigurateurEtiquettes() {
  * comment ca marche + FAQ. Tout FR/EN/ES, style du site.
  * ------------------------------------------------------------------------ */
 export default function Etiquettes() {
-  const { tx } = useLang()
+  const { lang, tx } = useLang()
   const pageName = PAGE_NAME_OPTIONS[PAGE_NAME_CHOICE]
   const goConfig = () => document.getElementById('configurateur')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   const claims = ETIQUETTE_CLAIMS.filter((c) => !c.pending || ETIQUETTE_CLAIM_LAVE_VAISSELLE)
-  const claimIcons = { droplets: Droplets, sun: Sun, shield: Shield, scissors: Scissors, waves: Waves }
-  const formatIcons = { mini: Pencil, moyenne: NotebookPen, grande: Backpack }
+  const claimIcons = { droplets: Droplets, sun: Sun, shield: Shield, scissors: Scissors, washing: WashingMachine, truck: Truck }
+  const formatIcons = { mini: Pencil, moyenne: NotebookPen, grande: Box }
 
   return (
     <>
@@ -357,8 +378,9 @@ export default function Etiquettes() {
                     combo={(ETIQUETTES_PALETTES['massive-panda-cute'] || [{ bg: '#fff', stroke: '#333', text: '#222' }])[1] || (ETIQUETTES_PALETTES['massive-panda-cute'] || [])[0]}
                     format={ETIQUETTE_FORMATS[1]}
                     font={ETIQUETTE_FONTS[0]}
-                    line1="Léo"
+                    line1={SAMPLE_NAMES[lang] || SAMPLE_NAMES.fr}
                     line2=""
+                    lang={lang}
                   />
                 </div>
               </div>
@@ -410,7 +432,7 @@ export default function Etiquettes() {
               <div className="mt-4 space-y-1 text-sm text-grey-light">
                 <p>{p.contenu.mini} {tx({ fr: 'mini (crayons)', en: 'mini (pencils)', es: 'mini (lápices)' })}</p>
                 <p>{p.contenu.moyenne} {tx({ fr: 'moyennes (cahiers, gourdes)', en: 'medium (notebooks, bottles)', es: 'medianas (cuadernos, botellas)' })}</p>
-                <p>{p.contenu.grande} {tx({ fr: 'grandes (sacs, lunch)', en: 'large (bags, lunch)', es: 'grandes (mochilas, lonchera)' })}</p>
+                <p>{p.contenu.grande} {tx({ fr: 'grandes (lunch, bacs)', en: 'large (lunch, bins)', es: 'grandes (lonchera, cajas)' })}</p>
               </div>
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="font-heading font-bold text-3xl text-accent">{p.price} $</span>
@@ -450,6 +472,104 @@ export default function Etiquettes() {
         </div>
       </section>
 
+
+      {/* ============ EN SITUATION (mockups factices) ============
+          Objets composes/reutilises (gourde + tasse du repo, crayon compose en
+          CSS) avec l'etiquette posee dessus. La ligne sous la section leve toute
+          ambiguite : Massive vend LES ETIQUETTES, pas les objets. */}
+      <section className="section-container">
+        <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-8 text-center">
+          {tx({ fr: 'En situation', en: 'In the wild', es: 'En situación' })}
+        </h2>
+        <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          {/* gourde */}
+          <div className="surface-vitrine card-shadow rounded-2xl h-56 relative overflow-hidden flex items-center justify-center">
+            <img src="/images/mugs/tumbler-white.webp" alt="" aria-hidden="true" loading="lazy" decoding="async"
+              className="h-[88%] w-auto object-contain drop-shadow-xl" />
+            <div className="absolute" style={{ transform: 'translate(2%, 12%) rotate(-4deg) scale(0.52)' }}>
+              <EtiquettePreview slug="massive-renard" combo={(ETIQUETTES_PALETTES['massive-renard'] || [])[0] || { bg: '#fff', stroke: '#333', text: '#222' }}
+                format={ETIQUETTE_FORMATS[1]} font={ETIQUETTE_FONTS[0]} line1={SAMPLE_NAMES[lang]} line2="" lang={lang} showDims={false} />
+            </div>
+            <span className="absolute bottom-2.5 left-0 right-0 text-center text-grey-muted text-xs">
+              {tx({ fr: 'Sur sa gourde', en: 'On their bottle', es: 'En su botella' })}
+            </span>
+          </div>
+          {/* tasse / contenant */}
+          <div className="surface-vitrine card-shadow rounded-2xl h-56 relative overflow-hidden flex items-center justify-center">
+            <img src="/images/mugs/mug-white.webp" alt="" aria-hidden="true" loading="lazy" decoding="async"
+              className="h-[74%] w-auto object-contain drop-shadow-xl" />
+            <div className="absolute" style={{ transform: 'translate(-4%, 6%) rotate(3deg) scale(0.46)' }}>
+              <EtiquettePreview slug="massive-alien-vert" combo={(ETIQUETTES_PALETTES['massive-alien-vert'] || [])[0] || { bg: '#fff', stroke: '#333', text: '#222' }}
+                format={ETIQUETTE_FORMATS[1]} font={ETIQUETTE_FONTS[0]} line1={SAMPLE_NAMES[lang]} line2="" lang={lang} showDims={false} />
+            </div>
+            <span className="absolute bottom-2.5 left-0 right-0 text-center text-grey-muted text-xs">
+              {tx({ fr: 'Sur son verre ou contenant', en: 'On their cup or container', es: 'En su vaso o envase' })}
+            </span>
+          </div>
+          {/* crayon compose en CSS + etiquette MINI */}
+          <div className="surface-vitrine card-shadow rounded-2xl h-56 relative overflow-hidden flex items-center justify-center">
+            <div className="relative" style={{ transform: 'rotate(-18deg)' }}>
+              {/* corps du crayon */}
+              <div className="flex items-center">
+                <div style={{ width: 14, height: 26, background: '#e8b7c2', borderRadius: '4px 0 0 4px' }} />
+                <div style={{ width: 10, height: 26, background: '#c9cdd6' }} />
+                <div style={{ width: 150, height: 26, background: 'linear-gradient(180deg, #f7c948 0 33%, #f0b429 33% 66%, #de911d 66%)' }} />
+                <div style={{ width: 0, height: 0, borderTop: '13px solid transparent', borderBottom: '13px solid transparent', borderLeft: '26px solid #e8cfa2' }} />
+                <div style={{ width: 0, height: 0, borderTop: '5px solid transparent', borderBottom: '5px solid transparent', borderLeft: '11px solid #3b3540', marginLeft: -14 }} />
+              </div>
+              {/* etiquette MINI posee sur le corps */}
+              <div className="absolute" style={{ left: 34, top: -22, transform: 'scale(0.5)', transformOrigin: 'left top' }}>
+                <EtiquettePreview slug="massive-tortue" combo={(ETIQUETTES_PALETTES['massive-tortue'] || [])[0] || { bg: '#fff', stroke: '#333', text: '#222' }}
+                  format={ETIQUETTE_FORMATS[0]} font={ETIQUETTE_FONTS[0]} line1={SAMPLE_NAMES[lang]} line2="" lang={lang} showDims={false} />
+              </div>
+            </div>
+            <span className="absolute bottom-2.5 left-0 right-0 text-center text-grey-muted text-xs">
+              {tx({ fr: 'Sur ses crayons (format mini)', en: 'On their pencils (mini size)', es: 'En sus lápices (formato mini)' })}
+            </span>
+          </div>
+        </div>
+        <p className="text-grey-muted text-xs text-center mt-4 max-w-xl mx-auto">
+          {tx({
+            fr: 'Les objets sont montrés à titre d’exemple seulement : Massive fournit les étiquettes, pas les gourdes, verres ou crayons.',
+            en: 'Objects are shown as examples only: Massive supplies the labels, not the bottles, cups or pencils.',
+            es: 'Los objetos se muestran solo como ejemplo: Massive suministra las etiquetas, no las botellas, vasos ni lápices.',
+          })}
+        </p>
+      </section>
+
+      {/* ============ BADGE FIERTE LOCALE (2 variantes, Mika tranche) ============
+          DROITS : fleur de lys STYLISEE originale (SVG dessine ici), PAS le logo
+          officiel de la Ville de Montreal ni les armoiries (marques protegees). */}
+      <section className="section-container">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          {/* Variante A : sceau rond accent */}
+          <div className="flex items-center gap-3 surface-vitrine card-shadow rounded-2xl px-5 py-4">
+            <span className="w-12 h-12 rounded-full bg-accent flex items-center justify-center shrink-0">
+              <FleurDeLys className="w-6 h-6" fill="#ffffff" />
+            </span>
+            <div>
+              <p className="text-heading font-heading font-bold text-sm leading-tight">
+                {tx({ fr: 'Fièrement fabriqué à Montréal', en: 'Proudly made in Montreal', es: 'Hecho con orgullo en Montreal' })}
+              </p>
+              <p className="text-grey-muted text-xs">{tx({ fr: 'Variante A — sceau', en: 'Variant A — seal', es: 'Variante A — sello' })}</p>
+            </div>
+          </div>
+          {/* Variante B : chip MTL */}
+          <div className="flex items-center gap-3 surface-vitrine card-shadow rounded-2xl px-5 py-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/15">
+              <FleurDeLys className="w-4 h-4" fill="currentColor" style={{ color: 'var(--accent-color)' }} />
+              <span className="text-accent font-heading font-extrabold text-sm tracking-wide">MTL</span>
+            </span>
+            <div>
+              <p className="text-heading font-heading font-bold text-sm leading-tight">
+                {tx({ fr: 'Fabriqué à Montréal', en: 'Made in Montreal', es: 'Hecho en Montreal' })}
+              </p>
+              <p className="text-grey-muted text-xs">{tx({ fr: 'Variante B — chip MTL', en: 'Variant B — MTL chip', es: 'Variante B — chip MTL' })}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ============ FORMATS EN DETAIL ============ */}
       <section className="section-container">
         <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
@@ -459,7 +579,7 @@ export default function Etiquettes() {
               <div key={f.id} className="bg-glass card-shadow rounded-2xl p-5 flex items-start gap-3">
                 <span className="p-2 rounded-lg icon-bg shrink-0"><Icon size={18} className="text-accent" /></span>
                 <div>
-                  <p className="text-heading font-semibold text-sm">{tx(f)} <span className="text-grey-muted font-normal">({f.w} × {f.h} mm)</span></p>
+                  <p className="text-heading font-semibold text-sm">{tx(f)} <span className="text-grey-muted font-normal">({formatDims(f, lang)})</span></p>
                   <p className="text-grey-muted text-xs mt-0.5">{tx({ fr: f.usageFr, en: f.usageEn, es: f.usageEs })}</p>
                 </div>
               </div>
