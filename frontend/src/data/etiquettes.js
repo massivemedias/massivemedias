@@ -304,7 +304,9 @@ export const SAMPLE_NAME_POOL = [
 export const ETIQUETTE_CORNERS = [
   { id: 'round', label: { fr: 'Rond', en: 'Round', es: 'Redondo' } },
   { id: 'chamfer', label: { fr: 'Coupé', en: 'Chamfered', es: 'Biselado' } },
-  { id: 'concave', label: { fr: 'Concave', en: 'Concave', es: 'Cóncavo' } },
+  // devOnly = MASQUE en prod tant que le test de decoupe Cameo (creux concave =
+  // vinyle affine au coin) n'est pas concluant. round + coupe au lancement.
+  { id: 'concave', label: { fr: 'Concave', en: 'Concave', es: 'Cóncavo' }, devOnly: true },
 ]
 
 /**

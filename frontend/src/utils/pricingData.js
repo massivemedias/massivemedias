@@ -87,6 +87,11 @@ export const STICKER_COLLECTION_UNIT_PRICE = 3
 export const STICKER_COLLECTION_MIN_UNITS = 5
 export const MYSTERY_PACK_PRICES = Object.freeze({ 5: 8, 10: 14, 20: 25 })
 
+// MINI MASSIVE (etiquettes enfants) : 3 packs a prix fixe. MIROIR EXACT du
+// backend pricing-config.ts ETIQUETTE_PACK_PRICES + de data/etiquettes.js
+// (ETIQUETTE_PACKS[].price) - sinon le checkout SEC-04 rejette au paiement.
+export const ETIQUETTE_PACK_PRICES = Object.freeze({ essentiel: 24, rentree: 34, complet: 44 })
+
 /**
  * Mapping taille -> tier de prix.
  * Accepte tous les formats : '2', '2in', '2.5', '2.5in', '3"', etc.

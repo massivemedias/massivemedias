@@ -2281,6 +2281,32 @@ function AdminOrders() {
                                           <p className="text-sm text-grey-muted mt-2 italic bg-glass rounded px-2 py-1">"{item.notes}"</p>
                                         )}
 
+                                        {/* Mini Massive - config etiquette a produire (voyage dans order.items depuis le configurateur) */}
+                                        {item.etiquette && (() => {
+                                          const e = item.etiquette;
+                                          const chip = (label, val) => val ? (
+                                            <span key={label} className="text-xs bg-glass px-2 py-0.5 rounded"><span className="text-grey-muted">{label} </span><span className="text-heading font-medium">{val}</span></span>
+                                          ) : null;
+                                          return (
+                                            <div className="mt-2 border border-accent/20 rounded-lg p-2.5 bg-accent/5">
+                                              <p className="text-[11px] font-bold uppercase tracking-wide text-accent mb-1.5">Étiquette à produire</p>
+                                              <div className="flex items-start gap-2.5">
+                                                <img src={`/images/thumbs/stickers-massive/${e.design}.webp`} alt="" className="w-12 h-12 object-contain rounded bg-white/5 flex-shrink-0" />
+                                                <div className="flex flex-wrap gap-1.5 items-center">
+                                                  {chip('Prénom', e.line1)}
+                                                  {chip('Ligne 2', e.line2)}
+                                                  {chip('Design', e.design)}
+                                                  {chip('Police', e.font)}
+                                                  {chip('Coins', e.corner)}
+                                                  {chip('Format', e.format)}
+                                                  {chip('Pack', e.pack && `${e.pack} (${e.total})`)}
+                                                  {e.contenu && chip('Mix', `mini ${e.contenu.mini} · moy ${e.contenu.moyenne} · grande ${e.contenu.grande}`)}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          );
+                                        })()}
+
                                         {/* Pack details (artist sticker packs) - A IMPRIMER */}
                                         {Array.isArray(item.packDetails) && item.packDetails.length > 0 && (() => {
                                           // Data source: ConfiguratorArtistSticker.jsx

@@ -104,6 +104,11 @@ export const STICKER_COLLECTION_UNIT_PRICE = 3
 export const STICKER_COLLECTION_MIN_UNITS = 5
 export const MYSTERY_PACK_PRICES: Record<number, number> = { 5: 8, 10: 14, 20: 25 }
 
+// MINI MASSIVE (etiquettes enfants) : vendu en 3 packs a prix fixe. SKU
+// etiquette-pack-<id>. MIROIR EXACT de ETIQUETTE_PACKS (frontend
+// data/etiquettes.js) et de pricingData.js - sinon le checkout rejette.
+export const ETIQUETTE_PACK_PRICES: Record<string, number> = { essentiel: 24, rentree: 34, complet: 44 }
+
 /**
  * Mapping taille (string id ou label) -> tier de prix (standard/medium/large).
  * Accepte tous les formats : '2', '2in', '2.5', '2.5in', '3"', etc. Tolerance
@@ -301,6 +306,7 @@ export function getPricingConfigPayload() {
     stickerCollectionUnitPrice: STICKER_COLLECTION_UNIT_PRICE,
     stickerCollectionMinUnits: STICKER_COLLECTION_MIN_UNITS,
     mysteryPackPrices: MYSTERY_PACK_PRICES,
+    etiquettePackPrices: ETIQUETTE_PACK_PRICES,
     fxFinishes: FX_FINISHES,
     sizeMultipliers: SIZE_MULTIPLIERS,
     businessCardTiers: BUSINESS_CARD_TIERS,

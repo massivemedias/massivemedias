@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Tag, Droplets, Sun, Shield, Scissors, WashingMachine, Truck,
-  Pencil, NotebookPen, Box, Sparkles, ChevronDown,
+  Pencil, NotebookPen, Box, Sparkles, ChevronDown, ShoppingBag,
 } from 'lucide-react'
+import { formatPrice } from '../utils/formatCurrency'
 import SEO from '../components/SEO'
 import { useLang } from '../i18n/LanguageContext'
+import { useCart } from '../contexts/CartContext'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import {
   KIDS_SAFE, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS, ETIQUETTE_FONTS_CSS_URL, FONT_TOO_THIN_NOTE,
@@ -80,6 +82,12 @@ const pickSampleName = () => SAMPLE_NAME_POOL[Math.floor(Math.random() * SAMPLE_
 // polices offertes au client : les non-licenciees (Amelina) restent en DEV
 // mais disparaissent du build prod tant que la licence n'est pas confirmee.
 const AVAILABLE_FONTS = ETIQUETTE_FONTS.filter((f) => f.licensed !== false || import.meta.env.DEV)
+// coins offerts : le concave (devOnly) reste masque en prod tant que le test de
+// decoupe Cameo n'est pas concluant (round + coupe au lancement).
+const AVAILABLE_CORNERS = ETIQUETTE_CORNERS.filter((c) => !c.devOnly || import.meta.env.DEV)
+// Badge fierte locale : 'chip' (discret, defaut - verdict Mika "le plus sobre")
+// ou 'seal' (sceau rond). Swappable en une ligne.
+const BADGE_VARIANT = 'chip'
 
 function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr', showDims = true, placeholder = '', corner = 'round' }) {
   const wPx = format.w * PX_PER_MM
@@ -183,10 +191,45 @@ function ConfigurateurEtiquettes() {
   const [formatId, setFormatId] = useState('moyenne')
   const [fontId, setFontId] = useState(AVAILABLE_FONTS[0].id)
   const [cornerId, setCornerId] = useState(ETIQUETTE_CORNERS[0].id)
+  const [packId, setPackId] = useState(ETIQUETTE_PACKS.find((p) => p.populaire)?.id || ETIQUETTE_PACKS[0].id)
   const [showAll, setShowAll] = useState(false)
   const [sampleName, setSampleName] = useState(pickSampleName)
   // prenom d'exemple : nouveau tirage a chaque changement de design
   useEffect(() => { setSampleName(pickSampleName()) }, [slug])
+
+  const { addToCart, openCartDrawer } = useCart()
+  const pack = ETIQUETTE_PACKS.find((p) => p.id === packId) || ETIQUETTE_PACKS[0]
+  const canAdd = line1.trim().length > 0
+  // ETAPE 2 checkout : la config COMPLETE part dans le panier -> order.items ->
+  // dashboard production + courriels. Prix FORCE serveur (SEC-04, etiquette-pack-<id>) ;
+  // isUnique = chaque etiquette personnalisee est sa propre ligne (jamais fusionnee).
+  const handleAddToCart = () => {
+    if (!canAdd) return
+    const fontMeta = AVAILABLE_FONTS.find((f) => f.id === fontId)
+    const cornerMeta = AVAILABLE_CORNERS.find((c) => c.id === cornerId) || ETIQUETTE_CORNERS[0]
+    const nm = line1.trim() + (line2.trim() ? ` / ${line2.trim()}` : '')
+    addToCart({
+      productId: `etiquette-pack-${pack.id}`,
+      sku: `etiquette-${pack.id}-${slug}`,
+      productName: `Mini Massive — ${tx(pack)}`,
+      // le prenom voyage dans size -> visible dans le courriel de confirmation
+      // (template itemRows : productName - size) et en chip AdminOrders.
+      size: `${line1.trim()}${line2.trim() ? ` / ${line2.trim()}` : ''} · ${pack.total} étiq.`,
+      quantity: 1,
+      unitPrice: pack.price,
+      totalPrice: pack.price, // affichage : le prix reel est force serveur
+      image: `/images/thumbs/stickers-massive/${slug}.webp`,
+      isUnique: true,
+      notes: `Prénom : ${nm} · Design : ${slug} · Police : ${tx(fontMeta?.name || {})} · Coins : ${tx(cornerMeta.label)}`,
+      // bloc structure lu par le dashboard production (AdminOrders)
+      etiquette: {
+        design: slug, line1: line1.trim(), line2: line2.trim(),
+        comboIdx, format: formatId, font: fontId, corner: cornerId,
+        pack: pack.id, contenu: pack.contenu, total: pack.total,
+      },
+    })
+    openCartDrawer()
+  }
 
   const combos = ETIQUETTES_PALETTES[slug] || []
   const combo = combos[Math.min(comboIdx, combos.length - 1)] || { bg: '#fff', stroke: '#333', text: '#222' }
@@ -304,7 +347,7 @@ function ConfigurateurEtiquettes() {
               {tx({ fr: 'Coins', en: 'Corners', es: 'Esquinas' })}
             </p>
             <div className="flex flex-wrap gap-2">
-              {ETIQUETTE_CORNERS.map((cn) => {
+              {AVAILABLE_CORNERS.map((cn) => {
                 const active = cornerId === cn.id
                 return (
                   <button
@@ -345,6 +388,43 @@ function ConfigurateurEtiquettes() {
             <p className="text-grey-muted text-xs mt-2">
               {tx({ fr: ETIQUETTE_FORMATS.find(f => f.id === formatId).usageFr, en: ETIQUETTE_FORMATS.find(f => f.id === formatId).usageEn, es: ETIQUETTE_FORMATS.find(f => f.id === formatId).usageEs })}
             </p>
+          </div>
+
+          {/* ---- trousse (pack) + ajout au panier ---- */}
+          <div className="mt-6 pt-5 border-t border-white/10">
+            <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2">
+              {tx({ fr: 'Trousse', en: 'Kit', es: 'Kit' })}
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {ETIQUETTE_PACKS.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setPackId(p.id)}
+                  className={`relative rounded-xl px-2.5 py-2.5 text-left border transition-all ${packId === p.id ? 'border-accent bg-accent/10' : 'border-white/10 hover:border-white/25'}`}
+                >
+                  {p.populaire && (
+                    <span className="absolute -top-2 right-2 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-accent text-white">
+                      {tx({ fr: 'Populaire', en: 'Popular', es: 'Popular' })}
+                    </span>
+                  )}
+                  <span className={`block text-sm font-semibold ${packId === p.id ? 'text-accent' : 'text-heading'}`}>{tx(p)}</span>
+                  <span className="block text-grey-muted text-[11px]">{p.total} · {formatPrice(p.price)}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-grey-muted text-xs mt-2">{tx({ fr: pack.dFr, en: pack.dEn, es: pack.dEs })}</p>
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!canAdd}
+              className={`mt-4 w-full py-3 rounded-full font-semibold text-sm inline-flex items-center justify-center gap-2 transition-all ${canAdd ? 'bg-accent text-white hover:brightness-110' : 'bg-white/5 text-grey-muted cursor-not-allowed'}`}
+            >
+              <ShoppingBag size={16} />
+              {canAdd
+                ? tx({ fr: `Ajouter au panier — ${formatPrice(pack.price)}`, en: `Add to cart — ${formatPrice(pack.price)}`, es: `Añadir al carrito — ${formatPrice(pack.price)}` })
+                : tx({ fr: 'Écris d’abord le prénom', en: 'Enter the name first', es: 'Escribe el nombre primero' })}
+            </button>
           </div>
         </div>
 
@@ -546,9 +626,9 @@ export default function Etiquettes() {
         </div>
         <p className="text-grey-muted text-xs text-center mt-4">
           {tx({
-            fr: 'Phase 1 : prix proposés, paiement branché en Phase 2.',
-            en: 'Phase 1: proposed prices, checkout wired in Phase 2.',
-            es: 'Fase 1: precios propuestos, pago conectado en Fase 2.',
+            fr: 'Personnalise ton étiquette ci-dessus, choisis ta trousse et ajoute au panier.',
+            en: 'Design your label above, choose your kit and add to cart.',
+            es: 'Diseña tu etiqueta arriba, elige tu kit y añade al carrito.',
           })}
         </p>
       </section>
@@ -614,36 +694,32 @@ export default function Etiquettes() {
         </p>
       </section>
 
-      {/* ============ BADGE FIERTE LOCALE (2 variantes, Mika tranche) ============
+      {/* ============ BADGE FIERTE LOCALE (verdict Mika : le plus sobre) ========
           DROITS : fleur de lys STYLISEE originale (SVG dessine ici), PAS le logo
-          officiel de la Ville de Montreal ni les armoiries (marques protegees). */}
+          officiel de la Ville de Montreal ni les armoiries (marques protegees).
+          Une seule variante affichee (BADGE_VARIANT), swappable en une ligne. */}
       <section className="section-container">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-          {/* Variante A : sceau rond accent */}
-          <div className="flex items-center gap-3 surface-vitrine card-shadow rounded-2xl px-5 py-4">
-            <span className="w-12 h-12 rounded-full bg-accent flex items-center justify-center shrink-0">
-              <FleurDeLys className="w-6 h-6" fill="#ffffff" />
-            </span>
-            <div>
+        <div className="flex justify-center">
+          {BADGE_VARIANT === 'seal' ? (
+            <div className="flex items-center gap-3 surface-vitrine card-shadow rounded-2xl px-5 py-4">
+              <span className="w-12 h-12 rounded-full bg-accent flex items-center justify-center shrink-0">
+                <FleurDeLys className="w-6 h-6" fill="#ffffff" />
+              </span>
               <p className="text-heading font-heading font-bold text-sm leading-tight">
                 {tx({ fr: 'Fièrement fabriqué à Montréal', en: 'Proudly made in Montreal', es: 'Hecho con orgullo en Montreal' })}
               </p>
-              <p className="text-grey-muted text-xs">{tx({ fr: 'Variante A — sceau', en: 'Variant A — seal', es: 'Variante A — sello' })}</p>
             </div>
-          </div>
-          {/* Variante B : chip MTL */}
-          <div className="flex items-center gap-3 surface-vitrine card-shadow rounded-2xl px-5 py-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/15">
-              <FleurDeLys className="w-4 h-4" fill="currentColor" style={{ color: 'var(--accent-color)' }} />
-              <span className="text-accent font-heading font-extrabold text-sm tracking-wide">MTL</span>
-            </span>
-            <div>
+          ) : (
+            <div className="flex items-center gap-3 surface-vitrine card-shadow rounded-2xl px-5 py-4">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/15">
+                <FleurDeLys className="w-4 h-4" fill="currentColor" style={{ color: 'var(--accent-color)' }} />
+                <span className="text-accent font-heading font-extrabold text-sm tracking-wide">MTL</span>
+              </span>
               <p className="text-heading font-heading font-bold text-sm leading-tight">
-                {tx({ fr: 'Fabriqué à Montréal', en: 'Made in Montreal', es: 'Hecho en Montreal' })}
+                {tx({ fr: 'Fièrement fabriqué à Montréal', en: 'Proudly made in Montreal', es: 'Hecho con orgullo en Montreal' })}
               </p>
-              <p className="text-grey-muted text-xs">{tx({ fr: 'Variante B — chip MTL', en: 'Variant B — MTL chip', es: 'Variante B — chip MTL' })}</p>
             </div>
-          </div>
+          )}
         </div>
       </section>
 

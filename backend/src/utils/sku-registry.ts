@@ -19,6 +19,7 @@ import {
   lookupStickerPriceBySize,
   STICKER_COLLECTION_UNIT_PRICE,
   MYSTERY_PACK_PRICES,
+  ETIQUETTE_PACK_PRICES,
   BUSINESS_CARD_TIERS,
   FLYER_TIERS,
   FLYER_RECTO_VERSO_TIERS,
@@ -166,6 +167,18 @@ export async function resolveSkuPrice(item: CartItemLike, deps: SkuDeps = {}): P
       return rejectRes('mystery-pack', `Mystery pack invalide: ${pid}`)
     }
     return okRes('mystery-pack', packPrice * qty)
+  }
+
+  // --- Mini Massive (etiquettes enfants) : 3 packs a prix fixe. La config
+  // (design, prenom, police, coins...) voyage dans item.* mais NE change PAS le
+  // prix : seul le pack compte. Pack inconnu rejete.
+  if (pid.startsWith('etiquette-pack-')) {
+    const packId = pid.slice('etiquette-pack-'.length)
+    const packPrice = ETIQUETTE_PACK_PRICES[packId]
+    if (packPrice == null) {
+      return rejectRes('etiquette-pack', `Pack etiquette invalide: ${pid}`)
+    }
+    return okRes('etiquette-pack', packPrice * qty)
   }
 
   // --- Cartes d'affaires : paliers stricts par variante.
