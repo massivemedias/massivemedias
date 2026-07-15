@@ -21,10 +21,14 @@
  *   - les thumbs de grille (thumbs/), micro-thumbs (thumbs-mini/), le Supabase
  *     800 (vignettes 56px), le mockup gourde, les collages.
  *
- * STYLE : variante A, mosaique diagonale du logo MASSIVE (le meme SVG que le
- * site), blanc + OMBRE portee (tient sur les fonds clairs ET noirs), opacite 9 %
- * (minimum credible demande par Mika). Masque a l'alpha de la source : sur un
- * sticker die-cut, le filigrane ne tombe QUE sur le dessin, jamais sur le vide.
+ * STYLE (round 2, verdict Mika sur le round 1 "flou, trop present") : 3 tampons
+ * MASSIVE en diagonale, PAS une mosaique. Chaque tampon est rasterise depuis le
+ * SVG A LA TAILLE CIBLE (~44 % de la largeur de l'image) -> trace NET a toute
+ * resolution, jamais un petit PNG etire/repete. Blanc + ombre noire decalee
+ * PROPORTIONNELLE (tient sur fonds clairs ET noirs), opacite 5 % ("a peine le
+ * voir"). Le tampon central couvre le coeur de l'image : la protection reste
+ * reelle (pas croppable), elle chuchote au lieu de crier. Masque a l'alpha de
+ * la source : sur un sticker die-cut, le filigrane ne tombe QUE sur le dessin.
  *
  * IDEMPOTENT : un manifeste (scripts/.watermark-manifest.json) retient
  * l'empreinte de chaque fichier deja filigrane. Un re-run saute les fichiers
@@ -47,7 +51,9 @@ const PUBLIC = resolve(REPO, 'public')
 // Cle de manifeste = chemin RELATIF au repo -> portable entre machines.
 const key = (abs) => relative(REPO, abs)
 const MANIFEST = resolve(import.meta.dirname, '.watermark-manifest.json')
-const OPACITY = 0.09
+const OPACITY = 0.05           // "a peine le voir" (fourchette Mika 4-6 %)
+const STAMP_RATIO = 0.44       // largeur du tampon / largeur de l'image
+const SPREAD = 0.27            // ecart des tampons lateraux au centre (x ET y)
 
 // Logo MASSIVE : le MEME trace vectoriel que le filigrane CSS du site
 // (index.css .watermark-light). Rotation -25 deja dans le SVG.
@@ -61,26 +67,45 @@ const sha = (p) => new Promise((res) => {
 const work = mkdtempSync(join(tmpdir(), 'mm-wm-'))
 const magick = (args) => execFileSync('magick', args, { stdio: ['ignore', 'ignore', 'inherit'] })
 
-// --- prepare la TUILE une fois : logo blanc + copie noire decalee (ombre) ---
-const logoSvg = join(work, 'logo.svg'); writeFileSync(logoSvg, LOGO_SVG)
-const lw = join(work, 'lw.png'), lb = join(work, 'lb.png'), tile = join(work, 'tile.png')
-magick(['-background', 'none', logoSvg, '-resize', '200x', lw])
-magick([lw, '-channel', 'RGB', '-evaluate', 'set', '0', '+channel', lb])          // logo noir (l'ombre)
-magick(['-size', '260x220', 'xc:none',
-  lb, '-gravity', 'center', '-geometry', '+3+3', '-composite',                     // ombre dessous
-  lw, '-gravity', 'center', '-geometry', '+0+0', '-composite',                     // blanc dessus
-  tile])
+// --- tampon NET par largeur cible : le SVG est rasterise directement a la
+// taille voulue (width/height reecrits -> rendu vectoriel, zero upscale bitmap).
+// Cache par largeur : le lot n'a que quelques tailles d'images distinctes.
+const stampCache = new Map()
+function stampFor(stampW) {
+  if (stampCache.has(stampW)) return stampCache.get(stampW)
+  const stampH = Math.round(stampW * 89 / 200)
+  const off = Math.max(1, Math.round(stampW * 0.008))            // ombre proportionnelle
+  const svgSized = LOGO_SVG.replace('width="200" height="89"', `width="${stampW}" height="${stampH}"`)
+  const svgPath = join(work, `logo-${stampW}.svg`); writeFileSync(svgPath, svgSized)
+  const lw = join(work, `lw-${stampW}.png`), lb = join(work, `lb-${stampW}.png`)
+  const stamp = join(work, `stamp-${stampW}.png`)
+  magick(['-background', 'none', svgPath, lw])                                     // blanc, net a la taille cible
+  magick([lw, '-channel', 'RGB', '-evaluate', 'set', '0', '+channel', lb])         // copie noire (l'ombre)
+  magick(['-size', `${stampW + off}x${stampH + off}`, 'xc:none',
+    lb, '-geometry', `+${off}+${off}`, '-composite',                               // ombre dessous, decalee
+    lw, '-geometry', '+0+0', '-composite',                                         // blanc dessus
+    stamp])
+  stampCache.set(stampW, stamp)
+  return stamp
+}
 
 function watermark(file) {
   const [w, h] = execFileSync('magick', ['identify', '-format', '%w %h', file]).toString().split(' ').map(Number)
-  const mosaic = join(work, 'mosaic.png'), mask = join(work, 'mask.png'), out = join(work, 'out.webp')
-  // mosaique du logo a OPACITY sur toute la surface
-  magick(['-size', `${w}x${h}`, `tile:${tile}`, '-channel', 'A', '-evaluate', 'multiply', String(OPACITY), '+channel', mosaic])
+  const layer = join(work, 'layer.png'), mask = join(work, 'mask.png'), out = join(work, 'out.webp')
+  const stamp = stampFor(Math.round(w * STAMP_RATIO))
+  // 3 occurrences en diagonale montante (comme la rotation -25 du logo) :
+  // bas-gauche, CENTRE (le coeur de l'image, pas croppable), haut-droite
+  const dx = Math.round(w * SPREAD), dy = Math.round(h * SPREAD)
+  magick(['-size', `${w}x${h}`, 'xc:none',
+    stamp, '-gravity', 'center', '-geometry', `-${dx}+${dy}`, '-composite',
+    stamp, '-gravity', 'center', '-geometry', '+0+0', '-composite',
+    stamp, '-gravity', 'center', '-geometry', `+${dx}-${dy}`, '-composite',
+    '-channel', 'A', '-evaluate', 'multiply', String(OPACITY), '+channel', layer])
   // masque = alpha de la source (die-cut : filigrane que sur le dessin)
   magick([file, '-alpha', 'extract', mask])
-  magick([mosaic, mask, '-compose', 'DstIn', '-composite', mosaic])
+  magick([layer, mask, '-compose', 'DstIn', '-composite', layer])
   // compose sur la source, reencode WebP (memes reglages que le site : q80)
-  magick([file, mosaic, '-compose', 'over', '-composite', '-quality', '80', out])
+  magick([file, layer, '-compose', 'over', '-composite', '-quality', '80', out])
   execFileSync('cp', [out, file])
 }
 
@@ -108,4 +133,4 @@ for (const f of files) {
 }
 writeFileSync(MANIFEST, JSON.stringify(manifest, null, 0))
 console.log(`filigrane : ${done} traites, ${skip} deja fait(s) (idempotent), ${files.length} cibles`)
-console.log('  perimetre : stickers-massive/ (800) + artists/*/posters-trimmed/ ; opacite 9% + ombre')
+console.log(`  perimetre : stickers-massive/ (800) + artists/*/posters-trimmed/ ; 3 tampons nets en diagonale, opacite ${OPACITY * 100}% + ombre`)
