@@ -20,19 +20,19 @@
  * - LUMIERE : ombre de contact douce (blur serre + offset leger) sous chaque
  *   etiquette.
  *
- * SOURCES (scripts/mockups-src/) :
- * - photo-gourde.webp  : Pexels 8611290 (RDNE Stock project) - licence Pexels
- * - photo-verre.webp   : Pexels 38380651 (Ann H) - licence Pexels
- * - photo-crayon.webp  : Pexels 4237814 (crayon bleu, fond rose) - licence Pexels
- * - photo-cahier.webp  : Pexels 7054764 (cahier spirale, fond mauve) - licence Pexels
- *   (licence Pexels : usage commercial libre, modification permise. La boite a
- *   lunch demandee n'existe pas en banque libre exploitable - boites ouvertes,
- *   marques, ou CC BY-SA - le cahier la remplace : meme surface PLATE, usage
- *   reel du produit "Cahiers, gourdes, boites a collation".)
- * - label-*.png : etiquettes exemple rendues du configurateur (Baloo 2,
- *   combos auto-assortis, prenom Lyse), 4 designs differents.
+ * 3 GROS MOCKUPS FACILES (verdict Mika : crayon + cahier vires, boite a lunch
+ * demandee). Surfaces simples : 2 cylindres (gourde, verre) + 1 plate (le
+ * couvercle plat de la boite a lunch).
  *
- * Sortie : public/images/etiquettes/mockup-{gourde,verre,crayon,cahier}.webp
+ * SOURCES (scripts/mockups-src/) :
+ * - photo-gourde.webp   : Pexels 8611290 (RDNE Stock project) - licence Pexels
+ * - photo-verre.webp    : Pexels 38380651 (Ann H) - licence Pexels
+ * - photo-lunchbox.webp : Pexels 13048837 (boite a lunch bento, couvercle bleu
+ *                         plat) - licence Pexels (commercial libre, modif OK)
+ * - label-*.png : etiquettes exemple rendues du configurateur (Baloo 2, combos
+ *   auto-assortis, prenom Lyse), 3 designs differents.
+ *
+ * Sortie : public/images/etiquettes/mockup-{gourde,verre,lunchbox}.webp
  * (800x600, q82). Relancer apres tout changement de source :
  *   node scripts/generate-etiquettes-mockups.mjs
  */
@@ -69,12 +69,9 @@ const MOCKUPS = [
     targetW: 230, fov: 40, axis: 'v', rotate: 0.5, center: [385, 430], shade: 0.24,
   },
   {
-    name: 'crayon', photo: 'photo-crayon.webp', label: 'label-crayon.png',
-    targetW: 205, fov: 100, axis: 'h', rotate: -0.5, center: [190, 287], shade: 0.38,
-  },
-  {
-    name: 'cahier', photo: 'photo-cahier.webp', label: 'label-cahier.png',
-    targetW: 300, fov: 0, axis: 'v', rotate: -12, center: [415, 260], shade: 0,
+    // couvercle bleu plat de la boite a lunch, incline ~15deg vers la droite
+    name: 'lunchbox', photo: 'photo-lunchbox.webp', label: 'label-lunchbox.png',
+    targetW: 300, fov: 0, axis: 'v', rotate: 13, center: [440, 158], shade: 0,
   },
 ]
 
