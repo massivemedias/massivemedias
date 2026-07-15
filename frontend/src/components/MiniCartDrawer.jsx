@@ -21,7 +21,7 @@ import { thumb } from '../utils/paths'
  * contenu, ancre en bas). Monte une fois dans MainLayout.
  */
 export default function MiniCartDrawer() {
-  const { items, isCartDrawerOpen, closeCartDrawer, updateQuantity, removeFromCart, addToCart } = useCart()
+  const { items, cartTotal, isCartDrawerOpen, closeCartDrawer, updateQuantity, removeFromCart, addToCart } = useCart()
   const { favorites } = useFavorites()
   const { tx } = useLang()
   const navigate = useNavigate()
@@ -239,7 +239,7 @@ export default function MiniCartDrawer() {
                   <span className="text-sm text-white/80">
                     {tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}
                   </span>
-                  <span className="text-white text-xl font-heading font-bold">{prog.subtotal} $</span>
+                  <span className="text-white text-xl font-heading font-bold">{cartTotal} $</span>
                 </div>
                 <button
                   type="button"
