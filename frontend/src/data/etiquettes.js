@@ -184,27 +184,31 @@ export const ETIQUETTE_PACKS = [
 ]
 
 /**
- * POLICES : SF Pro Rounded est proprietaire Apple (pas de licence web) ->
- * 3 jumelles libres (Google Fonts, chargees dans index.html). Mika tranche en
- * Phase 1 ; l'architecture accepte d'autres familles (ajouter ici + le <link>).
- */
-/**
  * POLICES au choix du client (DECISION Mika 15 juillet : le configurateur
- * offre plusieurs fonts, pattern du marche).
- * - Baloo 2 : gardee (Google Fonts, OFL).
- * - Homemade Apple : ajoutee (Google Fonts, Apache 2.0 = OK commercial).
- * - Amelina Colette : ECARTEE - l'EULA 1001Fonts fournie est "Free For
- *   PERSONAL Use", usage commercial interdit sans licence achetee a l'auteur.
- *   Jamais de font sans droit commercial sur un produit vendu. Si Mika achete
- *   la licence : subsetter le TTF en woff2 local et l'ajouter ici.
- * `tooThinFormats` : formats ou la font est illisible A TAILLE REELLE
- * (traits trop fins pour impression + lamination + decoupe) -> grisee dans le
+ * offre plusieurs fonts, pattern du marche). SF Pro Rounded (l'inspiration)
+ * est proprietaire Apple -> exclue d'office.
+ * - Baloo 2 : Google Fonts, OFL. Sans-serif rond gras, lisible A TOUS formats.
+ * - Homemade Apple : Google Fonts, Apache 2.0. Script fin au stylo.
+ * - Amelina Colette : AJOUTEE a la demande de Mika (15 juillet). Feutre rond
+ *   epais. Self-hostee en woff2 local (public/fonts/amelina-colette.woff2,
+ *   sous-ensemble Latin + accents FR/ES) via un @font-face dans index.css.
+ *   *** LICENCE A REGLER AVANT LE LANCEMENT PUBLIC (Phase 3) ***
+ *   L'EULA 1001Fonts fournie par Mika est "Free For PERSONAL Use" : usage
+ *   commercial interdit SANS accord ecrit de l'auteur. La conversion woff2 est
+ *   permise par la licence (section 5), et la page reste DERRIERE LE FLAG
+ *   (rien vendu), donc on est en evaluation - pas en infraction. Mais avant de
+ *   vendre (flag ON), Mika DOIT acheter la licence commerciale ou on retire
+ *   cette font. Ne pas allumer ETIQUETTES_ENABLED sans ce feu vert.
+ * `tooThinFormats` : formats ou la font est illisible A TAILLE REELLE (traits
+ * trop fins pour impression + lamination + decoupe) -> grisee dans le
  * selecteur avec une note, pour qu'un parent ne commande jamais d'illisible.
- * Chargement SCOPE a la page Mini Massive via ETIQUETTE_FONTS_CSS_URL
- * (rien dans index.html, zero poids pour le reste du site).
+ * Chargement SCOPE a Mini Massive : Google (Baloo+Homemade) via
+ * ETIQUETTE_FONTS_CSS_URL injecte par la page ; Amelina via @font-face
+ * index.css (le woff2 n'est telecharge que quand un texte l'utilise, ici).
  */
 export const ETIQUETTE_FONTS = [
   { id: 'baloo', label: 'Baloo 2', family: "'Baloo 2', sans-serif", weight: 700, tooThinFormats: [] },
+  { id: 'amelina-colette', label: 'Amélina Colette', family: "'Amelina Colette', cursive", weight: 400, tooThinFormats: [] },
   { id: 'homemade-apple', label: 'Homemade Apple', family: "'Homemade Apple', cursive", weight: 400, tooThinFormats: ['mini'] },
 ]
 export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Homemade+Apple&display=swap'
