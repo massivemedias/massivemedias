@@ -206,9 +206,15 @@ export const ETIQUETTE_PACKS = [
  * telecharge que quand un texte l'utilise, ici).
  * (Homemade Apple retiree le 15 juillet - verdict Mika "pas belle finalement".)
  */
+// name = libelle CLIENT ("Style N", le vrai nom de font reste interne dans
+//   `label`). Ordre : la plus ronde/lisible en premier (defaut).
+// lineGap = ecart ligne2 en fraction de sa taille (negatif = resserre ;
+//   calibre PAR police, les cursives ont des metriques hautes -> plus negatif).
+// vNudge = recalage vertical fin du bloc en fraction de hPx (encre pas centree
+//   dans la boite em pour les fonts a gros jambages).
 export const ETIQUETTE_FONTS = [
-  { id: 'baloo', label: 'Baloo 2', family: "'Baloo 2', sans-serif", weight: 700, tooThinFormats: [] },
-  { id: 'amelina-colette', label: 'Amélina Colette', family: "'Amelina Colette', cursive", weight: 400, tooThinFormats: [] },
+  { id: 'baloo', name: { fr: 'Style 1', en: 'Style 1', es: 'Estilo 1' }, label: 'Baloo 2', family: "'Baloo 2', sans-serif", weight: 700, tooThinFormats: [], lineGap: -0.39, vNudge: 0.018 },
+  { id: 'amelina-colette', name: { fr: 'Style 2', en: 'Style 2', es: 'Estilo 2' }, label: 'Amélina Colette', family: "'Amelina Colette', cursive", weight: 400, tooThinFormats: [], lineGap: -0.42, vNudge: -0.020 },
 ]
 export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&display=swap'
 export const FONT_TOO_THIN_NOTE = {

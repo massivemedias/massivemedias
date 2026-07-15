@@ -113,18 +113,20 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr'
           className="sticker-stroke object-contain shrink-0"
           style={{ width: stickerSide, height: stickerSide }}
         />
-        <div
-          className="flex-1 min-w-0 flex flex-col items-center justify-center text-center"
-          style={{ height: hPx, paddingLeft: padX * 0.5, gap: hasLine2 ? hPx * 0.015 : 0 }}
-        >
-          <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size1, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap' }}>
-            {t1}
-          </div>
-          {hasLine2 && (
-            <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size2, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap', opacity: 0.82 }}>
-              {t2}
+        <div className="flex-1 min-w-0 self-stretch flex flex-col items-center justify-center text-center" style={{ paddingLeft: padX * 0.5 }}>
+          {/* wrapper compact : les 2 lignes forment UN groupe (marge negative
+              calibree par police), recale verticalement (vNudge), et le
+              justify-center du parent centre ce groupe dans le rectangle. */}
+          <div className="flex flex-col items-center" style={{ transform: `translateY(${hPx * (font.vNudge || 0)}px)` }}>
+            <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size1, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap' }}>
+              {t1}
             </div>
-          )}
+            {hasLine2 && (
+              <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size2, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap', opacity: 0.82, marginTop: size2 * (font.lineGap ?? -0.12) }}>
+                {t2}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {showDims && (
@@ -262,16 +264,16 @@ function ConfigurateurEtiquettes() {
                     onClick={() => setFontId(f.id)}
                     className={`px-4 py-2 rounded-full text-sm transition-all border ${tooThin ? 'border-white/5 text-grey-muted opacity-40 cursor-not-allowed' : fontId === f.id ? 'border-accent text-accent bg-accent/10' : 'border-white/10 text-grey-light hover:border-white/25'}`}
                     style={{ fontFamily: f.family, fontWeight: f.weight }}
-                    title={tooThin ? `${f.label} : ${tx(FONT_TOO_THIN_NOTE)}` : undefined}
+                    title={tooThin ? `${tx(f.name)} : ${tx(FONT_TOO_THIN_NOTE)}` : undefined}
                   >
-                    {line1.trim() || f.label}
+                    {tx(f.name)}
                   </button>
                 )
               })}
             </div>
             {ETIQUETTE_FONTS.some((f) => (f.tooThinFormats || []).includes(formatId)) && (
               <p className="text-grey-muted text-xs mt-2">
-                {ETIQUETTE_FONTS.filter((f) => (f.tooThinFormats || []).includes(formatId)).map((f) => f.label).join(', ')} : {tx(FONT_TOO_THIN_NOTE)}
+                {ETIQUETTE_FONTS.filter((f) => (f.tooThinFormats || []).includes(formatId)).map((f) => tx(f.name)).join(', ')} : {tx(FONT_TOO_THIN_NOTE)}
               </p>
             )}
           </div>
