@@ -188,7 +188,6 @@ export const ETIQUETTE_PACKS = [
  * offre plusieurs fonts, pattern du marche). SF Pro Rounded (l'inspiration)
  * est proprietaire Apple -> exclue d'office.
  * - Baloo 2 : Google Fonts, OFL. Sans-serif rond gras, lisible A TOUS formats.
- * - Homemade Apple : Google Fonts, Apache 2.0. Script fin au stylo.
  * - Amelina Colette : AJOUTEE a la demande de Mika (15 juillet). Feutre rond
  *   epais. Self-hostee en woff2 local (public/fonts/amelina-colette.woff2,
  *   sous-ensemble Latin + accents FR/ES) via un @font-face dans index.css.
@@ -202,16 +201,16 @@ export const ETIQUETTE_PACKS = [
  * `tooThinFormats` : formats ou la font est illisible A TAILLE REELLE (traits
  * trop fins pour impression + lamination + decoupe) -> grisee dans le
  * selecteur avec une note, pour qu'un parent ne commande jamais d'illisible.
- * Chargement SCOPE a Mini Massive : Google (Baloo+Homemade) via
- * ETIQUETTE_FONTS_CSS_URL injecte par la page ; Amelina via @font-face
- * index.css (le woff2 n'est telecharge que quand un texte l'utilise, ici).
+ * Chargement SCOPE a Mini Massive : Baloo 2 via ETIQUETTE_FONTS_CSS_URL (Google)
+ * injecte par la page ; Amelina via @font-face index.css (le woff2 n'est
+ * telecharge que quand un texte l'utilise, ici).
+ * (Homemade Apple retiree le 15 juillet - verdict Mika "pas belle finalement".)
  */
 export const ETIQUETTE_FONTS = [
   { id: 'baloo', label: 'Baloo 2', family: "'Baloo 2', sans-serif", weight: 700, tooThinFormats: [] },
   { id: 'amelina-colette', label: 'Amélina Colette', family: "'Amelina Colette', cursive", weight: 400, tooThinFormats: [] },
-  { id: 'homemade-apple', label: 'Homemade Apple', family: "'Homemade Apple', cursive", weight: 400, tooThinFormats: ['mini'] },
 ]
-export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Homemade+Apple&display=swap'
+export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&display=swap'
 export const FONT_TOO_THIN_NOTE = {
   fr: 'trop fine pour ce format',
   en: 'too thin for this size',
