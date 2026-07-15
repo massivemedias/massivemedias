@@ -64,9 +64,17 @@ export default function FavoritesDrawer() {
   const [isDesktop, setIsDesktop] = useState(
     () => typeof window !== 'undefined' && window.matchMedia(DESKTOP_QUERY).matches,
   )
+  // FAV-05b : hauteur reelle du header (py-2 + contenu = variable). En desktop
+  // le panneau compagnon commence SOUS la barre de nav : le menu reste visible
+  // et cliquable tiroir ouvert (la navigation continue). Mesuree, pas devinee.
+  const [headerH, setHeaderH] = useState(0)
   useEffect(() => {
     const mq = window.matchMedia(DESKTOP_QUERY)
-    const onChange = () => setIsDesktop(mq.matches)
+    const onChange = () => {
+      setIsDesktop(mq.matches)
+      setHeaderH(document.querySelector('header')?.getBoundingClientRect().height || 0)
+    }
+    onChange()
     mq.addEventListener('change', onChange)
     // Filet DEFENSIF : dans un onglet en arriere-plan, Chrome differe les
     // evenements matchMedia 'change' (meme famille que le throttle rAF, cf.
@@ -164,8 +172,14 @@ export default function FavoritesDrawer() {
     // ouverts. C'est ce qui rend la page interactive sous le panneau desktop :
     // les coeurs de la grille restent cliquables, le tiroir se met a jour en
     // direct.
+    // FAV-05b : en DESKTOP le panneau vit SOUS le header (top = hauteur mesuree
+    // du header, z-40 < z-50 du header) -> le menu reste visible ET cliquable
+    // tiroir ouvert. En MOBILE, feuille modale plein ecran au-dessus de tout
+    // (z-60), comme le tiroir PANIER - qui lui reste volontairement modal et
+    // couvre le header (l'achat merite le focus, statue FAV-05b).
     <div
-      className="fixed inset-0 z-[60] flex justify-end pointer-events-none"
+      className={`fixed inset-x-0 bottom-0 flex justify-end pointer-events-none ${isDesktop ? 'z-40' : 'z-[60]'}`}
+      style={{ top: isDesktop ? headerH : 0 }}
       aria-hidden={!favDrawerOpen}
     >
       {/* Voile leger (15% + blur) : MOBILE SEULEMENT (feuille modale). En
@@ -186,9 +200,14 @@ export default function FavoritesDrawer() {
         className={`relative w-full h-full flex flex-col ml-auto ${dragging ? '' : 'transition-transform duration-[250ms] ease-out'} ${favDrawerOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-full'}`}
         style={{
           width: isDesktop && typeof window !== 'undefined' ? `${clampWidth(width)}px` : undefined,
-          background: 'var(--bg-footer)',
-          borderLeft: '1px solid rgba(var(--accent-rgb), 0.3)',
-          boxShadow: '-24px 0 60px rgba(0,0,0,0.5)',
+          // FAV-05b : plus de --bg-footer (quasi noir, meme mal que #103/#105) ni
+          // de lisere accent. Surface = LE composite exact des cartes du site :
+          // fond de page + voile bg-glass par-dessus -> opaque, suit les 11
+          // palettes. Les textes du tiroir passent aux jetons de theme (regle
+          // #103 : surface qui suit le theme = jetons, jamais de blanc en dur).
+          backgroundColor: 'var(--bg-body)',
+          backgroundImage: 'linear-gradient(var(--bg-glass), var(--bg-glass))',
+          boxShadow: '-16px 0 44px rgba(0,0,0,0.25)',
         }}
         role="dialog"
         aria-modal={!isDesktop || undefined}
@@ -206,12 +225,18 @@ export default function FavoritesDrawer() {
             onDoubleClick={resetWidth}
             className="absolute left-0 top-0 h-full w-2.5 -ml-1 cursor-col-resize z-10 group/grip"
           >
-            <div className="absolute left-[3px] top-1/2 -translate-y-1/2 h-14 w-1 rounded-full bg-white/25 group-hover/grip:bg-accent transition-colors" />
+            {/* FAV-05b : INVISIBLE au repos (le curseur col-resize suffit).
+                Feedback subtil au survol et pendant le drag seulement, en jeton
+                de theme - jamais de bordure permanente. */}
+            <div
+              className={`absolute left-[3px] top-1/2 -translate-y-1/2 h-14 w-1 rounded-full transition-opacity ${dragging ? 'opacity-100' : 'opacity-0 group-hover/grip:opacity-100'}`}
+              style={{ background: 'var(--outline-border)' }}
+            />
           </div>
         )}
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 flex-shrink-0">
-          <h3 className="text-white font-heading font-bold text-lg flex items-center gap-2">
+        <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--table-border)' }}>
+          <h3 className="text-heading font-heading font-bold text-lg flex items-center gap-2">
             <Heart size={18} fill="currentColor" className="text-accent" />
             {tx({ fr: 'Mes favoris', en: 'My favorites', es: 'Mis favoritos' })} ({total})
           </h3>
@@ -219,7 +244,7 @@ export default function FavoritesDrawer() {
             type="button"
             onClick={closeFavDrawer}
             aria-label={tx({ fr: 'Fermer', en: 'Close', es: 'Cerrar' })}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="p-2 rounded-full bg-glass-alt text-heading hover:brightness-125 transition-all"
           >
             <X size={16} />
           </button>
@@ -229,8 +254,8 @@ export default function FavoritesDrawer() {
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {total === 0 ? (
             <div className="text-center py-16">
-              <Heart size={28} className="mx-auto text-white/40 mb-3" />
-              <p className="text-white/55 text-sm">
+              <Heart size={28} className="mx-auto text-grey-muted mb-3" />
+              <p className="text-grey-light text-sm">
                 {tx({
                   fr: 'Aucun favori pour l\'instant. Touche le coeur sur un design ou une oeuvre.',
                   en: 'No favorites yet. Tap the heart on a design or artwork.',
@@ -243,14 +268,14 @@ export default function FavoritesDrawer() {
               {/* Groupe STICKERS */}
               {favStickers.length > 0 && (
                 <section>
-                  <h4 className="text-white/70 text-[11px] font-bold uppercase tracking-wider mb-2.5">
+                  <h4 className="text-grey-light text-[11px] font-bold uppercase tracking-wider mb-2.5">
                     {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })} ({favStickers.length})
                   </h4>
                   {/* FAV-05 : auto-fill -> le nombre de colonnes suit la largeur
                       du panneau (~3 a 390px, davantage une fois elargi). */}
                   <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))' }}>
                     {favStickers.map((s) => (
-                      <div key={s.slug} className="relative rounded-lg bg-black/25 p-2 flex flex-col items-center">
+                      <div key={s.slug} className="relative rounded-lg bg-glass-alt p-2 flex flex-col items-center">
                         <FavoriteHeart slug={s.slug} size={13} className="absolute top-1 right-1 z-10" />
                         <img
                           src={thumb(`/images/stickers-massive/${s.slug}.webp`)}
@@ -276,12 +301,12 @@ export default function FavoritesDrawer() {
               {/* Groupe PRINTS (cliquables vers l'oeuvre, PAS de panier ici) */}
               {favPrints.length > 0 && (
                 <section>
-                  <h4 className="text-white/70 text-[11px] font-bold uppercase tracking-wider mb-2.5">
+                  <h4 className="text-grey-light text-[11px] font-bold uppercase tracking-wider mb-2.5">
                     {tx({ fr: 'Prints d\'artistes', en: 'Artist prints', es: 'Prints de artistas' })} ({favPrints.length})
                   </h4>
                   <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))' }}>
                     {favPrints.map(({ print, artistSlug, artistName }) => (
-                      <div key={print.id} className="relative rounded-lg bg-black/25 overflow-hidden group">
+                      <div key={print.id} className="relative rounded-lg bg-glass-alt overflow-hidden group">
                         <FavoriteHeart space="prints" slug={print.id} size={13} className="absolute top-1 right-1 z-10" />
                         <button
                           type="button"
@@ -294,7 +319,7 @@ export default function FavoritesDrawer() {
                             loading="lazy"
                             className="w-full aspect-[4/5] object-cover transition-transform duration-300 group-hover:scale-105"
                           />
-                          <p className="px-1.5 pt-1 text-[10px] text-white font-semibold truncate">{printTitle(print)}</p>
+                          <p className="px-1.5 pt-1 text-[10px] text-heading font-semibold truncate">{printTitle(print)}</p>
                           <p className="px-1.5 pb-1.5 text-[9px] text-accent truncate">{artistName}</p>
                         </button>
                       </div>
@@ -308,10 +333,10 @@ export default function FavoritesDrawer() {
 
         {/* Footer : pont panier (stickers) + rappel minimum 5 + continuer */}
         {total > 0 && (
-          <div className="px-5 py-4 border-t border-white/10 flex-shrink-0">
+          <div className="px-5 py-4 flex-shrink-0" style={{ borderTop: '1px solid var(--table-border)' }}>
             {favStickers.length > 0 && (
               <>
-                <p className="text-xs text-white/70 mb-2.5 flex items-center gap-1.5">
+                <p className="text-xs text-grey-light mb-2.5 flex items-center gap-1.5">
                   <ShoppingBag size={12} className="text-accent" />
                   {tx({
                     fr: `Minimum ${STICKER_COLLECTION_MIN_UNITS} stickers par commande (collection).`,
@@ -335,7 +360,7 @@ export default function FavoritesDrawer() {
             <button
               type="button"
               onClick={closeFavDrawer}
-              className="w-full py-3 rounded-full bg-transparent text-white text-sm font-semibold border border-white/20 hover:bg-white/5 transition-colors"
+              className="btn-outline w-full justify-center text-sm"
             >
               {tx({ fr: 'Continuer mes achats', en: 'Keep shopping', es: 'Seguir comprando' })}
             </button>
