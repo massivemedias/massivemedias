@@ -155,7 +155,7 @@ function Home() {
       <HomeCurtain>
       {/* ============ HERO (= le rideau qui se souleve) ============ */}
       <section className="relative min-h-[80vh] md:min-h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 hero-aurora"></div>
+        <div className="absolute inset-0 home-hero-bg"></div>
 
         <div className="relative z-10 text-center mx-auto px-4 py-20">
           <motion.div
@@ -258,7 +258,7 @@ function Home() {
           Stickers / Prints / Mini Massive au pattern etabli (bg-glass, sans
           bordure, lift au survol). La banniere Collection est gardee derriere
           un flag reversible. */}
-      {HOME_SHOW_COLLECTION_BANNER ? <HomeCollectionBanner /> : <HomeProductCards artworks={displayArtworks} />}
+      {HOME_SHOW_COLLECTION_BANNER ? <HomeCollectionBanner /> : <HomeProductCards />}
 
       {/* ============ SECTION MAGAZINE (HOME-04) ============
           Section editoriale unique (stickers + prints melanges), juste apres la

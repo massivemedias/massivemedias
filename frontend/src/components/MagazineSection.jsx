@@ -5,6 +5,7 @@ import { ArrowRight, Instagram, Play } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { useArtists } from '../hooks/useArtists'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
+import { KIDS_SAFE } from '../data/etiquettes'
 import TumblerDesign from './TumblerDesign'
 
 /**
@@ -96,8 +97,11 @@ function Kicker({ children }) {
 function GiantSticker({ slug, rotate = -4, className = '' }) {
   return (
     <Link to="/stickers" className={`block group ${className}`} aria-label="Voir la collection de stickers">
+      {/* thumb PROPRE (400, non filigrane) : affiche a ~300px = trop petit pour
+          reimprimer, donc pas besoin du filigrane 800 -> home 100% sans le
+          "MASSIVE" fantome. Le filigrane reste sur la vue produit/lightbox. */}
       <img
-        src={st(slug)} alt="" loading="lazy"
+        src={stThumb(slug)} alt="" loading="lazy"
         className="sticker-stroke w-full h-full object-contain transition-transform duration-500 group-hover:-translate-y-2 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
         style={{ transform: `rotate(${rotate}deg)` }}
       />
@@ -152,7 +156,15 @@ function useMagazineContent() {
     Object.values(artists || {}).forEach((a) => (a?.prints || []).forEach((p) => { if (p?.image) cms.push(p.image) }))
     return cms.length >= 4 ? cms : LOCAL_ARTWORKS
   }, [artists])
-  const stickerPool = useMemo(() => MASSIVE_STICKERS.map((s) => s.slug), [])
+  // Pool restreint a la curation KIDS_SAFE (deja validee par Mika) : le sticker
+  // hero du magazine est tire au sort, il ne doit JAMAIS tomber sur un design
+  // NSFW/pin-up sur la page d'accueil grand public. Intersection avec le
+  // catalogue reel -> uniquement des slugs valides ET surs.
+  const stickerPool = useMemo(() => {
+    const safe = new Set(KIDS_SAFE)
+    const inter = MASSIVE_STICKERS.map((s) => s.slug).filter((slug) => safe.has(slug))
+    return inter.length ? inter : MASSIVE_STICKERS.map((s) => s.slug)
+  }, [])
 
   // Etat DETERMINISTE au prerender (premiers), shuffle client apres mount.
   const [picks, setPicks] = useState(() => ({
@@ -248,36 +260,49 @@ function Magazine({ tx, picks }) {
       {/* Tranche 1 : sticker geant dominant qui deborde + texte + collage */}
       <div className="relative">
         <div className="grid md:grid-cols-[1.1fr_1fr] gap-8 items-center">
-          <Reveal delay={0.1} className="relative h-[400px] md:h-[500px] order-2 md:order-1">
-            <GiantSticker slug={picks.stickers[0]} rotate={-6} className="absolute left-[-4%] top-[6%] w-[72%] max-h-[86%] z-20" />
-            <Artwork src={picks.artworks[0]} className="absolute right-[4%] top-[10%] w-[38%] h-[58%] z-10" style={{ transform: 'rotate(4deg)' }} />
-            <FloatSticker slug={picks.stickers[1]} className="absolute right-[1%] bottom-[6%] w-[28%] z-30" style={{ transform: 'rotate(10deg)' }} />
-            <FloatSticker slug={picks.stickers[2]} className="absolute left-[38%] bottom-[3%] w-[22%] z-30" style={{ transform: 'rotate(-8deg)' }} />
-            <div className="absolute right-[12%] top-[-2%] h-[120px] z-0"><Gourde design={picks.gourde} className="h-full" /></div>
+          {/* CHANTIER "calme le sticker geant" (Mika) : fini le collage qui
+              debordait et se chevauchait. UN seul sticker, CONTENU dans sa
+              colonne, centre, zero chevauchement a tout breakpoint (375/768/
+              1440). Plus d'absolute, plus de bleed negatif. */}
+          <Reveal delay={0.1} className="relative h-[260px] md:h-[400px] order-2 md:order-1 flex items-center justify-center">
+            <GiantSticker slug={picks.stickers[0]} rotate={-4} className="w-[66%] max-w-[300px] h-full" />
           </Reveal>
           <Reveal className="order-1 md:order-2">
             <Kicker>{T.t1.kicker}</Kicker>
-            <h2 className="font-heading font-black text-heading leading-[0.98] text-4xl sm:text-5xl md:text-6xl">{T.t1.title}</h2>
+            <h2 className="section-title-lg text-heading">{T.t1.title}</h2>
             <p className="text-base text-grey-light leading-relaxed mt-5 max-w-md">{T.t1.body}</p>
             <LinkRow tx={tx} />
           </Reveal>
         </div>
       </div>
 
-      {/* Tranche 2 : comment ca marche, etapes decalees */}
+      {/* Tranche 2 : comment ca marche = TIMELINE (cercles numerotes relies).
+          Desktop : 3 colonnes egales, cercles relies par une ligne horizontale.
+          Mobile : timeline verticale, ligne a gauche, etapes empilees. AUCUNE
+          image (fini le chevauchement). */}
       <div>
-        <Reveal className="mb-8">
+        <Reveal className="mb-10">
           <Kicker>{T.t2.kicker}</Kicker>
-          <h3 className="font-heading font-black text-heading text-3xl sm:text-4xl">{T.t2.title}</h3>
+          <h3 className="section-title-lg text-heading">{T.t2.title}</h3>
         </Reveal>
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-          {T.t2.steps.map((s, i) => (
-            <Reveal key={i} delay={i * 0.1} className={`relative flex-1 rounded-2xl p-6 card-bg-bordered ${i === 1 ? 'sm:mt-8' : i === 2 ? 'sm:mt-16' : ''}`}>
-              <span className="font-heading font-black text-5xl text-accent/25 leading-none">{s.n}</span>
-              <h4 className="text-heading font-heading font-bold text-lg mt-2 mb-1.5">{s.t}</h4>
-              <p className="text-sm text-grey-light leading-relaxed">{s.d}</p>
-            </Reveal>
-          ))}
+        <div className="relative">
+          {/* ligne horizontale desktop (derriere les cercles, a hauteur de leur centre) */}
+          <div className="hidden sm:block absolute top-7 left-[16.6%] right-[16.6%] h-0.5 bg-white/15" aria-hidden="true" />
+          <div className="grid gap-8 sm:grid-cols-3">
+            {T.t2.steps.map((s, i) => (
+              <Reveal key={i} delay={i * 0.12} className="relative flex sm:flex-col items-start sm:items-center sm:text-center gap-4">
+                {/* ligne verticale mobile entre les etapes */}
+                {i < T.t2.steps.length - 1 && (
+                  <div className="sm:hidden absolute left-7 top-16 -bottom-8 w-0.5 bg-white/15" aria-hidden="true" />
+                )}
+                <span className="relative z-10 w-14 h-14 shrink-0 rounded-full bg-accent text-white font-heading font-black text-xl grid place-items-center shadow-lg">{s.n}</span>
+                <div className="pt-1 sm:pt-3">
+                  <h4 className="text-heading font-heading font-bold text-lg mb-1">{s.t}</h4>
+                  <p className="text-sm text-grey-light leading-relaxed max-w-xs sm:mx-auto">{s.d}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -286,7 +311,7 @@ function Magazine({ tx, picks }) {
         <Reveal className="flex flex-wrap items-end justify-between gap-4 mb-6">
           <div>
             <Kicker>{T.t3.kicker}</Kicker>
-            <h3 className="font-heading font-black text-heading text-3xl sm:text-4xl">{T.t3.title}</h3>
+            <h3 className="section-title-lg text-heading">{T.t3.title}</h3>
             <p className="text-base text-grey-light leading-relaxed mt-3 max-w-lg">{T.t3.body}</p>
           </div>
           <a href="https://instagram.com/massivemedias" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-accent font-semibold hover:brightness-110">

@@ -260,6 +260,16 @@ input[type="number"] {
   transition: background 0.3s;
 }
 
+/* CHANTIER FOND PROPRE (15 juillet) : fond du hero HOMEPAGE = degrade violet
+   subtil, SANS les 3 ellipses de glow flottantes ni l'animation de derive de
+   .hero-aurora (Mika : "fond propre, degrade subtil, rien d'autre"). Reutilise
+   les memes jetons de theme --aurora-bg-* -> reste cale sur les 11 palettes.
+   .hero-aurora est INTACTE pour le hero /stickers (juge OK par Mika). */
+.home-hero-bg {
+  background: linear-gradient(160deg, var(--aurora-bg-start) 0%, var(--aurora-bg-mid) 55%, var(--aurora-bg-end) 100%);
+  transition: background 0.3s;
+}
+
 /* Subtle glow pulse for CTA buttons */
 @keyframes subtle-glow {
   0%, 100% { box-shadow: 0 0 12px rgba(var(--accent-rgb, 255, 200, 0), 0.25); }
@@ -1071,6 +1081,30 @@ select.input-field option {
 
 .footer-muted {
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* CHANTIER TYPO (15 juillet) : titres de section homepage facon hero
+   "WE DESIGN, WE PRINT, YOU STICK." -> Montserrat Black/ExtraBold ITALIQUE,
+   MAJUSCULES, letter-spacing legerement negatif. La COULEUR reste au jeton de
+   theme (text-heading) sur les composants : blanc EN DUR casse les 11 palettes
+   claires (incident HOME-BG). Fallback Space Grotesk si Montserrat pas chargee.
+   Montserrat = below-the-fold (magazine), n'impacte pas le LCP (logo + cpr). */
+.section-title-lg {
+  font-family: 'Montserrat', var(--font-heading);
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  font-size: clamp(1.9rem, 5vw, 3.25rem);
+}
+.section-title-sm {
+  font-family: 'Montserrat', var(--font-heading);
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
 }
 
 /* CPR tagline filter - utilise la variable --cpr-filter definie par le theme engine */
