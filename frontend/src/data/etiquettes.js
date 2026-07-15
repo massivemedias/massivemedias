@@ -291,3 +291,45 @@ export const SAMPLE_NAME_POOL = [
   'Etienne', 'Emilie', 'Audrey', 'Naenia', 'Alexandra', 'Simon', 'Jorge',
   'Raphaël', 'Clément',
 ]
+
+/**
+ * STYLE DE COINS du cadre (choix client). Le meme `cornerFramePath` sert
+ * l'APERCU (fill + stroke) ET la DECOUPE Cameo (contour de coupe) -> la forme
+ * choisie voyage jusqu'a la production sans divergence.
+ * DECOUPE CONCAVE : l'arc rentrant a un RAYON franc (~0,3 h, jamais un angle
+ * vif) donc la lame Cameo le suit ; risque residuel = le creux affine un peu le
+ * vinyle au coin -> A TESTER physiquement sur le format Mini avant de vendre
+ * (note aussi pour Mika). round = defaut (rendu actuel).
+ */
+export const ETIQUETTE_CORNERS = [
+  { id: 'round', label: { fr: 'Rond', en: 'Round', es: 'Redondo' } },
+  { id: 'chamfer', label: { fr: 'Coupé', en: 'Chamfered', es: 'Biselado' } },
+  { id: 'concave', label: { fr: 'Concave', en: 'Concave', es: 'Cóncavo' } },
+]
+
+/**
+ * Chemin SVG du contour du cadre selon le style de coin.
+ * @param inset  decalage vers l'interieur (0 = contour de COUPE exterieur ;
+ *   strokeWidth/2 = axe du trait de l'apercu ; strokeWidth = interieur pour clip)
+ * Le stroke suit fidelement chanfrein et concave (path, pas de border-radius).
+ */
+export function cornerFramePath(w, h, corner = 'round', inset = 0) {
+  const x0 = inset, y0 = inset, x1 = w - inset, y1 = h - inset
+  const W = x1 - x0, H = y1 - y0
+  if (corner === 'chamfer') {
+    const c = Math.min(H * 0.34, W * 0.34)
+    return `M ${x0 + c},${y0} L ${x1 - c},${y0} L ${x1},${y0 + c} L ${x1},${y1 - c} L ${x1 - c},${y1} L ${x0 + c},${y1} L ${x0},${y1 - c} L ${x0},${y0 + c} Z`
+  }
+  if (corner === 'concave') {
+    const c = Math.min(H * 0.32, W * 0.32)
+    // arcs centres sur le POINT de coin -> le trait rentre vers l'interieur
+    return [
+      `M ${x0 + c},${y0}`, `L ${x1 - c},${y0}`, `A ${c},${c} 0 0 0 ${x1},${y0 + c}`,
+      `L ${x1},${y1 - c}`, `A ${c},${c} 0 0 0 ${x1 - c},${y1}`,
+      `L ${x0 + c},${y1}`, `A ${c},${c} 0 0 0 ${x0},${y1 - c}`,
+      `L ${x0},${y0 + c}`, `A ${c},${c} 0 0 0 ${x0 + c},${y0}`, 'Z',
+    ].join(' ')
+  }
+  const r = Math.min(H / 2.6, W / 2.6) // round (defaut, = rendu actuel)
+  return `M ${x0 + r},${y0} L ${x1 - r},${y0} A ${r},${r} 0 0 1 ${x1},${y0 + r} L ${x1},${y1 - r} A ${r},${r} 0 0 1 ${x1 - r},${y1} L ${x0 + r},${y1} A ${r},${r} 0 0 1 ${x0},${y1 - r} L ${x0},${y0 + r} A ${r},${r} 0 0 1 ${x0 + r},${y0} Z`
+}

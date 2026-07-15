@@ -11,6 +11,7 @@ import {
   KIDS_SAFE, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS, ETIQUETTE_FONTS_CSS_URL, FONT_TOO_THIN_NOTE,
   PAGE_NAME_OPTIONS, PAGE_NAME_CHOICE, PAGE_SEO_PRODUCT, ETIQUETTE_CLAIMS, ETIQUETTE_CLAIM_LAVE_VAISSELLE,
   formatDims, formatDimsShort, SAMPLE_NAMES, SAMPLE_NAME_POOL,
+  ETIQUETTE_CORNERS, cornerFramePath,
 } from '../data/etiquettes'
 import { ETIQUETTES_PALETTES } from '../data/etiquettesPalettes'
 
@@ -80,13 +81,15 @@ const pickSampleName = () => SAMPLE_NAME_POOL[Math.floor(Math.random() * SAMPLE_
 // mais disparaissent du build prod tant que la licence n'est pas confirmee.
 const AVAILABLE_FONTS = ETIQUETTE_FONTS.filter((f) => f.licensed !== false || import.meta.env.DEV)
 
-function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr', showDims = true, placeholder = '' }) {
+function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr', showDims = true, placeholder = '', corner = 'round' }) {
   const wPx = format.w * PX_PER_MM
   const hPx = format.h * PX_PER_MM
-  const radius = hPx / 2.6                     // border-radius genereux (die-cut)
   const stickerSide = hPx * 0.86               // le sticker occupe la hauteur
   const padX = hPx * 0.22
-  const textZoneW = wPx - stickerSide - padX * 3
+  // coins coupes/concaves grugent l'espace aux extremites : on retire de la
+  // largeur utile + on decale le sticker pour que rien ne touche jamais un coin.
+  const cornerInset = corner === 'round' ? 0 : hPx * 0.14
+  const textZoneW = wPx - stickerSide - padX * 3 - cornerInset
   const hasLine2 = Boolean(line2.trim())
   // hauteur allouee a chaque ligne : les 2 lignes + l'ecart DOIVENT tenir dans
   // la hauteur du rectangle, sinon le texte deborde. Budgets serres (somme
@@ -99,39 +102,45 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr'
   const size1 = useAutoFit(t1, font.family, font.weight, textZoneW, line1MaxH)
   const size2 = useAutoFit(t2 || ' ', font.family, font.weight, textZoneW, line2MaxH)
 
+  const sw = Math.max(2, hPx * 0.045)
+  const framePath = cornerFramePath(wPx, hPx, corner, sw / 2)   // axe du trait
+  const clipInside = cornerFramePath(wPx, hPx, corner, sw)      // interieur du trait -> clip du contenu
+
   return (
     <div className="flex flex-col items-center gap-2">
-      {/* L'etiquette : le fond/stroke/texte viennent du combo auto-assorti. */}
-      <div
-        className="flex items-center"
-        style={{
-          width: wPx, height: hPx, borderRadius: radius,
-          background: combo.bg,
-          border: `${Math.max(2, hPx * 0.045)}px solid ${combo.stroke}`,
-          paddingLeft: padX * 0.6, paddingRight: padX,
-          boxShadow: '0 10px 26px rgba(0,0,0,0.28)',
-        }}
-      >
-        <img
-          src={`/images/thumbs-mini/stickers-massive/${slug}.webp`}
-          alt=""
-          aria-hidden="true"
-          className="sticker-stroke object-contain shrink-0"
-          style={{ width: stickerSide, height: stickerSide }}
-        />
-        <div className="flex-1 min-w-0 self-stretch flex flex-col items-center justify-center text-center" style={{ paddingLeft: padX * 0.5 }}>
-          {/* wrapper compact : les 2 lignes forment UN groupe (marge negative
-              calibree par police), recale verticalement (vNudge), et le
-              justify-center du parent centre ce groupe dans le rectangle. */}
-          <div className="flex flex-col items-center" style={{ transform: `translateY(${hPx * (font.vNudge || 0)}px)` }}>
-            <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size1, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap' }}>
-              {t1}
-            </div>
-            {hasLine2 && (
-              <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size2, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap', opacity: 0.82, marginTop: size2 * (font.lineGap ?? -0.12) }}>
-                {t2}
+      {/* Cadre = path SVG : le STROKE epouse fidelement le coin (chanfrein,
+          concave) - impossible en border-radius CSS pur. Le meme path sert la
+          decoupe Cameo (cf cornerFramePath). Contenu clippe a la forme, ombre
+          portee qui suit la forme (pas une ombre rectangulaire). */}
+      <div style={{ position: 'relative', width: wPx, height: hPx, filter: 'drop-shadow(0 10px 26px rgba(0,0,0,0.28))' }}>
+        <svg width={wPx} height={hPx} viewBox={`0 0 ${wPx} ${hPx}`} style={{ position: 'absolute', inset: 0, display: 'block' }} aria-hidden="true">
+          <path d={framePath} fill={combo.bg} stroke={combo.stroke} strokeWidth={sw} strokeLinejoin={corner === 'chamfer' ? 'miter' : 'round'} />
+        </svg>
+        <div
+          className="absolute inset-0 flex items-center"
+          style={{ paddingLeft: padX * 0.6 + cornerInset * 0.5, paddingRight: padX + cornerInset, clipPath: `path('${clipInside}')` }}
+        >
+          <img
+            src={`/images/thumbs-mini/stickers-massive/${slug}.webp`}
+            alt=""
+            aria-hidden="true"
+            className="sticker-stroke object-contain shrink-0"
+            style={{ width: stickerSide, height: stickerSide }}
+          />
+          <div className="flex-1 min-w-0 self-stretch flex flex-col items-center justify-center text-center" style={{ paddingLeft: padX * 0.5 }}>
+            {/* wrapper compact : les 2 lignes forment UN groupe (marge negative
+                calibree par police), recale verticalement (vNudge), et le
+                justify-center du parent centre ce groupe dans le rectangle. */}
+            <div className="flex flex-col items-center" style={{ transform: `translateY(${hPx * (font.vNudge || 0)}px)` }}>
+              <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size1, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap' }}>
+                {t1}
               </div>
-            )}
+              {hasLine2 && (
+                <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size2, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap', opacity: 0.82, marginTop: size2 * (font.lineGap ?? -0.12) }}>
+                  {t2}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -173,6 +182,7 @@ function ConfigurateurEtiquettes() {
   const [comboIdx, setComboIdx] = useState(0)
   const [formatId, setFormatId] = useState('moyenne')
   const [fontId, setFontId] = useState(AVAILABLE_FONTS[0].id)
+  const [cornerId, setCornerId] = useState(ETIQUETTE_CORNERS[0].id)
   const [showAll, setShowAll] = useState(false)
   const [sampleName, setSampleName] = useState(pickSampleName)
   // prenom d'exemple : nouveau tirage a chaque changement de design
@@ -211,7 +221,7 @@ function ConfigurateurEtiquettes() {
         {/* ---- gauche : l'apercu + les reglages texte ---- */}
         <div className="surface-vitrine card-shadow rounded-2xl p-6 sm:p-8">
           <div className="flex items-center justify-center min-h-[150px] overflow-x-auto py-2">
-            <EtiquettePreview slug={slug} combo={combo} format={format} font={font} line1={line1} line2={line2} lang={lang} placeholder={sampleName} />
+            <EtiquettePreview slug={slug} combo={combo} format={format} font={font} line1={line1} line2={line2} lang={lang} placeholder={sampleName} corner={cornerId} />
           </div>
 
           {/* nom + ligne 2 */}
@@ -285,6 +295,33 @@ function ConfigurateurEtiquettes() {
                 {AVAILABLE_FONTS.filter((f) => (f.tooThinFormats || []).includes(formatId)).map((f) => tx(f.name)).join(', ')} : {tx(FONT_TOO_THIN_NOTE)}
               </p>
             )}
+          </div>
+
+          {/* coins : 3 vignettes de la FORME du coin (pas du texte). Le meme
+              path (cornerFramePath) rend l'apercu ET la vignette. */}
+          <div className="mt-5">
+            <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2">
+              {tx({ fr: 'Coins', en: 'Corners', es: 'Esquinas' })}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {ETIQUETTE_CORNERS.map((cn) => {
+                const active = cornerId === cn.id
+                return (
+                  <button
+                    key={cn.id}
+                    type="button"
+                    onClick={() => setCornerId(cn.id)}
+                    title={tx(cn.label)}
+                    aria-label={tx(cn.label)}
+                    className={`p-1.5 rounded-xl border transition-all ${active ? 'border-accent bg-accent/10 text-accent' : 'border-white/10 text-grey-light hover:border-white/25'}`}
+                  >
+                    <svg width="38" height="38" viewBox="0 0 44 44" aria-hidden="true">
+                      <path d={cornerFramePath(44, 44, cn.id, 3)} fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="2.5" strokeLinejoin={cn.id === 'chamfer' ? 'miter' : 'round'} />
+                    </svg>
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* format */}
