@@ -214,7 +214,10 @@ export const ETIQUETTE_PACKS = [
 //   dans la boite em pour les fonts a gros jambages).
 export const ETIQUETTE_FONTS = [
   { id: 'baloo', name: { fr: 'Style 1', en: 'Style 1', es: 'Estilo 1' }, label: 'Baloo 2', family: "'Baloo 2', sans-serif", weight: 700, tooThinFormats: [], lineGap: -0.39, vNudge: 0.018 },
-  { id: 'amelina-colette', name: { fr: 'Style 2', en: 'Style 2', es: 'Estilo 2' }, label: 'Amélina Colette', family: "'Amelina Colette', cursive", weight: 400, tooThinFormats: [], lineGap: -0.42, vNudge: -0.020 },
+  // licensed:false = GATE : Amelina EULA personal-use non levee. Visible en DEV
+  // (localhost) mais RETIREE du build prod tant que la licence commerciale
+  // n'est pas confirmee -> passer a true (ou retirer la cle) au feu vert Mika.
+  { id: 'amelina-colette', name: { fr: 'Style 2', en: 'Style 2', es: 'Estilo 2' }, label: 'Amélina Colette', family: "'Amelina Colette', cursive", weight: 400, tooThinFormats: [], lineGap: -0.42, vNudge: -0.020, licensed: false },
 ]
 export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&display=swap'
 export const FONT_TOO_THIN_NOTE = {
@@ -276,4 +279,15 @@ export const ETIQUETTE_CLAIMS = [
 ]
 
 /** Prenoms d'exemple par langue (decision Mika 1b). */
-export const SAMPLE_NAMES = { fr: 'Lyse', en: 'Kevin', es: 'Paolo' }
+export const SAMPLE_NAMES = { fr: 'Lyse', en: 'Kevin', es: 'Paolo' } // fallback ultime
+// Prenoms d'exemple TOURNANTS dans l'apercu du configurateur (rotation aleatoire
+// au chargement + a chaque changement de design). MEME liste pour les 3 langues
+// (des prenoms, pas des traductions). Editable. Le champ se vide des que le
+// client tape le sien. L'auto-fit encaisse les longs (Merry-Neige, Alexandra).
+export const SAMPLE_NAME_POOL = [
+  'Esteban', 'Olivier', 'Maïté', 'Eve', 'Michaël', 'François', 'Eric', 'Sylvain',
+  'Merry-Neige', 'Holmy', 'Mathieu', 'Brandon', 'Sam', 'Stéphanie', 'Julie',
+  'Catherine', 'Nicolas', 'Vincent', 'Thomas', 'Sonia', 'Cindy', 'Guillaume',
+  'Etienne', 'Emilie', 'Audrey', 'Naenia', 'Alexandra', 'Simon', 'Jorge',
+  'Raphaël', 'Clément',
+]

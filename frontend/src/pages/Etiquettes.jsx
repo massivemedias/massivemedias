@@ -10,7 +10,7 @@ import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import {
   KIDS_SAFE, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS, ETIQUETTE_FONTS_CSS_URL, FONT_TOO_THIN_NOTE,
   PAGE_NAME_OPTIONS, PAGE_NAME_CHOICE, PAGE_SEO_PRODUCT, ETIQUETTE_CLAIMS, ETIQUETTE_CLAIM_LAVE_VAISSELLE,
-  formatDims, formatDimsShort, SAMPLE_NAMES,
+  formatDims, formatDimsShort, SAMPLE_NAMES, SAMPLE_NAME_POOL,
 } from '../data/etiquettes'
 import { ETIQUETTES_PALETTES } from '../data/etiquettesPalettes'
 
@@ -74,7 +74,13 @@ function useAutoFit(text, fontFamily, fontWeight, maxWidthPx, maxHeightPx) {
   return size
 }
 
-function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr', showDims = true }) {
+// un prenon d'exemple au hasard dans le pool (placeholder tournant de l'apercu)
+const pickSampleName = () => SAMPLE_NAME_POOL[Math.floor(Math.random() * SAMPLE_NAME_POOL.length)]
+// polices offertes au client : les non-licenciees (Amelina) restent en DEV
+// mais disparaissent du build prod tant que la licence n'est pas confirmee.
+const AVAILABLE_FONTS = ETIQUETTE_FONTS.filter((f) => f.licensed !== false || import.meta.env.DEV)
+
+function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr', showDims = true, placeholder = '' }) {
   const wPx = format.w * PX_PER_MM
   const hPx = format.h * PX_PER_MM
   const radius = hPx / 2.6                     // border-radius genereux (die-cut)
@@ -88,7 +94,7 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr'
   const line1MaxH = hasLine2 ? hPx * 0.38 : hPx * 0.62
   const line2MaxH = hPx * 0.23
 
-  const t1 = line1.trim() || SAMPLE_NAMES[lang] || SAMPLE_NAMES.fr
+  const t1 = line1.trim() || placeholder || SAMPLE_NAMES[lang] || SAMPLE_NAMES.fr
   const t2 = line2.trim()
   const size1 = useAutoFit(t1, font.family, font.weight, textZoneW, line1MaxH)
   const size2 = useAutoFit(t2 || ' ', font.family, font.weight, textZoneW, line2MaxH)
@@ -166,8 +172,11 @@ function ConfigurateurEtiquettes() {
   const [line2, setLine2] = useState('')
   const [comboIdx, setComboIdx] = useState(0)
   const [formatId, setFormatId] = useState('moyenne')
-  const [fontId, setFontId] = useState(ETIQUETTE_FONTS[0].id)
+  const [fontId, setFontId] = useState(AVAILABLE_FONTS[0].id)
   const [showAll, setShowAll] = useState(false)
+  const [sampleName, setSampleName] = useState(pickSampleName)
+  // prenom d'exemple : nouveau tirage a chaque changement de design
+  useEffect(() => { setSampleName(pickSampleName()) }, [slug])
 
   const combos = ETIQUETTES_PALETTES[slug] || []
   const combo = combos[Math.min(comboIdx, combos.length - 1)] || { bg: '#fff', stroke: '#333', text: '#222' }
@@ -179,7 +188,7 @@ function ConfigurateurEtiquettes() {
   // dans une font non commandable)
   useEffect(() => {
     if ((font?.tooThinFormats || []).includes(formatId)) {
-      const ok = ETIQUETTE_FONTS.find((f) => !(f.tooThinFormats || []).includes(formatId))
+      const ok = AVAILABLE_FONTS.find((f) => !(f.tooThinFormats || []).includes(formatId))
       if (ok) setFontId(ok.id)
     }
   }, [formatId, font])
@@ -202,7 +211,7 @@ function ConfigurateurEtiquettes() {
         {/* ---- gauche : l'apercu + les reglages texte ---- */}
         <div className="surface-vitrine card-shadow rounded-2xl p-6 sm:p-8">
           <div className="flex items-center justify-center min-h-[150px] overflow-x-auto py-2">
-            <EtiquettePreview slug={slug} combo={combo} format={format} font={font} line1={line1} line2={line2} lang={lang} />
+            <EtiquettePreview slug={slug} combo={combo} format={format} font={font} line1={line1} line2={line2} lang={lang} placeholder={sampleName} />
           </div>
 
           {/* nom + ligne 2 */}
@@ -254,7 +263,7 @@ function ConfigurateurEtiquettes() {
               {tx({ fr: 'Police', en: 'Font', es: 'Tipografía' })}
             </p>
             <div className="flex flex-wrap gap-2">
-              {ETIQUETTE_FONTS.map((f) => {
+              {AVAILABLE_FONTS.map((f) => {
                 const tooThin = (f.tooThinFormats || []).includes(formatId)
                 return (
                   <button
@@ -262,7 +271,7 @@ function ConfigurateurEtiquettes() {
                     type="button"
                     disabled={tooThin}
                     onClick={() => setFontId(f.id)}
-                    className={`px-4 py-2 rounded-full text-sm transition-all border ${tooThin ? 'border-white/5 text-grey-muted opacity-40 cursor-not-allowed' : fontId === f.id ? 'border-accent text-accent bg-accent/10' : 'border-white/10 text-grey-light hover:border-white/25'}`}
+                    className={`px-4 py-2 rounded-full text-lg transition-all border ${tooThin ? 'border-white/5 text-grey-muted opacity-40 cursor-not-allowed' : fontId === f.id ? 'border-accent text-accent bg-accent/10' : 'border-white/10 text-grey-light hover:border-white/25'}`}
                     style={{ fontFamily: f.family, fontWeight: f.weight }}
                     title={tooThin ? `${tx(f.name)} : ${tx(FONT_TOO_THIN_NOTE)}` : undefined}
                   >
@@ -271,9 +280,9 @@ function ConfigurateurEtiquettes() {
                 )
               })}
             </div>
-            {ETIQUETTE_FONTS.some((f) => (f.tooThinFormats || []).includes(formatId)) && (
+            {AVAILABLE_FONTS.some((f) => (f.tooThinFormats || []).includes(formatId)) && (
               <p className="text-grey-muted text-xs mt-2">
-                {ETIQUETTE_FONTS.filter((f) => (f.tooThinFormats || []).includes(formatId)).map((f) => tx(f.name)).join(', ')} : {tx(FONT_TOO_THIN_NOTE)}
+                {AVAILABLE_FONTS.filter((f) => (f.tooThinFormats || []).includes(formatId)).map((f) => tx(f.name)).join(', ')} : {tx(FONT_TOO_THIN_NOTE)}
               </p>
             )}
           </div>
@@ -352,6 +361,7 @@ function ConfigurateurEtiquettes() {
 export default function Etiquettes() {
   const { lang, tx } = useLang()
   const pageName = PAGE_NAME_OPTIONS[PAGE_NAME_CHOICE]
+  const [heroSample] = useState(pickSampleName) // prenom d'exemple du hero (tire au chargement)
   const goConfig = () => document.getElementById('configurateur')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   // Webfonts du configurateur chargees ICI seulement (rien dans index.html,
@@ -429,8 +439,9 @@ export default function Etiquettes() {
                     slug="massive-panda-cute"
                     combo={(ETIQUETTES_PALETTES['massive-panda-cute'] || [{ bg: '#fff', stroke: '#333', text: '#222' }])[1] || (ETIQUETTES_PALETTES['massive-panda-cute'] || [])[0]}
                     format={ETIQUETTE_FORMATS[1]}
-                    font={ETIQUETTE_FONTS[0]}
-                    line1={SAMPLE_NAMES[lang] || SAMPLE_NAMES.fr}
+                    font={AVAILABLE_FONTS[0]}
+                    line1=""
+                    placeholder={heroSample}
                     line2=""
                     lang={lang}
                   />
