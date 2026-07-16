@@ -18,6 +18,7 @@ export const HIDDEN_STICKERS = new Set([
   'massive-cute-girl-manga',
   'massive-pinup-bleue',
   'massive-asian-vulve',
+  'massive-lingerie',      // femme en lingerie photo-realiste (sync Drive lot 3)
   // --- TIER 1 : gore / body-horror ---
   'massive-alien-bizarre', // "Ventre ouvert" (organes)
   'massive-alien-corps',   // "Festin macabre" (sang)

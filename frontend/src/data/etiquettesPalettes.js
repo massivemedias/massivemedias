@@ -1532,6 +1532,108 @@ export const ETIQUETTES_PALETTES = {
    "text": "#72595b"
   }
  ],
+ "massive-little-dragon": [
+  {
+   "bg": "#ddcfde",
+   "stroke": "#642668",
+   "text": "#301a39"
+  },
+  {
+   "bg": "#fdf4cc",
+   "stroke": "#f5cb18",
+   "text": "#67581a"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#642668",
+   "text": "#361b3e"
+  }
+ ],
+ "massive-meduse": [
+  {
+   "bg": "#d8edef",
+   "stroke": "#4caeb8",
+   "text": "#274d57"
+  },
+  {
+   "bg": "#d3d2d6",
+   "stroke": "#353144",
+   "text": "#1e1e2b"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#4caeb8",
+   "text": "#2b5862"
+  }
+ ],
+ "massive-poussin": [
+  {
+   "bg": "#fef5d3",
+   "stroke": "#fcd135",
+   "text": "#6a5b26"
+  },
+  {
+   "bg": "#e2d5cc",
+   "stroke": "#793f15",
+   "text": "#382319"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#fcd135",
+   "text": "#7a6827"
+  }
+ ],
+ "massive-red-man": [
+  {
+   "bg": "#f2dad5",
+   "stroke": "#c35641",
+   "text": "#542c2a"
+  },
+  {
+   "bg": "#ddcdcc",
+   "stroke": "#661b19",
+   "text": "#31151b"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#c35641",
+   "text": "#61312d"
+  }
+ ],
+ "massive-red-nose": [
+  {
+   "bg": "#ccd3d2",
+   "stroke": "#183532",
+   "text": "#131f24"
+  },
+  {
+   "bg": "#ece3e2",
+   "stroke": "#aa7f7d",
+   "text": "#4b3b41"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#183532",
+   "text": "#142226"
+  }
+ ],
+ "massive-robot-bubble": [
+  {
+   "bg": "#ede6d8",
+   "stroke": "#ae8c4c",
+   "text": "#4c402e"
+  },
+  {
+   "bg": "#f5d6e7",
+   "stroke": "#d34494",
+   "text": "#5a254a"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#ae8c4c",
+   "text": "#574932"
+  }
+ ],
  "massive-happy-guy": [
   {
    "bg": "#d7dadb",
