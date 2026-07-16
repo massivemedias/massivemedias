@@ -279,7 +279,7 @@ export const ETIQUETTE_CLAIMS = [
 ]
 
 /** Prenoms d'exemple par langue (decision Mika 1b). */
-export const SAMPLE_NAMES = { fr: 'Lyse', en: 'Kevin', es: 'Paolo' } // fallback ultime
+export const SAMPLE_NAMES = { fr: 'Emma', en: 'Kevin', es: 'Paolo' } // fallback ultime
 // Prenoms d'exemple TOURNANTS dans l'apercu du configurateur (rotation aleatoire
 // au chargement + a chaque changement de design). MEME liste pour les 3 langues
 // (des prenoms, pas des traductions). Editable. Le champ se vide des que le
