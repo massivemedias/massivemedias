@@ -56,7 +56,9 @@ export const KIDS_SAFE = [
   'massive-astronaute-spain', 'massive-chat-alien', 'massive-chat-enlevement',
   'massive-chat-roux-soucoupe', 'massive-dragon-firefly', 'massive-monstre-dormeur',
   'massive-ptit-robot', 'massive-robot-qui-court', 'massive-soucoupe',
-    // --- Nouveaux du lot 1 (sync catalogue Drive, 16 juillet) ---
+    // --- Nouveaux du lot 2 ---
+  'massive-happy-guy', 'massive-hot-dogs-meeting', 'massive-icecream-monster',
+  // --- Nouveaux du lot 1 (sync catalogue Drive, 16 juillet) ---
   'massive-cake', 'massive-cameleon-chimie', 'massive-cigogne', 'massive-corns', 'massive-crocodile-dandy', 'massive-cute-monster', 'massive-dansing-frog',
   // --- Personnages doux ---
   'massive-bonet', 'massive-kouklikou', 'massive-meme', 'massive-mimi-gris',
