@@ -5,18 +5,18 @@ export const ETIQUETTES_PALETTES = {
  "massive-animals-meeting": [
   {
    "bg": "#d3d6dd",
-   "stroke": "#374565",
-   "text": "#1f2538"
+   "stroke": "#364566",
+   "text": "#1e2538"
   },
   {
    "bg": "#eddde8",
-   "stroke": "#ae6695",
-   "text": "#4c324a"
+   "stroke": "#ac6695",
+   "text": "#4b324a"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#374565",
-   "text": "#22293d"
+   "stroke": "#364566",
+   "text": "#21293d"
   }
  ],
  "massive-animals": [
@@ -26,8 +26,8 @@ export const ETIQUETTES_PALETTES = {
    "text": "#252d33"
   },
   {
-   "bg": "#d6e9eb",
-   "stroke": "#4499a2",
+   "bg": "#d6e9ea",
+   "stroke": "#4599a1",
    "text": "#24454f"
   },
   {
@@ -38,155 +38,155 @@ export const ETIQUETTES_PALETTES = {
  ],
  "massive-beau-oiseau": [
   {
-   "bg": "#d5d2d3",
-   "stroke": "#3e3139",
+   "bg": "#d4d2d3",
+   "stroke": "#3d3139",
    "text": "#211e27"
   },
   {
-   "bg": "#f8f0ed",
-   "stroke": "#ddbaab",
-   "text": "#5e5252"
+   "bg": "#f7efec",
+   "stroke": "#dbb7a9",
+   "text": "#5d5152"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#3e3139",
-   "text": "#252029"
+   "stroke": "#3d3139",
+   "text": "#242029"
   }
  ],
  "massive-bois-diplo": [
   {
-   "bg": "#e0ddd8",
-   "stroke": "#71654d",
-   "text": "#35322f"
+   "bg": "#dfddd8",
+   "stroke": "#6f644d",
+   "text": "#34312f"
   },
   {
-   "bg": "#eae6df",
-   "stroke": "#9f8d6d",
-   "text": "#46413b"
+   "bg": "#d4d2ce",
+   "stroke": "#3b341e",
+   "text": "#201f1d"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#71654d",
-   "text": "#3c3732"
+   "stroke": "#6f644d",
+   "text": "#3b3732"
   }
  ],
  "massive-boom1": [
   {
-   "bg": "#f3ebeb",
-   "stroke": "#caa4a3",
-   "text": "#57494f"
+   "bg": "#f4ebeb",
+   "stroke": "#cba5a3",
+   "text": "#574a4f"
   },
   {
    "bg": "#d6d3d3",
-   "stroke": "#443935",
+   "stroke": "#453935",
    "text": "#242126"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#caa4a3",
+   "stroke": "#cba5a3",
    "text": "#645459"
   }
  ],
  "massive-canardos": [
   {
-   "bg": "#e9ded9",
-   "stroke": "#9d6851",
+   "bg": "#eaded9",
+   "stroke": "#9f6a51",
    "text": "#463330"
   },
   {
-   "bg": "#573d37",
-   "stroke": "#9d6851",
-   "text": "#e9ded9"
+   "bg": "#583e37",
+   "stroke": "#9f6a51",
+   "text": "#eaded9"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#9d6851",
-   "text": "#4f3934"
+   "stroke": "#9f6a51",
+   "text": "#503a34"
   }
  ],
  "massive-chame": [
   {
-   "bg": "#e9dcde",
-   "stroke": "#9a5e6a",
-   "text": "#442f3a"
+   "bg": "#e8dcde",
+   "stroke": "#985e69",
+   "text": "#442f39"
   },
   {
    "bg": "#efe8e7",
-   "stroke": "#b69591",
+   "stroke": "#b59591",
    "text": "#4f4448"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#9a5e6a",
-   "text": "#4e343f"
+   "stroke": "#985e69",
+   "text": "#4d343f"
   }
  ],
  "massive-chameleon-bois": [
   {
-   "bg": "#deded9",
-   "stroke": "#676853",
+   "bg": "#ddded9",
+   "stroke": "#666854",
    "text": "#313331"
   },
   {
-   "bg": "#e9e6e0",
-   "stroke": "#9a8c72",
-   "text": "#44403d"
+   "bg": "#e8e6e0",
+   "stroke": "#988c71",
+   "text": "#44403c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#676853",
+   "stroke": "#666854",
    "text": "#373935"
   }
  ],
  "massive-chameleon-branche": [
   {
    "bg": "#e7ecde",
-   "stroke": "#91a869",
+   "stroke": "#90a868",
    "text": "#414b39"
   },
   {
-   "bg": "#deddd6",
-   "stroke": "#676344",
-   "text": "#31312b"
+   "bg": "#ddded6",
+   "stroke": "#656744",
+   "text": "#30322b"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#91a869",
-   "text": "#4a563f"
+   "stroke": "#90a868",
+   "text": "#4a563e"
   }
  ],
  "massive-chameleon-skate": [
   {
-   "bg": "#e9d9da",
-   "stroke": "#9d5459",
+   "bg": "#e9dada",
+   "stroke": "#9d5559",
    "text": "#462b33"
   },
   {
    "bg": "#dddee7",
-   "stroke": "#646a94",
-   "text": "#30334a"
+   "stroke": "#646993",
+   "text": "#303349"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#9d5459",
+   "stroke": "#9d5559",
    "text": "#4f3037"
   }
  ],
  "massive-chameleon": [
   {
    "bg": "#cedcd2",
-   "stroke": "#1e5e33",
+   "stroke": "#1e5f34",
    "text": "#152f25"
   },
   {
-   "bg": "#e9f2d5",
-   "stroke": "#99c53e",
-   "text": "#445629"
+   "bg": "#e8f2d4",
+   "stroke": "#96c43d",
+   "text": "#435629"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#1e5e33",
-   "text": "#163426"
+   "stroke": "#1e5f34",
+   "text": "#163527"
   }
  ],
  "massive-chat-aquarium": [
@@ -196,9 +196,9 @@ export const ETIQUETTES_PALETTES = {
    "text": "#2e2a2b"
   },
   {
-   "bg": "#f3ebd8",
-   "stroke": "#c8a34f",
-   "text": "#56492f"
+   "bg": "#f2ebd9",
+   "stroke": "#c5a351",
+   "text": "#554930"
   },
   {
    "bg": "#ffffff",
@@ -209,68 +209,68 @@ export const ETIQUETTES_PALETTES = {
  "massive-chat-chameleon": [
   {
    "bg": "#dad9d3",
-   "stroke": "#575039",
+   "stroke": "#585139",
    "text": "#2b2a27"
   },
   {
-   "bg": "#f5e9e9",
-   "stroke": "#d09b9d",
+   "bg": "#f5e9ea",
+   "stroke": "#d09c9e",
    "text": "#59464d"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#575039",
+   "stroke": "#585139",
    "text": "#302e29"
   }
  ],
  "massive-chat-deco": [
   {
-   "bg": "#d9d5d2",
-   "stroke": "#504134",
+   "bg": "#d8d5d2",
+   "stroke": "#4f4133",
    "text": "#282425"
   },
   {
-   "bg": "#f0eae5",
-   "stroke": "#bd9f8b",
-   "text": "#524846"
+   "bg": "#f0e9e5",
+   "stroke": "#bb9c89",
+   "text": "#514645"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#504134",
-   "text": "#2d2727"
+   "stroke": "#4f4133",
+   "text": "#2c2726"
   }
  ],
  "massive-chat-oeils": [
   {
    "bg": "#d7d5d3",
-   "stroke": "#483e37",
-   "text": "#252326"
+   "stroke": "#483f38",
+   "text": "#252327"
   },
   {
-   "bg": "#f3e5dc",
-   "stroke": "#c78b5f",
-   "text": "#564035"
+   "bg": "#f2e5dc",
+   "stroke": "#c58b5f",
+   "text": "#554035"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#483e37",
-   "text": "#292628"
+   "stroke": "#483f38",
+   "text": "#292629"
   }
  ],
  "massive-chat-poisson-papillon": [
   {
    "bg": "#d5dcd8",
-   "stroke": "#41624e",
+   "stroke": "#41624f",
    "text": "#23302f"
   },
   {
-   "bg": "#f0e8d4",
-   "stroke": "#b9983c",
-   "text": "#504528"
+   "bg": "#efe9d4",
+   "stroke": "#b8993d",
+   "text": "#504529"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#41624e",
+   "stroke": "#41624f",
    "text": "#263633"
   }
  ],
@@ -281,9 +281,9 @@ export const ETIQUETTES_PALETTES = {
    "text": "#5a433b"
   },
   {
-   "bg": "#e6d9f7",
-   "stroke": "#8f50da",
-   "text": "#402a64"
+   "bg": "#e7d9f6",
+   "stroke": "#9050d8",
+   "text": "#412a63"
   },
   {
    "bg": "#ffffff",
@@ -294,52 +294,52 @@ export const ETIQUETTES_PALETTES = {
  "massive-chien-liseur": [
   {
    "bg": "#d7d3d1",
-   "stroke": "#4a352c",
-   "text": "#261f22"
+   "stroke": "#49362d",
+   "text": "#262022"
   },
   {
    "bg": "#f4f0eb",
-   "stroke": "#cbbca3",
+   "stroke": "#ccbda3",
    "text": "#57534f"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#4a352c",
-   "text": "#2a2223"
+   "stroke": "#49362d",
+   "text": "#2a2224"
   }
  ],
  "massive-cochon": [
   {
    "bg": "#fcd8e8",
-   "stroke": "#f24d96",
+   "stroke": "#f14d95",
    "text": "#66284a"
   },
   {
-   "bg": "#f4e8d8",
-   "stroke": "#cf974f",
-   "text": "#59452f"
+   "bg": "#f5e9d9",
+   "stroke": "#d39c52",
+   "text": "#5a4631"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#f24d96",
-   "text": "#762d53"
+   "stroke": "#f14d95",
+   "text": "#752d52"
   }
  ],
  "massive-cute-chien": [
   {
    "bg": "#dee5e8",
-   "stroke": "#6b8998",
-   "text": "#333f4b"
+   "stroke": "#6b8a97",
+   "text": "#33404b"
   },
   {
-   "bg": "#e9dfd7",
-   "stroke": "#9a6d47",
+   "bg": "#e9dfd6",
+   "stroke": "#996d46",
    "text": "#44352c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#6b8998",
-   "text": "#394854"
+   "stroke": "#6b8a97",
+   "text": "#394853"
   }
  ],
  "massive-cute-ourson": [
@@ -350,7 +350,7 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#dfddd9",
-   "stroke": "#6c6353",
+   "stroke": "#6d6454",
    "text": "#333131"
   },
   {
@@ -361,69 +361,69 @@ export const ETIQUETTES_PALETTES = {
  ],
  "massive-elephant-ramen": [
   {
-   "bg": "#d5d5d9",
-   "stroke": "#3e3f50",
+   "bg": "#d4d5d9",
+   "stroke": "#3d4050",
    "text": "#212330"
   },
   {
-   "bg": "#eadee6",
-   "stroke": "#a06b8c",
+   "bg": "#eadfe6",
+   "stroke": "#a16c8d",
    "text": "#473447"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#3e3f50",
-   "text": "#252633"
+   "stroke": "#3d4050",
+   "text": "#242733"
   }
  ],
  "massive-escargot": [
   {
    "bg": "#e7ded7",
-   "stroke": "#916b4a",
+   "stroke": "#906b49",
    "text": "#41342d"
   },
   {
    "bg": "#dad1ce",
-   "stroke": "#563022",
+   "stroke": "#563021",
    "text": "#2b1d1e"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#916b4a",
-   "text": "#4a3a31"
+   "stroke": "#906b49",
+   "text": "#4a3a30"
   }
  ],
  "massive-fire-with-pet": [
   {
    "bg": "#e9ddd9",
-   "stroke": "#9c6654",
+   "stroke": "#9c6553",
    "text": "#453231"
   },
   {
-   "bg": "#dee4e4",
-   "stroke": "#6a8385",
-   "text": "#323d44"
+   "bg": "#563c38",
+   "stroke": "#9c6553",
+   "text": "#e9ddd9"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#9c6654",
-   "text": "#4f3835"
+   "stroke": "#9c6553",
+   "text": "#4f3735"
   }
  ],
  "massive-fox": [
   {
    "bg": "#d2daec",
-   "stroke": "#3156a9",
-   "text": "#1d2c52"
+   "stroke": "#3156a8",
+   "text": "#1d2c51"
   },
   {
    "bg": "#d5ebf1",
-   "stroke": "#3fa5c0",
+   "stroke": "#3fa6bf",
    "text": "#224a5a"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#3156a9",
+   "stroke": "#3156a8",
    "text": "#1f315b"
   }
  ],
@@ -434,8 +434,8 @@ export const ETIQUETTES_PALETTES = {
    "text": "#334033"
   },
   {
-   "bg": "#d3d9d5",
-   "stroke": "#395040",
+   "bg": "#d4d9d5",
+   "stroke": "#3a5240",
    "text": "#202a2a"
   },
   {
@@ -447,228 +447,228 @@ export const ETIQUETTES_PALETTES = {
  "massive-grenouille-mouche": [
   {
    "bg": "#d5dada",
-   "stroke": "#3e5857",
+   "stroke": "#3e5856",
    "text": "#212d32"
   },
   {
    "bg": "#f0eada",
-   "stroke": "#bc9f58",
+   "stroke": "#bca059",
    "text": "#514833"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#3e5857",
-   "text": "#253237"
+   "stroke": "#3e5856",
+   "text": "#253236"
   }
  ],
  "massive-grenouille-reel": [
   {
-   "bg": "#d6d2d4",
-   "stroke": "#46313d",
-   "text": "#251e29"
+   "bg": "#d7d2d4",
+   "stroke": "#47333d",
+   "text": "#251f29"
   },
   {
-   "bg": "#dee7ee",
-   "stroke": "#6990b0",
+   "bg": "#dee7ed",
+   "stroke": "#6990af",
    "text": "#324254"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#46313d",
-   "text": "#28202b"
+   "stroke": "#47333d",
+   "text": "#29212b"
   }
  ],
  "massive-grenouille": [
   {
    "bg": "#d9d1db",
-   "stroke": "#53305d",
-   "text": "#291d35"
+   "stroke": "#53305c",
+   "text": "#291d34"
   },
   {
    "bg": "#d7e7ee",
-   "stroke": "#4992b2",
-   "text": "#264355"
+   "stroke": "#4892b2",
+   "text": "#254355"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#53305d",
+   "stroke": "#53305c",
    "text": "#2e2039"
   }
  ],
  "massive-grosse-vache": [
   {
    "bg": "#e9ddd6",
-   "stroke": "#9c6445",
-   "text": "#45312c"
+   "stroke": "#9c6444",
+   "text": "#45312b"
   },
   {
-   "bg": "#f5efec",
-   "stroke": "#d3b8a7",
-   "text": "#5a5151"
+   "bg": "#f5efeb",
+   "stroke": "#d3b8a6",
+   "text": "#5a5150"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#9c6445",
+   "stroke": "#9c6444",
    "text": "#4f372e"
   }
  ],
  "massive-kapibara": [
   {
    "bg": "#dad1ce",
-   "stroke": "#583021",
+   "stroke": "#573020",
    "text": "#2b1d1e"
   },
   {
    "bg": "#f5f0eb",
-   "stroke": "#d1bba5",
-   "text": "#595250"
+   "stroke": "#d0bba3",
+   "text": "#59524f"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#583021",
+   "stroke": "#573020",
    "text": "#30201e"
   }
  ],
  "massive-lapin": [
   {
-   "bg": "#ecddd1",
-   "stroke": "#a9632c",
-   "text": "#4a3122"
+   "bg": "#ecdcd0",
+   "stroke": "#a8622b",
+   "text": "#4a3022"
   },
   {
-   "bg": "#f4ede4",
-   "stroke": "#cbad83",
-   "text": "#574d43"
+   "bg": "#f3ece3",
+   "stroke": "#c8aa81",
+   "text": "#564c42"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#a9632c",
-   "text": "#553623"
+   "stroke": "#a8622b",
+   "text": "#543623"
   }
  ],
  "massive-loutre": [
   {
    "bg": "#eaddcd",
-   "stroke": "#9f661b",
+   "stroke": "#9e661c",
    "text": "#46321c"
   },
   {
-   "bg": "#f7eacf",
-   "stroke": "#d9a123",
-   "text": "#5c481f"
+   "bg": "#f7ebcf",
+   "stroke": "#daa224",
+   "text": "#5d491f"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#9f661b",
+   "stroke": "#9e661c",
    "text": "#50381c"
   }
  ],
  "massive-lunette-duck": [
   {
    "bg": "#fae9cf",
-   "stroke": "#e79d26",
-   "text": "#624720"
+   "stroke": "#e69d26",
+   "text": "#614720"
   },
   {
-   "bg": "#f0dcd1",
-   "stroke": "#b9612c",
-   "text": "#503022"
+   "bg": "#f0efe5",
+   "stroke": "#bcb489",
+   "text": "#515045"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#e79d26",
-   "text": "#715121"
+   "stroke": "#e69d26",
+   "text": "#705121"
   }
  ],
  "massive-mami-canard": [
   {
    "bg": "#dcd8d5",
-   "stroke": "#604c3f",
-   "text": "#2e2829"
+   "stroke": "#604c40",
+   "text": "#2e282a"
   },
   {
-   "bg": "#f2e7dd",
-   "stroke": "#c39265",
-   "text": "#544338"
+   "bg": "#f1e7dd",
+   "stroke": "#c09166",
+   "text": "#534238"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#604c3f",
+   "stroke": "#604c40",
    "text": "#342c2c"
   }
  ],
  "massive-moino-cool": [
   {
-   "bg": "#dce9d2",
-   "stroke": "#609d31",
-   "text": "#2e4724"
+   "bg": "#dcead2",
+   "stroke": "#619e31",
+   "text": "#2f4724"
   },
   {
-   "bg": "#e5dfd7",
-   "stroke": "#896f47",
-   "text": "#3e352c"
+   "bg": "#e5e0d6",
+   "stroke": "#8a7046",
+   "text": "#3e362c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#609d31",
+   "stroke": "#619e31",
    "text": "#345125"
   }
  ],
  "massive-oiseau-ruche": [
   {
-   "bg": "#dad7d5",
-   "stroke": "#584842",
-   "text": "#2b272a"
+   "bg": "#eddbd3",
+   "stroke": "#ad5d37",
+   "text": "#4c2f26"
   },
   {
-   "bg": "#f8ead9",
-   "stroke": "#e0a151",
-   "text": "#5f4830"
+   "bg": "#dfe5e2",
+   "stroke": "#6c8879",
+   "text": "#333f3f"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#584842",
-   "text": "#302a2d"
+   "stroke": "#ad5d37",
+   "text": "#573428"
   }
  ],
  "massive-oiso-dessin": [
   {
    "bg": "#edd9d1",
-   "stroke": "#ab542d",
+   "stroke": "#ac532d",
    "text": "#4b2b22"
   },
   {
-   "bg": "#d1dcdd",
-   "stroke": "#2d6166",
-   "text": "#1b3038"
+   "bg": "#d1dcde",
+   "stroke": "#2d6167",
+   "text": "#1b3039"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#ab542d",
-   "text": "#563024"
+   "stroke": "#ac532d",
+   "text": "#562f24"
   }
  ],
  "massive-oiso1": [
   {
    "bg": "#dfe6e7",
-   "stroke": "#6d8f93",
-   "text": "#334249"
+   "stroke": "#6c8e92",
+   "text": "#334149"
   },
   {
-   "bg": "#ecd9d5",
-   "stroke": "#a95341",
-   "text": "#4a2b2a"
+   "bg": "#ecd9d6",
+   "stroke": "#a95343",
+   "text": "#4a2b2b"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#6d8f93",
-   "text": "#3a4a52"
+   "stroke": "#6c8e92",
+   "text": "#394a51"
   }
  ],
  "massive-oiso2": [
   {
    "bg": "#dcd5d0",
-   "stroke": "#5f4228",
+   "stroke": "#5e4228",
    "text": "#2e2421"
   },
   {
@@ -678,59 +678,59 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#ffffff",
-   "stroke": "#5f4228",
-   "text": "#342821"
+   "stroke": "#5e4228",
+   "text": "#332821"
   }
  ],
  "massive-oizo": [
   {
    "bg": "#ddecf1",
-   "stroke": "#65a8bf",
+   "stroke": "#64a8be",
    "text": "#304b5a"
   },
   {
-   "bg": "#f6e2de",
-   "stroke": "#d7796b",
-   "text": "#5c393a"
+   "bg": "#f8e1dc",
+   "stroke": "#e07862",
+   "text": "#5f3937"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#65a8bf",
+   "stroke": "#64a8be",
    "text": "#365665"
   }
  ],
  "massive-ours-blanc": [
   {
    "bg": "#e1e8e6",
-   "stroke": "#76958f",
-   "text": "#374448"
+   "stroke": "#75958f",
+   "text": "#364448"
   },
   {
    "bg": "#e7e0dc",
-   "stroke": "#94705f",
-   "text": "#423635"
+   "stroke": "#927160",
+   "text": "#413636"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#76958f",
-   "text": "#3e4d50"
+   "stroke": "#75958f",
+   "text": "#3d4d50"
   }
  ],
  "massive-ours2": [
   {
    "bg": "#eae6e0",
-   "stroke": "#a08e71",
+   "stroke": "#a18d70",
    "text": "#47413c"
   },
   {
-   "bg": "#dfe8e9",
-   "stroke": "#6d9599",
-   "text": "#33444c"
+   "bg": "#dfe8e8",
+   "stroke": "#6d9598",
+   "text": "#33444b"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#a08e71",
-   "text": "#514a42"
+   "stroke": "#a18d70",
+   "text": "#514942"
   }
  ],
  "massive-panda-cute": [
@@ -741,7 +741,7 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#e2e9da",
-   "stroke": "#7d9958",
+   "stroke": "#7d9959",
    "text": "#394533"
   },
   {
@@ -757,9 +757,9 @@ export const ETIQUETTES_PALETTES = {
    "text": "#2d304e"
   },
   {
-   "bg": "#d0d2d7",
-   "stroke": "#2a334a",
-   "text": "#1a1f2d"
+   "bg": "#d0d2d8",
+   "stroke": "#2a334c",
+   "text": "#1a1f2e"
   },
   {
    "bg": "#ffffff",
@@ -769,93 +769,93 @@ export const ETIQUETTES_PALETTES = {
  ],
  "massive-paresseux": [
   {
-   "bg": "#dcdbd7",
-   "stroke": "#5e5c4b",
-   "text": "#2e2e2e"
+   "bg": "#dcdbd8",
+   "stroke": "#5f5d4d",
+   "text": "#2e2f2f"
   },
   {
-   "bg": "#ece5de",
-   "stroke": "#a88b69",
-   "text": "#4a4039"
+   "bg": "#ece6de",
+   "stroke": "#a88c6a",
+   "text": "#4a403a"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#5e5c4b",
-   "text": "#333331"
+   "stroke": "#5f5d4d",
+   "text": "#343432"
   }
  ],
  "massive-pengouin-cactus": [
   {
    "bg": "#d8d6d2",
-   "stroke": "#4e4334",
+   "stroke": "#4e4434",
    "text": "#282525"
   },
   {
    "bg": "#e9e9d5",
-   "stroke": "#9a9c3f",
-   "text": "#444629"
+   "stroke": "#9a9c40",
+   "text": "#44462a"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#4e4334",
-   "text": "#2c2827"
+   "stroke": "#4e4434",
+   "text": "#2c2927"
   }
  ],
  "massive-peroquet": [
   {
    "bg": "#dddad7",
-   "stroke": "#645648",
+   "stroke": "#635648",
    "text": "#302c2d"
   },
   {
    "bg": "#efe7db",
-   "stroke": "#b8925a",
+   "stroke": "#b8935a",
    "text": "#504334"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#645648",
-   "text": "#363130"
+   "stroke": "#635648",
+   "text": "#353130"
   }
  ],
  "massive-petit-chien": [
   {
    "bg": "#ebd9d5",
-   "stroke": "#a55441",
+   "stroke": "#a55342",
    "text": "#492b2a"
   },
   {
-   "bg": "#e5edf1",
-   "stroke": "#8bafc1",
-   "text": "#3f4e5b"
+   "bg": "#e6eef2",
+   "stroke": "#8db1c2",
+   "text": "#404e5b"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#a55441",
-   "text": "#53302d"
+   "stroke": "#a55342",
+   "text": "#532f2d"
   }
  ],
  "massive-pigeon-gris": [
   {
-   "bg": "#efd8cd",
-   "stroke": "#b64f1d",
-   "text": "#4f291c"
+   "bg": "#d7d4d3",
+   "stroke": "#483a39",
+   "text": "#252127"
   },
   {
-   "bg": "#d7d3d3",
-   "stroke": "#483937",
-   "text": "#252126"
+   "bg": "#efd9cd",
+   "stroke": "#b6501d",
+   "text": "#4f2a1c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#b64f1d",
-   "text": "#5b2d1c"
+   "stroke": "#483a39",
+   "text": "#292429"
   }
  ],
  "massive-pirate-pengouin": [
   {
    "bg": "#f3e9dd",
-   "stroke": "#c89d65",
+   "stroke": "#c89d66",
    "text": "#564738"
   },
   {
@@ -865,83 +865,83 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#ffffff",
-   "stroke": "#c89d65",
+   "stroke": "#c89d66",
    "text": "#63513d"
   }
  ],
  "massive-poisson-chat": [
   {
-   "bg": "#e6deda",
-   "stroke": "#8c6856",
-   "text": "#3f3332"
+   "bg": "#d4d6d8",
+   "stroke": "#3b464f",
+   "text": "#20262f"
   },
   {
-   "bg": "#4e3d39",
-   "stroke": "#8c6856",
-   "text": "#e6deda"
+   "bg": "#e5e5df",
+   "stroke": "#8a896d",
+   "text": "#3e3f3b"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#8c6856",
-   "text": "#483936"
+   "stroke": "#3b464f",
+   "text": "#232933"
   }
  ],
  "massive-poisson-inquiet": [
   {
    "bg": "#dee7eb",
-   "stroke": "#6791a3",
-   "text": "#31424f"
+   "stroke": "#6792a2",
+   "text": "#31434f"
   },
   {
-   "bg": "#efe7d7",
-   "stroke": "#b4944a",
-   "text": "#4e432d"
+   "bg": "#eee8d8",
+   "stroke": "#b2964c",
+   "text": "#4e442e"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#6791a3",
-   "text": "#374b59"
+   "stroke": "#6792a2",
+   "text": "#374c58"
   }
  ],
  "massive-poisson-rose": [
   {
    "bg": "#f3eaf0",
-   "stroke": "#ca9fbb",
-   "text": "#574858"
+   "stroke": "#c99fbb",
+   "text": "#564858"
   },
   {
-   "bg": "#d6d6d9",
-   "stroke": "#464454",
-   "text": "#252531"
+   "bg": "#d6d6da",
+   "stroke": "#464555",
+   "text": "#252532"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#ca9fbb",
-   "text": "#645164"
+   "stroke": "#c99fbb",
+   "text": "#635164"
   }
  ],
  "massive-poisson-rouge": [
   {
    "bg": "#ebd7cf",
-   "stroke": "#a64925",
-   "text": "#49271f"
+   "stroke": "#a64a27",
+   "text": "#492720"
   },
   {
    "bg": "#f4e7d7",
-   "stroke": "#cc9348",
+   "stroke": "#cb9349",
    "text": "#57432d"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#a64925",
-   "text": "#542b20"
+   "stroke": "#a64a27",
+   "text": "#542b21"
   }
  ],
  "massive-poulet-lunette": [
   {
-   "bg": "#ecd7d9",
-   "stroke": "#a94854",
-   "text": "#4a2731"
+   "bg": "#ecd7da",
+   "stroke": "#a94855",
+   "text": "#4a2732"
   },
   {
    "bg": "#d1d2d8",
@@ -950,93 +950,93 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#ffffff",
-   "stroke": "#a94854",
-   "text": "#552a35"
+   "stroke": "#a94855",
+   "text": "#552a36"
   }
  ],
  "massive-poulpe": [
   {
-   "bg": "#e8dcdc",
-   "stroke": "#98605e",
+   "bg": "#e9dcdc",
+   "stroke": "#99605e",
    "text": "#443035"
   },
   {
-   "bg": "#f2e9ea",
-   "stroke": "#c29a9f",
-   "text": "#54464e"
+   "bg": "#f1e9ea",
+   "stroke": "#c19a9e",
+   "text": "#53464d"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#98605e",
-   "text": "#4d353a"
+   "stroke": "#99605e",
+   "text": "#4e353a"
   }
  ],
  "massive-poulpon": [
   {
    "bg": "#f7ded8",
-   "stroke": "#dc6b4d",
-   "text": "#5e342f"
+   "stroke": "#dc6a4d",
+   "text": "#5e332f"
   },
   {
    "bg": "#d9d3d1",
-   "stroke": "#513530",
+   "stroke": "#533530",
    "text": "#291f24"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#dc6b4d",
+   "stroke": "#dc6a4d",
    "text": "#6c3a32"
   }
  ],
  "massive-racoon": [
   {
    "bg": "#f0e7df",
-   "stroke": "#bd926f",
-   "text": "#52433c"
+   "stroke": "#bc926f",
+   "text": "#51433c"
   },
   {
-   "bg": "#e0e7e5",
-   "stroke": "#739089",
-   "text": "#364245"
+   "bg": "#dcdcd8",
+   "stroke": "#5f5e4d",
+   "text": "#2e2f2f"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#bd926f",
-   "text": "#5e4c41"
+   "stroke": "#bc926f",
+   "text": "#5d4c41"
   }
  ],
  "massive-renard": [
   {
    "bg": "#f5e7dd",
-   "stroke": "#d19465",
-   "text": "#594338"
+   "stroke": "#d19464",
+   "text": "#594337"
   },
   {
    "bg": "#e0e6e5",
-   "stroke": "#718d8b",
-   "text": "#354146"
+   "stroke": "#708d89",
+   "text": "#344145"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#d19465",
-   "text": "#674d3d"
+   "stroke": "#d19464",
+   "text": "#674d3c"
   }
  ],
  "massive-requin": [
   {
    "bg": "#f0e7df",
-   "stroke": "#b9916d",
-   "text": "#50423b"
+   "stroke": "#ba926e",
+   "text": "#51433b"
   },
   {
    "bg": "#e0e5e9",
-   "stroke": "#738b9c",
-   "text": "#36404d"
+   "stroke": "#748b9b",
+   "text": "#36404c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#b9916d",
-   "text": "#5c4b40"
+   "stroke": "#ba926e",
+   "text": "#5c4c41"
   }
  ],
  "massive-rhino-relax": [
@@ -1047,7 +1047,7 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#dcdcdc",
-   "stroke": "#5e5e5e",
+   "stroke": "#5f5f5f",
    "text": "#2e2f35"
   },
   {
@@ -1059,330 +1059,330 @@ export const ETIQUETTES_PALETTES = {
  "massive-rhino": [
   {
    "bg": "#e0e7e6",
-   "stroke": "#71938f",
-   "text": "#354348"
+   "stroke": "#71948e",
+   "text": "#354347"
   },
   {
-   "bg": "#d9dedc",
-   "stroke": "#546b5e",
+   "bg": "#d9dedb",
+   "stroke": "#546b5d",
    "text": "#2a3435"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#71938f",
-   "text": "#3c4c50"
+   "stroke": "#71948e",
+   "text": "#3c4d4f"
   }
  ],
  "massive-rhino2": [
   {
    "bg": "#d9d5d1",
-   "stroke": "#53412e",
-   "text": "#292423"
+   "stroke": "#52402e",
+   "text": "#292323"
   },
   {
-   "bg": "#f4e9cf",
-   "stroke": "#cc9b24",
-   "text": "#57461f"
+   "bg": "#efe7d5",
+   "stroke": "#b79241",
+   "text": "#4f432a"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#53412e",
+   "stroke": "#52402e",
    "text": "#2e2724"
   }
  ],
  "massive-tiger": [
   {
    "bg": "#e0ded8",
-   "stroke": "#72684e",
+   "stroke": "#72694e",
    "text": "#35332f"
   },
   {
    "bg": "#e8e6df",
-   "stroke": "#958d6f",
+   "stroke": "#968e6f",
    "text": "#43413c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#72684e",
+   "stroke": "#72694e",
    "text": "#3c3933"
   }
  ],
  "massive-tortue": [
   {
-   "bg": "#ecded5",
-   "stroke": "#a96742",
-   "text": "#4a322a"
+   "bg": "#ecded6",
+   "stroke": "#a96843",
+   "text": "#4a332b"
   },
   {
    "bg": "#f7f1e8",
-   "stroke": "#dbc195",
+   "stroke": "#dac195",
    "text": "#5d554a"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#a96742",
-   "text": "#55382d"
+   "stroke": "#a96843",
+   "text": "#55392e"
   }
  ],
  "massive-velociraptor": [
   {
    "bg": "#dccfcf",
-   "stroke": "#612524",
+   "stroke": "#622523",
    "text": "#2f191f"
   },
   {
-   "bg": "#f4f0e8",
-   "stroke": "#cbbd96",
-   "text": "#57534a"
+   "bg": "#f4f1e8",
+   "stroke": "#cdbe96",
+   "text": "#58534a"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#612524",
-   "text": "#341b20"
+   "stroke": "#622523",
+   "text": "#351b1f"
   }
  ],
  "massive-ver-et-pomme": [
   {
    "bg": "#d6d9cf",
-   "stroke": "#465026",
+   "stroke": "#465027",
    "text": "#252a20"
   },
   {
-   "bg": "#f1d8e9",
-   "stroke": "#c14c99",
-   "text": "#53284c"
+   "bg": "#f2d7e9",
+   "stroke": "#c34b99",
+   "text": "#54284c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#465026",
+   "stroke": "#465027",
    "text": "#282e21"
   }
  ],
  "massive-ver": [
   {
    "bg": "#dbd2d6",
-   "stroke": "#5c3144",
-   "text": "#2d1e2b"
+   "stroke": "#5d3245",
+   "text": "#2d1e2c"
   },
   {
-   "bg": "#e8e2e4",
-   "stroke": "#967a84",
-   "text": "#433a44"
+   "bg": "#e8dbdc",
+   "stroke": "#985a61",
+   "text": "#442d36"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#5c3144",
-   "text": "#32202e"
+   "stroke": "#5d3245",
+   "text": "#33202e"
   }
  ],
  "massive-hotdog": [
   {
    "bg": "#dfd5d3",
-   "stroke": "#6e4036",
-   "text": "#342326"
+   "stroke": "#6f4136",
+   "text": "#342426"
   },
   {
    "bg": "#f4e8d7",
-   "stroke": "#cd954a",
+   "stroke": "#ce9649",
    "text": "#58442d"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#6e4036",
-   "text": "#3a2728"
+   "stroke": "#6f4136",
+   "text": "#3b2728"
   }
  ],
  "massive-mais": [
   {
-   "bg": "#f5e9d1",
-   "stroke": "#d19d2e",
-   "text": "#594723"
+   "bg": "#f5e9d2",
+   "stroke": "#d19d31",
+   "text": "#594724"
   },
   {
    "bg": "#ded7d1",
-   "stroke": "#694930",
-   "text": "#322724"
+   "stroke": "#6a492f",
+   "text": "#322723"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#d19d2e",
-   "text": "#675124"
+   "stroke": "#d19d31",
+   "text": "#675125"
   }
  ],
  "massive-ramen": [
   {
-   "bg": "#f8d6d0",
-   "stroke": "#e1462b",
+   "bg": "#f8d7d0",
+   "stroke": "#df472b",
    "text": "#5f2622"
   },
   {
    "bg": "#f5ede9",
-   "stroke": "#d2ad9a",
+   "stroke": "#d2ac9a",
    "text": "#5a4d4c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#e1462b",
-   "text": "#6e2923"
+   "stroke": "#df472b",
+   "text": "#6d2a23"
   }
  ],
  "massive-run": [
   {
-   "bg": "#eadbd3",
-   "stroke": "#a15c35",
-   "text": "#472e26"
+   "bg": "#ebdcd2",
+   "stroke": "#a25e34",
+   "text": "#472f25"
   },
   {
-   "bg": "#f7eeeb",
-   "stroke": "#dab2a5",
-   "text": "#5d4f50"
+   "bg": "#f7efeb",
+   "stroke": "#dab4a4",
+   "text": "#5d5050"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#a15c35",
-   "text": "#513327"
+   "stroke": "#a25e34",
+   "text": "#523427"
   }
  ],
  "massive-slowride": [
   {
    "bg": "#d0ebe9",
-   "stroke": "#2aa49c",
-   "text": "#1a494d"
+   "stroke": "#2aa49b",
+   "text": "#1a494c"
   },
   {
    "bg": "#d2dbda",
-   "stroke": "#345b58",
-   "text": "#1e2e33"
+   "stroke": "#345b57",
+   "text": "#1e2e32"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#2aa49c",
-   "text": "#1c5456"
+   "stroke": "#2aa49b",
+   "text": "#1c5455"
   }
  ],
  "massive-treasue-talker": [
   {
    "bg": "#dad5d2",
-   "stroke": "#593f33",
-   "text": "#2c2325"
+   "stroke": "#583e33",
+   "text": "#2b2325"
   },
   {
    "bg": "#e8e5e0",
-   "stroke": "#978a74",
-   "text": "#43403d"
+   "stroke": "#978974",
+   "text": "#433f3d"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#593f33",
-   "text": "#312626"
+   "stroke": "#583e33",
+   "text": "#302626"
   }
  ],
  "massive-alien-bleu": [
   {
-   "bg": "#d3d3d6",
-   "stroke": "#393546",
-   "text": "#201f2c"
+   "bg": "#d3d3d7",
+   "stroke": "#393647",
+   "text": "#20202c"
   },
   {
-   "bg": "#f0dfe3",
-   "stroke": "#b96f81",
-   "text": "#503542"
+   "bg": "#efdfe4",
+   "stroke": "#b86c82",
+   "text": "#503443"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#393546",
+   "stroke": "#393647",
    "text": "#22222f"
   }
  ],
  "massive-alien-calote": [
   {
-   "bg": "#dddde8",
-   "stroke": "#636396",
-   "text": "#30314a"
+   "bg": "#dddde7",
+   "stroke": "#636493",
+   "text": "#303149"
   },
   {
    "bg": "#deebd6",
-   "stroke": "#68a243",
+   "stroke": "#68a244",
    "text": "#31492b"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#636396",
-   "text": "#353653"
+   "stroke": "#636493",
+   "text": "#353752"
   }
  ],
  "massive-alien-hot": [
   {
-   "bg": "#d8d9d5",
-   "stroke": "#4d5242",
-   "text": "#272a2a"
+   "bg": "#d8d9d6",
+   "stroke": "#4c5243",
+   "text": "#272a2b"
   },
   {
-   "bg": "#ecece2",
-   "stroke": "#a8aa7a",
-   "text": "#4a4c40"
+   "bg": "#edece1",
+   "stroke": "#abaa78",
+   "text": "#4b4c3f"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#4d5242",
-   "text": "#2b2f2d"
+   "stroke": "#4c5243",
+   "text": "#2b2f2e"
   }
  ],
  "massive-alien-vert": [
   {
    "bg": "#dcefd4",
-   "stroke": "#62b63d",
+   "stroke": "#61b63d",
    "text": "#2f5029"
   },
   {
    "bg": "#f3f2e8",
-   "stroke": "#c8c596",
+   "stroke": "#c8c696",
    "text": "#56564a"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#62b63d",
-   "text": "#355c2b"
+   "stroke": "#61b63d",
+   "text": "#345c2b"
   }
  ],
  "massive-astro": [
   {
    "bg": "#cddbec",
-   "stroke": "#1c5aa7",
-   "text": "#152d51"
+   "stroke": "#1c5ba7",
+   "text": "#152e51"
   },
   {
-   "bg": "#facbe9",
-   "stroke": "#e6129d",
+   "bg": "#f9cbe9",
+   "stroke": "#e5129d",
    "text": "#61124d"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#1c5aa7",
-   "text": "#15325b"
+   "stroke": "#1c5ba7",
+   "text": "#15335b"
   }
  ],
  "massive-astrodisco": [
   {
-   "bg": "#d0d0d4",
-   "stroke": "#2b2b3d",
-   "text": "#1a1c29"
+   "bg": "#d2d7da",
+   "stroke": "#324759",
+   "text": "#1d2633"
   },
   {
    "bg": "#f6efe9",
-   "stroke": "#d6b799",
+   "stroke": "#d5b79b",
    "text": "#5b514c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#2b2b3d",
-   "text": "#1c1d2b"
+   "stroke": "#324759",
+   "text": "#1f2a37"
   }
  ],
  "massive-astronaute-spain": [
   {
    "bg": "#f8eacd",
-   "stroke": "#e1a01b",
+   "stroke": "#e0a11c",
    "text": "#5f481c"
   },
   {
@@ -1392,42 +1392,42 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#ffffff",
-   "stroke": "#e1a01b",
+   "stroke": "#e0a11c",
    "text": "#6e521c"
   }
  ],
  "massive-chat-alien": [
   {
-   "bg": "#d8d4d7",
-   "stroke": "#4c3d48",
-   "text": "#27222d"
+   "bg": "#ece2e0",
+   "stroke": "#a77b71",
+   "text": "#493a3c"
   },
   {
-   "bg": "#eee7dc",
-   "stroke": "#b29362",
-   "text": "#4e4337"
+   "bg": "#d8d5d7",
+   "stroke": "#4c3e47",
+   "text": "#27232c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#4c3d48",
-   "text": "#2b2530"
+   "stroke": "#a77b71",
+   "text": "#544142"
   }
  ],
  "massive-chat-enlevement": [
   {
-   "bg": "#eadfda",
-   "stroke": "#a06f57",
-   "text": "#473532"
+   "bg": "#d5d7d8",
+   "stroke": "#3e4a4d",
+   "text": "#21272f"
   },
   {
-   "bg": "#dcdde6",
-   "stroke": "#62658f",
-   "text": "#2f3248"
+   "bg": "#f2e7db",
+   "stroke": "#c6935b",
+   "text": "#554334"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#a06f57",
-   "text": "#513c37"
+   "stroke": "#3e4a4d",
+   "text": "#252b32"
   }
  ],
  "massive-chat-roux-soucoupe": [
@@ -1438,8 +1438,8 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#def0e8",
-   "stroke": "#67bc98",
-   "text": "#31534b"
+   "stroke": "#68b998",
+   "text": "#31514b"
   },
   {
    "bg": "#ffffff",
@@ -1455,7 +1455,7 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#e9dedb",
-   "stroke": "#99685a",
+   "stroke": "#9a685b",
    "text": "#443334"
   },
   {
@@ -1484,86 +1484,120 @@ export const ETIQUETTES_PALETTES = {
  "massive-ptit-robot": [
   {
    "bg": "#f4efeb",
-   "stroke": "#cbb7a6",
+   "stroke": "#ccb7a4",
    "text": "#575150"
   },
   {
    "bg": "#e9e3df",
-   "stroke": "#9d816e",
-   "text": "#463c3b"
+   "stroke": "#9b806d",
+   "text": "#453c3b"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#cbb7a6",
-   "text": "#645c5a"
+   "stroke": "#ccb7a4",
+   "text": "#655c59"
   }
  ],
  "massive-robot-qui-court": [
   {
    "bg": "#d0e8e5",
-   "stroke": "#29958b",
+   "stroke": "#2a958b",
    "text": "#1a4446"
   },
   {
-   "bg": "#f1f1d4",
-   "stroke": "#bfbe3c",
-   "text": "#535328"
+   "bg": "#f1f1d5",
+   "stroke": "#bebe3f",
+   "text": "#525329"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#29958b",
-   "text": "#1b4d4e"
+   "stroke": "#2a958b",
+   "text": "#1c4d4e"
   }
  ],
  "massive-soucoupe": [
   {
-   "bg": "#faedec",
-   "stroke": "#eaafa7",
+   "bg": "#d5d3d2",
+   "stroke": "#403634",
+   "text": "#222025"
+  },
+  {
+   "bg": "#fbeeec",
+   "stroke": "#ebb0a8",
    "text": "#634e51"
   },
   {
-   "bg": "#eddbd9",
-   "stroke": "#ad5c51",
-   "text": "#4c2e30"
+   "bg": "#ffffff",
+   "stroke": "#403634",
+   "text": "#262227"
+  }
+ ],
+ "massive-small-astronauts": [
+  {
+   "bg": "#f0d4d3",
+   "stroke": "#ba3a39",
+   "text": "#512127"
+  },
+  {
+   "bg": "#e0e5ea",
+   "stroke": "#748ba0",
+   "text": "#36404e"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#eaafa7",
-   "text": "#72595b"
+   "stroke": "#ba3a39",
+   "text": "#5c2429"
+  }
+ ],
+ "massive-tuc-jaune": [
+  {
+   "bg": "#d2dcdd",
+   "stroke": "#336165",
+   "text": "#1d3038"
+  },
+  {
+   "bg": "#f4ead9",
+   "stroke": "#ce9e54",
+   "text": "#584731"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#336165",
+   "text": "#20363d"
   }
  ],
  "massive-little-dragon": [
   {
-   "bg": "#ddcfde",
-   "stroke": "#642668",
-   "text": "#301a39"
+   "bg": "#fcedcb",
+   "stroke": "#f1ab13",
+   "text": "#664c19"
   },
   {
-   "bg": "#fdf4cc",
-   "stroke": "#f5cb18",
-   "text": "#67581a"
+   "bg": "#ddd0de",
+   "stroke": "#662869",
+   "text": "#311a39"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#642668",
-   "text": "#361b3e"
+   "stroke": "#f1ab13",
+   "text": "#755718"
   }
  ],
  "massive-meduse": [
   {
    "bg": "#d8edef",
-   "stroke": "#4caeb8",
+   "stroke": "#4dadb6",
    "text": "#274d57"
   },
   {
-   "bg": "#d3d2d6",
-   "stroke": "#353144",
-   "text": "#1e1e2b"
+   "bg": "#d4d4d8",
+   "stroke": "#3c3a4e",
+   "text": "#21212f"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#4caeb8",
-   "text": "#2b5862"
+   "stroke": "#4dadb6",
+   "text": "#2b5861"
   }
  ],
  "massive-poussin": [
@@ -1573,9 +1607,9 @@ export const ETIQUETTES_PALETTES = {
    "text": "#6a5b26"
   },
   {
-   "bg": "#e2d5cc",
-   "stroke": "#793f15",
-   "text": "#382319"
+   "bg": "#e2d6cd",
+   "stroke": "#79461c",
+   "text": "#38261c"
   },
   {
    "bg": "#ffffff",
@@ -1585,137 +1619,137 @@ export const ETIQUETTES_PALETTES = {
  ],
  "massive-red-man": [
   {
-   "bg": "#f2dad5",
-   "stroke": "#c35641",
-   "text": "#542c2a"
+   "bg": "#ead1ce",
+   "stroke": "#9f2c22",
+   "text": "#461c1e"
   },
   {
-   "bg": "#ddcdcc",
-   "stroke": "#661b19",
-   "text": "#31151b"
+   "bg": "#f3eeeb",
+   "stroke": "#c8b3a2",
+   "text": "#564f4f"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#c35641",
-   "text": "#61312d"
+   "stroke": "#9f2c22",
+   "text": "#501e1f"
   }
  ],
  "massive-red-nose": [
   {
    "bg": "#ccd3d2",
-   "stroke": "#183532",
-   "text": "#131f24"
+   "stroke": "#163531",
+   "text": "#121f24"
   },
   {
-   "bg": "#ece3e2",
-   "stroke": "#aa7f7d",
-   "text": "#4b3b41"
+   "bg": "#e8dadb",
+   "stroke": "#98555a",
+   "text": "#442b34"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#183532",
-   "text": "#142226"
+   "stroke": "#163531",
+   "text": "#132225"
   }
  ],
  "massive-robot-bubble": [
   {
    "bg": "#ede6d8",
-   "stroke": "#ae8c4c",
-   "text": "#4c402e"
+   "stroke": "#af8f4f",
+   "text": "#4c422f"
   },
   {
-   "bg": "#f5d6e7",
-   "stroke": "#d34494",
-   "text": "#5a254a"
+   "bg": "#f4d7e7",
+   "stroke": "#ce4892",
+   "text": "#582749"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#ae8c4c",
-   "text": "#574932"
+   "stroke": "#af8f4f",
+   "text": "#584a33"
   }
  ],
  "massive-happy-guy": [
   {
-   "bg": "#d7dadb",
-   "stroke": "#49595d",
-   "text": "#262d35"
+   "bg": "#d7dbdc",
+   "stroke": "#4b5c5f",
+   "text": "#262e35"
   },
   {
-   "bg": "#f0eed5",
-   "stroke": "#bbb141",
-   "text": "#514e2a"
+   "bg": "#f0eed6",
+   "stroke": "#bbb245",
+   "text": "#514f2c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#49595d",
-   "text": "#2a3239"
+   "stroke": "#4b5c5f",
+   "text": "#2b333a"
   }
  ],
  "massive-hot-dogs-meeting": [
   {
-   "bg": "#d7d7de",
-   "stroke": "#4a4767",
-   "text": "#262639"
+   "bg": "#d8d8de",
+   "stroke": "#4f4c6a",
+   "text": "#28283a"
   },
   {
-   "bg": "#ede7e0",
-   "stroke": "#ac9471",
-   "text": "#4b433c"
+   "bg": "#ece8e1",
+   "stroke": "#a89576",
+   "text": "#4a443e"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#4a4767",
-   "text": "#2a2a3e"
+   "stroke": "#4f4c6a",
+   "text": "#2c2c3f"
   }
  ],
  "massive-icecream-monster": [
   {
-   "bg": "#dbdfd1",
-   "stroke": "#5a6c2d",
+   "bg": "#daded0",
+   "stroke": "#596b2b",
    "text": "#2c3422"
   },
   {
-   "bg": "#f9e9ed",
-   "stroke": "#e29cab",
-   "text": "#604652"
+   "bg": "#f8eaed",
+   "stroke": "#dea1ab",
+   "text": "#5e4852"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#5a6c2d",
-   "text": "#313a24"
+   "stroke": "#596b2b",
+   "text": "#313a23"
   }
  ],
  "massive-cake": [
   {
    "bg": "#f9e7de",
-   "stroke": "#e49369",
-   "text": "#614339"
+   "stroke": "#e39369",
+   "text": "#604339"
   },
   {
    "bg": "#f2d8d6",
-   "stroke": "#c54d43",
-   "text": "#55282b"
+   "stroke": "#c34d44",
+   "text": "#54282b"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#e49369",
+   "stroke": "#e39369",
    "text": "#6f4c3f"
   }
  ],
  "massive-cameleon-chimie": [
   {
    "bg": "#dcddd8",
-   "stroke": "#61634d",
-   "text": "#2f312f"
+   "stroke": "#60634d",
+   "text": "#2e312f"
   },
   {
-   "bg": "#f0e7e6",
-   "stroke": "#bd918f",
-   "text": "#524248"
+   "bg": "#f0e7e7",
+   "stroke": "#bc9090",
+   "text": "#514248"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#61634d",
+   "stroke": "#60634d",
    "text": "#343632"
   }
  ],
@@ -1727,8 +1761,8 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#f9f9f9",
-   "stroke": "#e2e2e2",
-   "text": "#606167"
+   "stroke": "#e3e3e3",
+   "text": "#606168"
   },
   {
    "bg": "#ffffff",
@@ -1739,34 +1773,34 @@ export const ETIQUETTES_PALETTES = {
  "massive-corns": [
   {
    "bg": "#cfdadb",
-   "stroke": "#26565c",
+   "stroke": "#26575c",
    "text": "#182c34"
   },
   {
-   "bg": "#ecd9d1",
-   "stroke": "#aa512d",
-   "text": "#4b2a22"
+   "bg": "#ecd8d1",
+   "stroke": "#a74f2e",
+   "text": "#492923"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#26565c",
+   "stroke": "#26575c",
    "text": "#1a3139"
   }
  ],
  "massive-crocodile-dandy": [
   {
    "bg": "#d0dcdd",
-   "stroke": "#296165",
-   "text": "#1a3038"
+   "stroke": "#286265",
+   "text": "#193038"
   },
   {
-   "bg": "#eae0e6",
-   "stroke": "#9f708c",
+   "bg": "#e9e0e6",
+   "stroke": "#9d718c",
    "text": "#463647"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#296165",
+   "stroke": "#286265",
    "text": "#1b363d"
   }
  ],
@@ -1778,8 +1812,8 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#f8efed",
-   "stroke": "#e1b4ad",
-   "text": "#5f5053"
+   "stroke": "#e0b4ab",
+   "text": "#5f5052"
   },
   {
    "bg": "#ffffff",
@@ -1790,25 +1824,25 @@ export const ETIQUETTES_PALETTES = {
  "massive-dansing-frog": [
   {
    "bg": "#e9e0db",
-   "stroke": "#9a705b",
+   "stroke": "#99715b",
    "text": "#443634"
   },
   {
-   "bg": "#f5ede9",
-   "stroke": "#d0ac9b",
-   "text": "#594d4c"
+   "bg": "#f4ede9",
+   "stroke": "#cfab9b",
+   "text": "#594c4c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#9a705b",
-   "text": "#4e3c38"
+   "stroke": "#99715b",
+   "text": "#4e3d38"
   }
  ],
  "massive-bonet": [
   {
    "bg": "#ddedec",
-   "stroke": "#64aca8",
-   "text": "#304d51"
+   "stroke": "#63aba7",
+   "text": "#304c51"
   },
   {
    "bg": "#efddd5",
@@ -1817,66 +1851,66 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#ffffff",
-   "stroke": "#64aca8",
-   "text": "#36575b"
+   "stroke": "#63aba7",
+   "text": "#35575b"
   }
  ],
  "massive-kouklikou": [
   {
-   "bg": "#d5d1cf",
-   "stroke": "#3f2f23",
-   "text": "#221d1f"
+   "bg": "#d9d5d2",
+   "stroke": "#503f32",
+   "text": "#282324"
   },
   {
-   "bg": "#eee9e5",
-   "stroke": "#b19d87",
-   "text": "#4d4745"
+   "bg": "#ebe5e0",
+   "stroke": "#a48971",
+   "text": "#483f3c"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#3f2f23",
-   "text": "#251f1f"
+   "stroke": "#503f32",
+   "text": "#2d2626"
   }
  ],
  "massive-meme": [
   {
    "bg": "#dbcacb",
-   "stroke": "#5c0e11",
+   "stroke": "#5d0e12",
    "text": "#2d1018"
   },
   {
-   "bg": "#ebd3d5",
-   "stroke": "#a6393e",
+   "bg": "#ecd3d5",
+   "stroke": "#a7393e",
    "text": "#492129"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#5c0e11",
-   "text": "#321017"
+   "stroke": "#5d0e12",
+   "text": "#331018"
   }
  ],
  "massive-mimi-gris": [
   {
    "bg": "#dcdbdd",
-   "stroke": "#5f5a63",
-   "text": "#2e2d37"
+   "stroke": "#5f5b63",
+   "text": "#2e2e37"
   },
   {
    "bg": "#f6f5f6",
-   "stroke": "#d5d0d4",
-   "text": "#5b5a62"
+   "stroke": "#d4d1d4",
+   "text": "#5a5b62"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#5f5a63",
-   "text": "#34323c"
+   "stroke": "#5f5b63",
+   "text": "#34333c"
   }
  ],
  "massive-mimi": [
   {
    "bg": "#f2e6de",
-   "stroke": "#c38f69",
-   "text": "#544239"
+   "stroke": "#c28f6a",
+   "text": "#54423a"
   },
   {
    "bg": "#ded4d0",
@@ -1885,58 +1919,58 @@ export const ETIQUETTES_PALETTES = {
   },
   {
    "bg": "#ffffff",
-   "stroke": "#c38f69",
-   "text": "#614a3f"
+   "stroke": "#c28f6a",
+   "text": "#604a3f"
   }
  ],
  "massive-poskai": [
   {
-   "bg": "#d1daea",
-   "stroke": "#3059a0",
-   "text": "#1c2d4e"
+   "bg": "#f7edd1",
+   "stroke": "#daaf2f",
+   "text": "#5d4e23"
   },
   {
-   "bg": "#f7edd1",
-   "stroke": "#daae2e",
-   "text": "#5d4d23"
+   "bg": "#d1dbea",
+   "stroke": "#2f5aa1",
+   "text": "#1c2d4f"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#3059a0",
-   "text": "#1e3257"
+   "stroke": "#daaf2f",
+   "text": "#6b5925"
   }
  ],
  "massive-pretty": [
   {
-   "bg": "#f8ddd2",
-   "stroke": "#de6432",
-   "text": "#5e3124"
+   "bg": "#f7ddd2",
+   "stroke": "#dc6433",
+   "text": "#5e3125"
   },
   {
-   "bg": "#dde4e7",
-   "stroke": "#668691",
-   "text": "#313e48"
+   "bg": "#dee5e7",
+   "stroke": "#698a92",
+   "text": "#324049"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#de6432",
-   "text": "#6d3726"
+   "stroke": "#dc6433",
+   "text": "#6c3726"
   }
  ],
  "massive-piraton": [
   {
    "bg": "#d5d6dd",
-   "stroke": "#424466",
+   "stroke": "#424566",
    "text": "#232538"
   },
   {
-   "bg": "#e8e5e0",
-   "stroke": "#958b70",
-   "text": "#43403c"
+   "bg": "#e8e6e0",
+   "stroke": "#968c72",
+   "text": "#43403d"
   },
   {
    "bg": "#ffffff",
-   "stroke": "#424466",
+   "stroke": "#424566",
    "text": "#27293d"
   }
  ]

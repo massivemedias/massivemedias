@@ -56,7 +56,9 @@ export const KIDS_SAFE = [
   'massive-astronaute-spain', 'massive-chat-alien', 'massive-chat-enlevement',
   'massive-chat-roux-soucoupe', 'massive-dragon-firefly', 'massive-monstre-dormeur',
   'massive-ptit-robot', 'massive-robot-qui-court', 'massive-soucoupe',
-    // --- Nouveaux du lot 3 ---
+    // --- Nouveaux du lot 4 ---
+  'massive-small-astronauts', 'massive-tuc-jaune',
+  // --- Nouveaux du lot 3 ---
   'massive-little-dragon', 'massive-meduse', 'massive-poussin', 'massive-red-man', 'massive-red-nose', 'massive-robot-bubble',
   // --- Nouveaux du lot 2 ---
   'massive-happy-guy', 'massive-hot-dogs-meeting', 'massive-icecream-monster',
