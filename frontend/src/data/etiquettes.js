@@ -206,32 +206,43 @@ export const ETIQUETTE_PACKS = [
  * telecharge que quand un texte l'utilise, ici).
  * (Homemade Apple retiree le 15 juillet - verdict Mika "pas belle finalement".)
  */
-// name = libelle CLIENT ("Style N", le vrai nom de font reste interne dans
-//   `label`). Ordre : la plus ronde/lisible en premier (defaut).
-// lineGap = ecart ligne2 en fraction de sa taille (negatif = resserre ;
-//   calibre PAR police, les cursives ont des metriques hautes -> plus negatif).
-// vNudge = recalage vertical fin du bloc en fraction de hPx (encre pas centree
-//   dans la boite em pour les fonts a gros jambages).
+// STRUCTURE DE DONNEES CENTRALISEE (archi Mika, MINIMASSIVE-UX 16 juillet).
+// Chaque police = { id, name{fr,en,es} (MARKETING, montre au client), label
+// (vrai nom interne), family (CSS), google (spec Google Fonts pour chargement
+// LAZY via injection <link> a la demande ; null = self-hosted), preview ('Abc'),
+// weight, + calibrage auto-fit (lineGap, vNudge, tooThinFormats).
+// GATES : `licensed:false` = visible DEV seulement (jamais prod). `available:false`
+// = entree PREPAREE mais police pas encore hebergee (commerciale non achetee) ->
+// masquee du selecteur PARTOUT tant qu'on n'a pas le fichier ; Mika l'active en
+// achetant la licence + ajoutant la font + passant available/licensed a true.
+// lineGap = ecart ligne2 (fraction de sa taille, negatif = resserre). vNudge =
+// recalage vertical fin (fraction hPx) pour les fonts a encre decentree.
+export const DEFAULT_FONT_ID = 'rond'
 export const ETIQUETTE_FONTS = [
-  { id: 'baloo', name: { fr: 'Style 1', en: 'Style 1', es: 'Estilo 1' }, label: 'Baloo 2', family: "'Baloo 2', sans-serif", weight: 700, tooThinFormats: [], lineGap: -0.39, vNudge: 0.018 },
-  // licensed:false = GATE : Amelina EULA personal-use non levee. Visible en DEV
-  // (localhost) mais RETIREE du build prod tant que la licence commerciale
-  // n'est pas confirmee -> passer a true (ou retirer la cle) au feu vert Mika.
-  { id: 'amelina-colette', name: { fr: 'Style 2', en: 'Style 2', es: 'Estilo 2' }, label: 'Amélina Colette', family: "'Amelina Colette', cursive", weight: 400, tooThinFormats: [], lineGap: -0.42, vNudge: -0.020, licensed: false },
-  // --- CANDIDATES Style 2 (etude marche etiquettes enfants, 16 juillet). Le gap
-  //     du catalogue = un IMPRIME CLAIR type ecriture scolaire droite (celui que
-  //     les ecoles recommandent), en plus du rond jouet (Baloo) et de la cursive
-  //     (Amelina). Google Fonts -> licence OK d'avance. `licensed:false` = visibles
-  //     en DEV seulement (comme la gate), JAMAIS en prod. Mika choisit sur
-  //     localhost (Emma + Merry-Neige au format Mini) ; la retenue devient Style 2
-  //     (retirer eval + licensed, renommer), Amelina glisse en Style 3.
-  //     Andika + ABeeZee = concues pour l'apprentissage de la lecture (le gap).
-  //     lineGap/vNudge approximatifs (a calibrer sur la retenue).
-  { id: 'andika', name: { fr: 'Éval · Andika', en: 'Eval · Andika', es: 'Eval · Andika' }, label: 'Andika', family: "'Andika', sans-serif", weight: 700, tooThinFormats: [], lineGap: -0.30, vNudge: 0.0, licensed: false, eval: true },
-  { id: 'abeezee', name: { fr: 'Éval · ABeeZee', en: 'Eval · ABeeZee', es: 'Eval · ABeeZee' }, label: 'ABeeZee', family: "'ABeeZee', sans-serif", weight: 400, tooThinFormats: [], lineGap: -0.28, vNudge: 0.0, licensed: false, eval: true },
-  { id: 'schoolbell', name: { fr: 'Éval · Schoolbell', en: 'Eval · Schoolbell', es: 'Eval · Schoolbell' }, label: 'Schoolbell', family: "'Schoolbell', cursive", weight: 400, tooThinFormats: [], lineGap: -0.32, vNudge: 0.0, licensed: false, eval: true },
+  // ---- AU LANCEMENT : licences OK (Google Fonts OFL/Apache), visibles en prod ----
+  { id: 'rond',    name: { fr: 'Rond',    en: 'Round',   es: 'Redonda' }, label: 'Baloo 2',       family: "'Baloo 2', sans-serif",       google: 'Baloo+2:wght@700', preview: 'Abc', weight: 700, tooThinFormats: [],        lineGap: -0.39, vNudge: 0.018 },
+  { id: 'ecole',   name: { fr: 'École',   en: 'School',  es: 'Escolar' }, label: 'Andika',        family: "'Andika', sans-serif",        google: 'Andika:wght@700',  preview: 'Abc', weight: 700, tooThinFormats: [],        lineGap: -0.30, vNudge: 0.0 },
+  { id: 'cursive', name: { fr: 'Cursive', en: 'Cursive', es: 'Cursiva' }, label: 'Lobster Two',   family: "'Lobster Two', cursive",      google: 'Lobster+Two:wght@700', preview: 'Abc', weight: 700, tooThinFormats: ['mini'], lineGap: -0.34, vNudge: -0.01 },
+  { id: 'style',   name: { fr: 'Style',   en: 'Style',   es: 'Estilo' },  label: 'Pacifico',      family: "'Pacifico', cursive",         google: 'Pacifico',         preview: 'Abc', weight: 400, tooThinFormats: ['mini'], lineGap: -0.44, vNudge: -0.03 },
+  { id: 'script',  name: { fr: 'Script',  en: 'Script',  es: 'Script' },  label: 'Chelsea Market', family: "'Chelsea Market', cursive",   google: 'Chelsea+Market',   preview: 'Abc', weight: 400, tooThinFormats: [],        lineGap: -0.32, vNudge: -0.012 },
+  // ---- DEV-ONLY : Amelina (EULA perso non levee, self-hosted woff2, gate existant) ----
+  { id: 'amelina', name: { fr: 'Élégante', en: 'Elegant', es: 'Elegante' }, label: 'Amélina Colette', family: "'Amelina Colette', cursive", google: null, preview: 'Abc', weight: 400, tooThinFormats: ['mini'], lineGap: -0.42, vNudge: -0.020, licensed: false },
+  // ---- PREPAREES : polices COMMERCIALES (liste Mika). licensed:false + available:false
+  //      = dans la structure mais MASQUEES tant que Mika n'a pas achete la licence
+  //      + heberge le woff2. A l'achat : ajouter le @font-face, family, passer
+  //      available:true (+ licensed:true pour la sortir de la gate dev). ----
+  { id: 'vag-rounded', name: { fr: 'Rond Pro', en: 'Round Pro', es: 'Redonda Pro' }, label: 'VAG Rounded', family: "'VAG Rounded', sans-serif", google: null, preview: 'Abc', weight: 700, tooThinFormats: [], lineGap: -0.36, vNudge: 0.0, licensed: false, available: false, commercial: true },
+  { id: 'moonbright', name: { fr: 'Lune', en: 'Moon', es: 'Luna' }, label: 'Moonbright', family: "'Moonbright', cursive", google: null, preview: 'Abc', weight: 400, tooThinFormats: ['mini'], lineGap: -0.4, vNudge: -0.02, licensed: false, available: false, commercial: true },
+  { id: 'nave', name: { fr: 'Douce', en: 'Soft', es: 'Suave' }, label: 'Nave', family: "'Nave', cursive", google: null, preview: 'Abc', weight: 400, tooThinFormats: ['mini'], lineGap: -0.4, vNudge: -0.02, licensed: false, available: false, commercial: true },
+  { id: 'hello-sunshine', name: { fr: 'Soleil', en: 'Sunshine', es: 'Sol' }, label: 'Hello Sunshine', family: "'Hello Sunshine', cursive", google: null, preview: 'Abc', weight: 400, tooThinFormats: ['mini'], lineGap: -0.4, vNudge: -0.02, licensed: false, available: false, commercial: true },
+  { id: 'nickainley', name: { fr: 'Signature', en: 'Signature', es: 'Firma' }, label: 'Nickainley', family: "'Nickainley', cursive", google: null, preview: 'Abc', weight: 400, tooThinFormats: ['mini'], lineGap: -0.42, vNudge: -0.02, licensed: false, available: false, commercial: true },
+  { id: 'skinny-jeans', name: { fr: 'Crayon', en: 'Pencil', es: 'Lápiz' }, label: 'Skinny Jeans', family: "'Skinny Jeans', cursive", google: null, preview: 'Abc', weight: 400, tooThinFormats: ['mini'], lineGap: -0.38, vNudge: -0.02, licensed: false, available: false, commercial: true },
 ]
-export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Andika:wght@400;700&family=ABeeZee&family=Schoolbell&display=swap'
+// Preload = la police PAR DEFAUT seulement (le reste se charge a la demande via
+// loadEtiquetteFont). font-display:swap partout.
+export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&display=swap'
+// Construit l'URL Google Fonts d'UNE police (injection <link> lazy).
+export const googleFontHref = (spec) => `https://fonts.googleapis.com/css2?family=${spec}&display=swap`
 export const FONT_TOO_THIN_NOTE = {
   fr: 'trop fine pour ce format',
   en: 'too thin for this size',
