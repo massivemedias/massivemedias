@@ -190,16 +190,16 @@ function useTranches(tx) {
       kicker: tx({ fr: 'Ce qu\'on fait', en: 'What we do', es: 'Lo que hacemos' }),
       title: tx({ fr: 'On dessine, on imprime, tu colles.', en: 'We design, we print, you stick.', es: 'Diseñamos, imprimimos, tú pegas.' }),
       body: tx({
-        fr: '270 designs originaux en vinyle découpé à la main, et les tirages fine art de nos artistes. Tout est imprimé ici, à Montréal.',
-        en: '270 original designs in hand-cut vinyl, plus fine art prints from our artists. All printed right here in Montreal.',
-        es: '270 diseños originales en vinilo cortado a mano, más impresiones fine art de nuestros artistas. Todo impreso aquí, en Montreal.',
+        fr: `${MASSIVE_STICKERS.length} designs originaux en vinyle découpé à la main, et les tirages fine art de nos artistes. Tout est imprimé ici, à Montréal.`,
+        en: `${MASSIVE_STICKERS.length} original designs in hand-cut vinyl, plus fine art prints from our artists. All printed right here in Montreal.`,
+        es: `${MASSIVE_STICKERS.length} diseños originales en vinilo cortado a mano, más impresiones fine art de nuestros artistas. Todo impreso aquí, en Montreal.`,
       }),
     },
     t2: {
       kicker: tx({ fr: 'Comment ça marche', en: 'How it works', es: 'Cómo funciona' }),
       title: tx({ fr: 'Trois étapes, pas plus.', en: 'Three steps, no more.', es: 'Tres pasos, no más.' }),
       steps: [
-        { n: '1', t: tx({ fr: 'Tu choisis', en: 'You pick', es: 'Eliges' }), d: tx({ fr: 'Parmi 270 designs, ou tu envoies les tiens.', en: 'From 270 designs, or send your own.', es: 'Entre 270 diseños, o envías los tuyos.' }) },
+        { n: '1', t: tx({ fr: 'Tu choisis', en: 'You pick', es: 'Eliges' }), d: tx({ fr: `Parmi ${MASSIVE_STICKERS.length} designs, ou tu envoies les tiens.`, en: `From ${MASSIVE_STICKERS.length} designs, or send your own.`, es: `Entre ${MASSIVE_STICKERS.length} diseños, o envías los tuyos.` }) },
         { n: '2', t: tx({ fr: 'On imprime au Plateau', en: 'We print in the Plateau', es: 'Imprimimos en el Plateau' }), d: tx({ fr: 'Vinyle die-cut résistant eau et UV, ou fine art sur papier coton.', en: 'Die-cut vinyl, water & UV proof, or fine art on cotton paper.', es: 'Vinilo die-cut resistente al agua y UV, o fine art en papel de algodón.' }) },
         { n: '3', t: tx({ fr: 'Tu reçois ou tu ramasses', en: 'You get it or grab it', es: 'Recibes o recoges' }), d: tx({ fr: 'Livraison partout au Québec, ou cueillette à Montréal.', en: 'Shipping across Quebec, or pickup in Montreal.', es: 'Envío por todo Quebec, o recogida en Montreal.' }) },
       ],

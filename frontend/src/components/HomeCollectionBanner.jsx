@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Sparkles, ArrowRight } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
+import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import { STICKERS_SHOP_ENABLED } from '../config/stickersShopStatus'
 import { STICKER_COLLECTION_UNIT_PRICE, MYSTERY_PACK_PRICES } from '../data/products'
 import TumblerDesign from './TumblerDesign'
@@ -114,9 +115,9 @@ export default function HomeCollectionBanner() {
               </h2>
               <p className="text-base sm:text-lg mb-5 text-grey-light">
                 {tx({
-                  fr: '270 designs originaux créés à Montréal.',
-                  en: '270 original designs made in Montreal.',
-                  es: '270 disenos originales hechos en Montreal.',
+                  fr: `${MASSIVE_STICKERS.length} designs originaux créés à Montréal.`,
+                  en: `${MASSIVE_STICKERS.length} original designs made in Montreal.`,
+                  es: `${MASSIVE_STICKERS.length} disenos originales hechos en Montreal.`,
                 })}
               </p>
 

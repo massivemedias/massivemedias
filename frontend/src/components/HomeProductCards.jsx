@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
+import { MASSIVE_STICKERS } from '../data/massiveStickers';
 import { ETIQUETTES_VISIBLE } from '../config/etiquettesStatus'
 
 /**
@@ -56,9 +57,9 @@ export default function HomeProductCards() {
           zoneClass="bg-black/10"
           title={tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
           desc={tx({
-            fr: '270 designs originaux dès 3 $, résistants à l’eau, imprimés à Montréal.',
-            en: '270 original designs from $3, water resistant, printed in Montreal.',
-            es: '270 diseños originales desde 3 $, resistentes al agua, impresos en Montreal.',
+            fr: `${MASSIVE_STICKERS.length} designs originaux dès 3 $, résistants à l’eau, imprimés à Montréal.`,
+            en: `${MASSIVE_STICKERS.length} original designs from $3, water resistant, printed in Montreal.`,
+            es: `${MASSIVE_STICKERS.length} diseños originales desde 3 $, resistentes al agua, impresos en Montreal.`,
           })}
           cta={tx({ fr: 'Voir la collection', en: 'See the collection', es: 'Ver la colección' })}
         >

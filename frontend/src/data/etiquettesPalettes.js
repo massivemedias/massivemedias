@@ -1532,6 +1532,125 @@ export const ETIQUETTES_PALETTES = {
    "text": "#73595b"
   }
  ],
+ "massive-cake": [
+  {
+   "bg": "#f9e7de",
+   "stroke": "#e59268",
+   "text": "#614339"
+  },
+  {
+   "bg": "#f3d6d3",
+   "stroke": "#c94539",
+   "text": "#562527"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#e59268",
+   "text": "#704c3e"
+  }
+ ],
+ "massive-cameleon-chimie": [
+  {
+   "bg": "#d9d7d3",
+   "stroke": "#524a39",
+   "text": "#292727"
+  },
+  {
+   "bg": "#f1e6e7",
+   "stroke": "#be8f93",
+   "text": "#524249"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#524a39",
+   "text": "#2e2b29"
+  }
+ ],
+ "massive-cigogne": [
+  {
+   "bg": "#dbdbdb",
+   "stroke": "#5c5c5c",
+   "text": "#2d2e34"
+  },
+  {
+   "bg": "#f9f9f9",
+   "stroke": "#e4e4e4",
+   "text": "#616268"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#5c5c5c",
+   "text": "#323339"
+  }
+ ],
+ "massive-corns": [
+  {
+   "bg": "#cfdadc",
+   "stroke": "#25575e",
+   "text": "#182c35"
+  },
+  {
+   "bg": "#edd8d0",
+   "stroke": "#ad4f2a",
+   "text": "#4c2921"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#25575e",
+   "text": "#19313a"
+  }
+ ],
+ "massive-crocodile-dandy": [
+  {
+   "bg": "#d0dcde",
+   "stroke": "#296067",
+   "text": "#1a3039"
+  },
+  {
+   "bg": "#eae0e6",
+   "stroke": "#a0718e",
+   "text": "#473647"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#296067",
+   "text": "#1b353e"
+  }
+ ],
+ "massive-cute-monster": [
+  {
+   "bg": "#eedfd9",
+   "stroke": "#b16f51",
+   "text": "#4d3530"
+  },
+  {
+   "bg": "#f9efed",
+   "stroke": "#e3b4af",
+   "text": "#605054"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#b16f51",
+   "text": "#583c34"
+  }
+ ],
+ "massive-dansing-frog": [
+  {
+   "bg": "#fbe7cd",
+   "stroke": "#eb901c",
+   "text": "#63421c"
+  },
+  {
+   "bg": "#e0d6d2",
+   "stroke": "#704632",
+   "text": "#342624"
+  },
+  {
+   "bg": "#ffffff",
+   "stroke": "#eb901c",
+   "text": "#734b1c"
+  }
+ ],
  "massive-bonet": [
   {
    "bg": "#ddedec",
