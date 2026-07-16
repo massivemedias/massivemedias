@@ -218,8 +218,20 @@ export const ETIQUETTE_FONTS = [
   // (localhost) mais RETIREE du build prod tant que la licence commerciale
   // n'est pas confirmee -> passer a true (ou retirer la cle) au feu vert Mika.
   { id: 'amelina-colette', name: { fr: 'Style 2', en: 'Style 2', es: 'Estilo 2' }, label: 'Amélina Colette', family: "'Amelina Colette', cursive", weight: 400, tooThinFormats: [], lineGap: -0.42, vNudge: -0.020, licensed: false },
+  // --- CANDIDATES Style 2 (etude marche etiquettes enfants, 16 juillet). Le gap
+  //     du catalogue = un IMPRIME CLAIR type ecriture scolaire droite (celui que
+  //     les ecoles recommandent), en plus du rond jouet (Baloo) et de la cursive
+  //     (Amelina). Google Fonts -> licence OK d'avance. `licensed:false` = visibles
+  //     en DEV seulement (comme la gate), JAMAIS en prod. Mika choisit sur
+  //     localhost (Emma + Merry-Neige au format Mini) ; la retenue devient Style 2
+  //     (retirer eval + licensed, renommer), Amelina glisse en Style 3.
+  //     Andika + ABeeZee = concues pour l'apprentissage de la lecture (le gap).
+  //     lineGap/vNudge approximatifs (a calibrer sur la retenue).
+  { id: 'andika', name: { fr: 'Éval · Andika', en: 'Eval · Andika', es: 'Eval · Andika' }, label: 'Andika', family: "'Andika', sans-serif", weight: 700, tooThinFormats: [], lineGap: -0.30, vNudge: 0.0, licensed: false, eval: true },
+  { id: 'abeezee', name: { fr: 'Éval · ABeeZee', en: 'Eval · ABeeZee', es: 'Eval · ABeeZee' }, label: 'ABeeZee', family: "'ABeeZee', sans-serif", weight: 400, tooThinFormats: [], lineGap: -0.28, vNudge: 0.0, licensed: false, eval: true },
+  { id: 'schoolbell', name: { fr: 'Éval · Schoolbell', en: 'Eval · Schoolbell', es: 'Eval · Schoolbell' }, label: 'Schoolbell', family: "'Schoolbell', cursive", weight: 400, tooThinFormats: [], lineGap: -0.32, vNudge: 0.0, licensed: false, eval: true },
 ]
-export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&display=swap'
+export const ETIQUETTE_FONTS_CSS_URL = 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Andika:wght@400;700&family=ABeeZee&family=Schoolbell&display=swap'
 export const FONT_TOO_THIN_NOTE = {
   fr: 'trop fine pour ce format',
   en: 'too thin for this size',

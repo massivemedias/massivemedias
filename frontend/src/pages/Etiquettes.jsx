@@ -135,7 +135,10 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr'
             className="sticker-stroke object-contain shrink-0"
             style={{ width: stickerSide, height: stickerSide }}
           />
-          <div className="flex-1 min-w-0 self-stretch flex flex-col items-center justify-center text-center" style={{ paddingLeft: padX * 0.5 }}>
+          {/* padding SYMETRIQUE (pas paddingLeft seul) : le texte se centre
+              EXACTEMENT dans la zone a droite du sticker, H et V, sans biais.
+              Un paddingLeft seul + justify-center decalait le bloc vers la droite. */}
+          <div className="flex-1 min-w-0 self-stretch flex flex-col items-center justify-center text-center" style={{ paddingInline: padX * 0.35 }}>
             {/* wrapper compact : les 2 lignes forment UN groupe (marge negative
                 calibree par police), recale verticalement (vNudge), et le
                 justify-center du parent centre ce groupe dans le rectangle. */}
