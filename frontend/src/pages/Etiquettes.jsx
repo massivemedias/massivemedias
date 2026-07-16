@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Tag, Droplets, Sun, Shield, Scissors, WashingMachine, Truck,
@@ -11,6 +11,7 @@ import { useCart } from '../contexts/CartContext'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import {
   KIDS_SAFE, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS, ETIQUETTE_FONTS_CSS_URL, FONT_TOO_THIN_NOTE,
+  DEFAULT_FONT_ID, googleFontHref,
   PAGE_NAME_OPTIONS, PAGE_NAME_CHOICE, PAGE_SEO_PRODUCT, ETIQUETTE_CLAIMS, ETIQUETTE_CLAIM_LAVE_VAISSELLE,
   formatDims, formatDimsShort, SAMPLE_NAMES, SAMPLE_NAME_POOL,
   ETIQUETTE_CORNERS, cornerFramePath,
@@ -79,9 +80,24 @@ function useAutoFit(text, fontFamily, fontWeight, maxWidthPx, maxHeightPx) {
 
 // un prenon d'exemple au hasard dans le pool (placeholder tournant de l'apercu)
 const pickSampleName = () => SAMPLE_NAME_POOL[Math.floor(Math.random() * SAMPLE_NAME_POOL.length)]
-// polices offertes au client : les non-licenciees (Amelina) restent en DEV
-// mais disparaissent du build prod tant que la licence n'est pas confirmee.
-const AVAILABLE_FONTS = ETIQUETTE_FONTS.filter((f) => f.licensed !== false || import.meta.env.DEV)
+// polices offertes au client : les non-licenciees (Amelina) restent en DEV mais
+// disparaissent du build prod ; les commerciales PREPAREES (available:false, pas
+// encore hebergees) sont masquees PARTOUT tant que Mika n'a pas achete+ajoute la font.
+const AVAILABLE_FONTS = ETIQUETTE_FONTS.filter((f) => (f.licensed !== false || import.meta.env.DEV) && f.available !== false)
+
+// CHARGEMENT LAZY d'une police (archi Mika) : la police par DEFAUT est prechargee
+// (ETIQUETTE_FONTS_CSS_URL dans la page) ; les autres se chargent A LA DEMANDE, ici
+// par injection d'un <link> Google Fonts dedie (robuste vs les URLs woff2 de
+// FontFace qui bougent) quand la tuile devient visible / au survol / a la selection.
+// font-display:swap. Idempotent. Amelina (self-hosted @font-face index.css) : no-op.
+const _etiFontLoaded = new Set([DEFAULT_FONT_ID])
+function loadEtiquetteFont(f) {
+  if (!f || _etiFontLoaded.has(f.id) || !f.google) return
+  _etiFontLoaded.add(f.id)
+  const l = document.createElement('link')
+  l.rel = 'stylesheet'; l.href = googleFontHref(f.google); l.dataset.etiFont = f.id
+  document.head.appendChild(l)
+}
 // coins offerts : le concave (devOnly) reste masque en prod tant que le test de
 // decoupe Cameo n'est pas concluant (round + coupe au lancement).
 const AVAILABLE_CORNERS = ETIQUETTE_CORNERS.filter((c) => !c.devOnly || import.meta.env.DEV)
@@ -182,8 +198,96 @@ function FleurDeLys({ className = '', fill = 'currentColor', style }) {
   )
 }
 
+/* ---- FONT PICKER : tuiles carrees (apercu "Abc" dans la police + nom marketing),
+ *      radiogroup accessible clavier, chargement lazy des polices visibles. ---- */
+function FontPicker({ fonts, value, onChange, formatId, tx }) {
+  const wrapRef = useRef(null)
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') { fonts.forEach(loadEtiquetteFont); return }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) loadEtiquetteFont(fonts.find((f) => f.id === e.target.dataset.fid))
+      })
+    }, { rootMargin: '250px' })
+    el.querySelectorAll('[data-fid]').forEach((n) => io.observe(n))
+    return () => io.disconnect()
+  }, [fonts])
+  return (
+    <div ref={wrapRef} role="radiogroup" aria-label={tx({ fr: 'Police', en: 'Font', es: 'Tipografía' })} className="grid grid-cols-3 gap-2">
+      {fonts.map((f) => {
+        const tooThin = (f.tooThinFormats || []).includes(formatId)
+        const sel = value === f.id
+        return (
+          <button
+            key={f.id} data-fid={f.id} type="button" role="radio" aria-checked={sel} disabled={tooThin}
+            onMouseEnter={() => loadEtiquetteFont(f)} onFocus={() => loadEtiquetteFont(f)}
+            onClick={() => onChange(f.id)}
+            title={tooThin ? `${tx(f.name)} : ${tx(FONT_TOO_THIN_NOTE)}` : tx(f.name)}
+            className={`flex flex-col items-center justify-center gap-1 rounded-xl border aspect-[1.4/1] min-h-[52px] transition-all ${tooThin ? 'opacity-40 cursor-not-allowed border-white/5' : sel ? 'border-accent bg-accent/10' : 'border-white/10 hover:border-white/25'}`}
+          >
+            <span className="text-[26px] leading-none text-heading" style={{ fontFamily: f.family, fontWeight: f.weight }}>{f.preview || 'Abc'}</span>
+            <span className={`text-[11.5px] font-semibold ${sel ? 'text-accent' : 'text-grey-light'}`}>{tx(f.name)}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ---- ENCART TAILLE : les 3 formats a l'ECHELLE (hors des cases du selecteur),
+ *      silhouettes comparees + dims + usage. Clic = selectionne le format. ---- */
+function SizeEncart({ formatId, onPick, lang, tx }) {
+  const maxW = Math.max(...ETIQUETTE_FORMATS.map((f) => f.w))
+  return (
+    <div className="surface-vitrine rounded-2xl p-5 mt-4">
+      <p className="text-heading font-semibold text-sm">{tx({ fr: 'Les 3 tailles, à l’échelle', en: 'The 3 sizes, to scale', es: 'Los 3 tamaños, a escala' })}</p>
+      <p className="text-grey-muted text-[11.5px] mb-4">{tx({ fr: 'Comparées côte à côte pour bien choisir', en: 'Compared side by side to help you choose', es: 'Comparados para elegir mejor' })}</p>
+      <div className="flex items-end gap-5 flex-wrap">
+        {ETIQUETTE_FORMATS.map((f) => {
+          const w = 66 + (f.w / maxW) * 92
+          const h = Math.max(13, w * (f.h / f.w))
+          const sel = formatId === f.id
+          return (
+            <button key={f.id} type="button" onClick={() => onPick(f.id)} className="flex flex-col items-center gap-2 group">
+              <div className="rounded-md grid place-items-center font-bold transition-all" style={{ width: w, height: h, fontSize: Math.min(13, h * 0.5), background: '#f4efe4', color: '#2a2233', border: `2px solid ${sel ? 'var(--accent)' : '#cbb98f'}` }}>{f.h >= 12 ? 'Emma' : 'Aa'}</div>
+              <div className="text-center leading-tight">
+                <b className={`text-[12.5px] ${sel ? 'text-accent' : 'text-heading'}`}>{tx(f)}</b>
+                <div className="text-grey-muted text-[11px]">{formatDimsShort(f, lang)}</div>
+                <div className="text-grey-muted/70 text-[10.5px]">{tx({ fr: f.usageFr, en: f.usageEn, es: f.usageEs })}</div>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ---- CARROUSEL de designs auto-defilant (une rangee, boucle douce, pause au
+ *      survol/touch, clic = selectionne). Reduced-motion : pas d'animation. ---- */
+function DesignCarousel({ slugs, current, onPick, labelBySlug }) {
+  const loop = [...slugs, ...slugs]
+  return (
+    <div className="eti-carou" aria-hidden="false">
+      <div className="eti-track">
+        {loop.map((s, i) => (
+          <button
+            key={i} type="button" onClick={() => onPick(s)} title={labelBySlug?.[s]?.fr || s} tabIndex={i < slugs.length ? 0 : -1}
+            className={`eti-dz shrink-0 rounded-xl p-1 bg-glass-alt transition-all ${current === s ? 'ring-2 ring-accent' : 'hover:brightness-110'}`}
+          >
+            <img src={`/images/thumbs-mini/stickers-massive/${s}.webp`} alt="" aria-hidden="true" loading="lazy" decoding="async" className="sticker-stroke w-14 h-14 object-contain" />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* --------------------------------------------------------------------------
- * LE CONFIGURATEUR : design -> nom (+ ligne 2) -> combo -> format -> police.
+ * LE CONFIGURATEUR : design -> prenom -> FORMAT -> couleurs -> police -> coins
+ * -> pack. Layout 2 colonnes : apercu vedette large sticky a GAUCHE, controles
+ * a droite (mobile : apercu sticky en haut, sections empilees).
  * ------------------------------------------------------------------------ */
 function ConfigurateurEtiquettes() {
   const { lang, tx } = useLang()
@@ -192,7 +296,7 @@ function ConfigurateurEtiquettes() {
   const [line2, setLine2] = useState('')
   const [comboIdx, setComboIdx] = useState(0)
   const [formatId, setFormatId] = useState('moyenne')
-  const [fontId, setFontId] = useState(AVAILABLE_FONTS[0].id)
+  const [fontId, setFontId] = useState(DEFAULT_FONT_ID)
   const [cornerId, setCornerId] = useState(ETIQUETTE_CORNERS[0].id)
   const [packId, setPackId] = useState(ETIQUETTE_PACKS.find((p) => p.populaire)?.id || ETIQUETTE_PACKS[0].id)
   const [showAll, setShowAll] = useState(false)
@@ -248,7 +352,6 @@ function ConfigurateurEtiquettes() {
       if (ok) setFontId(ok.id)
     }
   }, [formatId, font])
-  const designs = useMemo(() => (showAll ? KIDS_SAFE : KIDS_SAFE.slice(0, 24)), [showAll])
 
   return (
     <section id="configurateur" className="section-container scroll-mt-24">
@@ -263,79 +366,104 @@ function ConfigurateurEtiquettes() {
         })}
       </p>
 
-      <div className="grid lg:grid-cols-[1.1fr_1fr] gap-8 max-w-5xl mx-auto items-start">
-        {/* ---- gauche : l'apercu + les reglages texte ---- */}
-        <div className="surface-vitrine card-shadow rounded-2xl p-6 sm:p-8">
-          <div className="flex items-center justify-center min-h-[150px] overflow-x-auto py-2">
-            <EtiquettePreview slug={slug} combo={combo} format={format} font={font} line1={line1} line2={line2} lang={lang} placeholder={sampleName} corner={cornerId} />
+      <div className="grid lg:grid-cols-[1.35fr_1fr] gap-8 max-w-6xl mx-auto items-start">
+        {/* ============ GAUCHE : APERCU vedette LARGE (~55%). Sticky : desktop
+            toute la colonne colle ; mobile la carte apercu colle en haut pendant
+            qu'on configure dessous. + encart TAILLE (desktop). ============ */}
+        <div className="lg:sticky lg:top-24 order-1">
+          <div className="surface-vitrine card-shadow rounded-2xl p-6 sm:p-8 sticky top-2 z-20 lg:static lg:z-auto">
+            <div className="flex items-center justify-center min-h-[150px] lg:min-h-[220px] overflow-x-auto py-2">
+              <EtiquettePreview slug={slug} combo={combo} format={format} font={font} line1={line1} line2={line2} lang={lang} placeholder={sampleName} corner={cornerId} />
+            </div>
+          </div>
+          {/* ENCART TAILLE : les 3 formats a l'echelle, HORS des cases (desktop) */}
+          <div className="hidden lg:block">
+            <SizeEncart formatId={formatId} onPick={setFormatId} lang={lang} tx={tx} />
+          </div>
+        </div>
+
+        {/* ============ DROITE : CONTROLES (nouvel ordre design -> prenom ->
+            FORMAT -> couleurs -> police -> coins -> pack) ============ */}
+        <div className="order-2 space-y-5">
+          {/* 1. DESIGN : carrousel auto-defilant en tete + grille complete au clic */}
+          <div>
+            <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2.5">
+              {tx({ fr: 'Choisis ton design', en: 'Pick your design', es: 'Elige tu diseño' })} ({KIDS_SAFE.length})
+            </p>
+            <DesignCarousel slugs={KIDS_SAFE.slice(0, 24)} current={slug} onPick={(s) => { setSlug(s); setComboIdx(0) }} labelBySlug={stickerBySlug} />
+            {!showAll ? (
+              <button type="button" onClick={() => setShowAll(true)} className="mt-3 w-full py-2.5 rounded-full text-sm font-semibold text-grey-light border border-white/10 hover:border-white/25 transition-colors inline-flex items-center justify-center gap-1.5">
+                {tx({ fr: `Voir les ${KIDS_SAFE.length} designs`, en: `See all ${KIDS_SAFE.length} designs`, es: `Ver los ${KIDS_SAFE.length} diseños` })}
+                <ChevronDown size={15} />
+              </button>
+            ) : (
+              <div className="grid grid-cols-5 sm:grid-cols-6 gap-2 max-h-[300px] overflow-y-auto pr-1 mt-3">
+                {KIDS_SAFE.map((s) => {
+                  const st = stickerBySlug[s]
+                  return (
+                    <button key={s} type="button" onClick={() => { setSlug(s); setComboIdx(0) }} title={st ? st.fr : s}
+                      className={`relative rounded-xl p-1.5 bg-glass-alt transition-all ${slug === s ? 'ring-2 ring-accent' : 'hover:brightness-110'}`}>
+                      <img src={`/images/thumbs-mini/stickers-massive/${s}.webp`} alt={st ? st.fr : s} loading="lazy" decoding="async" className="sticker-stroke w-full aspect-square object-contain" />
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
-          {/* nom + ligne 2 */}
-          <div className="mt-5 space-y-3">
-            <input
-              type="text"
-              maxLength={22}
-              value={line1}
-              onChange={(e) => setLine1(e.target.value)}
+          {/* 2. PRENOM + ligne 2 (touch targets >=44px) */}
+          <div className="space-y-3">
+            <input type="text" maxLength={22} value={line1} onChange={(e) => setLine1(e.target.value)}
               placeholder={tx({ fr: 'Prénom (ou prénom + nom)', en: 'First name (or full name)', es: 'Nombre (o nombre completo)' })}
-              className="w-full rounded-xl bg-bg-elevated border border-white/10 px-4 py-3 text-heading text-base focus:border-accent/50 focus:outline-none"
-              aria-label={tx({ fr: 'Nom sur l’étiquette', en: 'Name on the label', es: 'Nombre en la etiqueta' })}
-            />
-            <input
-              type="text"
-              maxLength={26}
-              value={line2}
-              onChange={(e) => setLine2(e.target.value)}
+              className="w-full rounded-xl bg-bg-elevated border border-white/10 px-4 py-3.5 text-heading text-base focus:border-accent/50 focus:outline-none"
+              aria-label={tx({ fr: 'Nom sur l’étiquette', en: 'Name on the label', es: 'Nombre en la etiqueta' })} />
+            <input type="text" maxLength={26} value={line2} onChange={(e) => setLine2(e.target.value)}
               placeholder={tx({ fr: 'Ligne 2 (optionnel : nom de famille, téléphone…)', en: 'Line 2 (optional: last name, phone…)', es: 'Línea 2 (opcional: apellido, teléfono…)' })}
-              className="w-full rounded-xl bg-bg-elevated border border-white/10 px-4 py-2.5 text-heading text-sm focus:border-accent/50 focus:outline-none"
-              aria-label={tx({ fr: 'Deuxième ligne', en: 'Second line', es: 'Segunda línea' })}
-            />
+              className="w-full rounded-xl bg-bg-elevated border border-white/10 px-4 py-3 text-heading text-sm focus:border-accent/50 focus:outline-none"
+              aria-label={tx({ fr: 'Deuxième ligne', en: 'Second line', es: 'Segunda línea' })} />
           </div>
 
-          {/* combos auto-assortis (2-3 par design, pas de picker libre) */}
-          <div className="mt-5">
+          {/* 3. FORMAT (remonte au-dessus des couleurs) - libelles agrandis, cartes
+              compactes (nom + dim), le detail a l'echelle est dans l'encart */}
+          <div>
+            <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2">
+              {tx({ fr: 'Format', en: 'Size', es: 'Formato' })}
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {ETIQUETTE_FORMATS.map((f) => (
+                <button key={f.id} type="button" onClick={() => setFormatId(f.id)}
+                  className={`rounded-xl px-3 py-3 text-center border transition-all min-h-[44px] ${formatId === f.id ? 'border-accent bg-accent/10' : 'border-white/10 hover:border-white/25'}`}>
+                  <span className={`block text-base font-bold ${formatId === f.id ? 'text-accent' : 'text-heading'}`}>{tx(f)}</span>
+                  <span className="block text-grey-light text-xs mt-0.5">{formatDimsShort(f, lang)}</span>
+                </button>
+              ))}
+            </div>
+            {/* encart taille : MOBILE seulement (desktop = colonne gauche) */}
+            <div className="lg:hidden">
+              <SizeEncart formatId={formatId} onPick={setFormatId} lang={lang} tx={tx} />
+            </div>
+          </div>
+
+          {/* 4. COULEURS (assorties au design, pas de picker libre) */}
+          <div>
             <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2">
               {tx({ fr: 'Couleurs (assorties au design)', en: 'Colors (matched to the design)', es: 'Colores (a juego con el diseño)' })}
             </p>
             <div className="flex gap-2.5">
               {combos.map((c, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setComboIdx(i)}
-                  aria-label={`Combo ${i + 1}`}
-                  className={`w-12 h-9 rounded-lg transition-all ${comboIdx === i ? 'ring-2 ring-accent scale-105' : 'opacity-80 hover:opacity-100'}`}
-                  style={{ background: c.bg, border: `3px solid ${c.stroke}` }}
-                />
+                <button key={i} type="button" onClick={() => setComboIdx(i)} aria-label={`Combo ${i + 1}`}
+                  className={`w-12 h-11 rounded-lg transition-all ${comboIdx === i ? 'ring-2 ring-accent scale-105' : 'opacity-80 hover:opacity-100'}`}
+                  style={{ background: c.bg, border: `3px solid ${c.stroke}` }} />
               ))}
             </div>
           </div>
 
-          {/* police : au choix du client, chaque bouton rendu dans sa propre
-              police avec le prenom tape. Une font trop fine pour le format
-              courant est GRISEE (jamais d'illisible commandable). */}
-          <div className="mt-5">
+          {/* 5. POLICE : font picker en tuiles (Abc + nom marketing), lazy-load */}
+          <div>
             <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2">
               {tx({ fr: 'Police', en: 'Font', es: 'Tipografía' })}
             </p>
-            <div className="flex flex-wrap gap-2">
-              {AVAILABLE_FONTS.map((f) => {
-                const tooThin = (f.tooThinFormats || []).includes(formatId)
-                return (
-                  <button
-                    key={f.id}
-                    type="button"
-                    disabled={tooThin}
-                    onClick={() => setFontId(f.id)}
-                    className={`px-4 py-2 rounded-full text-lg transition-all border ${tooThin ? 'border-white/5 text-grey-muted opacity-40 cursor-not-allowed' : fontId === f.id ? 'border-accent text-accent bg-accent/10' : 'border-white/10 text-grey-light hover:border-white/25'}`}
-                    style={{ fontFamily: f.family, fontWeight: f.weight }}
-                    title={tooThin ? `${tx(f.name)} : ${tx(FONT_TOO_THIN_NOTE)}` : undefined}
-                  >
-                    {tx(f.name)}
-                  </button>
-                )
-              })}
-            </div>
+            <FontPicker fonts={AVAILABLE_FONTS} value={fontId} onChange={setFontId} formatId={formatId} tx={tx} />
             {AVAILABLE_FONTS.some((f) => (f.tooThinFormats || []).includes(formatId)) && (
               <p className="text-grey-muted text-xs mt-2">
                 {AVAILABLE_FONTS.filter((f) => (f.tooThinFormats || []).includes(formatId)).map((f) => tx(f.name)).join(', ')} : {tx(FONT_TOO_THIN_NOTE)}
@@ -343,9 +471,8 @@ function ConfigurateurEtiquettes() {
             )}
           </div>
 
-          {/* coins : 3 vignettes de la FORME du coin (pas du texte). Le meme
-              path (cornerFramePath) rend l'apercu ET la vignette. */}
-          <div className="mt-5">
+          {/* 6. COINS : vignettes de la forme (meme path cornerFramePath que l'apercu) */}
+          <div>
             <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2">
               {tx({ fr: 'Coins', en: 'Corners', es: 'Esquinas' })}
             </p>
@@ -353,14 +480,8 @@ function ConfigurateurEtiquettes() {
               {AVAILABLE_CORNERS.map((cn) => {
                 const active = cornerId === cn.id
                 return (
-                  <button
-                    key={cn.id}
-                    type="button"
-                    onClick={() => setCornerId(cn.id)}
-                    title={tx(cn.label)}
-                    aria-label={tx(cn.label)}
-                    className={`p-1.5 rounded-xl border transition-all ${active ? 'border-accent bg-accent/10 text-accent' : 'border-white/10 text-grey-light hover:border-white/25'}`}
-                  >
+                  <button key={cn.id} type="button" onClick={() => setCornerId(cn.id)} title={tx(cn.label)} aria-label={tx(cn.label)}
+                    className={`p-2 rounded-xl border transition-all min-h-[44px] ${active ? 'border-accent bg-accent/10 text-accent' : 'border-white/10 text-grey-light hover:border-white/25'}`}>
                     <svg width="38" height="38" viewBox="0 0 44 44" aria-hidden="true">
                       <path d={cornerFramePath(44, 44, cn.id, 3)} fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="2.5" strokeLinejoin={cn.id === 'chamfer' ? 'miter' : 'round'} />
                     </svg>
@@ -370,44 +491,17 @@ function ConfigurateurEtiquettes() {
             </div>
           </div>
 
-          {/* format */}
-          <div className="mt-5">
-            <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2">
-              {tx({ fr: 'Format', en: 'Size', es: 'Formato' })}
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {ETIQUETTE_FORMATS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFormatId(f.id)}
-                  className={`rounded-xl px-3 py-2.5 text-left border transition-all ${formatId === f.id ? 'border-accent bg-accent/10' : 'border-white/10 hover:border-white/25'}`}
-                >
-                  <span className={`block text-sm font-semibold ${formatId === f.id ? 'text-accent' : 'text-heading'}`}>{tx(f)}</span>
-                  <span className="block text-grey-muted text-[11px]">{formatDimsShort(f, lang)}</span>
-                </button>
-              ))}
-            </div>
-            <p className="text-grey-muted text-xs mt-2">
-              {tx({ fr: ETIQUETTE_FORMATS.find(f => f.id === formatId).usageFr, en: ETIQUETTE_FORMATS.find(f => f.id === formatId).usageEn, es: ETIQUETTE_FORMATS.find(f => f.id === formatId).usageEs })}
-            </p>
-          </div>
-
-          {/* ---- trousse (pack) + ajout au panier ---- */}
-          <div className="mt-6 pt-5 border-t border-white/10">
+          {/* 7. PACK + ajout au panier */}
+          <div className="pt-5 border-t border-white/10">
             <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2">
               {tx({ fr: 'Trousse', en: 'Kit', es: 'Kit' })}
             </p>
             <div className="grid grid-cols-3 gap-2">
               {ETIQUETTE_PACKS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPackId(p.id)}
-                  className={`relative rounded-xl px-2.5 py-2.5 text-left border transition-all ${packId === p.id ? 'border-accent bg-accent/10' : 'border-white/10 hover:border-white/25'}`}
-                >
+                <button key={p.id} type="button" onClick={() => setPackId(p.id)}
+                  className={`relative rounded-xl px-2.5 py-3 text-center border transition-all min-h-[44px] ${packId === p.id ? 'border-accent bg-accent/10' : 'border-white/10 hover:border-white/25'}`}>
                   {p.populaire && (
-                    <span className="absolute -top-2 right-2 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-accent text-white">
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-accent text-white whitespace-nowrap">
                       {tx({ fr: 'Populaire', en: 'Popular', es: 'Popular' })}
                     </span>
                   )}
@@ -417,57 +511,14 @@ function ConfigurateurEtiquettes() {
               ))}
             </div>
             <p className="text-grey-muted text-xs mt-2">{tx({ fr: pack.dFr, en: pack.dEn, es: pack.dEs })}</p>
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={!canAdd}
-              className={`mt-4 w-full py-3 rounded-full font-semibold text-sm inline-flex items-center justify-center gap-2 transition-all ${canAdd ? 'bg-accent text-white hover:brightness-110' : 'bg-white/5 text-grey-muted cursor-not-allowed'}`}
-            >
+            <button type="button" onClick={handleAddToCart} disabled={!canAdd}
+              className={`mt-4 w-full py-3.5 rounded-full font-semibold text-sm inline-flex items-center justify-center gap-2 transition-all ${canAdd ? 'bg-accent text-white hover:brightness-110' : 'bg-white/5 text-grey-muted cursor-not-allowed'}`}>
               <ShoppingBag size={16} />
               {canAdd
                 ? tx({ fr: `Ajouter au panier — ${formatPrice(pack.price)}`, en: `Add to cart — ${formatPrice(pack.price)}`, es: `Añadir al carrito — ${formatPrice(pack.price)}` })
                 : tx({ fr: 'Écris d’abord le prénom', en: 'Enter the name first', es: 'Escribe el nombre primero' })}
             </button>
           </div>
-        </div>
-
-        {/* ---- droite : la galerie des designs KIDS_SAFE ---- */}
-        <div>
-          <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2.5">
-            {tx({ fr: 'Choisis ton design', en: 'Pick your design', es: 'Elige tu diseño' })} ({KIDS_SAFE.length})
-          </p>
-          <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-4 xl:grid-cols-5 gap-2 max-h-[430px] overflow-y-auto pr-1">
-            {designs.map((s) => {
-              const st = stickerBySlug[s]
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => { setSlug(s); setComboIdx(0) }}
-                  title={st ? st.fr : s}
-                  className={`relative rounded-xl p-1.5 bg-glass-alt transition-all ${slug === s ? 'ring-2 ring-accent' : 'hover:brightness-110'}`}
-                >
-                  <img
-                    src={`/images/thumbs-mini/stickers-massive/${s}.webp`}
-                    alt={st ? st.fr : s}
-                    loading="lazy"
-                    decoding="async"
-                    className="sticker-stroke w-full aspect-square object-contain"
-                  />
-                </button>
-              )
-            })}
-          </div>
-          {!showAll && KIDS_SAFE.length > 24 && (
-            <button
-              type="button"
-              onClick={() => setShowAll(true)}
-              className="mt-3 w-full py-2.5 rounded-full text-sm font-semibold text-grey-light border border-white/10 hover:border-white/25 transition-colors inline-flex items-center justify-center gap-1.5"
-            >
-              {tx({ fr: `Voir les ${KIDS_SAFE.length} designs`, en: `See all ${KIDS_SAFE.length} designs`, es: `Ver los ${KIDS_SAFE.length} diseños` })}
-              <ChevronDown size={15} />
-            </button>
-          )}
         </div>
       </div>
     </section>
