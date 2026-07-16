@@ -47,11 +47,11 @@ const FAMILY_ORDER = ['dark', 'animaux', 'psyche', 'asiatique', 'personnages', '
 // tout ajout au catalogue). UI-04 : dragon-firefly et zombie-spider (fonds
 // blancs rectangulaires) remplaces par des designs detoures.
 const FAMILY_COLLAGES = {
-  dark: ['massive-born-to-kill', 'massive-dj-skull', 'massive-skull-kaboom', 'massive-mort'],
+  dark: ['massive-triskull', 'massive-dj-skull', 'massive-skull-kaboom', 'massive-mort'],
   animaux: ['massive-animals-meeting', 'massive-chameleon', 'massive-poisson-rose', 'massive-kapibara'],
   psyche: ['massive-arte-moderno', 'massive-chmp-7', 'massive-fleur-degueu', 'massive-symetrie-asian'],
-  asiatique: ['massive-adian-fumeuse', 'massive-asian-muerte', 'massive-samourai-violet', 'massive-geisha1'],
-  personnages: ['massive-jade', 'massive-tv-man', 'massive-robot-qui-court', 'massive-punk-rose'],
+  asiatique: ['massive-asian-face', 'massive-asian-muerte', 'massive-samourai-violet', 'massive-samourai-gris'],
+  personnages: ['massive-jade', 'massive-tv-man', 'massive-robot-qui-court', 'massive-astro'],
   aliens: ['massive-alien-hot', 'massive-alien-calote', 'massive-soucoupe', 'massive-savant-vert'],
   'street-art': ['massive-art-de-rue', 'massive-tagueur', 'massive-art-libre', 'massive-elephant-graf'],
   fun: ['massive-mais', 'massive-lunette-duck', 'massive-pig-chapeau', 'massive-hotdog'],
@@ -74,7 +74,7 @@ const ACCENT_EVERY = 4
 // autre image de fond, designW = largeur du sticker pose dessus). Les images de
 // fond sont chargees en lazy -> zero cout au premier paint (perf UI-10).
 const SHOWCASE = [
-  { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-adian-fumeuse', productH: '92%', tumbler: true, cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
+  { kind: 'product', img: '/images/mugs/tumbler-white.webp', design: 'massive-chameleon', productH: '92%', tumbler: true, cap: { fr: 'Sur ta gourde', en: 'On your bottle', es: 'En tu botella' } },
   // STICKERS-UI-11 (13 juillet) : carte TASSE retiree de la bande (decision Mika :
   // sans interet, sera remplacee par de vraies photos). REVERSIBLE : decommenter
   // cette ligne pour la ramener. Le composant mug + l'asset mug-white.webp sont

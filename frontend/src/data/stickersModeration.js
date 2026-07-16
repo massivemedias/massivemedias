@@ -23,6 +23,27 @@ export const HIDDEN_STICKERS = new Set([
   'massive-alien-corps',   // "Festin macabre" (sang)
   // --- TIER 1 : vulgaire ---
   'massive-fuckyou',       // "FUK U PAY ME"
+
+  // === TIER 2/3 (tranches par Mika sur les planches, 15 juillet) ===
+  // Femmes suggestives / pin-up (Tier 2) :
+  'massive-punk-rose',       // pin-up zombie (Mika)
+  'massive-rousse',          // rousse sensuelle
+  'massive-rousse-couteau',  // rousse sensuelle + couteau
+  'massive-geisha1',         // silhouette suggestive (Mika)
+  'massive-geisha2',
+  'massive-geisha-rapsody',
+  // Noms vulgaires (Tier 2) :
+  'massive-couille',
+  'massive-tete-de-noeud',
+  // Violence (Tier 2) :
+  'massive-born-to-kill',    // slogan + arme (Mika)
+  // Drogue / tabac (Tier 3) :
+  'massive-adian-fumeuse',   // geisha fumeuse (Mika)
+  'massive-femme-oeil-fumee',
+  'massive-chat-lsd',
+  'massive-chat-lsd2',
+  'massive-chat-lsd3',
+  'massive-graffeur-en-herbe', // "en herbe" = weed
 ])
 
 /** true si le slug est masque des vues publiques. */
