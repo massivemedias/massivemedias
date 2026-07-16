@@ -30,7 +30,7 @@
  * - photo-lunchbox.webp : Pexels 13048837 (boite a lunch bento, couvercle bleu
  *                         plat) - licence Pexels (commercial libre, modif OK)
  * - label-*.png : etiquettes exemple rendues du configurateur (Baloo 2, combos
- *   auto-assortis, prenom Lyse), 3 designs differents.
+ *   auto-assortis, prenom Emma), 3 designs differents.
  *
  * Sortie : public/images/etiquettes/mockup-{gourde,verre,lunchbox}.webp
  * (800x600, q82). Relancer apres tout changement de source :

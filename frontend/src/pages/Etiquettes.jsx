@@ -662,7 +662,7 @@ export default function Etiquettes() {
           configurateur garde son apercu live a lui. Photos Pexels (licence
           Pexels, commercial libre) : gourde 8611290 (RDNE Stock project),
           verre 38380651 (Ann H), crayon 4237814, cahier 7054764. Etiquettes :
-          4 designs, prenom Lyse. RELANCER le script apres tout changement.
+          4 designs, prenom Emma. RELANCER le script apres tout changement.
           La ligne sous la section leve toute ambiguite : Massive vend LES
           ETIQUETTES, pas les objets. */}
       <section className="section-container">

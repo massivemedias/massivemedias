@@ -1251,6 +1251,8 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
             totalPrice: item.totalPrice || 0,
             size: item.size || '',
             finish: item.finish || '',
+            // Mini Massive : la personnalisation etiquette suit jusqu'au courriel.
+            etiquette: item.etiquette || null,
           }));
 
           const [confirmRes, adminRes] = await Promise.allSettled([
@@ -4020,6 +4022,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
             totalPrice: item.totalPrice || 0,
             size: item.size || '',
             finish: item.finish || '',
+            etiquette: item.etiquette || null,
           })),
           subtotal: order.subtotal || 0,
           shipping: order.shipping || 0,
@@ -4473,6 +4476,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           totalPrice: it.totalPrice || 0,
           size: it.size || '',
           finish: it.finish || '',
+          etiquette: it.etiquette || null,
         }));
         await sendOrderConfirmationEmail({
           customerName: orderData.customerName,
@@ -6032,6 +6036,7 @@ ${allUrls
               totalPrice: item.totalPrice || 0,
               size: item.size || '',
               finish: item.finish || '',
+              etiquette: item.etiquette || null,
             })),
             subtotal: order.subtotal || 0,
             shipping: order.shipping || 0,

@@ -107,7 +107,7 @@ describe('familles legitimes : prix serveur exact', () => {
   })
   it('mini massive : 3 packs 24 / 34 / 44 $ (prix FORCE, config ignoree)', async () => {
     // la config (design, prenom, police, coins) voyage mais NE change PAS le prix
-    const r = await resolve({ productId: 'etiquette-pack-essentiel', quantity: 1, totalPrice: 999, etiquette: { line1: 'Lyse', font: 'baloo' } })
+    const r = await resolve({ productId: 'etiquette-pack-essentiel', quantity: 1, totalPrice: 999, etiquette: { line1: 'Emma', font: 'baloo' } })
     expect(r).toMatchObject({ ok: true, family: 'etiquette-pack', price: 24 })
     expect((await resolve({ productId: 'etiquette-pack-rentree', quantity: 1 })).price).toBe(34)
     expect((await resolve({ productId: 'etiquette-pack-complet', quantity: 1 })).price).toBe(44)
