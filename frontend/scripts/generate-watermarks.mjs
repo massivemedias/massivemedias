@@ -21,14 +21,16 @@
  *   - les thumbs de grille (thumbs/), micro-thumbs (thumbs-mini/), le Supabase
  *     800 (vignettes 56px), le mockup gourde, les collages.
  *
- * STYLE (round 2, verdict Mika sur le round 1 "flou, trop present") : 3 tampons
- * MASSIVE en diagonale, PAS une mosaique. Chaque tampon est rasterise depuis le
- * SVG A LA TAILLE CIBLE (~44 % de la largeur de l'image) -> trace NET a toute
- * resolution, jamais un petit PNG etire/repete. Blanc + ombre noire decalee
- * PROPORTIONNELLE (tient sur fonds clairs ET noirs), opacite 5 % ("a peine le
- * voir"). Le tampon central couvre le coeur de l'image : la protection reste
- * reelle (pas croppable), elle chuchote au lieu de crier. Masque a l'alpha de
- * la source : sur un sticker die-cut, le filigrane ne tombe QUE sur le dessin.
+ * STYLE (round 3 / OPTION B, verdict Mika sur le round 2 "gris fantome, les
+ * tampons debordent hors du dessin") : UN SEUL tampon MASSIVE en diagonale,
+ * calibre sur 60 % de la largeur de la SILHOUETTE (bbox alpha) et CENTRE dessus.
+ * Rasterise depuis le SVG A LA TAILLE CIBLE -> trace NET a toute resolution.
+ * Blanc + ombre noire decalee PROPORTIONNELLE (tient sur fonds clairs ET noirs),
+ * opacite 5 % ("a peine le voir", mais visible a 100 % sur les zones plates).
+ * Centrer sur la SILHOUETTE (pas l'image) garantit que sur les die-cut a
+ * silhouette etroite/decentree le tampon tombe TOUJOURS sur le dessin (fini les
+ * fragments blancs hors-silhouette du round 2). Masque a l'alpha de la source :
+ * le filigrane ne tombe QUE sur le dessin.
  *
  * IDEMPOTENT : un manifeste (scripts/.watermark-manifest.json) retient
  * l'empreinte de chaque fichier deja filigrane. Un re-run saute les fichiers
@@ -51,9 +53,8 @@ const PUBLIC = resolve(REPO, 'public')
 // Cle de manifeste = chemin RELATIF au repo -> portable entre machines.
 const key = (abs) => relative(REPO, abs)
 const MANIFEST = resolve(import.meta.dirname, '.watermark-manifest.json')
-const OPACITY = 0.05           // "a peine le voir" (fourchette Mika 4-6 %)
-const STAMP_RATIO = 0.44       // largeur du tampon / largeur de l'image
-const SPREAD = 0.27            // ecart des tampons lateraux au centre (x ET y)
+const OPACITY = 0.05           // "a peine le voir" ; visible a 100% sur zones plates
+const STAMP_RATIO = 0.60       // largeur du tampon / largeur de la SILHOUETTE (bbox alpha)
 
 // Logo MASSIVE : le MEME trace vectoriel que le filigrane CSS du site
 // (index.css .watermark-light). Rotation -25 deja dans le SVG.
@@ -92,14 +93,20 @@ function stampFor(stampW) {
 function watermark(file) {
   const [w, h] = execFileSync('magick', ['identify', '-format', '%w %h', file]).toString().split(' ').map(Number)
   const layer = join(work, 'layer.png'), mask = join(work, 'mask.png'), out = join(work, 'out.webp')
-  const stamp = stampFor(Math.round(w * STAMP_RATIO))
-  // 3 occurrences en diagonale montante (comme la rotation -25 du logo) :
-  // bas-gauche, CENTRE (le coeur de l'image, pas croppable), haut-droite
-  const dx = Math.round(w * SPREAD), dy = Math.round(h * SPREAD)
+  // OPTION B (round 3, verdict Mika sur le round 2 "gris fantome / fragments") :
+  // UN SEUL tampon en diagonale, calibre sur 60% de la largeur de la SILHOUETTE
+  // (bbox alpha) et CENTRE dessus. Sur les die-cut a silhouette etroite/decentree,
+  // le tampon tombe TOUJOURS sur le dessin (fini les fragments hors-silhouette du
+  // round 2, ou les 3 tampons debordaient dans le vide).
+  const bbox = execFileSync('magick', ['identify', '-format', '%@', file]).toString().trim() // WxH+X+Y
+  const m = bbox.match(/(\d+)x(\d+)\+(\d+)\+(\d+)/)
+  const [bw, bh, bx, by] = m ? [+m[1], +m[2], +m[3], +m[4]] : [w, h, 0, 0]
+  const stampW = Math.round(bw * STAMP_RATIO)
+  const stampH = Math.round(stampW * 89 / 200)
+  const stamp = stampFor(stampW)
+  const px = Math.round(bx + bw / 2 - stampW / 2), py = Math.round(by + bh / 2 - stampH / 2)
   magick(['-size', `${w}x${h}`, 'xc:none',
-    stamp, '-gravity', 'center', '-geometry', `-${dx}+${dy}`, '-composite',
-    stamp, '-gravity', 'center', '-geometry', '+0+0', '-composite',
-    stamp, '-gravity', 'center', '-geometry', `+${dx}-${dy}`, '-composite',
+    stamp, '-gravity', 'NorthWest', '-geometry', `+${px}+${py}`, '-composite',
     '-channel', 'A', '-evaluate', 'multiply', String(OPACITY), '+channel', layer])
   // masque = alpha de la source (die-cut : filigrane que sur le dessin)
   magick([file, '-alpha', 'extract', mask])
@@ -133,4 +140,4 @@ for (const f of files) {
 }
 writeFileSync(MANIFEST, JSON.stringify(manifest, null, 0))
 console.log(`filigrane : ${done} traites, ${skip} deja fait(s) (idempotent), ${files.length} cibles`)
-console.log(`  perimetre : stickers-massive/ (800) + artists/*/posters-trimmed/ ; 3 tampons nets en diagonale, opacite ${OPACITY * 100}% + ombre`)
+console.log(`  perimetre : stickers-massive/ (800) + artists/*/posters-trimmed/ ; OPTION B = 1 tampon diagonal centre sur la silhouette (${STAMP_RATIO * 100}% bbox), opacite ${OPACITY * 100}% + ombre`)
