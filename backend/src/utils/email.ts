@@ -117,6 +117,12 @@ interface OrderItem {
   totalPrice: number;
   size?: string;
   finish?: string;
+  // Mini Massive : personnalisation etiquette (voyage depuis le configurateur).
+  // Le client doit voir CE qu'il a commande dans la confirmation.
+  etiquette?: {
+    design?: string; line1?: string; line2?: string;
+    font?: string; corner?: string; format?: string; pack?: string;
+  } | null;
 }
 
 interface OrderEmailData {
@@ -145,11 +151,19 @@ function formatPrice(cents: number): string {
   return (cents / 100).toFixed(2);
 }
 
-function buildOrderConfirmationHtml(data: OrderEmailData): string {
+export function buildOrderConfirmationHtml(data: OrderEmailData): string {
+  // Mini Massive : chips de personnalisation sous le nom du produit. Les valeurs
+  // (prenom, ligne 2...) sont SAISIES PAR LE CLIENT -> escapeHtml OBLIGATOIRE.
+  const etiChip = (label: string, val: any) => val
+    ? `<span style="display:inline-block;background:#f4f4f6;border-radius:5px;padding:2px 8px;margin:3px 5px 0 0;font-size:12px;color:#555;">${escapeHtml(label)}&nbsp;<strong style="color:#222;">${escapeHtml(String(val))}</strong></span>`
+    : '';
+  const etiBlock = (e?: OrderItem['etiquette']) => e
+    ? `<div style="margin-top:6px;">${etiChip('Design', e.design)}${etiChip('Prénom', e.line1)}${etiChip('Ligne 2', e.line2)}${etiChip('Style', e.font)}${etiChip('Coins', e.corner)}${etiChip('Format', e.format)}</div>`
+    : '';
   const itemRows = data.items.map(item => `
     <tr>
       <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#222;font-size:14px;">
-        ${item.productName}${item.size ? ` - ${item.size}` : ''}${item.finish ? ` (${item.finish})` : ''}
+        ${item.productName}${item.size ? ` - ${item.size}` : ''}${item.finish ? ` (${item.finish})` : ''}${etiBlock(item.etiquette)}
       </td>
       <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:center;color:#222;font-size:14px;">
         ${item.quantity}
