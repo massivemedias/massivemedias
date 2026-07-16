@@ -366,11 +366,11 @@ function ConfigurateurEtiquettes() {
         })}
       </p>
 
-      <div className="grid lg:grid-cols-[1.35fr_1fr] gap-8 max-w-6xl mx-auto items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-8 max-w-6xl mx-auto items-start">
         {/* ============ GAUCHE : APERCU vedette LARGE (~55%). Sticky : desktop
             toute la colonne colle ; mobile la carte apercu colle en haut pendant
             qu'on configure dessous. + encart TAILLE (desktop). ============ */}
-        <div className="lg:sticky lg:top-24 order-1">
+        <div className="lg:sticky lg:top-24 order-1 min-w-0">
           <div className="surface-vitrine card-shadow rounded-2xl p-6 sm:p-8 sticky top-2 z-20 lg:static lg:z-auto">
             <div className="flex items-center justify-center min-h-[150px] lg:min-h-[220px] overflow-x-auto py-2">
               <EtiquettePreview slug={slug} combo={combo} format={format} font={font} line1={line1} line2={line2} lang={lang} placeholder={sampleName} corner={cornerId} />
@@ -384,7 +384,7 @@ function ConfigurateurEtiquettes() {
 
         {/* ============ DROITE : CONTROLES (nouvel ordre design -> prenom ->
             FORMAT -> couleurs -> police -> coins -> pack) ============ */}
-        <div className="order-2 space-y-5">
+        <div className="order-2 space-y-5 min-w-0">
           {/* 1. DESIGN : carrousel auto-defilant en tete + grille complete au clic */}
           <div>
             <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2.5">
