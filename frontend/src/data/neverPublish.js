@@ -77,6 +77,59 @@ export const NEVER_PUBLISH_FILES = new Set([
 
   // --- Personnes reelles (droit a l'image) ---
   'sticker frida',            // Frida Kahlo
+  'sticker donald trump',     // + politiquement charge
+  'sticker edouard',          // Edward aux mains d'argent (Johnny Depp)
+
+  // ====================================================================
+  // AJOUTS DU SCAN VISUEL COMPLET DES 148 NOUVEAUX (16 juillet).
+  // LEÇON : le filtre par NOM est INFIABLE. Ces 30 ont ete identifies
+  // seulement en REGARDANT les images (montages ImageMagick). Un nom
+  // comme "Vega", "buldo", "ca 3", "Sleep" ou "Ronds jaunes" ne dit rien.
+  // TOUT nouveau lot DOIT passer par un scan visuel avant publication.
+  // ====================================================================
+
+  // --- Nintendo / Pokemon ---
+  'sticker warrio',           // Wario
+  'sticker sleep',            // Snorlax ("I choose to sleep")
+  'sticker buldo',            // Blastoise
+  'sticker fish game',        // carte Pokemon (Magikarp)
+  'sticker ronds jaunes',     // Masque de Majora (Zelda)
+  'sticker player ready',     // Game Boy
+  'sticker goth6',            // fantomes Boo dans la compo
+
+  // --- Viacom / Nickelodeon ---
+  'sticker bob leponge',      // SpongeBob
+  'sticker bob hello',        // Ghostface + SpongeBob
+  'sticker vert et rose',     // GIR (Invader Zim) + cochon
+
+  // --- Warner / DC ---
+  'sticker gollum',           // Le Seigneur des Anneaux
+  'sticker gremlins',
+  'sticker joker fume',       // Joker (DC)
+  'sticker joker gros nez',   // Joker (DC)
+  'sticker mechant',          // Bane (Batman)
+
+  // --- Horreur / franchises ---
+  'sticker ca 3',             // Pennywise (Ca)
+  'sticker goth13',           // Ghostface (Scream)
+  'sticker peuple',           // collage de tueurs (Myers/Ghostface/Chucky/Jason)
+
+  // --- Autres franchises ---
+  'sticker vega',             // Freezer (Dragon Ball)
+  'sticker triple face',      // Sans-Visage (Ghibli, Le Voyage de Chihiro)
+  'sticker alien vert2',      // Xenomorph (Alien, Fox)
+  'sticker surfer boy',       // van Surfer Boy Pizza (Stranger Things)
+  'sticker coyote',           // trop proche de Wile E. Coyote (Looney Tunes)
+
+  // --- Marques ---
+  'sticker play',             // manette / symboles PlayStation (Sony)
+  'sticker volk skull',       // combi Volkswagen
+  'sticker ricard rats',      // Ricard (Pernod Ricard)
+  'sticker ici c\'est paris', // slogan + maillot PSG
+  'sticker trou du diable',   // brasserie Le Trou du Diable (QC)
+  'sticker 8day',             // logo de marque tierce
+  'sticker catarsis',         // logo clothing co. tiers
+  'sticker mas',              // logo "mas" tiers
 ])
 
 /**
