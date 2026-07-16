@@ -39,7 +39,7 @@ const MINI = '/images/thumbs-mini/stickers-massive'
 const FAN_DESIGNS = [
   'massive-dj-skull',
   'massive-chameleon',
-  'massive-adian-fumeuse',
+  'massive-poulet-lunette',
   'massive-alien-hot',
   'massive-fleur-degueu',
   'massive-jade',
@@ -69,7 +69,7 @@ const FAN = FAN_DESIGNS.map((slug, i) => {
 })
 
 // Design vedette pose sur la gourde (mockup tumbler du repo).
-const VEDETTE = 'massive-adian-fumeuse'
+const VEDETTE = 'massive-dj-skull'
 
 export default function HomeCollectionBanner() {
   const { tx } = useLang()
