@@ -65,10 +65,6 @@ const PAGE_SIZE = 36
 // legerement la souris en 3D. Mettre a false pour couper l'effet (une ligne).
 const FAMILY_TILT = true
 
-// UI-10 : 1 carte de famille sur ACCENT_EVERY recoit un accent visuel (fond
-// rose + designs centraux plus gros) pour casser la monotonie de la grille.
-const ACCENT_EVERY = 4
-
 // UI-10 : bande vitrine "en situation" entre les familles et le catalogue.
 // CONSTANTE EXTENSIBLE : chaque objet = une tuile. Pour ajouter un laptop ou une
 // vraie photo de pack plus tard, ajouter un objet ici (kind 'product' avec une
@@ -159,9 +155,13 @@ function StickerCard({ s, justAdded, cartQty, onAdd, onOpen, tx }) {
 // repos) -> plus rien cache derriere le hover, le probleme tactile est regle. Le
 // nom + le compte sont poses sur le visuel (scrim bas), la carte est plus dense.
 // Le survol ajoute un leger sur-ecartement (--hx) + le lift (CSS) + le tilt 3D.
-// 1 carte sur ACCENT_EVERY est accentuee (fond rose + designs centraux plus
-// gros). Micro-thumbs 160px eager + fetchpriority (les cartes SONT le 1er ecran).
-function FamilleCard({ cat, count, tx, onOpen, accent }) {
+// Micro-thumbs 160px eager + fetchpriority (les cartes SONT le 1er ecran).
+//
+// LES 8 CARTES SONT IDENTIQUES (verdict Mika, 17 juillet). UI-10 accentuait 1
+// carte sur 4 (fond plus clair + designs centraux plus gros) pour casser la
+// monotonie : en prod, Psyche et Street art avaient juste l'air SELECTIONNEES.
+// Un fond different sur une carte cliquable = un etat, pas une decoration.
+function FamilleCard({ cat, count, tx, onOpen }) {
   const slugs = FAMILY_COLLAGES[cat.id] || []
   // 3 etats par vignette via variables CSS (voir .famcard* dans index.css).
   // UI-10 : REPOS = ouvert ; MEDIAN (tactile/reduced-motion) = meme etat ouvert
@@ -172,8 +172,7 @@ function FamilleCard({ cat, count, tx, onOpen, accent }) {
   const HOV_X = [-90, -33, 33, 90]
   const HOV_R = [-16, -7, 7, 16]
   const DELAY = [0, 40, 80, 120]
-  // Accent : designs centraux plus gros (effet "design vedette").
-  const SIZE = accent ? [80, 116, 116, 80] : [82, 100, 100, 82]
+  const SIZE = [82, 100, 100, 82]
   const ZS = [2, 4, 4, 2]
   // UI-08b : l'eventail (famcard-fan) suit legerement la souris en 3D. rAF pour
   // ne pas spammer le layout, transform uniquement -> zero reflow. Coupe par CSS
@@ -199,7 +198,7 @@ function FamilleCard({ cat, count, tx, onOpen, accent }) {
       onClick={() => onOpen(cat.id)}
       onMouseMove={FAMILY_TILT ? tilt : undefined}
       onMouseLeave={FAMILY_TILT ? untilt : undefined}
-      className={`famcard rounded-2xl border border-white/5 p-2.5 text-left ${accent ? 'famcard-accent' : 'bg-black/20'}`}
+      className="famcard rounded-2xl border border-white/5 bg-black/20 p-2.5 text-left"
     >
       <div className="famcard-fanwrap relative h-[116px] sm:h-[124px]">
         <div ref={fanRef} className="famcard-fan absolute inset-0">
@@ -1081,14 +1080,14 @@ function MassiveStickers() {
           )
         ) : activeCat === 'all' ? (
           <div>
-            {/* Cartes de familles UI-04/10 : eventails ouverts, 1 sur ACCENT_EVERY
-                accentuee. gap-y plus large pour laisser deborder les stickers. */}
+            {/* Cartes de familles UI-04/10 : eventails ouverts, les 8 identiques.
+                gap-y plus large pour laisser deborder les stickers. */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 sm:gap-x-4 gap-y-6 mb-9">
-              {FAMILY_ORDER.map((catId, i) => {
+              {FAMILY_ORDER.map((catId) => {
                 const cat = MASSIVE_STICKER_CATEGORIES.find((c) => c.id === catId)
                 if (!cat || !countByCat[catId]) return null
                 return (
-                  <FamilleCard key={catId} cat={cat} count={countByCat[catId]} tx={tx} onOpen={setActiveCat} accent={i % ACCENT_EVERY === 2} />
+                  <FamilleCard key={catId} cat={cat} count={countByCat[catId]} tx={tx} onOpen={setActiveCat} />
                 )
               })}
             </div>
