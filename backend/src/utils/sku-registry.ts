@@ -47,6 +47,7 @@ export interface CartItemLike {
   sizeId?: any
   finish?: any
   finishId?: any
+  sideId?: any
   shape?: any
   bringOwnGarment?: any
 }
@@ -208,8 +209,16 @@ export async function resolveSkuPrice(item: CartItemLike, deps: SkuDeps = {}): P
 
   // --- Flyers A6 : grille stricte recto / recto-verso.
   if (pid === 'flyer-a6') {
+    // FIX-FLYER-ES : le cote se lit sur l'ID (item.sideId), pas sur le label
+    // traduit. Avant, la detection `includes('recto-verso') || includes('double')`
+    // ratait l'espagnol "Doble cara" -> un client ES payait le prix RECTO pour
+    // une commande recto-verso. Repli legacy sur le label (+ 'doble') pour les
+    // paniers deja en localStorage qui n'ont pas encore sideId.
     const finishLower = String(item.finish || '').toLowerCase()
-    const isRectoVerso = finishLower.includes('recto-verso') || finishLower.includes('double')
+    const isRectoVerso = item.sideId === 'recto-verso'
+      || finishLower.includes('recto-verso')
+      || finishLower.includes('double')
+      || finishLower.includes('doble')
     const grid = isRectoVerso ? FLYER_RECTO_VERSO_TIERS : FLYER_TIERS
     const tierPrice = grid[qty]
     if (tierPrice == null) {
