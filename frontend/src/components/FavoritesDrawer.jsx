@@ -7,6 +7,7 @@ import { useCart } from '../contexts/CartContext'
 import { useArtists } from '../hooks/useArtists'
 import { useLang } from '../i18n/LanguageContext'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
+import { isHiddenSticker } from '../data/stickersModeration'
 import { getCollectionStickerPrice, STICKER_COLLECTION_MIN_UNITS } from '../data/products'
 import { thumb } from '../utils/paths'
 
@@ -135,6 +136,9 @@ export default function FavoritesDrawer() {
 
   // Resolution stickers (data locale) + prints (CMS, par print.id stable).
   const favStickers = favorites
+    // C5 : un design masque (HIDDEN) ne doit plus reapparaitre chez qui l'avait
+    // mis en favori avant le masquage (ni etre rajoutable au panier).
+    .filter((slug) => !isHiddenSticker(slug))
     .map((slug) => MASSIVE_STICKERS.find((s) => s.slug === slug))
     .filter(Boolean)
   const printLookup = {}

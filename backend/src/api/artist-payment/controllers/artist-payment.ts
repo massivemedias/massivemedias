@@ -1,8 +1,11 @@
 import { factories } from '@strapi/strapi';
+import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::artist-payment.artist-payment', ({ strapi }) => ({
 
   async listPayments(ctx) {
+    // C1 (AUDIT-ENDPOINTS) : liste de paiements = donnees financieres. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     const artistSlug = ctx.query.artistSlug as string;
 
     const filters: any = {};
@@ -17,6 +20,8 @@ export default factories.createCoreController('api::artist-payment.artist-paymen
   },
 
   async createPayment(ctx) {
+    // C1 (AUDIT-ENDPOINTS) : ecriture d'un paiement. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     const { artistSlug, artistName, amount, method, date, period, notes } = ctx.request.body as any;
 
     if (!artistSlug || !artistName || !amount || !date) {

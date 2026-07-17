@@ -163,7 +163,7 @@ export function buildOrderConfirmationHtml(data: OrderEmailData): string {
   const itemRows = data.items.map(item => `
     <tr>
       <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#222;font-size:14px;">
-        ${item.productName}${item.size ? ` - ${item.size}` : ''}${item.finish ? ` (${item.finish})` : ''}${etiBlock(item.etiquette)}
+        ${escapeHtml(String(item.productName || ''))}${item.size ? ` - ${escapeHtml(String(item.size))}` : ''}${item.finish ? ` (${escapeHtml(String(item.finish))})` : ''}${etiBlock(item.etiquette)}
       </td>
       <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:center;color:#222;font-size:14px;">
         ${item.quantity}
@@ -176,7 +176,7 @@ export function buildOrderConfirmationHtml(data: OrderEmailData): string {
 
   const addr = data.shippingAddress;
   const addressBlock = addr
-    ? `${addr.address}<br>${addr.city}, ${addr.province} ${addr.postalCode}`
+    ? `${escapeHtml(String(addr.address || ''))}<br>${escapeHtml(String(addr.city || ''))}, ${escapeHtml(String(addr.province || ''))} ${escapeHtml(String(addr.postalCode || ''))}`
     : 'N/A';
 
   // Date formatee en francais - en timezone Montreal (America/Toronto) pour eviter
@@ -189,7 +189,7 @@ export function buildOrderConfirmationHtml(data: OrderEmailData): string {
     <!-- Titre document -->
     <h1 style="color:#FF52A0;margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">Confirmation de commande</h1>
 
-    <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Merci ${data.customerName} !</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Merci ${escapeHtml(String(data.customerName || ''))} !</h2>
     <p style="color:#666;margin:0 0 4px;font-size:15px;line-height:1.5;">
       Votre commande a \u00e9t\u00e9 accept\u00e9e et est en cours de traitement.
     </p>
@@ -303,7 +303,7 @@ interface ContactReplyData {
 function buildContactReplyHtml(data: ContactReplyData): string {
   const subject = encodeURIComponent(data.subject || 'Re: Votre demande - Massive Medias');
   const content = `
-    <h2 style="color:#222;margin:0 0 8px;font-size:16px;font-weight:600;">Bonjour ${data.customerName},</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:16px;font-weight:600;">Bonjour ${escapeHtml(String(data.customerName || ''))},</h2>
 
     <div style="color:#333;font-size:15px;line-height:1.7;margin:16px 0 24px;white-space:pre-wrap;">${data.replyMessage}</div>
 
@@ -421,7 +421,7 @@ function buildTestimonialRequestHtml(data: TestimonialRequestData): string {
     : '';
 
   const rawContent = `
-    <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Bonjour ${data.customerName},</h2>
+    <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Bonjour ${escapeHtml(String(data.customerName || ''))},</h2>
 
     <p style="color:#666;margin:16px 0;font-size:15px;line-height:1.7;">
       Merci d'avoir fait confiance \u00e0 Massive Medias${data.orderRef ? ` pour votre commande <strong style="color:#222;font-family:monospace;background:#f0f0f0;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong>` : ''} !
@@ -655,13 +655,13 @@ function buildArtistSaleNotificationHtml(data: ArtistSaleNotificationData): stri
   const itemRows = data.items.map(item => `
     <tr>
       <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#222;font-size:14px;">
-        ${item.productName}
+        ${escapeHtml(String(item.productName || ''))}
       </td>
       <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#FF52A0;font-size:14px;text-align:center;font-weight:600;">
-        ${item.size}
+        ${escapeHtml(String(item.size || ''))}
       </td>
       <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#666;font-size:14px;text-align:center;">
-        ${item.finish}
+        ${escapeHtml(String(item.finish || ''))}
       </td>
       <td style="padding:10px 12px;border-bottom:1px solid #eee;color:#222;font-size:14px;text-align:center;font-weight:600;">
         ${item.quantity}
@@ -673,7 +673,7 @@ function buildArtistSaleNotificationHtml(data: ArtistSaleNotificationData): stri
     <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Nouvelle vente</h2>
     <p style="color:#666;margin:0 0 24px;font-size:15px;line-height:1.5;">
       Salut ${data.artistName}, quelqu'un vient d'acheter ${totalQty > 1 ? totalQty + ' de tes oeuvres' : 'une de tes oeuvres'} !
-      ${data.customerCity ? `<br>Destination : <strong style="color:#222;">${data.customerCity}</strong>` : ''}
+      ${data.customerCity ? `<br>Destination : <strong style="color:#222;">${escapeHtml(String(data.customerCity || ''))}</strong>` : ''}
     </p>
 
     <!-- Items table -->
@@ -759,7 +759,7 @@ function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
   const itemRows = data.items.map(item => `
     <tr>
       <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#222;font-size:13px;">
-        ${item.productName}${item.size ? ` - ${item.size}` : ''}${item.finish ? ` (${item.finish})` : ''}
+        ${escapeHtml(String(item.productName || ''))}${item.size ? ` - ${escapeHtml(String(item.size))}` : ''}${item.finish ? ` (${escapeHtml(String(item.finish))})` : ''}
       </td>
       <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;color:#222;font-size:13px;">
         ${item.quantity}
@@ -771,23 +771,23 @@ function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
   `).join('');
 
   const addr = data.shippingAddress;
-  const addressBlock = addr ? `${addr.city}, ${addr.province} ${addr.postalCode}` : 'N/A';
+  const addressBlock = addr ? `${escapeHtml(String(addr.city || ''))}, ${escapeHtml(String(addr.province || ''))} ${escapeHtml(String(addr.postalCode || ''))}` : 'N/A';
 
   const content = `
     <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Nouvelle vente</h2>
     <p style="color:#666;margin:0 0 20px;font-size:15px;line-height:1.5;">
-      ${itemCount} article${itemCount > 1 ? 's' : ''} commande${itemCount > 1 ? 's' : ''} par <strong style="color:#222;">${data.customerName}</strong>
+      ${itemCount} article${itemCount > 1 ? 's' : ''} commande${itemCount > 1 ? 's' : ''} par <strong style="color:#222;">${escapeHtml(String(data.customerName || ''))}</strong>
     </p>
 
     <!-- Client info -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
       <tr>
         <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:100px;">Client</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${data.customerName}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${escapeHtml(String(data.customerName || ''))}</td>
       </tr>
       <tr>
         <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Courriel</td>
-        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${data.customerEmail}</td>
+        <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${escapeHtml(String(data.customerEmail || ''))}</td>
       </tr>
       <tr>
         <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Destination</td>
@@ -805,10 +805,10 @@ function buildNewOrderNotificationHtml(data: NewOrderNotificationData): string {
         <td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Design pret</td>
         <td style="padding:8px 14px;border-bottom:1px solid #eee;color:${data.designReady ? '#4ade80' : '#f59e0b'};font-size:14px;font-weight:600;">${data.designReady ? 'Oui' : 'Non - design a faire'}</td>
       </tr>
-      ${data.notes ? '<tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Notes client</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">' + data.notes + '</td></tr>' : ''}
+      ${data.notes ? '<tr><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Notes client</td><td style="padding:8px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">' + escapeHtml(String(data.notes || '')) + '</td></tr>' : ''}
     </table>
 
-    ${data.uploadedFiles && data.uploadedFiles.length > 0 ? '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;"><p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Fichiers envoyes par le client</p>' + data.uploadedFiles.map((f: { name: string; url: string }) => '<p style="margin:4px 0;"><a href="' + f.url + '" style="color:#FF52A0;text-decoration:none;font-size:14px;">&#128206; ' + f.name + '</a></p>').join('') + '</td></tr></table>' : ''}
+    ${data.uploadedFiles && data.uploadedFiles.length > 0 ? '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;"><tr><td style="padding:16px;background:#f7f7f7;border-radius:8px;border:1px solid #eee;"><p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Fichiers envoyes par le client</p>' + data.uploadedFiles.map((f: { name: string; url: string }) => '<p style="margin:4px 0;"><a href="' + escapeHtmlAttr(String(f.url || '')) + '" style="color:#FF52A0;text-decoration:none;font-size:14px;">&#128206; ' + escapeHtml(String(f.name || '')) + '</a></p>').join('') + '</td></tr></table>' : ''}
 
     <!-- Items table -->
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
@@ -915,7 +915,7 @@ function buildTrackingEmailHtml(data: TrackingEmailData): string {
   const content = `
     <h2 style="color:#222;margin:0 0 8px;font-size:16px;">Votre colis est en route</h2>
     <p style="color:#666;margin:0 0 24px;font-size:15px;line-height:1.5;">
-      Bonjour ${data.customerName}, votre commande <strong style="color:#222;font-family:monospace;background:#f0f0f0;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong> a \u00e9t\u00e9 exp\u00e9di\u00e9e.
+      Bonjour ${escapeHtml(String(data.customerName || ''))}, votre commande <strong style="color:#222;font-family:monospace;background:#f0f0f0;padding:2px 8px;border-radius:4px;">${data.orderRef}</strong> a \u00e9t\u00e9 exp\u00e9di\u00e9e.
     </p>
 
     <!-- Tracking info -->
@@ -1885,7 +1885,7 @@ function buildManualInvoiceHtml(data: ManualInvoiceEmailData): string {
 
   const content = `
     <h1 style="color:#222;font-size:22px;font-weight:700;margin:0 0 8px;">Facture ${data.invoiceNumber}</h1>
-    <p style="color:#666;font-size:14px;margin:0 0 20px;">Bonjour ${data.customerName || 'client'},</p>
+    <p style="color:#666;font-size:14px;margin:0 0 20px;">Bonjour ${escapeHtml(String(data.customerName || 'client'))},</p>
     <p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 24px;">
       Merci pour votre commande. Vous trouverez ci-dessous le detail de votre facture Massive Medias.
       Pour regler en ligne de maniere securisee (carte de credit, Apple Pay, Google Pay), cliquez sur le bouton ci-dessous.

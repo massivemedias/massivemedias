@@ -7,6 +7,7 @@ import { useFavorites } from '../contexts/FavoritesContext'
 import { useLang } from '../i18n/LanguageContext'
 import { collectionProgress, isCollectionUnit, isMysteryPack } from '../utils/collectionCart'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
+import { isHiddenSticker } from '../data/stickersModeration'
 import { getCollectionStickerPrice } from '../data/products'
 import { thumb } from '../utils/paths'
 
@@ -41,7 +42,8 @@ export default function MiniCartDrawer() {
   // en vignettes cliquables pour completer vers le minimum de 5.
   const cartSkus = new Set(items.map((it) => it.sku))
   const favSuggestions = favorites
-    .filter((slug) => !cartSkus.has(slug))
+    // C5 : ne pas suggerer un design masque (HIDDEN) dans le panier.
+    .filter((slug) => !cartSkus.has(slug) && !isHiddenSticker(slug))
     .map((slug) => MASSIVE_STICKERS.find((s) => s.slug === slug))
     .filter(Boolean)
     .slice(0, 8)

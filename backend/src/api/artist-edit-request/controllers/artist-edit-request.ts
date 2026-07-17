@@ -2,6 +2,7 @@ import { factories } from '@strapi/strapi';
 import crypto from 'crypto';
 import { processArtistImage, deleteFromSupabase } from '../../../utils/image-processor';
 import { sendPrivatePrintEmail } from '../../../utils/email';
+import { requireAdminAuth, requireUserAuth } from '../../../utils/auth';
 
 // Import dynamique pour eviter crash si googleapis pas installe ou env vars manquantes
 async function tryUploadToGoogleDrive(fileUrl: string, fileName: string, artistSlug: string, mimeType?: string) {
@@ -46,11 +47,37 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
   // POST /artist-edit-requests/create
   async createRequest(ctx) {
-    const { artistSlug, artistName, email, requestType, changeData } = ctx.request.body as any;
+    // C3 (AUDIT-ENDPOINTS) : etait auth:false -> n'importe qui pouvait se declarer
+    // artiste (email dans le body) et AUTO-APPLIQUER un changement de profil
+    // (bio/nom/slug/avatar) via AUTO_APPLY_TYPES. Desormais : JWT obligatoire,
+    // l'identite vient du JWT (jamais du body), et pour les types auto-appliques
+    // l'ownership du slug est verifie (miroir exact de artist.updateMyProfile).
+    if (!(await requireUserAuth(ctx))) return;
+    const userState = (ctx.state as any).user || {};
+    const email = String(userState.userEmail || '').toLowerCase().trim();
+    const isAdmin = !!userState.isAdmin;
+    if (!email && !isAdmin) { ctx.status = 401; ctx.body = { error: 'Email manquant dans le JWT' }; return; }
 
-    if (!email || !requestType || !changeData) {
-      ctx.throw(400, 'Email, requestType and changeData required');
+    const { artistSlug, artistName, requestType, changeData } = ctx.request.body as any;
+
+    if (!requestType || !changeData) {
+      ctx.throw(400, 'requestType and changeData required');
       return;
+    }
+
+    // OWNERSHIP : un changement AUTO-APPLIQUE modifie un artiste sans revue admin.
+    // Non-admin -> le JWT doit etre lie a artistSlug via user-role, sinon 403.
+    // Les autres types passent par l'approbation admin, l'auth seule suffit.
+    if (!isAdmin && AUTO_APPLY_TYPES.includes(requestType)) {
+      const roles = artistSlug ? await strapi.documents('api::user-role.user-role').findMany({
+        filters: { email: { $eqi: email }, artistSlug: { $eq: String(artistSlug) } },
+        limit: 1,
+      }) : [];
+      if (!roles || roles.length === 0) {
+        ctx.status = 403;
+        ctx.body = { error: `Vous n'etes pas l'artiste lie au slug "${artistSlug || ''}"` };
+        return;
+      }
     }
 
     // AUDIT-01 (avril 2026) - Validations strictes par type de requete.
@@ -188,7 +215,11 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
   // GET /artist-edit-requests/my-requests?email=xxx
   async myRequests(ctx) {
-    const { email } = ctx.query;
+    // C3 : etait auth:false + email en query -> on pouvait lister les demandes de
+    // n'importe quel artiste. Desormais : JWT obligatoire, on ne voit QUE les
+    // demandes liees a l'email du JWT.
+    if (!(await requireUserAuth(ctx))) return;
+    const email = String((ctx.state as any).user?.userEmail || '').toLowerCase().trim();
     if (!email) {
       ctx.throw(400, 'Email required');
       return;
@@ -196,7 +227,7 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
     try {
       const entries = await strapi.documents('api::artist-edit-request.artist-edit-request').findMany({
-        filters: { email: { $eqi: email as string } },
+        filters: { email: { $eqi: email } },
         sort: { createdAt: 'desc' },
         limit: 50,
       });
@@ -220,6 +251,8 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
   // GET /artist-edit-requests/admin
   async adminList(ctx) {
+    // C3 : liste admin -> expose emails + changeData de tous les artistes. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     try {
       const entries = await strapi.documents('api::artist-edit-request.artist-edit-request').findMany({
         sort: { createdAt: 'desc' },
@@ -248,6 +281,8 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
   // PUT /artist-edit-requests/:documentId/approve
   async approve(ctx) {
+    // C3 : applique des changements catalogue (prix, prints, unique...). Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
 
     try {
@@ -361,6 +396,8 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
   // PUT /artist-edit-requests/:documentId/reject
   async reject(ctx) {
+    // C3 : rejet + suppression d'originaux. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { adminNotes } = ctx.request.body as any;
 
@@ -416,6 +453,8 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
   // POST /artist-edit-requests/cleanup-originals
   // Supprime les fichiers originaux des demandes en attente depuis plus de 30 jours
   async cleanupOriginals(ctx) {
+    // C3 : suppression de fichiers Supabase. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     try {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -462,6 +501,8 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
   // POST /artist-edit-requests/sync-images - One-shot fix: sync CMS prints with local image paths
   async syncImages(ctx) {
+    // C3 : resync images CMS. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     const LOCAL_PRINTS: Record<string, any[]> = {
       'mok': [
         { id: 'mok-001', titleFr: 'Metro Montreal', titleEn: 'Montreal Metro', image: '/images/thumbs/prints/Mok1.webp', fullImage: '/images/prints/Mok1.webp', limited: false },
@@ -556,6 +597,8 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
 
   // POST /artist-edit-requests/upload-direct - Upload fichier direct vers Google Drive + conversion WebP
   async uploadDirect(ctx) {
+    // C3 : upload de fichier. Etait auth:false (hebergement anonyme). JWT requis.
+    if (!(await requireUserAuth(ctx))) return;
     const fs = require('fs');
     const path = require('path');
     const os = require('os');
@@ -746,6 +789,8 @@ export default factories.createCoreController('api::artist-edit-request.artist-e
    * Response : { deletedRequests, deletedMessages, kept }
    */
   async bulkCleanupSpam(ctx) {
+    // C3 : suppression en masse de records. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     const body = (ctx.request.body || {}) as any;
     const artistSlug = String(body.artistSlug || '').trim();
     const email = String(body.email || '').trim().toLowerCase();
