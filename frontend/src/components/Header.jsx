@@ -132,7 +132,19 @@ function Header() {
                 </SmartLink>
               )}
 
-              {/* Pilier Mini Massive (etiquettes enfants) apres Stickers, gated. */}
+              {/* ARCHI-04 : pilier "Prints" -> hub "Prints d'artistes" (/artistes,
+                  URL inchangee). Le service fine art (/services/prints) vit dans le
+                  mega-menu Services sous "Prints custom". Ordre barre (juillet) :
+                  Prints AVANT Mini Massive. */}
+              <SmartLink
+                to="/artistes"
+                onClick={navClick('/artistes')}
+                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/artistes') || isActive('/boutique') ? 'text-accent' : 'nav-link'}`}
+              >
+                {printsLabel}
+              </SmartLink>
+
+              {/* Pilier Mini Massive (etiquettes enfants), gated. */}
               {ETIQUETTES_VISIBLE && (
                 <SmartLink
                   to="/etiquettes"
@@ -142,17 +154,6 @@ function Header() {
                   {tx({ fr: 'Mini Massive', en: 'Mini Massive', es: 'Mini Massive' })}
                 </SmartLink>
               )}
-
-              {/* ARCHI-04 : pilier "Prints" -> hub "Prints d'artistes" (/artistes,
-                  URL inchangee). Le service fine art (/services/prints) vit dans le
-                  mega-menu Services sous "Prints custom". */}
-              <SmartLink
-                to="/artistes"
-                onClick={navClick('/artistes')}
-                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/artistes') || isActive('/boutique') ? 'text-accent' : 'nav-link'}`}
-              >
-                {printsLabel}
-              </SmartLink>
 
               {/* Services : mega-menu des offres sur mesure */}
               <div
@@ -384,6 +385,18 @@ function Header() {
                   </SmartLink>
                 )}
 
+                <SmartLink
+                  to="/artistes"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  onClick={navClick('/artistes', close)}
+                >
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                    <Printer size={14} className="text-accent" />
+                  </span>
+                  <span className="font-semibold text-[14px]">{printsLabel}</span>
+                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                </SmartLink>
+
                 {ETIQUETTES_VISIBLE && (
                   <SmartLink
                     to="/etiquettes"
@@ -397,18 +410,6 @@ function Header() {
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                   </SmartLink>
                 )}
-
-                <SmartLink
-                  to="/artistes"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${(isActive('/artistes') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link'}`}
-                  onClick={navClick('/artistes', close)}
-                >
-                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
-                    <Printer size={14} className="text-accent" />
-                  </span>
-                  <span className="font-semibold text-[14px]">{printsLabel}</span>
-                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
-                </SmartLink>
 
                 <div className="h-px mobile-drawer-sep mx-2 my-1.5" />
 
