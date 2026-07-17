@@ -38,6 +38,11 @@ function ConfiguratorFlyers() {
       productId: 'flyer-a6',
       productName: tx({ fr: 'Flyers A6', en: 'A6 Flyers', es: 'Flyers A6' }),
       finish: tx({ fr: sideLabel?.labelFr, en: sideLabel?.labelEn, es: sideLabel?.labelEs }),
+      // FIX-FLYER-ES : l'ID de cote (recto / recto-verso) voyage jusqu'au
+      // checkout. Le back detectait le recto-verso via le LABEL traduit, et
+      // l'espagnol "Doble cara" ne matchait ni "recto-verso" ni "double" -> un
+      // client ES etait facture au prix recto. Le back lit l'ID en priorite.
+      sideId: side,
       shape: null,
       size: 'A6 (4x6")',
       quantity: priceInfo.qty,
