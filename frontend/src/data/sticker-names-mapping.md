@@ -2,6 +2,10 @@
 
 Genere pour le renommage des layers Illustrator (base FR). Slugs, fichiers webp et SKU INCHANGES.
 
+> **Correspondance avec le Drive** : voir `drive-mapping.csv` (genere par
+> `scripts/audit-drive-mapping.mjs`). Ce fichier-ci ne couvre que les **270 d'origine** ;
+> le CSV couvre les **385** et porte le lien slug <-> fichier source du Drive.
+
 | slug | ancien nom | FR | EN | ES | fichier source |
 |---|---|---|---|---|---|
 | massive-adian-fumeuse | Adian fumeuse | Geisha fumeuse | Smoking Geisha | Geisha fumadora | Sticker Adian fumeuse.png |
