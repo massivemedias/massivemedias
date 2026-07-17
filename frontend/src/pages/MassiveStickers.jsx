@@ -199,7 +199,7 @@ function FamilleCard({ cat, count, tx, onOpen, accent }) {
       onClick={() => onOpen(cat.id)}
       onMouseMove={FAMILY_TILT ? tilt : undefined}
       onMouseLeave={FAMILY_TILT ? untilt : undefined}
-      className={`famcard rounded-2xl border p-2.5 text-left ${accent ? 'famcard-accent' : 'bg-black/20 border-white/5'}`}
+      className={`famcard rounded-2xl border border-white/5 p-2.5 text-left ${accent ? 'famcard-accent' : 'bg-black/20'}`}
     >
       <div className="famcard-fanwrap relative h-[116px] sm:h-[124px]">
         <div ref={fanRef} className="famcard-fan absolute inset-0">
