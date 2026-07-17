@@ -20,10 +20,37 @@
  * Pour ETEINDRE : passer WATERMARK_OVERLAY_ENABLED a `false`. C'est tout, les
  * composants retombent en affichage nu, aucune image n'est touchee.
  */
-export const WATERMARK_OVERLAY_ENABLED = true
+/**
+ * ETEINT le 17 juillet 2026 (verdict Mika : "BEAUCOUP trop visible, rayures sur
+ * le fond des fiches, logos lisibles dans la lightbox"). Constat mesure en prod
+ * AVANT de toucher quoi que ce soit : l'opacite appliquee etait bien 0.06, la
+ * valeur demandee, et `overflow: hidden` etait bien la. LA VALEUR N'EST PAS EN
+ * CAUSE, la baisser ne reglerait rien. Trois defauts de conception cumules :
+ *
+ *   1. La tuile est un logo QUASI BLANC et QUASI OPAQUE (alpha moyen 0.81,
+ *      luminosite 0.98). A 6 % sur un fond sombre PLAT, un voile blanc se voit,
+ *      point. C'est de la physique, pas un reglage.
+ *   2. `background-size: 200px 190px` sur une image de 200x36 : le logo est
+ *      ETIRE 5,3x en hauteur -> des rayures, pas un logo. L'intention etait
+ *      d'espacer les tuiles ; background-size REDIMENSIONNE, il n'espace pas
+ *      (il fallait `background-repeat: space` ou une tuile deja padee).
+ *   3. L'overlay couvre TOUTE la boite produit (560x480), dont l'essentiel est
+ *      du fond plat `bg-black/25`. Sur le dessin lui-meme il serait quasi
+ *      invisible : ce sont les zones VIDES qui trahissent le filigrane.
+ *
+ * POUR REPRENDRE : tuile a taille native + `background-repeat: space`, et
+ * surtout masquer l'overlay sur la SILHOUETTE du design (mask-image avec le
+ * webp du sticker) pour qu'il ne bave pas sur le fond. C'est un vrai chantier,
+ * pas un ajustement de valeur.
+ *
+ * RIEN N'EST PERDU EN PROTECTION : le filigrane CUIT dans le pixel (5 %,
+ * generate-watermarks.mjs) est intact et reste la vraie protection, celle
+ * exigee par le contrat artiste. Ce flag ne pilotait que l'epouvantail.
+ */
+export const WATERMARK_OVERLAY_ENABLED = false
 
 /**
- * Opacite des tuiles (0 a 1). Discret par defaut : lisible de pres, ne mange pas
- * le design. Monter si Mika veut plus dissuasif, descendre si ca gene la vente.
+ * Opacite des tuiles (0 a 1). Sans effet tant que ENABLED est false.
+ * Cf. ci-dessus : ce n'est pas ce reglage qu'il faut retoucher.
  */
 export const WATERMARK_OVERLAY_OPACITY = 0.06

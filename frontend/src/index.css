@@ -270,9 +270,8 @@ input[type="number"] {
   transition: background 0.3s;
 }
 
-/* MINIMASSIVE-UX : carrousel de designs auto-defilant (une rangee, boucle douce,
-   pause au survol/focus). Reduced-motion : pas d'animation, rangee scrollable. */
-/* =====================================================================   WATERMARK-CSS : tuiles MASSIVE en diagonale par-dessus les images produits
+/* =============================================================================
+   WATERMARK-CSS : tuiles MASSIVE en diagonale par-dessus les images produits
    affichees en grand (fiche sticker, lightbox, zoom).
    ROLE = DISSUASION VISIBLE seulement. Ce n'est PAS une protection : le <img>
    en dessous est intact, un clic droit sort un fichier propre. La protection
@@ -300,7 +299,7 @@ input[type="number"] {
 @media (prefers-reduced-motion: reduce) {
   .wm-overlay::after { transition: none; }
 }
-=======
+
 /* ETAPE 3 : chips de thematiques du configurateur Mini Massive.
    Scroll horizontal en mobile (10 chips ne tiennent pas sur 375 px), sans
    barre visible. `w-max` sur la rangee + overflow-x sur le parent : le piege
@@ -314,6 +313,8 @@ input[type="number"] {
 }
 .eti-chips::-webkit-scrollbar { display: none; }
 
+/* MINIMASSIVE-UX : carrousel de designs auto-defilant (une rangee, boucle douce,
+   pause au survol/focus). Reduced-motion : pas d'animation, rangee scrollable. */
 .eti-carou {
   overflow: hidden;
   position: relative;
@@ -1367,14 +1368,11 @@ iframe.instagram-media-rendered + * {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.30) 55%, transparent);
   border-radius: 0 0 1rem 1rem;
 }
-/* UI-10 : carte accentuee (1 sur ACCENT_EVERY), se demarque dans la grille.
-   UI-10c : teinte de l'ACCENT DU THEME (via --accent-rgb), plus de rose code en
-   dur. Le hover (border + shadow accent) de .famcard s'y applique aussi. */
-.famcard-accent {
-  /* FIX-COULEURS : le fond accent reste (c'est un FOND), la bordure rose
-     permanente part. */
-  background: linear-gradient(155deg, rgba(var(--accent-rgb), 0.24), rgba(var(--accent-rgb), 0.08));
-}
+/* `.famcard-accent` RETIRE le 17 juillet 2026 (verdict Mika : les 8 cartes de
+   familles sont IDENTIQUES). UI-10 accentuait 1 carte sur 4 d'un fond plus
+   clair pour casser la monotonie de la grille ; en prod, Psyche et Street art
+   avaient simplement l'air SELECTIONNEES. Lecon : sur une carte cliquable, un
+   fond different lit comme un ETAT, pas comme une decoration. */
 
 /* HOME-03 / UI-10c : banniere Collection - fond et glow hover suivent le THEME
    (footer toujours sombre sur les 11 palettes = texte blanc lisible partout ;
