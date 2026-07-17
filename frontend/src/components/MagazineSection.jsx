@@ -251,26 +251,32 @@ function InstagramNews({ tx }) {
   }, [])
   const items = (posts && posts.length ? posts : IG_FALLBACK).slice(0, 4)
   return (
-    <div className="grid sm:grid-cols-2 gap-4">
+    // Rangee de cartes verticales "story/reel" : vignette 9:16 en haut, texte
+    // dessous. 4 colonnes desktop, 2 tablette, 1 mobile. h-full + grid stretch =
+    // toutes les cartes a la meme hauteur ; le lien "Voir le post" pousse en bas
+    // (mt-auto) et la legende est clampee a 3 lignes -> hauteurs alignees.
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
       {items.map((p, i) => (
-        <Reveal key={p.igId || i} delay={i * 0.06}>
+        <Reveal key={p.igId || i} delay={i * 0.06} className="h-full">
           <a
             href={p.permalink || IG_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex gap-4 p-3 rounded-2xl surface-vitrine transition-transform duration-300 hover:-translate-y-0.5"
+            className="group h-full flex flex-col rounded-2xl overflow-hidden surface-vitrine transition-transform duration-300 hover:-translate-y-1"
           >
-            <div className="relative shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden ring-1 ring-white/10">
+            {/* vignette verticale 9:16 (ratio story/reel) */}
+            <div className="relative aspect-[9/16] overflow-hidden">
               <img src={p.thumbUrl} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              <span className="absolute top-1.5 right-1.5 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]"><Instagram size={14} /></span>
+              <span className="absolute top-2.5 right-2.5 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]"><Instagram size={16} /></span>
             </div>
-            <div className="min-w-0 flex-1">
+            {/* legende + date + lien, empiles sous la vignette */}
+            <div className="flex flex-col flex-1 p-3.5">
               <p className="text-heading text-sm leading-snug line-clamp-3">
                 {p.caption || tx({ fr: 'Voir sur Instagram', en: 'See on Instagram', es: 'Ver en Instagram' })}
               </p>
-              <div className="mt-2 flex items-center gap-3 text-xs">
+              <div className="mt-auto pt-3 flex items-center justify-between gap-2 text-xs">
                 {p.postedAt && <span className="text-grey-muted">{fmtIgDate(p.postedAt, lang)}</span>}
-                <span className="inline-flex items-center gap-1 text-accent font-semibold group-hover:brightness-110">
+                <span className="inline-flex items-center gap-1 text-accent font-semibold group-hover:brightness-110 whitespace-nowrap">
                   {tx({ fr: 'Voir le post', en: 'View post', es: 'Ver publicación' })} <ArrowRight size={13} />
                 </span>
               </div>
