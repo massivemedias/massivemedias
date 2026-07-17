@@ -206,6 +206,10 @@ function ConfiguratorStickers({ onFinishChange }) {
       sku: cartSku,
       productName: tx({ fr: 'Sticker Custom', en: 'Custom Sticker', es: 'Sticker Personalizado' }),
       finish: tx({ fr: finishLabel?.labelFr, en: finishLabel?.labelEn, es: finishLabel?.labelEs }),
+      // FIX-CHECKOUT-CUSTOM-QTY : l'ID de finition voyage jusqu'au checkout. Le
+      // prix depend du KIND (matte/clear/fx), que le back derive de l'ID - le
+      // label traduit (item.finish) ne suffit pas et le classait en matte.
+      finishId: finish,
       shape: tx({ fr: shapeLabel?.labelFr, en: shapeLabel?.labelEn, es: shapeLabel?.labelEs }),
       size: sizeLabel,
       sizeId: size,

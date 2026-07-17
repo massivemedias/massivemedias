@@ -16,7 +16,8 @@
 // =======================================================
 import crypto from 'crypto'
 import {
-  lookupStickerPriceBySize,
+  lookupStickerPriceCustomQty,
+  resolveStickerFinishId,
   STICKER_COLLECTION_UNIT_PRICE,
   MYSTERY_PACK_PRICES,
   ETIQUETTE_PACK_PRICES,
@@ -43,7 +44,9 @@ export interface CartItemLike {
   quantity?: any
   totalPrice?: any
   size?: any
+  sizeId?: any
   finish?: any
+  finishId?: any
   shape?: any
   bringOwnGarment?: any
 }
@@ -145,9 +148,21 @@ export async function resolveSkuPrice(item: CartItemLike, deps: SkuDeps = {}): P
 
   // --- Stickers custom / artiste : grille officielle 3 paliers de taille.
   // SEC-04 : palier inconnu = REJET (avant : fallback prix client + warn).
+  //
+  // FIX-CHECKOUT-CUSTOM-QTY (17 juillet 2026) : le configurateur laisse le client
+  // saisir une quantite LIBRE >= 25 et affiche un prix INTERPOLE entre paliers
+  // (lookupStickerPriceCustomQty). Le back ne faisait qu'un lookup STRICT, donc
+  // toute quantite hors palier (150, 200, 240...) etait rejetee. On appelle
+  // maintenant le MEME miroir d'interpolation que le front.
+  //
+  // La finition doit etre resolue en ID (matte/clear/holographic/...), PAS lue
+  // comme label : le prix depend du KIND, que le front calcule depuis l'ID.
+  // item.finishId (paniers a jour) prime ; sinon on retombe sur le label traduit
+  // via resolveStickerFinishId (paniers legacy).
   if (pid === 'sticker-custom' || pid === 'sticker-artist') {
-    const finishLower = String(item.finish || '').toLowerCase()
-    const tierPrice = lookupStickerPriceBySize(finishLower, item.quantity, item.size)
+    const finishId = resolveStickerFinishId(item.finishId ?? item.finish)
+    const sizeForPrice = item.sizeId ?? item.size
+    const tierPrice = lookupStickerPriceCustomQty(finishId, item.quantity, sizeForPrice)
     if (tierPrice == null) {
       return rejectRes('sticker-custom', `Combinaison taille/quantite invalide pour les stickers (taille: ${item.size || '?'}, quantite: ${item.quantity || '?'}). Choisis un palier du configurateur.`)
     }
