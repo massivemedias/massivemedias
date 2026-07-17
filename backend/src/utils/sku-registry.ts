@@ -18,6 +18,9 @@ import crypto from 'crypto'
 import {
   lookupStickerPriceCustomQty,
   resolveStickerFinishId,
+} from './pricing-config'
+import { isHiddenStickerSlug } from './hidden-stickers'
+import {
   STICKER_COLLECTION_UNIT_PRICE,
   MYSTERY_PACK_PRICES,
   ETIQUETTE_PACK_PRICES,
@@ -169,8 +172,16 @@ export async function resolveSkuPrice(item: CartItemLike, deps: SkuDeps = {}): P
     return okRes('sticker-custom', tierPrice)
   }
 
-  // --- Collection Massive (STICKERS-SHOP-B) : 2 $ / design.
+  // --- Collection Massive (STICKERS-SHOP-B) : 3 $ / design.
   if (pid.startsWith('sticker-massive-')) {
+    // C5 (AUDIT-ENDPOINTS) : un design MASQUE (HIDDEN_STICKERS, NSFW/retrait)
+    // n'est plus achetable. Le masquage etait UI-only cote front ; un favori
+    // enregistre avant le masquage, ou un panier force, passait quand meme le
+    // checkout. On refuse ici, source de verite serveur (miroir hidden-stickers.ts).
+    const slug = pid.slice('sticker-massive-'.length)
+    if (isHiddenStickerSlug(slug)) {
+      return rejectRes('sticker-massive', `Ce design n'est plus disponible a la vente.`)
+    }
     return okRes('sticker-massive', qty * STICKER_COLLECTION_UNIT_PRICE)
   }
 

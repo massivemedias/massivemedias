@@ -1,5 +1,6 @@
 import { factories } from '@strapi/strapi';
 import crypto from 'crypto';
+import { requireAdminAuth } from '../../../utils/auth';
 
 export default factories.createCoreController('api::testimonial.testimonial', ({ strapi }) => ({
 
@@ -29,6 +30,8 @@ export default factories.createCoreController('api::testimonial.testimonial', ({
 
   // GET /testimonials/admin - liste admin avec pagination
   async adminList(ctx) {
+    // C2 (AUDIT-ENDPOINTS) : liste admin -> expose emails + relations client/order. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     const page = parseInt(ctx.query.page as string) || 1;
     const pageSize = parseInt(ctx.query.pageSize as string) || 25;
     const status = ctx.query.status as string;
@@ -107,6 +110,8 @@ export default factories.createCoreController('api::testimonial.testimonial', ({
 
   // POST /testimonials/generate-link - admin genere un lien pour un client
   async generateLink(ctx) {
+    // C2 : cree un lien d'invitation temoignage. Action admin.
+    if (!(await requireAdminAuth(ctx))) return;
     const { orderId, clientEmail, clientName } = ctx.request.body as any;
 
     if (!clientEmail || !clientName) {
@@ -147,6 +152,8 @@ export default factories.createCoreController('api::testimonial.testimonial', ({
 
   // PUT /testimonials/:documentId/approve - approuver/rejeter
   async approve(ctx) {
+    // C2 : approuver/mettre en avant = publication sur le site public. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const { approved, featured } = ctx.request.body as any;
 
@@ -169,6 +176,8 @@ export default factories.createCoreController('api::testimonial.testimonial', ({
 
   // DELETE /testimonials/:documentId
   async deleteTestimonial(ctx) {
+    // C2 : suppression destructive. Admin only.
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
 
     const item = await strapi.documents('api::testimonial.testimonial').findFirst({

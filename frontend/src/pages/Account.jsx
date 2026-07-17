@@ -28,6 +28,7 @@ import { useArtists } from '../hooks/useArtists';
 import FavoriteHeart from '../components/FavoriteHeart';
 import OrderTimeline from '../components/OrderTimeline';
 import { MASSIVE_STICKERS } from '../data/massiveStickers';
+import { isHiddenSticker } from '../data/stickersModeration';
 import { getCollectionStickerPrice } from '../data/products';
 import { thumb } from '../utils/paths';
 
@@ -602,6 +603,8 @@ function Account() {
 
   const renderFavorisContent = () => {
     const favDesigns = favorites
+      // C5 : un design masque (HIDDEN) ne reapparait pas dans "Mes favoris".
+      .filter((slug) => !isHiddenSticker(slug))
       .map((slug) => MASSIVE_STICKERS.find((s) => s.slug === slug))
       .filter(Boolean);
     // FAV-02 : resoudre les prints favoris via le CMS, par print.id stable
