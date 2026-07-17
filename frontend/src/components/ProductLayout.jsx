@@ -11,6 +11,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { toFull } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
 import { useServicePages } from '../hooks/useServicePages';
+import { WATERMARK_OVERLAY_ENABLED, WATERMARK_OVERLAY_OPACITY } from '../config/watermarkOverlayStatus'
 
 function ProductLayout({
   serviceSlug,
@@ -122,7 +123,8 @@ function ProductLayout({
           {/* LEFT - Gallery */}
           <div>
             <div
-              className="relative rounded-xl overflow-hidden mb-4 cursor-pointer group aspect-[4/3]"
+              className={`relative rounded-xl overflow-hidden mb-4 cursor-pointer group aspect-[4/3]${WATERMARK_OVERLAY_ENABLED ? ' wm-overlay' : ''}`}
+              style={WATERMARK_OVERLAY_ENABLED ? { '--wm-overlay-opacity': WATERMARK_OVERLAY_OPACITY } : undefined}
               onClick={() => setLightbox(mainImage)}
             >
               <img
@@ -525,12 +527,17 @@ function ProductLayout({
             >
               <X size={28} />
             </button>
-            <img
-              src={toFull(images[lightbox])}
-              alt={lt(productTitle)}
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+            <div
+              className={`relative inline-block overflow-hidden rounded-lg${WATERMARK_OVERLAY_ENABLED ? ' wm-overlay' : ''}`}
+              style={WATERMARK_OVERLAY_ENABLED ? { '--wm-overlay-opacity': WATERMARK_OVERLAY_OPACITY } : undefined}
               onClick={(e) => e.stopPropagation()}
-            />
+            >
+              <img
+                src={toFull(images[lightbox])}
+                alt={lt(productTitle)}
+                className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
