@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useReducedMotion } from 'framer-motion'
-import { ArrowRight, Instagram, Play } from 'lucide-react'
+import { ArrowRight, Instagram } from 'lucide-react'
 import { useLang } from '../i18n/LanguageContext'
 import { useArtists } from '../hooks/useArtists'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import { KIDS_SAFE } from '../data/etiquettes'
+import { getInstagramPosts } from '../services/instagramService'
 import TumblerDesign from './TumblerDesign'
 
 /**
@@ -43,17 +44,29 @@ const LOCAL_ARTWORKS = [
 
 const IG_URL = 'https://www.instagram.com/massivemedias/'
 
-// REELS Instagram (option MANUELLE : zero script Meta, zero cookie tiers, Loi 25
-// clean). Mika edite cette constante : cover 9:16 de chaque reel + legende + lien
-// du reel. Rendu en cartes verticales facon reel (bouton play + badge IG).
-// MAQUETTE : covers = oeuvres locales (portrait) en attendant les vraies
-// vignettes de reels ; les liens pointent le profil.
-const REELS = [
-  { cover: LOCAL_ARTWORKS[2], fr: 'Dans l\'atelier', en: 'In the studio', es: 'En el taller', url: IG_URL },
-  { cover: LOCAL_ARTWORKS[0], fr: 'Découpe die-cut en direct', en: 'Die-cut, live', es: 'Corte die-cut en vivo', url: IG_URL },
-  { cover: LOCAL_ARTWORKS[5], fr: 'Nouveau drop de designs', en: 'Fresh design drop', es: 'Nuevo drop de diseños', url: IG_URL },
-  { cover: LOCAL_ARTWORKS[7], fr: 'Prints fine art', en: 'Fine art prints', es: 'Prints fine art', url: IG_URL },
+// IG-FEED (juillet) : le vrai feed Instagram est synchronise cote BACKEND
+// (Instagram Graph API, cron 6h) et lu via getInstagramPosts() -> NOTRE cache,
+// jamais Meta cote client (zero cookie tiers, Loi 25 clean ; images proxifiees).
+//
+// IG_FALLBACK sert DEUX roles : (1) en Phase 1, tant que le token Meta n'est pas
+// branche, la section rend ces posts de TEST ; (2) filet permanent si l'API
+// tombe -> la section n'est JAMAIS vide. Images = oeuvres locales (aucun appel
+// Meta). Les vraies legendes/dates/liens arrivent du backend en Phase 2.
+// Une legende IG est UNE chaine (pas de traduction) : c'est du contenu social.
+const IG_FALLBACK = [
+  { thumbUrl: LOCAL_ARTWORKS[0], caption: 'Nouveau drop de stickers die-cut, imprimés au Plateau 🎨', postedAt: '2026-07-14T15:00:00Z', permalink: IG_URL },
+  { thumbUrl: LOCAL_ARTWORKS[2], caption: 'Dans l\'atelier : découpe en direct des dernières commandes.', postedAt: '2026-07-10T18:30:00Z', permalink: IG_URL },
+  { thumbUrl: LOCAL_ARTWORKS[5], caption: 'Prints fine art sur papier coton, édition limitée.', postedAt: '2026-07-05T12:00:00Z', permalink: IG_URL },
+  { thumbUrl: LOCAL_ARTWORKS[7], caption: 'Collab avec un artiste local ce mois-ci. Restez à l\'affût !', postedAt: '2026-06-28T20:00:00Z', permalink: IG_URL },
 ]
+
+// Date lisible selon la langue (les legendes, elles, restent dans la langue du post).
+function fmtIgDate(iso, lang) {
+  try {
+    const loc = lang === 'en' ? 'en-CA' : lang === 'es' ? 'es-ES' : 'fr-CA'
+    return new Date(iso).toLocaleDateString(loc, { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch { return '' }
+}
 
 function shuffle(arr) {
   const a = [...arr]
@@ -223,24 +236,43 @@ function LinkRow({ tx }) {
   )
 }
 
-// Reels Instagram en cartes verticales 9:16 (bouton play + badge IG). Ouvrent le
-// reel sur Instagram (nouvel onglet). Aucun script/cookie tiers.
-function Reels({ tx }) {
+// IG-FEED : bloc news editorial. Vignette du post a gauche, legende extraite +
+// date + lien a droite (style "bloc de news"). Lit NOTRE cache backend
+// (getInstagramPosts), jamais Meta. Prerender = IG_FALLBACK (deterministe),
+// puis hydratation client avec les vrais posts s'ils existent. JAMAIS vide :
+// si l'API ne renvoie rien, on garde le fallback.
+function InstagramNews({ tx }) {
+  const { lang } = useLang()
+  const [posts, setPosts] = useState(null) // null = pas encore charge -> rend le fallback au prerender
+  useEffect(() => {
+    let alive = true
+    getInstagramPosts(4).then((p) => { if (alive && p.length) setPosts(p) })
+    return () => { alive = false }
+  }, [])
+  const items = (posts && posts.length ? posts : IG_FALLBACK).slice(0, 4)
   return (
-    <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x">
-      {REELS.map((r, i) => (
-        <Reveal key={i} delay={i * 0.06} className="snap-start shrink-0 w-[150px] sm:w-[184px]">
-          <a href={r.url} target="_blank" rel="noopener noreferrer" className="block group" aria-label={tx(r)}>
-            <div className="relative rounded-2xl overflow-hidden aspect-[9/16] bg-black/30 ring-1 ring-white/10">
-              <img src={r.cover} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              <span className="absolute top-2.5 right-2.5 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]"><Instagram size={17} /></span>
-              <span className="absolute inset-0 grid place-items-center">
-                <span className="w-11 h-11 rounded-full bg-black/35 backdrop-blur-sm grid place-items-center text-white group-hover:bg-accent transition-colors">
-                  <Play size={17} fill="currentColor" className="ml-0.5" />
+    <div className="grid sm:grid-cols-2 gap-4">
+      {items.map((p, i) => (
+        <Reveal key={p.igId || i} delay={i * 0.06}>
+          <a
+            href={p.permalink || IG_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex gap-4 p-3 rounded-2xl surface-vitrine transition-transform duration-300 hover:-translate-y-0.5"
+          >
+            <div className="relative shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden ring-1 ring-white/10">
+              <img src={p.thumbUrl} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <span className="absolute top-1.5 right-1.5 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]"><Instagram size={14} /></span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-heading text-sm leading-snug line-clamp-3">
+                {p.caption || tx({ fr: 'Voir sur Instagram', en: 'See on Instagram', es: 'Ver en Instagram' })}
+              </p>
+              <div className="mt-2 flex items-center gap-3 text-xs">
+                {p.postedAt && <span className="text-grey-muted">{fmtIgDate(p.postedAt, lang)}</span>}
+                <span className="inline-flex items-center gap-1 text-accent font-semibold group-hover:brightness-110">
+                  {tx({ fr: 'Voir le post', en: 'View post', es: 'Ver publicación' })} <ArrowRight size={13} />
                 </span>
-              </span>
-              <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/75 via-black/20 to-transparent">
-                <p className="text-white text-[13px] font-medium leading-snug line-clamp-2">{tx(r)}</p>
               </div>
             </div>
           </a>
@@ -318,7 +350,7 @@ function Magazine({ tx, picks }) {
             <Instagram size={18} /> @massivemedias <ArrowRight size={15} />
           </a>
         </Reveal>
-        <Reveal delay={0.1}><Reels tx={tx} /></Reveal>
+        <Reveal delay={0.1}><InstagramNews tx={tx} /></Reveal>
       </div>
     </section>
   )

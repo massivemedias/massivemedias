@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "instagram_posts",
+  "info": {
+    "singularName": "instagram-post",
+    "pluralName": "instagram-posts",
+    "displayName": "Instagram Post",
+    "description": "IG-FEED : cache local des derniers posts Instagram de @massivemedias, synchronise cote backend via l'Instagram Graph API (cron 6h). Le frontend lit CE cache, JAMAIS Instagram/Meta directement (zero cookie tiers, zero appel Meta cote client). L'image est proxifiee sur notre stockage Supabase (thumbUrl), les URLs cdninstagram expirent et pointeraient Meta. Fallback : si Meta tombe, le cron n'ecrase rien et l'endpoint sert le dernier cache."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "igId": {
+      "type": "string",
+      "required": true,
+      "unique": true,
+      "maxLength": 64
+    },
+    "permalink": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "mediaType": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "thumbUrl": {
+      "type": "string",
+      "maxLength": 800
+    },
+    "caption": {
+      "type": "text"
+    },
+    "postedAt": {
+      "type": "datetime"
+    },
+    "syncedAt": {
+      "type": "datetime"
+    }
+  }
+}

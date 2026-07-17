@@ -242,4 +242,29 @@ export default {
       tz: 'America/Toronto',
     },
   },
+
+  /**
+   * IG-FEED : synchronise le cache des derniers posts Instagram toutes les 6h.
+   * Tourne cote backend uniquement (Graph API officielle). Si le token n'est pas
+   * configure (Phase 1), la sync se skip proprement. Si Meta tombe, le cache
+   * existant est conserve (jamais de section vide). Detail : utils/instagram-sync.ts.
+   */
+  instagramSync: {
+    task: async ({ strapi }: { strapi: any }) => {
+      try {
+        const { syncInstagram } = await import('../src/utils/instagram-sync');
+        const r = await syncInstagram(strapi);
+        if (r.skipped) return; // Phase 1, deja logge par le service
+        strapi.log.info(`[CRON][instagramSync] done - ${JSON.stringify(r)}`);
+      } catch (err: any) {
+        strapi.log.error(`[CRON][instagramSync] FATAL: ${err?.message || err}`);
+      }
+    },
+    options: {
+      // Toutes les 6 heures (00:10, 06:10, 12:10, 18:10). Le :10 evite de taper
+      // pile a l'heure ronde comme les autres crons.
+      rule: '10 */6 * * *',
+      tz: 'America/Toronto',
+    },
+  },
 };
