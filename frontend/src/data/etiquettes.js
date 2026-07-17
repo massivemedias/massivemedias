@@ -27,13 +27,13 @@
 export const KIDS_SAFE = [
   // --- Animaux cute (le gisement principal) ---
   'massive-animals-meeting', 'massive-animals', 'massive-beau-oiseau',
-  'massive-bois-diplo', 'massive-boom1', 'massive-canardos', 'massive-chame',
+  'massive-bois-diplo', 'massive-canardos', 'massive-chame',
   'massive-chameleon-bois', 'massive-chameleon-branche', 'massive-chameleon-skate',
   'massive-chameleon', 'massive-chat-aquarium', 'massive-chat-chameleon',
   'massive-chat-deco', 'massive-chat-oeils', 'massive-chat-poisson-papillon',
-  'massive-chenille', 'massive-chien-liseur', 'massive-cochon',
+  'massive-chien-liseur', 'massive-cochon',
   'massive-cute-chien', 'massive-cute-ourson', 'massive-elephant-ramen',
-  'massive-escargot', 'massive-fire-with-pet', 'massive-fox', 'massive-frog-tired',
+  'massive-escargot', 'massive-fox', 'massive-frog-tired',
   'massive-grenouille-mouche', 'massive-grenouille-reel', 'massive-grenouille',
   'massive-grosse-vache', 'massive-kapibara', 'massive-lapin', 'massive-loutre',
   'massive-lunette-duck', 'massive-mami-canard', 'massive-moino-cool',
@@ -48,15 +48,16 @@ export const KIDS_SAFE = [
   'massive-tiger', 'massive-tortue', 'massive-velociraptor',
   'massive-ver-et-pomme', 'massive-ver',
   // --- Fun & food ---
-  'massive-hotdog', 'massive-mais', 'massive-ramen', 'massive-run',
-  'massive-slowride', 'massive-treasue-talker',
+  'massive-hotdog', 'massive-mais', 'massive-ramen', 'massive-slowride', 'massive-treasue-talker',
   // --- Aliens sympathiques, espace & robots ---
   'massive-alien-bleu', 'massive-alien-calote', 'massive-alien-hot',
   'massive-alien-vert', 'massive-astro', 'massive-astrodisco',
   'massive-astronaute-spain', 'massive-chat-alien', 'massive-chat-enlevement',
-  'massive-chat-roux-soucoupe', 'massive-dragon-firefly', 'massive-monstre-dormeur',
-  'massive-ptit-robot', 'massive-robot-qui-court', 'massive-soucoupe',
-    // --- Nouveaux du lot 4 ---
+  'massive-chat-roux-soucoupe', 'massive-dragon-firefly', 'massive-ptit-robot', 'massive-robot-qui-court', 'massive-soucoupe',
+    // --- Ajouts valides par Mika (etape 1 THEMES, scan des 270 hors KIDS_SAFE) ---
+  'massive-fee', 'massive-oeuvre-anabite', 'massive-mouille',
+  'massive-woods', 'massive-tram', 'massive-planche',
+  // --- Nouveaux du lot 4 ---
   'massive-small-astronauts', 'massive-tuc-jaune',
   // --- Nouveaux du lot 3 ---
   'massive-little-dragon', 'massive-meduse', 'massive-poussin', 'massive-red-man', 'massive-red-nose', 'massive-robot-bubble',
@@ -68,6 +69,128 @@ export const KIDS_SAFE = [
   'massive-bonet', 'massive-kouklikou', 'massive-meme', 'massive-mimi-gris',
   'massive-mimi', 'massive-poskai', 'massive-pretty', 'massive-piraton',
 ]
+
+/**
+ * THEMES : chips de filtre du selecteur de designs (ETAPE 3, verdicts Mika actes).
+ *
+ * 9 themes valides. Un design peut vivre dans 2 themes MAX (regle Mika) : les
+ * doubles servent aux designs qui portent vraiment deux lectures (un ourson sur
+ * un surf est un copain a poils ET un petit explorateur). Un design sans theme
+ * n'est PAS une erreur : il reste visible dans "Tous", l'onglet par defaut.
+ *
+ * CURATION FAITE A L'OEIL, jamais au slug : les noms de fichiers MENTENT
+ * (`massive-renard` = un chaton surfeur, `massive-requin` = un croco sur la vague,
+ * `massive-ours2` = une loutre, `massive-rhino` = un triceratops, `massive-corns`
+ * = un petit monstre a cornes, pas du mais). Toute retouche de cette liste passe
+ * par un montage des vignettes, pas par une lecture des slugs.
+ *
+ * LISTE EDITABLE : Mika ajuste librement. Un slug ici DOIT etre dans KIDS_SAFE.
+ * Le test `themes.test.js` verifie l'integrite (slugs connus, max 2 themes, pas
+ * de doublon dans un theme).
+ */
+export const ETIQUETTE_THEMES = [
+  {
+    id: 'poils',
+    name: { fr: 'Copains à poils', en: 'Furry Friends', es: 'Amigos peludos' },
+    slugs: [
+      'massive-cute-ourson', 'massive-ours-blanc', 'massive-panda-cute', 'massive-grosse-vache',
+      'massive-kapibara', 'massive-lapin', 'massive-racoon', 'massive-paresseux',
+      'massive-tiger', 'massive-fox', 'massive-cute-chien', 'massive-petit-chien',
+      'massive-chien-liseur', 'massive-kouklikou', 'massive-loutre', 'massive-ours2',
+      'massive-mimi', 'massive-mimi-gris', 'massive-cochon', 'massive-rhino2',
+      'massive-corns', 'massive-red-man', 'massive-red-nose', 'massive-tuc-jaune',
+    ],
+  },
+  {
+    id: 'chats',
+    name: { fr: 'Chats & Cie', en: 'Cats & Co', es: 'Gatos y Cía' },
+    slugs: [
+      'massive-chat-deco', 'massive-chat-oeils', 'massive-chat-poisson-papillon',
+      'massive-chat-aquarium', 'massive-chat-chameleon', 'massive-renard',
+      'massive-chat-alien', 'massive-chat-enlevement', 'massive-chat-roux-soucoupe',
+      'massive-cute-monster',
+    ],
+  },
+  {
+    id: 'oiseaux',
+    name: { fr: 'Oiseaux rigolos', en: 'Funny Birds', es: 'Pájaros divertidos' },
+    slugs: [
+      'massive-animals', 'massive-beau-oiseau', 'massive-canardos', 'massive-lunette-duck',
+      'massive-moino-cool', 'massive-oiseau-ruche', 'massive-oiso-dessin', 'massive-oiso1',
+      'massive-oiso2', 'massive-oizo', 'massive-pretty', 'massive-bonet',
+      'massive-pengouin-cactus', 'massive-pirate-pengouin', 'massive-peroquet',
+      'massive-poulet-lunette', 'massive-pigeon-gris', 'massive-treasue-talker',
+      'massive-cigogne', 'massive-poussin', 'massive-fee', 'massive-oeuvre-anabite',
+    ],
+  },
+  {
+    id: 'sous-l-eau',
+    name: { fr: "Sous l'eau", en: 'Under the Sea', es: 'Bajo el mar' },
+    slugs: [
+      'massive-poisson-chat', 'massive-poisson-inquiet', 'massive-poisson-rose',
+      'massive-poisson-rouge', 'massive-poskai', 'massive-poulpe', 'massive-poulpon',
+      'massive-tortue', 'massive-requin', 'massive-chat-aquarium', 'massive-meduse',
+      'massive-oeuvre-anabite',
+    ],
+  },
+  {
+    id: 'dinos',
+    name: { fr: 'Dinos & reptiles', en: 'Dinos & Reptiles', es: 'Dinos y reptiles' },
+    slugs: [
+      'massive-bois-diplo', 'massive-rhino', 'massive-velociraptor', 'massive-dragon-firefly',
+      'massive-chameleon', 'massive-chameleon-branche', 'massive-chameleon-skate',
+      'massive-chame', 'massive-cameleon-chimie', 'massive-crocodile-dandy',
+      'massive-little-dragon',
+    ],
+  },
+  {
+    id: 'petites-betes',
+    name: { fr: 'Petites bêtes', en: 'Little Critters', es: 'Bichitos' },
+    slugs: [
+      'massive-papillon', 'massive-escargot', 'massive-ver', 'massive-grenouille',
+      'massive-grenouille-reel', 'massive-grenouille-mouche', 'massive-frog-tired',
+      'massive-dansing-frog', 'massive-mouille', 'massive-fee',
+    ],
+  },
+  {
+    id: 'espace',
+    name: { fr: 'Espace & aliens', en: 'Space & Aliens', es: 'Espacio y aliens' },
+    slugs: [
+      'massive-alien-bleu', 'massive-alien-calote', 'massive-alien-hot', 'massive-astro',
+      'massive-astrodisco', 'massive-astronaute-spain', 'massive-soucoupe',
+      'massive-ptit-robot', 'massive-robot-qui-court', 'massive-chat-alien',
+      'massive-chat-enlevement', 'massive-chat-roux-soucoupe', 'massive-robot-bubble',
+      'massive-small-astronauts',
+    ],
+  },
+  {
+    id: 'explorateurs',
+    name: { fr: 'Petits explorateurs', en: 'Little Explorers', es: 'Pequeños exploradores' },
+    slugs: [
+      'massive-paresseux', 'massive-renard', 'massive-cute-ourson', 'massive-racoon',
+      'massive-ours2', 'massive-chameleon-skate', 'massive-chame', 'massive-slowride',
+      'massive-piraton', 'massive-pirate-pengouin', 'massive-treasue-talker',
+      'massive-woods', 'massive-tram', 'massive-planche',
+    ],
+  },
+  {
+    id: 'gourmandises',
+    name: { fr: 'Gourmandises', en: 'Yummy Treats', es: 'Golosinas' },
+    slugs: [
+      'massive-hotdog', 'massive-mais', 'massive-ramen', 'massive-elephant-ramen',
+      'massive-alien-hot', 'massive-cake', 'massive-hot-dogs-meeting',
+      'massive-icecream-monster',
+    ],
+  },
+]
+
+/** Slugs d'un theme, filtres pour ne garder que ceux reellement dans KIDS_SAFE. */
+export const themeSlugs = (id) => {
+  const t = ETIQUETTE_THEMES.find((x) => x.id === id)
+  if (!t) return KIDS_SAFE
+  const ks = new Set(KIDS_SAFE)
+  return t.slugs.filter((s) => ks.has(s))
+}
 
 /*
  * EXCLUSIONS notables (motifs, pour que la curation soit auditable) :
