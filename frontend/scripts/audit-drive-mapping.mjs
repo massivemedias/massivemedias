@@ -12,8 +12,18 @@
  * correspondance est versionnee, regenerable, et survit aux sessions.
  * ===========================================================================
  *
+ * ☠️ INTERDIT ABSOLU : NE JAMAIS RENOMMER, DEPLACER NI SUPPRIMER UN FICHIER DU
+ * DOSSIER DRIVE STICKERS.
+ * TOUS ces fichiers sont LIES (Place) dans les .ai Illustrator de Mika, RIEN n'est
+ * incorpore. Toucher a un seul nom CASSE les liens de ses .ai. La casse est
+ * SILENCIEUSE : aucun test ni build ne la voit, elle n'apparait qu'a l'ouverture
+ * du .ai, des mois plus tard. Le chantier "renommer le Drive selon les noms du
+ * site" a ete ANNULE DEFINITIVEMENT pour cette raison (16 juillet 2026).
+ * On croise par le CSV. On ne renomme JAMAIS le disque.
+ *
  * REGLE : le SITE est la reference. Les slugs et les URLs ne changent JAMAIS.
- * On aligne le Drive et l'Illustrator sur le site, jamais l'inverse.
+ * Les ecarts de noms entre Drive et site ne sont PAS des anomalies a corriger :
+ * c'est un fait, et ce CSV est le pont entre les deux mondes.
  *
  * LECTURE SEULE STRICTE sur le Drive. Ce script n'ecrit que le CSV.
  *

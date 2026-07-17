@@ -15,6 +15,24 @@ Le lire avant toute action. Aucune exception.
 - Traduction : DeepL. Images : Sharp. Worker : Cloudflare
 - Repo : github.com/massivemedias/massivemedias
 
+## 1 bis. Interdits absolus (aucune exception, aucun chantier)
+
+- **Dossier Drive stickers : LECTURE SEULE STRICTE.** Ne JAMAIS renommer, deplacer
+  ni supprimer un fichier de `My Drive/Massive/Projets/Massive/Stickers`.
+  TOUS ces fichiers sont LIES (Place) dans les .ai Illustrator, rien n'est incorpore :
+  toucher a un nom casse les liens des .ai. La casse est SILENCIEUSE, aucun test ne
+  la voit, elle apparait a l'ouverture du .ai des mois plus tard.
+  Pour croiser slug site et fichier Drive : `frontend/src/data/drive-mapping.csv`
+  (regenerable via `frontend/scripts/audit-drive-mapping.mjs`). On croise, on ne
+  renomme pas. Chantier NOMS-UNIFIES phase 2 annule definitivement (16 juillet 2026).
+- **Designs sous licence : hors catalogue public, definitif.** Voir
+  `frontend/src/data/neverPublish.js` (garde-fou technique) et `fanartPrivate.js`
+  (memoire metier). Toute sync catalogue filtre via `isNeverPublish()` AVANT de
+  proposer un ajout. Risque IP + risque Stripe.
+- **Le filigrane CUIT dans le pixel ne se remplace jamais par du CSS.** Un overlay
+  CSS est contournable en un clic droit ; le contrat artiste exige le cuit. Les deux
+  coexistent : cuit = preuve, CSS = dissuasion.
+
 ## 2. Workflow obligatoire
 
 1. Phase d'inspection en LECTURE SEULE avant toute modification.
