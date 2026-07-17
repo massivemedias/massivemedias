@@ -1,4 +1,5 @@
 import { factories } from '@strapi/strapi';
+import { requireAdminAuth } from '../../../utils/auth';
 import { PROMO_CODES } from '../../../utils/promo-codes';
 
 export default factories.createCoreController('api::promo-code.promo-code' as any, ({ strapi }) => ({
@@ -70,6 +71,8 @@ export default factories.createCoreController('api::promo-code.promo-code' as an
 
   // GET /promo-codes - liste tous les codes promo
   async list(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     const promos = await strapi.documents('api::promo-code.promo-code' as any).findMany({
       sort: { createdAt: 'desc' } as any,
       limit: 200,
@@ -79,6 +82,8 @@ export default factories.createCoreController('api::promo-code.promo-code' as an
 
   // POST /promo-codes - creer un code promo
   async createCode(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     const { code, discountPercent, label, active, expiresAt, maxUses } = ctx.request.body as any;
 
     if (!code || !discountPercent || !label) {
@@ -114,6 +119,8 @@ export default factories.createCoreController('api::promo-code.promo-code' as an
 
   // PUT /promo-codes/:documentId - modifier un code promo
   async updateCode(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     const updates = ctx.request.body as any;
 
@@ -138,6 +145,8 @@ export default factories.createCoreController('api::promo-code.promo-code' as an
 
   // DELETE /promo-codes/:documentId - supprimer un code promo
   async deleteCode(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     const { documentId } = ctx.params;
     if (!documentId) return ctx.badRequest('documentId requis');
 

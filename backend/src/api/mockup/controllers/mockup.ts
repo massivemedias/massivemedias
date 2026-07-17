@@ -1,3 +1,4 @@
+import { requireAdminAuth } from '../../../utils/auth';
 /**
  * Mockup Generator - Gemini AI
  * Genere un mockup realiste d'un print dans un cadre sur un mur
@@ -86,6 +87,8 @@ const TEXTILE_LABELS: Record<string, string> = {
 
 export default {
   async generateTextile(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     const {
       product = 'tshirt',
       colorName = 'Black',
@@ -179,6 +182,8 @@ export default {
   },
 
   async generate(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     const { imageUrl, scene = 'living_room', frameColor = 'black' } = ctx.request.body as any;
 
     if (!imageUrl) {

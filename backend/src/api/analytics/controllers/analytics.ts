@@ -1,4 +1,5 @@
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
+import { requireAdminAuth } from '../../../utils/auth';
 
 let client: BetaAnalyticsDataClient | null = null;
 
@@ -27,6 +28,8 @@ const PROPERTY_ID = process.env.GA4_PROPERTY_ID || '525792501';
 export default {
   // Stats filtrees pour un artiste specifique (par slug)
   async getArtistStats(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     try {
       const analyticsClient = getClient();
       const slug = ctx.params.slug as string;
@@ -187,6 +190,8 @@ export default {
   },
 
   async getStats(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     try {
       const analyticsClient = getClient();
       const period = (ctx.query.period as string) || '30';

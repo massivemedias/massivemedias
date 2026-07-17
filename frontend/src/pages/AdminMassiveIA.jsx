@@ -1014,9 +1014,15 @@ function PrintsTab() {
 
     try {
       const apiUrl = 'https://massivemedias-api.onrender.com/api';
+      // AUDIT-ENDPOINTS-2 : /mockup/generate est passe derriere requireAdminAuth
+      // (endpoint IA payant Gemini). Ce fetch nu n'envoyait pas le JWT -> on
+      // joint le token Supabase de l'admin, comme l'interceptor de api.js.
+      const { supabase } = await import('../lib/supabase');
+      const { data: sess } = await supabase.auth.getSession();
+      const mockToken = sess?.session?.access_token;
       const res = await fetch(`${apiUrl}/mockup/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(mockToken ? { Authorization: `Bearer ${mockToken}` } : {}) },
         body: JSON.stringify({
           imageUrl: base64,
           scene: 'living_room',
