@@ -179,7 +179,15 @@ export async function resolveSkuPrice(item: CartItemLike, deps: SkuDeps = {}): P
     // n'est plus achetable. Le masquage etait UI-only cote front ; un favori
     // enregistre avant le masquage, ou un panier force, passait quand meme le
     // checkout. On refuse ici, source de verite serveur (miroir hidden-stickers.ts).
-    const slug = pid.slice('sticker-massive-'.length)
+    //
+    // C5-FIX : le front construit le productId en RETIRANT le prefixe massive-
+    // du slug (`sticker-massive-${slug.replace(/^massive-/,'')}`, MassiveStickers.jsx).
+    // Ex : slug `massive-lingerie` -> pid `sticker-massive-lingerie`. Pour
+    // retrouver le slug on RAJOUTE `massive-`, exactement comme le front le fait
+    // en sens inverse (MassiveStickers.jsx:774). Sliçer sans re-prefixer donnait
+    // `lingerie` != `massive-lingerie` -> le masque ne matchait jamais (verifie
+    // en prod : le design masque passait encore le checkout).
+    const slug = 'massive-' + pid.slice('sticker-massive-'.length)
     if (isHiddenStickerSlug(slug)) {
       return rejectRes('sticker-massive', `Ce design n'est plus disponible a la vente.`)
     }
