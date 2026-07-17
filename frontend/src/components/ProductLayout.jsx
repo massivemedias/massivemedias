@@ -11,7 +11,7 @@ import { useLang } from '../i18n/LanguageContext';
 import { toFull } from '../utils/paths';
 import getServicesData from '../data/getServicesData';
 import { useServicePages } from '../hooks/useServicePages';
-import { WATERMARK_OVERLAY_ENABLED, WATERMARK_OVERLAY_OPACITY } from '../config/watermarkOverlayStatus'
+import { WATERMARK_OVERLAY_ENABLED, WATERMARK_OVERLAY_OPACITY, WATERMARK_OVERLAY_TILE } from '../config/watermarkOverlayStatus'
 
 function ProductLayout({
   serviceSlug,
@@ -124,7 +124,7 @@ function ProductLayout({
           <div>
             <div
               className={`relative rounded-xl overflow-hidden mb-4 cursor-pointer group aspect-[4/3]${WATERMARK_OVERLAY_ENABLED ? ' wm-overlay' : ''}`}
-              style={WATERMARK_OVERLAY_ENABLED ? { '--wm-overlay-opacity': WATERMARK_OVERLAY_OPACITY } : undefined}
+              style={WATERMARK_OVERLAY_ENABLED ? { '--wm-overlay-opacity': WATERMARK_OVERLAY_OPACITY, '--wm-overlay-tile': WATERMARK_OVERLAY_TILE } : undefined}
               onClick={() => setLightbox(mainImage)}
             >
               <img
@@ -529,7 +529,7 @@ function ProductLayout({
             </button>
             <div
               className={`relative inline-block overflow-hidden rounded-lg${WATERMARK_OVERLAY_ENABLED ? ' wm-overlay' : ''}`}
-              style={WATERMARK_OVERLAY_ENABLED ? { '--wm-overlay-opacity': WATERMARK_OVERLAY_OPACITY } : undefined}
+              style={WATERMARK_OVERLAY_ENABLED ? { '--wm-overlay-opacity': WATERMARK_OVERLAY_OPACITY, '--wm-overlay-tile': WATERMARK_OVERLAY_TILE } : undefined}
               onClick={(e) => e.stopPropagation()}
             >
               <img
