@@ -272,6 +272,19 @@ input[type="number"] {
 
 /* MINIMASSIVE-UX : carrousel de designs auto-defilant (une rangee, boucle douce,
    pause au survol/focus). Reduced-motion : pas d'animation, rangee scrollable. */
+/* ETAPE 3 : chips de thematiques du configurateur Mini Massive.
+   Scroll horizontal en mobile (10 chips ne tiennent pas sur 375 px), sans
+   barre visible. `w-max` sur la rangee + overflow-x sur le parent : le piege
+   `min-width:auto` de la grille ne s'applique pas ici (parent en flow normal),
+   mais on garde le scroll natif pour l'accessibilite clavier/tactile. */
+.eti-chips {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 96%, transparent);
+  mask-image: linear-gradient(90deg, #000 0, #000 96%, transparent);
+}
+.eti-chips::-webkit-scrollbar { display: none; }
+
 .eti-carou {
   overflow: hidden;
   position: relative;
