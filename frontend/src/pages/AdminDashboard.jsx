@@ -6,7 +6,7 @@ import {
   BarChart3, DollarSign, Banknote, AlertCircle,
   Loader2, ArrowRight, StickyNote, Clock, CheckCircle, Truck, Activity,
   UserPlus, Eye, Users, Globe, Zap, TrendingUp, AlertTriangle, ChevronDown, ChevronUp,
-  Plus,
+  Plus, Instagram, RefreshCw,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../services/adminService';
@@ -161,6 +161,50 @@ function AlertRow({ icon: Icon, iconColor, text, sub, to }) {
     </div>
   );
   return to ? <Link to={to}>{body}</Link> : body;
+}
+
+// IG-FEED : declenche une sync Instagram a la main (bootstrap Phase 2 + resync
+// futur). Appelle POST /instagram-posts/sync-now (garde requireAdminAuth, le JWT
+// admin part via l'interceptor api). Affiche le resultat sans jamais montrer le
+// token (le backend ne renvoie qu'un compteur).
+function InstagramSyncWidget({ tx }) {
+  const [state, setState] = useState('idle'); // idle | loading | done | error
+  const [msg, setMsg] = useState('');
+  const run = async () => {
+    setState('loading'); setMsg('');
+    try {
+      const { data } = await api.post('/instagram-posts/sync-now');
+      const r = data?.data || {};
+      if (r.skipped) { setState('error'); setMsg(tx({ fr: 'Token INSTAGRAM_ACCESS_TOKEN absent sur Render.', en: 'INSTAGRAM_ACCESS_TOKEN missing on Render.', es: 'Falta INSTAGRAM_ACCESS_TOKEN en Render.' })); }
+      else if (r.error) { setState('error'); setMsg(tx({ fr: 'Meta a refuse la sync (cache conserve).', en: 'Meta refused the sync (cache kept).', es: 'Meta rechazo la sync.' })); }
+      else { setState('done'); setMsg(tx({ fr: `${r.synced ?? 0} post(s) synchronise(s).`, en: `${r.synced ?? 0} post(s) synced.`, es: `${r.synced ?? 0} post(s) sincronizado(s).` })); }
+    } catch {
+      setState('error'); setMsg(tx({ fr: 'Echec (connexion admin requise).', en: 'Failed (admin login required).', es: 'Fallo (login admin).' }));
+    }
+  };
+  return (
+    <div className="card-bg rounded-2xl border border-white/5 p-4 flex items-center gap-3">
+      <span className="w-9 h-9 rounded-lg grid place-items-center bg-accent/10 flex-shrink-0"><Instagram size={17} className="text-accent" /></span>
+      <div className="min-w-0 flex-1">
+        <p className="text-heading font-heading font-bold text-sm">{tx({ fr: 'Feed Instagram', en: 'Instagram feed', es: 'Feed Instagram' })}</p>
+        <p className="text-xs text-grey-muted">
+          {state === 'done' && <span className="text-green-400">{msg}</span>}
+          {state === 'error' && <span className="text-amber-400">{msg}</span>}
+          {(state === 'idle' || state === 'loading') && tx({ fr: 'Sync auto toutes les 6 h. Bouton = sync immediate.', en: 'Auto-sync every 6h. Button = sync now.', es: 'Auto-sync cada 6h. Boton = sync ahora.' })}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={run}
+        disabled={state === 'loading'}
+        className="btn-primary text-sm py-2 px-4 flex-shrink-0 disabled:opacity-50"
+      >
+        {state === 'loading'
+          ? <Loader2 size={15} className="animate-spin" />
+          : <><RefreshCw size={15} className="mr-1.5" />{tx({ fr: 'Resync', en: 'Resync', es: 'Resync' })}</>}
+      </button>
+    </div>
+  );
 }
 
 function AdminDashboard() {
@@ -698,6 +742,9 @@ function AdminDashboard() {
 
       {/* ===== SYSTEMES ===== */}
       <SystemStatusWidget tx={tx} />
+
+      {/* IG-FEED : sync manuelle du feed Instagram (bootstrap + resync). */}
+      <InstagramSyncWidget tx={tx} />
 
       {/* ===== TOGGLE STATS DETAILLEES (lazy-loaded) ===== */}
       <div>
