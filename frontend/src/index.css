@@ -271,13 +271,43 @@ input[type="number"] {
 }
 
 /* =============================================================================
-   WATERMARK-CSS : tuiles MASSIVE en diagonale par-dessus les images produits
-   affichees en grand (fiche sticker, lightbox, zoom).
+   WATERMARK-CSS v2 : tuiles MASSIVE par-dessus les images produits affichees en
+   grand (fiche sticker, lightbox, zoom). Refait le 17 juillet 2026 d'apres la
+   demo Figma de Mika, apres que la v1 ait ete jugee "beaucoup trop visible".
+
    ROLE = DISSUASION VISIBLE seulement. Ce n'est PAS une protection : le <img>
    en dessous est intact, un clic droit sort un fichier propre. La protection
    reelle est le filigrane CUIT dans le pixel (generate-watermarks.mjs).
    Pilote par WATERMARK_OVERLAY_ENABLED (config/watermarkOverlayStatus.js).
    Le parent DOIT etre en position: relative + overflow: hidden.
+
+   CE QUI CHANGE PAR RAPPORT A LA v1, ET POURQUOI (les 3 defauts constates) :
+
+   1. LOGO BLANC, MAIS TRES TRANSPARENT (choix Mika, 17 juillet). La v1 etait
+      deja blanche : ce n'est donc PAS la blancheur qui la rendait laide, c'est
+      le point 3 (le logo etire en rayures). Une fois le logo a ses vraies
+      proportions, un blanc tres transparent redevient le bon choix - et c'est
+      celui qui a le plus de marge sur un fond sombre, la ou le noir plafonne a
+      un contraste de 1,14 meme a 100 %.
+
+   2. LOGO PRE-TOURNE, GRILLE DROITE. La v1 tournait TOUTE la couche a -30deg,
+      d'ou le `inset: -60%` pour rattraper les coins nus, et un overlay qui
+      bavait bien au-dela de son parent. Ici la rotation (-25deg) est CUITE dans
+      la tuile (meme SVG que le filigrane cuit) : la couche reste droite, un
+      simple `inset: 0` suffit, plus rien ne deborde.
+
+   3. L'ESPACEMENT EST DANS LA TUILE, PAS DANS background-size. LE BUG de la
+      v1 : `background-size: 200px 190px` sur une image 200x36 -> le logo etait
+      ETIRE 5,3x en hauteur, d'ou des "rayures" au lieu d'un logo. background-
+      size REDIMENSIONNE, il n'espace pas. La tuile v2 (560x480) porte deja son
+      padding transparent, et on ne fixe QUE la largeur (`280px auto`) : la
+      hauteur suit le ratio, l'etirement devient IMPOSSIBLE par construction.
+
+   Regeneration de la tuile (le logo vient de LOGO_SVG dans
+   scripts/generate-watermarks.mjs, deja tourne a -25deg, fills passes en noir) :
+     magick -background none logo-noir.svg -resize 1600x png32:big.png
+     magick big.png -trim +repage -resize 360x -background none \
+            -gravity center -extent 560x480 png32:watermark-tile-v2.png
    ============================================================================ */
 .wm-overlay {
   position: relative;
@@ -285,19 +315,30 @@ input[type="number"] {
 .wm-overlay::after {
   content: '';
   position: absolute;
-  /* deborde largement : la rotation laisserait des coins nus sinon */
-  inset: -60%;
-  background-image: url('/images/brand/watermark-tile.png');
+  /* la couche ne tourne plus -> elle tient pile dans son parent */
+  inset: 0;
+  background-image: url('/images/brand/watermark-tile-v2.png');
   background-repeat: repeat;
-  /* espacement entre tuiles : ~2,4x la largeur de la tuile */
-  background-size: 200px 190px;
-  transform: rotate(-30deg);
-  opacity: var(--wm-overlay-opacity, 0.10);
+  /* SEULE la largeur est imposee : `auto` en hauteur verrouille le ratio de la
+     tuile. C'est ce qui rend l'etirement de la v1 structurellement impossible. */
+  background-size: var(--wm-overlay-tile, 280px) auto;
   pointer-events: none;   /* ne bloque jamais un clic (zoom, fermeture, panier) */
   z-index: 2;
-}
-@media (prefers-reduced-motion: reduce) {
-  .wm-overlay::after { transition: none; }
+
+  /* 4. UNE SEULE OPACITE, GRACE A L'OMBRE CUITE DANS LA TUILE.
+     Le fond que le filigrane traverse change du tout au tout : la boite produit
+     va de #210041 (9 themes sombres) a #bcbcbf (Creme, Light), et par-dessus
+     le dessin lui-meme, qui est clair et charge. Un blanc SEUL ne peut pas
+     tenir sur tout ca : mesure, il donnait 1,108 sur sombre et 1,05 sur clair,
+     ce qui obligeait a deux valeurs (5 % / 10 %) qui derivaient chacune de leur
+     cote. C'est le piege exact qui a tue la v1 : une couleur figee contre un
+     fond qui, lui, bouge.
+     La tuile porte donc son OMBRE NOIRE decalee de 3 px (0,8 % de la largeur du
+     logo) - la recette exacte du filigrane CUIT, cf. generate-watermarks.mjs :
+     "Blanc + ombre noire decalee PROPORTIONNELLE (tient sur fonds clairs ET
+     noirs)". Le couple blanc/noir se lit sur n'importe quel fond, donc UNE
+     valeur suffit et il n'y a plus rien a resynchroniser. */
+  opacity: var(--wm-overlay-opacity, 0.05);
 }
 
 /* ETAPE 3 : chips de thematiques du configurateur Mini Massive.

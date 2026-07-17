@@ -20,7 +20,7 @@ import TumblerDesign from '../components/TumblerDesign'
 import FavoriteHeart from '../components/FavoriteHeart'
 import { useFavorites } from '../contexts/FavoritesContext'
 import { NEW_BADGE_ENABLED } from '../config/stickersShopStatus'
-import { WATERMARK_OVERLAY_ENABLED, WATERMARK_OVERLAY_OPACITY } from '../config/watermarkOverlayStatus'
+import { WATERMARK_OVERLAY_ENABLED, WATERMARK_OVERLAY_OPACITY, WATERMARK_OVERLAY_TILE } from '../config/watermarkOverlayStatus'
 
 /**
  * MassiveStickers (STICKERS-SHOP-A, 8 juillet 2026) - VITRINE de la
@@ -430,7 +430,7 @@ function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, onPrev,
           <div>
             <div
               className={`rounded-2xl bg-black/25 h-80 sm:h-[26rem] md:h-[30rem] flex items-center justify-center relative overflow-hidden${WATERMARK_OVERLAY_ENABLED ? ' wm-overlay' : ''}`}
-              style={WATERMARK_OVERLAY_ENABLED ? { '--wm-overlay-opacity': WATERMARK_OVERLAY_OPACITY } : undefined}
+              style={WATERMARK_OVERLAY_ENABLED ? { '--wm-overlay-opacity': WATERMARK_OVERLAY_OPACITY, '--wm-overlay-tile': WATERMARK_OVERLAY_TILE } : undefined}
             >
               {/* UI-06 : navigation entre designs (boucle sur la liste courante) */}
               {onPrev && (
