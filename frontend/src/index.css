@@ -272,6 +272,35 @@ input[type="number"] {
 
 /* MINIMASSIVE-UX : carrousel de designs auto-defilant (une rangee, boucle douce,
    pause au survol/focus). Reduced-motion : pas d'animation, rangee scrollable. */
+/* =====================================================================   WATERMARK-CSS : tuiles MASSIVE en diagonale par-dessus les images produits
+   affichees en grand (fiche sticker, lightbox, zoom).
+   ROLE = DISSUASION VISIBLE seulement. Ce n'est PAS une protection : le <img>
+   en dessous est intact, un clic droit sort un fichier propre. La protection
+   reelle est le filigrane CUIT dans le pixel (generate-watermarks.mjs).
+   Pilote par WATERMARK_OVERLAY_ENABLED (config/watermarkOverlayStatus.js).
+   Le parent DOIT etre en position: relative + overflow: hidden.
+   ============================================================================ */
+.wm-overlay {
+  position: relative;
+}
+.wm-overlay::after {
+  content: '';
+  position: absolute;
+  /* deborde largement : la rotation laisserait des coins nus sinon */
+  inset: -60%;
+  background-image: url('/images/brand/watermark-tile.png');
+  background-repeat: repeat;
+  /* espacement entre tuiles : ~2,4x la largeur de la tuile */
+  background-size: 200px 190px;
+  transform: rotate(-30deg);
+  opacity: var(--wm-overlay-opacity, 0.10);
+  pointer-events: none;   /* ne bloque jamais un clic (zoom, fermeture, panier) */
+  z-index: 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wm-overlay::after { transition: none; }
+}
+=======
 /* ETAPE 3 : chips de thematiques du configurateur Mini Massive.
    Scroll horizontal en mobile (10 chips ne tiennent pas sur 375 px), sans
    barre visible. `w-max` sur la rangee + overflow-x sur le parent : le piege

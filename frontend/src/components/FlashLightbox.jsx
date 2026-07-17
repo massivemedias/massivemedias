@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useLang } from '../i18n/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { mediaUrl } from '../utils/cms';
+import { WATERMARK_OVERLAY_ENABLED, WATERMARK_OVERLAY_OPACITY } from '../config/watermarkOverlayStatus'
 
 const SIZE_LABELS = {
   petit: { fr: 'Petit (5-10 cm)', en: 'Small (2-4 in)' },
@@ -78,7 +79,8 @@ export default function FlashLightbox({ flash, onClose, onReserve, tatoueurName,
           </button>
 
           {/* Image */}
-          <div className="md:w-1/2 relative bg-black flex items-center justify-center min-h-[200px] max-h-[40vh] md:max-h-none md:min-h-0 flex-shrink-0">
+          <div className={`md:w-1/2 relative overflow-hidden bg-black flex items-center justify-center min-h-[200px] max-h-[40vh] md:max-h-none md:min-h-0 flex-shrink-0${WATERMARK_OVERLAY_ENABLED ? ' wm-overlay' : ''}`}
+            style={WATERMARK_OVERLAY_ENABLED ? { '--wm-overlay-opacity': WATERMARK_OVERLAY_OPACITY } : undefined}>
             {/* Navigation arrows */}
             {hasPrev && (
               <button
