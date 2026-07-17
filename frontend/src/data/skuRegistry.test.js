@@ -22,6 +22,7 @@ import {
   getArtistStickerPackPrice,
   ARTIST_STICKER_GRID,
   STICKER_GRID,
+  lookupStickerPriceCustomQty,
 } from '../../../backend/src/utils/pricing-config'
 
 // ---------- Fixtures CMS (deps injectees, pas de Strapi) ----------
@@ -243,8 +244,19 @@ describe('prix menteur : toujours ecrase par le serveur', () => {
 // ---------- 4. Paliers inconnus rejetes (fini le fallback client) ----------
 
 describe('paliers inconnus : rejet explicite', () => {
-  it('sticker-custom qty hors grille -> refus (avant : prix client accepte !)', async () => {
-    const r = await resolve({ productId: 'sticker-custom', quantity: 37, size: '2"', finish: 'matte', totalPrice: 9999 })
+  // FIX-CHECKOUT-CUSTOM-QTY (17 juillet 2026) : une quantite custom >= 25 (ex 37)
+  // n'est PLUS rejetee - le configurateur l'offre avec un prix interpole, le
+  // checkout doit l'accepter au MEME prix. La garde SEC-04 tient autrement : le
+  // serveur IGNORE le totalPrice client (9999) et force son propre prix calcule.
+  it('sticker-custom qty custom 37 -> accepte au prix serveur, totalPrice client ignore', async () => {
+    const attendu = lookupStickerPriceCustomQty('matte', 37, '2') // ~35.15$ interpole
+    const r = await resolve({ productId: 'sticker-custom', quantity: 37, size: '2"', finish: 'matte', finishId: 'matte', totalPrice: 9999 })
+    expect(r.ok).toBe(true)
+    expect(r.price).toBeCloseTo(attendu, 2)
+    expect(r.price).not.toBe(9999)
+  })
+  it('sticker-custom qty < 25 (min production) -> refus', async () => {
+    const r = await resolve({ productId: 'sticker-custom', quantity: 20, size: '2"', finish: 'matte', finishId: 'matte', totalPrice: 9999 })
     expect(r.ok).toBe(false)
   })
   it('business-card qty 300 et variante inconnue -> refus', async () => {

@@ -126,20 +126,120 @@ export function getStickerSizeTier(size: any): 'standard' | 'medium' | 'large' {
   return 'large'; // 4" et 5" (et tout > 3.5")
 }
 
+// PRICING-VOLUME : dernier palier RETAIL. Au-dela, les paliers (1000, 2000)
+// sont des SEUILS bulk (floor, pas d'interpolation). MIROIR de la constante
+// du front (pricingData.js). Utilise par lookupStickerPriceCustomQty.
+export const STICKER_RETAIL_MAX_QTY = 500;
+
 /**
- * Lookup officiel du prix sticker selon (finish, qty, size).
- * Retourne null si quantite hors grille.
+ * Grille { qty: price } pour une (taille, finish) donnee. Miroir EXACT de
+ * getStickerGridForSize (frontend/pricingData.js). `finish` est un ID de
+ * finition (matte / clear / holographic / matte-pro / ...), PAS un label.
  */
-export function lookupStickerPriceBySize(finish: string, qty: number, size: any): number | null {
+export function getStickerGridForSize(size: any, finish: string): Record<number, number> {
   const tier = getStickerSizeTier(size);
-  // kind 3-voies : intermediate (Clear) sinon fx (fancy) sinon matte (sans finition, defaut).
+  // kind 3-voies : intermediate (Clear) sinon fx (fancy) sinon matte (defaut).
   const kind = INTERMEDIATE_FINISHES.includes(finish)
     ? 'intermediate'
     : FX_FINISHES.includes(finish)
       ? 'fx'
       : 'matte'
-  const grid = STICKER_GRID[tier][kind];
-  return grid[qty] ?? null;
+  return STICKER_GRID[tier][kind];
+}
+
+/**
+ * Lookup STRICT (palier exact) du prix sticker selon (finish, qty, size).
+ * Retourne null si quantite hors grille. `finish` = ID de finition.
+ * NOTE : ne gere PAS les quantites custom (150, 240...). Pour le checkout,
+ * utiliser lookupStickerPriceCustomQty, qui interpole comme le front.
+ */
+export function lookupStickerPriceBySize(finish: string, qty: number, size: any): number | null {
+  return getStickerGridForSize(size, finish)[qty] ?? null;
+}
+
+// Miroir des LABELS de stickerFinishes (frontend/src/data/products.js) -> ID de
+// finition. Sert UNIQUEMENT de filet pour les paniers LEGACY qui ne portent que
+// le label traduit dans item.finish. Les paniers a jour envoient item.finishId
+// (l'ID direct). Cles normalisees : sans accent, minuscules (cf. resolveStickerFinishId).
+const FINISH_LABEL_TO_ID: Record<string, string> = {
+  'standard': 'matte', 'estandar': 'matte',
+  'clear': 'clear',
+  'matte lamine': 'matte-pro', 'laminated matte': 'matte-pro', 'mate laminado': 'matte-pro',
+  'lustre lamine': 'glossy', 'laminated luster': 'glossy', 'lustrado laminado': 'glossy',
+  'holographique': 'holographic', 'holographic': 'holographic', 'holografico': 'holographic',
+  'verre brise': 'broken-glass', 'broken glass': 'broken-glass', 'vidrio roto': 'broken-glass',
+  'etoiles': 'stars', 'stars': 'stars', 'estrellas': 'stars',
+  'points': 'dots', 'dots': 'dots', 'puntos': 'dots',
+}
+
+/**
+ * Resout un ID de finition a partir de item.finishId (ID direct) OU de
+ * item.finish (label traduit des paniers legacy). Le prix depend du KIND
+ * (matte/intermediate/fx), et le front le calcule depuis l'ID : le back DOIT
+ * faire pareil, sinon il classe toute finition fancy en matte et sous-facture.
+ * Fallback 'matte' (le moins cher) si rien ne matche.
+ */
+export function resolveStickerFinishId(finishIdOrLabel: any): string {
+  const raw = String(finishIdOrLabel == null ? '' : finishIdOrLabel)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+  if (!raw) return 'matte'
+  // deja un ID connu (matte / clear / fancy) ?
+  if (raw === 'matte' || INTERMEDIATE_FINISHES.includes(raw) || FX_FINISHES.includes(raw)) return raw
+  return FINISH_LABEL_TO_ID[raw] || 'matte'
+}
+
+/**
+ * PRIX CUSTOM : miroir EXACT de lookupStickerPriceCustomQty
+ * (frontend/src/utils/pricingData.js). Retourne le prix TOTAL, ou null si
+ * qty invalide (< 25).
+ *
+ * POURQUOI : le configurateur laisse le client saisir une quantite LIBRE >= 25
+ * (champ "Personnalisee"), et affiche un prix INTERPOLE entre les paliers. Le
+ * checkout doit accepter et facturer CE MEME prix. Avant, le back ne faisait
+ * qu'un lookup strict (lookupStickerPriceBySize) -> toute quantite hors palier
+ * (150, 200, 240...) etait rejetee : "Combinaison taille/quantite invalide".
+ *
+ * Ce portage doit rester IDENTIQUE au front (regle dual-source). Toute
+ * modification ici DOIT etre repercutee la-bas, et inversement.
+ */
+export function lookupStickerPriceCustomQty(finish: string, qty: any, size: any): number | null {
+  const q = parseInt(String(qty == null ? '' : qty).replace(/[^0-9]/g, ''), 10);
+  if (!Number.isFinite(q) || q < 25) return null;
+
+  const grid = getStickerGridForSize(size, finish);
+  const tierQtys = Object.keys(grid).map(Number).sort((a, b) => a - b);
+
+  // Cas 1 : palier exact -> prix direct.
+  if (grid[q] != null) return grid[q];
+
+  // Cas 2 : au-dessus du dernier palier -> rate du dernier palier (pas
+  // d'extrapolation, evite un pricing absurde si quelqu'un tape 10000).
+  const maxQty = tierQtys[tierQtys.length - 1];
+  if (q >= maxQty) {
+    const maxUnitPrice = Math.round((grid[maxQty] / maxQty) * 100) / 100;
+    return Math.round(q * maxUnitPrice * 100) / 100;
+  }
+
+  // PRICING-VOLUME : au-dela du dernier palier RETAIL, les paliers volume
+  // (1000, 2000) sont des SEUILS bulk (floor), pas des ancres d'interpolation.
+  if (q > STICKER_RETAIL_MAX_QTY) {
+    let floorQty = STICKER_RETAIL_MAX_QTY;
+    for (const t of tierQtys) { if (t <= q) floorQty = t; }
+    const unitPrice = Math.round((grid[floorQty] / floorQty) * 100) / 100;
+    return Math.round(q * unitPrice * 100) / 100;
+  }
+
+  // Cas 3 : interpolation lineaire du unit price entre les 2 paliers encadrants.
+  let lowQty = tierQtys[0];
+  let highQty = tierQtys[1];
+  for (let i = 0; i < tierQtys.length - 1; i++) {
+    if (q >= tierQtys[i] && q < tierQtys[i + 1]) { lowQty = tierQtys[i]; highQty = tierQtys[i + 1]; break; }
+  }
+  const lowUnit = grid[lowQty] / lowQty;
+  const highUnit = grid[highQty] / highQty;
+  const factor = (q - lowQty) / (highQty - lowQty);
+  const unitPrice = Math.round((lowUnit + factor * (highUnit - lowUnit)) * 100) / 100;
+  return Math.round(q * unitPrice * 100) / 100;
 }
 
 // DEPRECATED (avril 2026, garde pour compat retro)
