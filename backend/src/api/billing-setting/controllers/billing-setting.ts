@@ -18,6 +18,8 @@ import { requireAdminAuth } from '../../../utils/auth';
 export default factories.createCoreController('api::billing-setting.billing-setting' as any, ({ strapi }) => ({
 
   async find(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     try {
       const entry = await strapi.documents('api::billing-setting.billing-setting' as any).findFirst({});
       if (!entry) {

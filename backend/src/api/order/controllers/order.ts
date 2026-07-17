@@ -313,6 +313,8 @@ async function releaseUniquePieceReservations(
 export default factories.createCoreController('api::order.order', ({ strapi }) => ({
 
   async uploadFile(ctx) {
+    // AUDIT-ENDPOINTS-2 : garde ajoutee.
+    if (!(await requireAdminAuth(ctx))) return;
     const { request: { files } } = ctx as any;
 
     if (!files || !files.files) {

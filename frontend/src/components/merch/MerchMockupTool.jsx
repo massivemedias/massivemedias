@@ -701,9 +701,15 @@ function MerchAIMockup() {
       if (logoFile) {
         body.logoBase64 = await resizeFileToBase64(logoFile);
       }
+      // AUDIT-ENDPOINTS-2 : /mockup/generate-textile derriere requireAdminAuth
+      // (IA payante). On joint le JWT Supabase de l'admin (fetch nu = pas
+      // d'interceptor api.js).
+      const { supabase } = await import('../../lib/supabase');
+      const { data: sess } = await supabase.auth.getSession();
+      const mockToken = sess?.session?.access_token;
       const res = await fetch(`${apiUrl}/mockup/generate-textile`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(mockToken ? { Authorization: `Bearer ${mockToken}` } : {}) },
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
