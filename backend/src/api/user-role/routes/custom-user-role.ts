@@ -19,6 +19,13 @@ export default {
       config: { auth: false },
     },
     {
+      // Renvoi manuel du courriel de bienvenue artiste (admin, garde dans le controller).
+      method: 'POST',
+      path: '/user-roles/resend-welcome',
+      handler: 'user-role.resendWelcome',
+      config: { auth: false },
+    },
+    {
       method: 'PUT',
       path: '/user-roles/artist-data',
       handler: 'user-role.updateArtistData',

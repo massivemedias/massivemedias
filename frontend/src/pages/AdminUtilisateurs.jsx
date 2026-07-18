@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Users, UserCheck, Clock, Mail, Calendar, Search,
+  Users, UserCheck, Clock, Mail, Send, Calendar, Search,
   Loader2, Shield, Palette, ChevronDown, ChevronUp, Check, X,
   DollarSign, ShoppingBag, Phone, Building2, MapPin, Trash2,
   Eye, MousePointerClick, ArrowUpRight, ExternalLink, BarChart3, Gift, FileCheck, Receipt, PenTool, GitMerge,
@@ -9,7 +9,7 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import api from '../services/api';
 import { getClients, getArtistSubmissions } from '../services/adminService';
-import { getUserRoles, setUserRole } from '../services/userRoleService';
+import { getUserRoles, setUserRole, resendArtistWelcome } from '../services/userRoleService';
 import UserMergeModal from '../components/UserMergeModal';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useArtists } from '../hooks/useArtists';
@@ -277,6 +277,31 @@ function AdminUtilisateurs() {
       setTimeout(() => setToast(''), 3000);
     } catch {} finally {
       setSaving(null);
+    }
+  };
+
+  // Renvoyer le courriel de bienvenue artiste. Confirmation AVANT envoi (le back
+  // envoie pour de vrai). setRole ne l'envoie qu'a la 1re promotion : ceci couvre
+  // les cas "Resend a echoue" ou "artiste promu avant l'existence du courriel".
+  const handleResendWelcome = async (user) => {
+    const email = (user.email || '').toLowerCase();
+    if (!email) return;
+    const ok = window.confirm(tx({
+      fr: `Renvoyer le courriel de bienvenue artiste a ${email} ?`,
+      en: `Resend the artist welcome email to ${email}?`,
+      es: `¿Reenviar el correo de bienvenida de artista a ${email}?`,
+    }));
+    if (!ok) return;
+    setSaving(email);
+    try {
+      await resendArtistWelcome(email);
+      setToast(tx({ fr: `Courriel de bienvenue renvoye a ${email}`, en: `Welcome email resent to ${email}`, es: `Correo de bienvenida reenviado a ${email}` }));
+    } catch (err) {
+      const msg = err?.response?.data?.error?.message || err?.message || '';
+      setToast(tx({ fr: `Echec du renvoi${msg ? ' : ' + msg : ''}`, en: `Resend failed${msg ? ': ' + msg : ''}`, es: `Fallo del reenvio${msg ? ': ' + msg : ''}` }));
+    } finally {
+      setSaving(null);
+      setTimeout(() => setToast(''), 4000);
     }
   };
 
@@ -553,6 +578,14 @@ function AdminUtilisateurs() {
                                 <Palette size={14} />
                               </button>
                               <button
+                                onClick={() => handleResendWelcome(user)}
+                                disabled={isSaving}
+                                title={tx({ fr: 'Renvoyer le courriel de bienvenue', en: 'Resend welcome email', es: 'Reenviar correo de bienvenida' })}
+                                className="p-1.5 rounded-lg bg-accent/10 text-accent disabled:opacity-50"
+                              >
+                                <Send size={14} />
+                              </button>
+                              <button
                                 onClick={() => handleRemoveArtist(user)}
                                 disabled={isSaving}
                                 className="p-1.5 rounded-lg bg-red-500/10 text-red-400 disabled:opacity-50"
@@ -753,6 +786,14 @@ function AdminUtilisateurs() {
                                 >
                                   <Palette size={12} />
                                   {tx({ fr: 'Changer profil artiste', en: 'Change artist profile', es: 'Cambiar perfil artista' })}
+                                </button>
+                                <button
+                                  onClick={() => handleResendWelcome(user)}
+                                  disabled={isSaving}
+                                  className="px-3 py-1.5 rounded-lg bg-accent/10 text-accent text-xs font-semibold hover:bg-accent/20 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                                >
+                                  <Send size={12} />
+                                  {tx({ fr: 'Renvoyer le courriel de bienvenue', en: 'Resend welcome email', es: 'Reenviar correo de bienvenida' })}
                                 </button>
                                 <button
                                   onClick={() => handleRemoveArtist(user)}
