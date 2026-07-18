@@ -1265,6 +1265,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
               invoiceNumber,
               items: itemsForEmail,
               subtotal: order.subtotal || 0,
+              // RABAIS-FACTURE : ligne rabais dans le courriel de confirmation (cents).
+              discountType: order.discountType || null,
+              discountValue: order.discountValue ?? null,
+              discountAmount: order.discountAmount || 0,
               shipping: order.shipping || 0,
               tps: order.tps || 0,
               tvq: order.tvq || 0,
@@ -1909,7 +1913,9 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       isAlreadyPaid = false,
       offlinePaymentMethod,
     } = body || {};
-    let { subtotal, total, tps = 0, tvq = 0 } = body || {};
+    let { subtotal, total } = body || {};
+    // RABAIS-FACTURE : type ('percent' | 'fixed') + valeur saisie par l'admin.
+    const { discountType, discountValue } = body || {};
 
     if (!customerName || !Array.isArray(items) || items.length === 0) {
       return ctx.badRequest('customerName et items[] requis');
@@ -1921,30 +1927,45 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return Number.isFinite(n) ? n : 0;
     };
     subtotal = toNum(subtotal);
-    tps = toNum(tps);
-    tvq = toNum(tvq);
     const shippingNum = toNum(shipping);
 
-    // Si tps/tvq non fournis mais subtotal > 0, les calculer automatiquement
-    // (taxes QC standard : TPS 5%, TVQ 9.975%). L'admin peut override en les fournissant.
-    if (subtotal > 0 && tps === 0 && tvq === 0) {
-      tps = Math.round(subtotal * 0.05 * 100) / 100;
-      tvq = Math.round(subtotal * 0.09975 * 100) / 100;
+    // RABAIS-FACTURE : le rabais est calcule SERVEUR (jamais un montant envoye par
+    // le front). La livraison n'est PAS rabaissee ; les taxes portent sur le NET
+    // (subtotal - rabais). % borne a 0..100, $ borne a 0..subtotal -> le total ne
+    // devient jamais negatif. discountAmount stocke plus bas en cents (x100).
+    let discountAmount = 0;
+    let normDiscountType: 'percent' | 'fixed' | null = null;
+    let normDiscountValue = 0;
+    const rawDiscount = toNum(discountValue);
+    if (rawDiscount > 0 && (discountType === 'percent' || discountType === 'fixed')) {
+      normDiscountType = discountType;
+      if (discountType === 'percent') {
+        normDiscountValue = Math.min(100, Math.max(0, rawDiscount));
+        discountAmount = subtotal * (normDiscountValue / 100);
+      } else {
+        normDiscountValue = Math.max(0, rawDiscount);
+        discountAmount = normDiscountValue;
+      }
+      discountAmount = Math.round(Math.min(discountAmount, subtotal) * 100) / 100;
     }
 
-    // FIX-TAXES : le total TTC reel est TOUJOURS subtotal + shipping + tps + tvq.
-    // On ignore le `total` client pour eviter les incoherences / sous-facturation Stripe.
-    const computedTotal = Math.round((subtotal + shippingNum + tps + tvq) * 100) / 100;
-    const providedTotal = toNum(total);
+    // Base taxable = subtotal APRES rabais. Taxes QC TOUJOURS recalculees serveur
+    // (TPS 5%, TVQ 9.975%) : on ne fait PLUS confiance aux tps/tvq du front
+    // (exigence RABAIS-FACTURE : total force serveur, meme en admin).
+    const taxableBase = Math.round((subtotal - discountAmount) * 100) / 100;
+    const tps = Math.round(taxableBase * 0.05 * 100) / 100;
+    const tvq = Math.round(taxableBase * 0.09975 * 100) / 100;
 
-    // Warning si le client a envoye un total divergent (bug frontend potentiel)
+    // Total TTC = base nette + livraison + taxes. Le `total` client est ignore.
+    const computedTotal = Math.round((taxableBase + shippingNum + tps + tvq) * 100) / 100;
+    const providedTotal = toNum(total);
     if (providedTotal > 0 && Math.abs(providedTotal - computedTotal) > 0.01) {
-      strapi.log.warn(`[manualCreate] Total client ${providedTotal}$ diverge du recalcul serveur ${computedTotal}$ (subtotal=${subtotal}, tps=${tps}, tvq=${tvq}). Utilisation du recalcul serveur.`);
+      strapi.log.warn(`[manualCreate] Total client ${providedTotal}$ diverge du recalcul serveur ${computedTotal}$ (subtotal=${subtotal}, rabais=${discountAmount}, tps=${tps}, tvq=${tvq}). Recalcul serveur applique.`);
     }
     total = computedTotal;
 
     if (total <= 0) {
-      return ctx.badRequest('Total calcule invalide (0 ou negatif). Verifier subtotal et taxes.');
+      return ctx.badRequest('Total calcule invalide (0 ou negatif). Verifier subtotal, rabais et taxes.');
     }
 
     // FIX-COMPENSATE (27 avril 2026) : tracker des entites creees pour rollback.
@@ -2068,6 +2089,11 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           shipping: Math.round(shippingNum * 100),
           tps: Math.round(tps * 100),
           tvq: Math.round(tvq * 100),
+          // RABAIS-FACTURE : type/valeur saisis + montant CALCULE serveur (en cents,
+          // comme les autres montants). null/0 si pas de rabais -> retro-compatible.
+          discountType: normDiscountType,
+          discountValue: normDiscountType ? normDiscountValue : null,
+          discountAmount: Math.round(discountAmount * 100),
           currency,
           notes: composedNotes,
           client: clientDocId ? { connect: [clientDocId] } : undefined,
@@ -4027,6 +4053,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
             etiquette: item.etiquette || null,
           })),
           subtotal: order.subtotal || 0,
+          // RABAIS-FACTURE : ligne rabais dans le courriel de confirmation (cents).
+          discountType: order.discountType || null,
+          discountValue: order.discountValue ?? null,
+          discountAmount: order.discountAmount || 0,
           shipping: order.shipping || 0,
           tps: order.tps || 0,
           tvq: order.tvq || 0,
@@ -4487,6 +4517,10 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
           invoiceNumber: assignedInvoice || orderData.invoiceNumber || '',
           items: emailItems,
           subtotal: orderData.subtotal || 0,
+          // RABAIS-FACTURE : ligne rabais dans le courriel de confirmation (cents).
+          discountType: orderData.discountType || null,
+          discountValue: orderData.discountValue ?? null,
+          discountAmount: orderData.discountAmount || 0,
           shipping: orderData.shipping || 0,
           tps: orderData.tps || 0,
           tvq: orderData.tvq || 0,
@@ -6041,6 +6075,10 @@ ${allUrls
               etiquette: item.etiquette || null,
             })),
             subtotal: order.subtotal || 0,
+            // RABAIS-FACTURE : ligne rabais dans le courriel de confirmation (cents).
+            discountType: order.discountType || null,
+            discountValue: order.discountValue ?? null,
+            discountAmount: order.discountAmount || 0,
             shipping: order.shipping || 0,
             tps: order.tps || 0,
             tvq: order.tvq || 0,

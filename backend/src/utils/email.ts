@@ -144,6 +144,11 @@ interface OrderEmailData {
   } | null;
   promoCode?: string;
   promoDiscount?: number;
+  // RABAIS-FACTURE : rabais admin sur commande manuelle. discountAmount en CENTS
+  // (comme subtotal/total), discountType/discountValue pour l'etiquette "(-X%)".
+  discountType?: string | null;
+  discountValue?: number | null;
+  discountAmount?: number;
   supabaseUserId?: string;
 }
 
@@ -227,6 +232,7 @@ export function buildOrderConfirmationHtml(data: OrderEmailData): string {
         <td style="padding:4px 12px;color:#666;font-size:14px;">Sous-total</td>
         <td style="padding:4px 12px;text-align:right;color:#222;font-size:14px;">${formatPrice(data.subtotal)}$</td>
       </tr>
+      ${data.discountAmount && data.discountAmount > 0 ? '<tr><td style="padding:4px 12px;color:#4ade80;font-size:14px;">Rabais' + (data.discountType === 'percent' && data.discountValue ? ' (-' + data.discountValue + '%)' : '') + '</td><td style="padding:4px 12px;text-align:right;color:#4ade80;font-size:14px;font-weight:600;">-' + formatPrice(data.discountAmount) + '$</td></tr>' : ''}
       ${data.promoCode && data.promoDiscount ? '<tr><td style="padding:4px 12px;color:#4ade80;font-size:14px;">Code promo : ' + data.promoCode + '</td><td style="padding:4px 12px;text-align:right;color:#4ade80;font-size:14px;font-weight:600;">-' + formatPrice(data.promoDiscount) + '$</td></tr>' : ''}
       <tr>
         <td style="padding:4px 12px;color:#666;font-size:14px;">Livraison</td>
