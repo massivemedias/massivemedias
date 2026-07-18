@@ -18,6 +18,7 @@ import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb, img } from '../utils/paths'
 import TumblerDesign from '../components/TumblerDesign'
 import FavoriteHeart from '../components/FavoriteHeart'
+import CtaBanner from '../components/CtaBanner'
 import { useFavorites } from '../contexts/FavoritesContext'
 import { NEW_BADGE_ENABLED } from '../config/stickersShopStatus'
 import { WATERMARK_OVERLAY_ENABLED, WATERMARK_OVERLAY_OPACITY, WATERMARK_OVERLAY_TILE } from '../config/watermarkOverlayStatus'
@@ -985,6 +986,24 @@ function MassiveStickers() {
             </div>
           </div>
         </section>
+
+        {/* Bandeau CTA "Imprime tes stickers" : miroir EXACT du bandeau
+            "Imprime tes oeuvres" de /artistes (meme composant CtaBanner). Place
+            juste sous le hero, comme sur /artistes. Pointe vers le configurateur
+            custom existant (/services/stickers, URL inchangee). Pas de
+            section-container ici : on est deja dans max-w-7xl mx-auto, on garde
+            l'alignement avec le hero. */}
+        <CtaBanner
+          className="mb-10"
+          to="/services/stickers"
+          title={{ fr: 'Imprime tes stickers', en: 'Print your stickers', es: 'Imprime tus stickers' }}
+          subtitle={{
+            fr: 'Stickers die-cut en vinyle, à partir de tes designs, imprimés à Montréal.',
+            en: 'Die-cut vinyl stickers from your own designs, printed in Montreal.',
+            es: 'Stickers die-cut en vinilo, a partir de tus diseños, impresos en Montreal.',
+          }}
+          cta={{ fr: 'Créer mes stickers custom', en: 'Create custom stickers', es: 'Crear stickers custom' }}
+        />
 
         {/* UI-07 : le widget flottant (rendu plus bas, fixed) remplace l'ancien
             bandeau texte de progression - juge pas assez design. */}

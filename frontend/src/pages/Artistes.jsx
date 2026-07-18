@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { MERCH_HIDDEN } from '../config/merchStatus';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, MessageSquare, Camera, Store, LayoutGrid, Grid3x3, List, ChevronDown, Paintbrush, Aperture } from 'lucide-react';
+import CtaBanner from '../components/CtaBanner';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useArtists } from '../hooks/useArtists';
@@ -463,30 +464,16 @@ function Artistes() {
           Place haut (juste sous le hero), vers le service fine art /services/prints.
           Gradient via --accent-rgb (theme-safe, jamais de rose/mauve code en dur). */}
       <section className="section-container mb-3">
-        <div
-          className="rounded-2xl px-6 py-5 md:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-          style={{ background: 'linear-gradient(120deg, rgba(var(--accent-rgb),1), rgba(var(--accent-rgb),0.62))', boxShadow: '0 14px 36px rgba(var(--accent-rgb),0.28)' }}
-        >
-          <div>
-            <p className="text-white font-heading font-bold text-xl leading-tight">
-              {tx({ fr: 'Imprime tes œuvres', en: 'Print your work', es: 'Imprime tus obras' })}
-            </p>
-            <p className="text-white/90 text-sm mt-1">
-              {tx({
-                fr: 'Fais tes prints custom en fine art, imprimés à Montréal.',
-                en: 'Make custom fine-art prints, printed in Montreal.',
-                es: 'Haz tus prints custom en fine art, impresos en Montreal.',
-              })}
-            </p>
-          </div>
-          <Link
-            to="/services/prints"
-            className="shrink-0 inline-flex items-center gap-2 bg-white text-accent font-bold text-sm px-5 py-2.5 rounded-full hover:brightness-95 transition-all whitespace-nowrap"
-          >
-            {tx({ fr: 'Faire mes prints custom', en: 'Make custom prints', es: 'Hacer mis prints custom' })}
-            <ArrowRight size={16} />
-          </Link>
-        </div>
+        <CtaBanner
+          to="/services/prints"
+          title={{ fr: 'Imprime tes œuvres', en: 'Print your work', es: 'Imprime tus obras' }}
+          subtitle={{
+            fr: 'Fais tes prints custom en fine art, imprimés à Montréal.',
+            en: 'Make custom fine-art prints, printed in Montreal.',
+            es: 'Haz tus prints custom en fine art, impresos en Montreal.',
+          }}
+          cta={{ fr: 'Faire mes prints custom', en: 'Make custom prints', es: 'Hacer mis prints custom' }}
+        />
       </section>
 
       {/* ============ TOUS LES ARTISTES (melanges) ============ */}
