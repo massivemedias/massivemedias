@@ -35,7 +35,7 @@
       {
         "titleFr": "Stickers",
         "titleEn": "Stickers",
-        "descriptionFr": "Die-cut sur mesure avec découpe de précision professionnelle. Matte, glossy, transparent, holographique basic ou premium.",
+        "descriptionFr": "Die-cut sur mesure avec découpe de précision professionnelle. Mat, glossy, transparent, holographique basic ou premium.",
         "descriptionEn": "Custom die-cut with professional precision cutting. Matte, glossy, clear, basic or premium holographic.",
         "link": "/services/stickers",
         "iconName": "Sticker"
@@ -833,7 +833,7 @@
       "descriptionEn": "Custom die-cut stickers for artists, labels, events and brands. Complete service including graphic design if needed.\n\nCut to the exact shape of your design with our professional cutting equipment, each sticker is finished with lamination for water, UV and scratch resistance.",
       "highlightsFr": [
         "Équipement de découpe de précision professionnel",
-        "Vinyle matte, glossy, transparent, holographique",
+        "Vinyle mat, glossy, transparent, holographique",
         "Découpe contour à la forme exacte du design",
         "Lamination incluse - résistant eau, UV, rayures",
         "Création graphique du sticker incluse dans le prix",
@@ -1014,7 +1014,7 @@
         },
         {
           "name": "Lamineuse",
-          "desc": "Lamination matte ou glossy pour protection eau/UV/rayures."
+          "desc": "Lamination mate ou glossy pour protection eau/UV/rayures."
         },
         {
           "name": "Imprimante vinyle",
@@ -1038,7 +1038,7 @@
       "faqFr": [
         {
           "q": "Quels types de finis sont disponibles?",
-          "a": "On offre glossy (brillant), matte, holographique, transparent et prismatique. Chaque fini a ses avantages selon l'utilisation."
+          "a": "On offre glossy (brillant), mat, holographique, transparent et prismatique. Chaque fini a ses avantages selon l'utilisation."
         },
         {
           "q": "Le design graphique est-il inclus?",
@@ -1082,7 +1082,7 @@
       "seo": {
         "titleFr": "Stickers Custom Montréal - Massive Medias",
         "titleEn": "Custom Stickers Montreal - Massive Medias",
-        "descriptionFr": "Stickers die-cut personnalisés. Holographique, matte, glossy, transparent. Découpe pro. Montréal.",
+        "descriptionFr": "Stickers die-cut personnalisés. Holographique, mat, glossy, transparent. Découpe pro. Montréal.",
         "descriptionEn": "Custom die-cut stickers. Holographic, matte, glossy, clear. Pro cutting. Montreal."
       },
       "sortOrder": 2,
@@ -2400,7 +2400,7 @@
         "finishes": [
           {
             "id": "matte",
-            "labelFr": "Vinyle Matte",
+            "labelFr": "Vinyle Mat",
             "labelEn": "Matte Vinyl",
             "descFr": "Toucher veloute, sans reflet",
             "descEn": "Smooth feel, glare-free"
@@ -2542,7 +2542,7 @@
       },
       "highlightsFr": [
         "Decoupe de precision professionnelle",
-        "Vinyle matte, glossy, transparent, holographique",
+        "Vinyle mat, glossy, transparent, holographique",
         "Decoupe contour a la forme exacte du design",
         "Lamination incluse - resistant eau, UV, rayures",
         "Tarification 3 paliers de taille (Standard / Medium / Large)",
@@ -3054,7 +3054,7 @@
         },
         {
           "q": "Quel papier utilisez-vous?",
-          "a": "Papier premium 300g+ en finition matte ou brillante."
+          "a": "Papier premium 300g+ en finition mate ou brillante."
         },
         {
           "q": "Offrez-vous l'impression recto-verso?",

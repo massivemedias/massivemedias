@@ -187,7 +187,7 @@ function AdminTarifs() {
     lines.push('');
     lines.push(tx({ fr: 'PACKS STICKERS (palier Standard <=2.5\", design fourni par client)', en: 'STICKER PACKS (Standard tier <=2.5\", client-provided design)', es: 'PACKS STICKERS (Standard hasta 2.5\", diseno proveido por cliente)' }));
     lines.push('-'.repeat(55));
-    lines.push(`${tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })} | Standard (Matte/Lustré) | FX (Holo/Broken Glass)`);
+    lines.push(`${tx({ fr: 'Quantité', en: 'Quantity', es: 'Cantidad' })} | Standard (Mat/Lustré) | FX (Holo/Broken Glass)`);
     STICKER_STANDARD.forEach((s, i) => {
       const h = STICKER_FX[i];
       lines.push(`${(s.qty + ' stickers').padEnd(13)}| ${(s.price + '$ (' + s.unit.toFixed(2) + '$/u)').padEnd(24)}| ${h.price}$ (${h.unit.toFixed(2)}$/u)`);
@@ -492,7 +492,7 @@ function AdminTarifs() {
       doc.setFontSize(7);
       doc.setTextColor(...grey);
       doc.text(tx({
-        fr: 'Impression couleur sur papier matte ou semi-glace, tarifs degressifs par quantite.',
+        fr: 'Impression couleur sur papier mat ou semi-glace, tarifs degressifs par quantite.',
         en: 'Color printing on matte or semi-gloss paper, tiered pricing by quantity.',
         es: 'Impresion a color en papel mate o semi-brillante, precios escalonados por cantidad.',
       }), margin, y);
@@ -818,7 +818,7 @@ function AdminTarifs() {
             subtitle={tx({ fr: 'Palier Standard <=2.5". Pour Medium (<=3.5") +35% et Large (<=5") +85%, voir /services/stickers.', en: 'Standard tier <=2.5". For Medium (<=3.5") +35% and Large (<=5") +85%, see /services/stickers.', es: 'Standard <=2.5". Para Medium +35% y Large +85%, ver /services/stickers.' })}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustré / Die-cut)</h4>
+                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Mat / Lustré / Die-cut)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_STANDARD.map((s, i) => (
                     <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">
@@ -941,7 +941,7 @@ function AdminTarifs() {
               </span>
             }
             subtitle={tx({
-              fr: 'Impression couleur sur papier matte ou semi-glace, tarifs degressifs par quantite',
+              fr: 'Impression couleur sur papier mat ou semi-glace, tarifs degressifs par quantite',
               en: 'Color printing on matte or semi-gloss paper, tiered pricing by quantity',
               es: 'Impresion a color en papel mate o semi-brillante, precios escalonados por cantidad',
             })}>
@@ -1024,7 +1024,7 @@ function AdminTarifs() {
           <SectionCard icon={Sticker} iconColor="text-pink-400" title="Stickers" subtitle={tx({ fr: 'Palier Standard <=2.5". Voir /services/stickers pour Medium (+35%) et Large (+85%). Design fourni par le client.', en: 'Standard tier <=2.5". See /services/stickers for Medium (+35%) and Large (+85%). Client-provided design.', es: 'Standard <=2.5". Ver /services/stickers para Medium y Large. Cliente provee diseno.' })} delay={0.05}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Matte / Lustré / Die-cut)</h4>
+                <h4 className="text-xs font-semibold text-heading mb-2 uppercase tracking-wider">Standard (Mat / Lustré / Die-cut)</h4>
                 <DataTable headers={[{ label: L.qty }, { label: L.price }, { label: L.unit }]}>
                   {STICKER_STANDARD.map((s, i) => (
                     <tr key={i} className="shadow-[0_1px_0_rgba(255,255,255,0.04)] hover:bg-accent/5 transition-colors">

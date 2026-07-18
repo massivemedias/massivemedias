@@ -117,7 +117,7 @@ const CATEGORIES = [
   { value: 'software',     icon: Monitor,     label: 'Logiciels',              desc: 'Silhouette Connect, licences, apps' },
   // Categories metier
   { value: 'stickers',     icon: Sticker,     label: 'Stickers',               desc: 'Rouleaux, feuilles, FX' },
-  { value: 'papiers',      icon: FileText,    label: 'Papiers',                desc: 'Matte, Glossy, Luster' },
+  { value: 'papiers',      icon: FileText,    label: 'Papiers',                desc: 'Mat, Glossy, Luster' },
   { value: 'textile',      icon: Shirt,       label: 'Textile',                desc: 'T-Shirts, Hoodies, Long Sleeves' },
   { value: 'cadre',        icon: Frame,       label: 'Cadres photo',           desc: 'Cadres prets-a-poser' },
   { value: 'merch',        icon: ShoppingBag, label: 'Merch',                  desc: 'Tote bags, mugs, accessoires' },
@@ -132,7 +132,7 @@ const STICKER_TYPES      = [
   { value: 'glossy',        label: 'Glossy' },
 ];
 const FINITION_PAPIER    = [
-  { value: 'matte',  label: 'Matte' },
+  { value: 'matte',  label: 'Mat' },
   { value: 'glossy', label: 'Glossy' },
   { value: 'luster', label: 'Luster' },
 ];
