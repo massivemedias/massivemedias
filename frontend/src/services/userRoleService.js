@@ -15,3 +15,7 @@ export const setUserRole = (email, role, slug, supabaseUserId, displayName) =>
 
 // Supprimer un role (remet en user)
 export const deleteUserRole = (documentId) => api.delete(`/user-roles/${documentId}`);
+
+// Renvoyer le courriel de bienvenue artiste (admin). Le back AWAIT l'envoi et
+// renvoie { ok: true } ou une erreur (400 si pas artiste, 502 si Resend echoue).
+export const resendArtistWelcome = (email) => api.post('/user-roles/resend-welcome', { email });

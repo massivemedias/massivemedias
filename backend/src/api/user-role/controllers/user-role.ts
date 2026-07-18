@@ -150,6 +150,50 @@ export default factories.createCoreController('api::user-role.user-role', ({ str
     }
   },
 
+  // POST /user-roles/resend-welcome - Renvoyer le courriel de bienvenue artiste.
+  // setRole ne l'envoie QUE sur promotion (user->artist) ; ce handler permet a
+  // l'admin de le renvoyer a la demande (ex: Resend a echoue au 1er coup, ou le
+  // 1er envoi date d'avant l'existence du courriel). Body: { email }.
+  // Contrairement a setRole (fire-and-forget), on AWAIT l'envoi pour renvoyer un
+  // vrai statut a l'admin (envoye / echoue). Admin only.
+  async resendWelcome(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+
+    const { email } = ctx.request.body as any;
+    if (!email) { ctx.throw(400, 'Email required'); return; }
+    const clean = String(email).toLowerCase().trim();
+
+    try {
+      const existing = await strapi.documents('api::user-role.user-role').findMany({
+        filters: { email: { $eqi: clean } },
+        limit: 1,
+      });
+      const entry = existing && existing.length > 0 ? (existing[0] as any) : null;
+      if (!entry || entry.role !== 'artist') {
+        ctx.throw(400, `Aucun role artiste pour ${clean} - le courriel de bienvenue ne s'envoie qu'aux artistes.`);
+        return;
+      }
+
+      const sent = await sendArtistWelcomeEmail({
+        email: entry.email || clean,
+        displayName: entry.displayName || null,
+        artistSlug: entry.artistSlug || null,
+      });
+
+      if (!sent) {
+        strapi.log.warn(`[resendWelcome] Envoi refuse par Resend pour ${clean}`);
+        ctx.throw(502, 'Le courriel n\'a pas pu etre envoye (Resend). Reessaie ou verifie la config.');
+        return;
+      }
+      strapi.log.info(`[resendWelcome] Courriel de bienvenue renvoye a ${clean}`);
+      ctx.body = { data: { ok: true, email: clean } };
+    } catch (err: any) {
+      // ctx.throw a deja pose le status pour nos cas metier ; sinon 500.
+      if (ctx.status && ctx.status >= 400) return;
+      ctx.throw(500, err?.message || 'Erreur envoi bienvenue');
+    }
+  },
+
   // PUT /user-roles/artist-data - Sauvegarder renames et hero pour un artiste
   // User connecte peut modifier SES donnees, admin peut modifier les donnees
   // de n'importe quel artiste.
