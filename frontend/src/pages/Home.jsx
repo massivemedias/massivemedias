@@ -535,7 +535,7 @@ function Home() {
                 </p>
                 <p>
                   {tx({
-                    fr: 'On a imprimé plusieurs formats die-cut (2 tailles d\'étiquettes rondes + une grosse étiquette de packaging) sur vinyle impermeable, finition matte pour un rendu doux au toucher. Le résultat : des étiquettes qui tiennent sur bouteilles, boîtes et contenants, sans décoller.',
+                    fr: 'On a imprimé plusieurs formats die-cut (2 tailles d\'étiquettes rondes + une grosse étiquette de packaging) sur vinyle impermeable, finition mate pour un rendu doux au toucher. Le résultat : des étiquettes qui tiennent sur bouteilles, boîtes et contenants, sans décoller.',
                     en: 'We printed multiple die-cut formats (two round label sizes + a large packaging label) on waterproof vinyl with a matte finish for a soft, tactile feel. The result: labels that stick perfectly to bottles, boxes and containers without peeling.',
                     es: 'Imprimimos varios formatos die-cut (dos tamaños de etiquetas redondas + una etiqueta grande para packaging) en vinilo impermeable, acabado mate para un tacto suave. El resultado: etiquetas que se adhieren perfectamente a botellas, cajas y envases sin despegarse.',
                   })}

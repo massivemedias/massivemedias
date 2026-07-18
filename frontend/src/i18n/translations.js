@@ -68,7 +68,7 @@ const translations = {
         },
         {
           title: 'Stickers',
-          description: 'Die-cut sur mesure avec découpe de précision professionnelle. Matte, glossy, transparent, holographique basic ou premium.',
+          description: 'Die-cut sur mesure avec découpe de précision professionnelle. Mat, glossy, transparent, holographique basic ou premium.',
         },
         {
           title: 'Merch',

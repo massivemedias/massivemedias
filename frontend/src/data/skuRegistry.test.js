@@ -98,7 +98,9 @@ describe('familles legitimes : prix serveur exact', () => {
     expect(r).toMatchObject({ ok: true, price: expected, family: 'sticker-custom' })
   })
   it('sticker-massive : 3 $ x quantite', async () => {
-    const r = await resolve({ productId: 'sticker-massive-adian-fumeuse', quantity: 5, totalPrice: 15 })
+    // slug VISIBLE obligatoire : adian-fumeuse est masque (HIDDEN) -> C5 le
+    // rejette au checkout depuis #130 (reconstruction slug 'massive-'+rest).
+    const r = await resolve({ productId: 'sticker-massive-crocodile', quantity: 5, totalPrice: 15 })
     expect(r).toMatchObject({ ok: true, price: 15 })
   })
   it('mystery packs : 8 / 14 / 25 $', async () => {

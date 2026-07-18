@@ -176,11 +176,11 @@ const servicesData = {
     ],
     equipment: [
       { name: 'Découpeuse professionnelle', desc: 'Découpe de précision jusqu\'à 12" de large. Contour, kiss-cut, die-cut.' },
-      { name: 'Lamineuse', desc: 'Lamination matte ou glossy pour protection eau/UV/rayures.' },
+      { name: 'Lamineuse', desc: 'Lamination mate ou glossy pour protection eau/UV/rayures.' },
       { name: 'Imprimante vinyle', desc: 'Impression vinyle haute qualité, couleurs vibrantes.' },
     ],
     faq: [
-      { q: 'Quels types de finis sont disponibles?', a: 'On offre matte, lustré, holographique, fond transparent, verre brisé, étoiles et points. Chaque fini a ses avantages selon l\'utilisation.' },
+      { q: 'Quels types de finis sont disponibles?', a: 'On offre mat, lustré, holographique, fond transparent, verre brisé, étoiles et points. Chaque fini a ses avantages selon l\'utilisation.' },
       { q: 'Le design graphique est-il inclus?', a: 'Non - tu fournis ton fichier prêt à imprimer (PDF/AI/SVG vectoriel ou PNG haute résolution). Si tu as besoin de création ou retouches, on offre un service de design à part : nous contacter pour devis.' },
       { q: 'Quelle est la quantité minimum?', a: 'À partir de 25 stickers identiques. Une démo photo/vidéo est envoyée pour validation avant la production complète.' },
       { q: 'Les stickers sont-ils résistants à l\'eau?', a: 'Oui, tous nos stickers sont laminés et résistants à l\'eau, aux UV et aux rayures. Durabilité extérieure de 3 à 5 ans.' },
@@ -188,7 +188,7 @@ const servicesData = {
     ],
     seo: {
       title: 'Impression Stickers & Autocollants Vinyle Montréal | Massive Medias',
-      description: `Stickers vinyle premium à Montréal. Die-cut sur mesure, holographique, matte, glossy, transparent. Dès 25 unités. Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.fr}`,
+      description: `Stickers vinyle premium à Montréal. Die-cut sur mesure, holographique, mat, glossy, transparent. Dès 25 unités. Plateau Mont-Royal. ${WORKSHOP_NOTICE_SHORT.fr}`,
     },
   },
 

@@ -37,7 +37,7 @@ import {
 export const stickerFinishes = [
   { id: 'matte', labelFr: 'Standard', labelEn: 'Standard', labelEs: 'Estandar', descFr: 'Vinyle imprime, sans laminage', descEn: 'Printed vinyl, no lamination', descEs: 'Vinilo impreso, sin laminado' },
   { id: 'clear', labelFr: 'Clear', labelEn: 'Clear', labelEs: 'Clear', descFr: 'Lamine transparent, protege les couleurs', descEn: 'Clear laminate, protects the colors', descEs: 'Laminado transparente, protege los colores' },
-  { id: 'matte-pro', labelFr: 'Matte laminé', labelEn: 'Laminated Matte', labelEs: 'Mate laminado', descFr: 'Lamination mate pro, fini doux sans reflets', descEn: 'Pro matte lamination, soft no-shine finish', descEs: 'Laminado mate pro, acabado suave sin reflejos' },
+  { id: 'matte-pro', labelFr: 'Mat laminé', labelEn: 'Laminated Matte', labelEs: 'Mate laminado', descFr: 'Lamination mate pro, fini doux sans reflets', descEn: 'Pro matte lamination, soft no-shine finish', descEs: 'Laminado mate pro, acabado suave sin reflejos' },
   { id: 'glossy', labelFr: 'Lustré laminé', labelEn: 'Laminated Luster', labelEs: 'Lustrado laminado', descFr: 'Lamination lustrée, couleurs éclatantes', descEn: 'Luster lamination, vibrant colors', descEs: 'Laminado lustrado, colores vibrantes' },
   { id: 'holographic', labelFr: 'Holographique', labelEn: 'Holographic', labelEs: 'Holográfico', descFr: 'Reflets arc-en-ciel, effet wow', descEn: 'Rainbow reflections, wow effect', descEs: 'Reflejos arcoíris, efecto wow' },
   { id: 'broken-glass', labelFr: 'Verre Brisé', labelEn: 'Broken Glass', labelEs: 'Vidrio Roto', descFr: 'Éclats cristallins, reflets prismatiques', descEn: 'Crystal shards, prismatic reflections', descEs: 'Fragmentos cristalinos, reflejos prismáticos' },
@@ -465,7 +465,7 @@ export const flyerFaq = {
     // HIDE-BUSINESS-CARDS (29 avril 2026) : mentions "cartes d'affaires"
     // retirees de la FAQ flyers - le produit n'est plus expose au public.
     { q: 'Quels formats proposez-vous?', a: 'Flyers A6 (4x6"), A5, lettre (8.5x11"). Cartes postales et formats personnalisés disponibles sur demande.' },
-    { q: 'Quel papier utilisez-vous?', a: 'Papier premium 300g+ en finition matte ou lustrée. Qualité professionnelle supérieure à l\'impression en ligne standard.' },
+    { q: 'Quel papier utilisez-vous?', a: 'Papier premium 300g+ en finition mate ou lustrée. Qualité professionnelle supérieure à l\'impression en ligne standard.' },
     { q: 'Offrez-vous l\'impression recto-verso?', a: 'Oui! L\'option recto-verso est disponible avec un supplément de 30%. Parfait pour les flyers avec plus d\'informations.' },
     { q: 'Quel est le délai de production?', a: 'Le délai varie selon la quantité. Service express disponible sur demande.' },
     { q: 'Puis-je faire faire le design aussi?', a: 'Oui, notre service de design graphique est disponible en option. Contactez-nous pour un devis incluant la création graphique.' },

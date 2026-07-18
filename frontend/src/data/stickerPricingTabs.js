@@ -47,7 +47,7 @@ const LABELS = {
     kinds: {
       matte: 'Standard',
       intermediate: 'Clear',
-      fx: 'Finitions (Matte laminé / Lustré laminé / Holo / Verre Brisé / Étoiles / Points)',
+      fx: 'Finitions (Mat laminé / Lustré laminé / Holo / Verre Brisé / Étoiles / Points)',
     },
   },
   en: {

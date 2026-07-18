@@ -126,7 +126,7 @@ export const LANDING_PAGES = {
     keyword: 'Stickers personnalisés Montréal',
     geo: 'Montréal, QC',
     title: 'Stickers Personnalisés Montréal | Die-Cut Vinyle Premium | Massive Medias',
-    description: 'Stickers personnalisés à Montréal : die-cut vinyle imperméable, finitions holographique, glossy, matte, broken glass. Production locale Plateau Mont-Royal, livraison rapide, dès 25 unités.',
+    description: 'Stickers personnalisés à Montréal : die-cut vinyle imperméable, finitions holographique, glossy, mat, broken glass. Production locale Plateau Mont-Royal, livraison rapide, dès 25 unités.',
     h1: 'Stickers personnalisés à Montréal',
     intro: 'Massive Medias imprime des stickers personnalisés à Montréal sur vinyle imperméable haute qualité, avec découpe die-cut sur mesure pour chaque forme. Holographique, glossy, matte, broken glass : 4 finitions premium pour faire ressortir tes designs. Production locale au Plateau Mont-Royal, délai 24-48h pour les commandes standard, dès 25 stickers.',
     sections: [

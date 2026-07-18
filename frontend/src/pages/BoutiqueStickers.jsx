@@ -68,7 +68,7 @@ function BoutiqueStickers() {
       startingPrice={30}
       pageTitle={{ fr: 'Stickers Die-Cut Montréal - Autocollants Personnalisés | Massive', en: 'Die-Cut Stickers Montreal - Custom Stickers | Massive', es: 'Stickers Die-Cut Montreal - Pegatinas Personalizadas | Massive' }}
       metaDescription={{
-        fr: 'Stickers die-cut personnalisés à Montréal. Vinyle matte, glossy, holographique, verre brisé. Découpe de précision, 3 paliers de prix selon la taille. À partir de 25 unités. Production locale Plateau Mont-Royal.',
+        fr: 'Stickers die-cut personnalisés à Montréal. Vinyle mat, glossy, holographique, verre brisé. Découpe de précision, 3 paliers de prix selon la taille. À partir de 25 unités. Production locale Plateau Mont-Royal.',
         en: 'Custom die-cut stickers in Montreal. Matte, glossy, holographic, broken glass vinyl. Precision cutting, 3 size-based price tiers. From 25 units. Local production Plateau Mont-Royal.',
         es: 'Pide tus stickers personalizados. Vinilo mate, brillante, hologr\u00e1fico, vidrio roto, estrellas. Corte de precisi\u00f3n. 3 niveles de precio seg\u00fan el tama\u00f1o.',
       }}

@@ -220,8 +220,10 @@ describe('FINISH-LABELS - renommage affichage (3 langues, prix inchange)', () =>
   it('matte -> "Standard" (FR/EN) / "Estandar" (ES), id inchange', () => {
     expect(byId('matte')).toMatchObject({ labelFr: 'Standard', labelEn: 'Standard', labelEs: 'Estandar' })
   })
-  it('matte-pro -> "Matte laminé" / "Laminated Matte" / "Mate laminado", id inchange', () => {
-    expect(byId('matte-pro')).toMatchObject({ labelFr: 'Matte laminé', labelEn: 'Laminated Matte', labelEs: 'Mate laminado' })
+  it('matte-pro -> "Mat laminé" / "Laminated Matte" / "Mate laminado", id inchange', () => {
+    // ORTHO-FR : le label FR "Matte" (anglais) est devenu "Mat" (francais). EN garde
+    // "Matte", ES garde "Mate". L'id technique reste 'matte-pro' (inchange).
+    expect(byId('matte-pro')).toMatchObject({ labelFr: 'Mat laminé', labelEn: 'Laminated Matte', labelEs: 'Mate laminado' })
   })
   it('glossy "Vinyle Lustré" -> "Lustré laminé" (laminage confirme Mika, FR/EN/ES)', () => {
     expect(byId('glossy')).toMatchObject({ labelFr: 'Lustré laminé', labelEn: 'Laminated Luster', labelEs: 'Lustrado laminado' })
@@ -230,7 +232,7 @@ describe('FINISH-LABELS - renommage affichage (3 langues, prix inchange)', () =>
     expect(getStickerPrice('matte', 'die-cut', 2000, STD).price).toBe(900)
     expect(getStickerPrice('matte-pro', 'die-cut', 2000, STD).price).toBe(1200)
   })
-  it('prix/u par option (dropdown) @25u : Standard 1,00 vs Matte laminé 1,20', () => {
+  it('prix/u par option (dropdown) @25u : Standard 1,00 vs Mat laminé 1,20', () => {
     expect(getStickerPrice('matte', 'die-cut', 25, STD).unitPrice).toBe(1.00)
     expect(getStickerPrice('matte-pro', 'die-cut', 25, STD).unitPrice).toBe(1.20)
   })

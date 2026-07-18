@@ -17,7 +17,7 @@ function BoutiqueFlyers() {
   ];
 
   const features = [
-    { icon: FileText, fr: 'Papier premium', en: 'Premium paper', es: 'Papel premium', descFr: 'Papier 300g+ en finition matte ou lustree. Qualite superieure a l\'impression en ligne standard.', descEn: 'Premium 300g+ paper in matte or glossy finish. Quality superior to standard online printing.', descEs: 'Papel 300g+ en acabado mate o brillante. Calidad superior a la impresion en linea estandar.' },
+    { icon: FileText, fr: 'Papier premium', en: 'Premium paper', es: 'Papel premium', descFr: 'Papier 300g+ en finition mate ou lustree. Qualite superieure a l\'impression en ligne standard.', descEn: 'Premium 300g+ paper in matte or glossy finish. Quality superior to standard online printing.', descEs: 'Papel 300g+ en acabado mate o brillante. Calidad superior a la impresion en linea estandar.' },
     { icon: Shield, fr: 'Impression pro', en: 'Pro printing', es: 'Impresion profesional', descFr: 'Imprimante professionnelle 12 couleurs pigmentees. Couleurs vibrantes et precises meme pour les flyers.', descEn: 'Professional 12-color pigmented printer. Vibrant and precise colors even for flyers.', descEs: 'Impresora profesional de 12 colores pigmentados. Colores vibrantes y precisos incluso para flyers.' },
     { icon: Sparkles, fr: 'Service rapide', en: 'Fast service', es: 'Servicio rapido', descFr: 'Production locale Plateau Mont-Royal. Service express disponible sur demande.', descEn: 'Local production Plateau Mont-Royal. Express service available on request.', descEs: 'Produccion local Plateau Mont-Royal. Servicio express disponible bajo pedido.' },
   ];
