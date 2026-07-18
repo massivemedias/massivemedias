@@ -917,18 +917,21 @@ function MassiveStickers() {
                   sur UNE ligne desktop (verifie en ES, le plus long) ; empilent en
                   mobile (flex-col) et peuvent wrap sur tablette (flex-wrap). */}
               <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-center lg:justify-start">
+                {/* CTA-SWAP : "Créer mes stickers custom" passe PRIMAIRE (plein rose)
+                    et EN PREMIER ; "Explorer la collection" passe SECONDAIRE (contour)
+                    et en second. Les icones suivent leur bouton (Scissors / Sparkles). */}
+                <Link to="/services/stickers" className="btn-primary justify-center">
+                  <Scissors size={16} className="mr-2" />
+                  {tx({ fr: 'Créer mes stickers custom', en: 'Create custom stickers', es: 'Crear stickers custom' })}
+                </Link>
                 <button
                   type="button"
                   onClick={() => document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                  className="btn-primary justify-center"
+                  className="btn-outline justify-center"
                 >
                   <Sparkles size={18} className="mr-2" />
                   {tx({ fr: 'Explorer la collection', en: 'Explore the collection', es: 'Explorar la coleccion' })}
                 </button>
-                <Link to="/services/stickers" className="btn-outline justify-center">
-                  <Scissors size={16} className="mr-2" />
-                  {tx({ fr: 'Créer mes stickers custom', en: 'Create custom stickers', es: 'Crear stickers custom' })}
-                </Link>
                 {favorites.length >= 1 && (
                   <button
                     type="button"
