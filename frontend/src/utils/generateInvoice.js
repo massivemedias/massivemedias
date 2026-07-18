@@ -351,6 +351,13 @@ export function generateInvoicePDF(order, type = 'invoice', options = {}) {
 
   drawTotalLine('Sous-total', fmtTotal(order.subtotal));
 
+  // RABAIS-FACTURE : ligne rabais (montant en cents, comme subtotal) entre
+  // Sous-total et Livraison. Etiquette "(-X%)" si rabais en pourcentage.
+  if (order.discountAmount > 0) {
+    const pct = order.discountType === 'percent' && order.discountValue ? ` (-${order.discountValue}%)` : '';
+    drawTotalLine(`Rabais${pct}`, `-${fmtTotal(order.discountAmount)}`);
+  }
+
   if (order.shipping > 0) {
     drawTotalLine('Livraison', fmtTotal(order.shipping));
   } else {

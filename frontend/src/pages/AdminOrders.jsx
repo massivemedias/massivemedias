@@ -96,8 +96,12 @@ const computeTaxReserve = (order) => {
   const subtotalCents = Number(order?.subtotal) || 0;
   const tpsCents = Number(order?.tps) || 0;
   const tvqCents = Number(order?.tvq) || 0;
+  // RABAIS-FACTURE : la provision d'impot porte sur le revenu NET (subtotal moins
+  // le rabais), pas sur le brut - sinon on sur-provisionne un montant non encaisse.
+  const discountCents = Number(order?.discountAmount) || 0;
+  const netSubtotalCents = Math.max(0, subtotalCents - discountCents);
   const taxesCollected = tpsCents + tvqCents;
-  const incomeProvision = Math.round(subtotalCents * INCOME_TAX_PROVISION_RATE);
+  const incomeProvision = Math.round(netSubtotalCents * INCOME_TAX_PROVISION_RATE);
   return {
     taxesCollected,
     incomeProvision,
@@ -2431,6 +2435,12 @@ function AdminOrders() {
                                   <span className="text-grey-muted">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
                                   <span className="text-heading">{dollars(order.subtotal)}</span>
                                 </div>
+                                {order.discountAmount > 0 && (
+                                  <div className="flex justify-between">
+                                    <span className="text-green-400">{tx({ fr: 'Rabais', en: 'Discount', es: 'Descuento' })}{order.discountType === 'percent' && order.discountValue ? ` (-${order.discountValue}%)` : ''}</span>
+                                    <span className="text-green-400">-{dollars(order.discountAmount)}</span>
+                                  </div>
+                                )}
                                 <div className="flex justify-between">
                                   <span className="text-grey-muted">{tx({ fr: 'Frais de livraison', en: 'Shipping', es: 'Envio' })}</span>
                                   <span className="text-heading">{order.shipping === 0 ? tx({ fr: 'Gratuit', en: 'Free', es: 'Gratis' }) : dollars(order.shipping)}</span>

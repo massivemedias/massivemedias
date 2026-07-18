@@ -81,6 +81,17 @@
       "type": "integer",
       "default": 0
     },
+    "discountType": {
+      "type": "enumeration",
+      "enum": ["percent", "fixed"]
+    },
+    "discountValue": {
+      "type": "decimal"
+    },
+    "discountAmount": {
+      "type": "integer",
+      "default": 0
+    },
     "shippingAddress": {
       "type": "json"
     },

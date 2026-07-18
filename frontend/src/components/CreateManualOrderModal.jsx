@@ -87,6 +87,9 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   // Le calcul ne multiplie plus par quantity - la quantity sert uniquement de
   // descriptif ("100x Stickers") sur la facture et le paiement Stripe.
   const [items, setItems] = useState([{ description: '', quantity: 1, lineTotal: '', isService: false }]);
+  // RABAIS-FACTURE : rabais optionnel sur la commande. Type % ou $, valeur saisie.
+  const [discountType, setDiscountType] = useState('percent');
+  const [discountValue, setDiscountValue] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -176,14 +179,25 @@ function CreateManualOrderModal({ onClose, onCreated }) {
   // par l'admin EST le subtotal. La quantity est purement descriptive.
   const subtotal = parsedItems.reduce((s, it) => s + it.lineTotal, 0);
 
+  // RABAIS-FACTURE : APERCU du rabais (le backend recalcule de toute facon, il
+  // reste la source de verite). Miroir EXACT du calcul serveur : % borne 0..100,
+  // $ borne 0..subtotal, taxes sur le NET (subtotal - rabais).
+  const rawDiscount = (() => {
+    const n = parseFloat(String(discountValue).replace(',', '.'));
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  })();
+  const discountAmount = rawDiscount > 0
+    ? Math.round(Math.min(discountType === 'percent' ? subtotal * (Math.min(100, rawDiscount) / 100) : rawDiscount, subtotal) * 100) / 100
+    : 0;
+  const taxableBase = Math.round((subtotal - discountAmount) * 100) / 100;
+
   // FIX-TAXES (avril 2026): calcul TPS/TVQ cote client + affichage du breakdown.
-  // Le backend recalcule de toute facon, mais on envoie les bons chiffres pour
-  // que l'UI admin corresponde a ce que le client verra sur Stripe.
+  // RABAIS-FACTURE : sur le NET (taxableBase). Le backend recalcule pareil.
   const TPS_RATE = 0.05;
   const TVQ_RATE = 0.09975;
-  const tps = Math.round(subtotal * TPS_RATE * 100) / 100;
-  const tvq = Math.round(subtotal * TVQ_RATE * 100) / 100;
-  const grandTotal = Math.round((subtotal + tps + tvq) * 100) / 100;
+  const tps = Math.round(taxableBase * TPS_RATE * 100) / 100;
+  const tvq = Math.round(taxableBase * TVQ_RATE * 100) / 100;
+  const grandTotal = Math.round((taxableBase + tps + tvq) * 100) / 100;
 
   const submit = async (e) => {
     e?.preventDefault?.();
@@ -237,6 +251,11 @@ function CreateManualOrderModal({ onClose, onCreated }) {
         customerPhone: customerPhone.trim() || undefined,
         items: payloadItems,
         subtotal,
+        // RABAIS-FACTURE : on envoie le TYPE + la VALEUR saisie ; le backend
+        // calcule le montant et les taxes (source de verite). On n'envoie PAS
+        // le montant de rabais ni les taxes.
+        discountType: rawDiscount > 0 ? discountType : undefined,
+        discountValue: rawDiscount > 0 ? rawDiscount : undefined,
         tps,
         tvq,
         // Le backend recalcule total = subtotal + shipping + tps + tvq, on envoie la
@@ -831,6 +850,39 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                 </p>
               </div>
 
+              {/* RABAIS-FACTURE : rabais optionnel (% ou $). Selecteur + valeur.
+                  Le backend recalcule montant + taxes (source de verite). */}
+              <div className="rounded-lg border p-3" style={sectionBg}>
+                <label className="text-[13px] text-grey-muted uppercase tracking-wider block mb-2">
+                  {tx({ fr: 'Rabais (optionnel)', en: 'Discount (optional)', es: 'Descuento (opcional)' })}
+                </label>
+                <div className="flex items-stretch gap-2">
+                  <div className="flex rounded-lg overflow-hidden border" style={dividerBorder}>
+                    <button
+                      type="button"
+                      onClick={() => setDiscountType('percent')}
+                      className={`px-3.5 text-sm font-bold transition-colors ${discountType === 'percent' ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading'}`}
+                    >%</button>
+                    <button
+                      type="button"
+                      onClick={() => setDiscountType('fixed')}
+                      className={`px-3.5 text-sm font-bold transition-colors ${discountType === 'fixed' ? 'bg-accent text-white' : 'text-grey-muted hover:text-heading'}`}
+                    >$</button>
+                  </div>
+                  <input
+                    type="number"
+                    min="0"
+                    step={discountType === 'percent' ? '1' : '0.01'}
+                    max={discountType === 'percent' ? '100' : undefined}
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                    placeholder={discountType === 'percent' ? '10' : '25.00'}
+                    className="flex-1 rounded-lg border px-3 py-2 text-sm bg-transparent text-heading focus:outline-none focus:border-accent"
+                    style={dividerBorder}
+                  />
+                </div>
+              </div>
+
               {/* Breakdown financier strict : sous-total + TPS + TVQ + Grand Total */}
               <div className="rounded-lg border overflow-hidden" style={sectionBg}>
                 <div className="flex items-center justify-between px-4 py-2 border-b" style={dividerBorder}>
@@ -839,6 +891,14 @@ function CreateManualOrderModal({ onClose, onCreated }) {
                   </span>
                   <span className="text-heading text-sm font-semibold">{subtotal.toFixed(2)}$</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex items-center justify-between px-4 py-2 border-b" style={dividerBorder}>
+                    <span className="text-green-400 text-sm">
+                      {tx({ fr: 'Rabais', en: 'Discount', es: 'Descuento' })}{discountType === 'percent' ? ` (-${Math.min(100, rawDiscount)}%)` : ''}
+                    </span>
+                    <span className="text-green-400 text-sm font-semibold">-{discountAmount.toFixed(2)}$</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between px-4 py-2 border-b" style={dividerBorder}>
                   <span className="text-grey-muted text-sm">
                     {tx({ fr: 'TPS (5%)', en: 'GST (5%)', es: 'TPS (5%)' })}
