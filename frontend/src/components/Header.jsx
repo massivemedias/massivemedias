@@ -67,14 +67,13 @@ function Header() {
   // en respectant les slugs caches (merch via HIDDEN_SERVICE_SLUGS). "La
   // Collection" devient le pilier "Stickers" (meme URL /stickers). "A propos"
   // quitte la barre et vit dans le footer. REGLE ABSOLUE : aucune URL ne change.
-  const printsLabel = services.find((s) => s.slug === 'prints')?.name || 'Prints';
-  // ARCHI-04 : le service fine art (/services/prints) entre dans le mega-menu
-  // Services (il en etait exclu quand "Prints" etait un pilier autonome). Libelle
-  // distinct "Prints custom" pour ne pas doublonner le pilier "Prints" -> /artistes.
+  // MENU-V2 : "Stickers" (/services/stickers) et "Prints" (/services/prints)
+  // sont devenus des PILIERS de 1er niveau. On les RETIRE du mega-menu Services
+  // pour ne pas creer de doublon confus. Le mega-menu = les autres offres sur
+  // mesure (Design, Web ; Merch si un jour de-cache).
   const serviceMenu = services
-    .map((s, i) => ({ ...s, Icon: SERVICE_ICONS[i] }))
-    .filter((s) => !HIDDEN_SERVICE_SLUGS.includes(s.slug))
-    .map((s) => ({ ...s, label: s.slug === 'prints' ? tx({ fr: 'Prints custom', en: 'Custom prints', es: 'Prints custom' }) : s.name }));
+    .map((s, i) => ({ ...s, Icon: SERVICE_ICONS[i], label: s.name }))
+    .filter((s) => !HIDDEN_SERVICE_SLUGS.includes(s.slug) && !['prints', 'stickers'].includes(s.slug));
   const onServicePage = pathname.startsWith('/services');
 
   // FIX-NAV-SCROLL (27 avril 2026) : helper pour scroller en haut quand on
@@ -105,8 +104,19 @@ function Header() {
     clearTimeout(servicesTimeoutRef.current);
     servicesTimeoutRef.current = setTimeout(() => setServicesOpen(false), 150);
   };
-  // Fermer quand on change de page
-  useEffect(() => { setServicesOpen(false); }, [pathname]);
+  // MENU-V2 : dropdown "Massive Collection" (meme mecanique que Services).
+  const [collectionOpen, setCollectionOpen] = useState(false);
+  const collectionTimeoutRef = useRef(null);
+  const openCollection = () => {
+    clearTimeout(collectionTimeoutRef.current);
+    setCollectionOpen(true);
+  };
+  const closeCollection = () => {
+    clearTimeout(collectionTimeoutRef.current);
+    collectionTimeoutRef.current = setTimeout(() => setCollectionOpen(false), 150);
+  };
+  // Fermer les deux dropdowns quand on change de page
+  useEffect(() => { setServicesOpen(false); setCollectionOpen(false); }, [pathname]);
 
   return (
     <>
@@ -121,28 +131,93 @@ function Header() {
 
             {/* Navigation Desktop */}
             <div className="hidden lg:flex items-center gap-5 xl:gap-7">
-              {/* Pilier Stickers = boutique Collection (meme URL /stickers, gated) */}
-              {STICKERS_SHOP_ENABLED && (
-                <SmartLink
-                  to="/stickers"
-                  onClick={navClick('/stickers')}
-                  className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/stickers') ? 'text-accent' : 'nav-link'}`}
-                >
-                  {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
-                </SmartLink>
-              )}
-
-              {/* ARCHI-04 : pilier "Prints" -> hub "Prints d'artistes" (/artistes,
-                  URL inchangee). Le service fine art (/services/prints) vit dans le
-                  mega-menu Services sous "Prints custom". Ordre barre (juillet) :
-                  Prints AVANT Mini Massive. */}
+              {/* MENU-V2 : "Stickers" = configurateur CUSTOM (/services/stickers,
+                  URL inchangee). Toujours visible : le custom ne depend pas du
+                  flag boutique. La collection des 385 vit sous "Massive Collection". */}
               <SmartLink
-                to="/artistes"
-                onClick={navClick('/artistes')}
-                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/artistes') || isActive('/boutique') ? 'text-accent' : 'nav-link'}`}
+                to="/services/stickers"
+                onClick={navClick('/services/stickers')}
+                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/services/stickers') ? 'text-accent' : 'nav-link'}`}
               >
-                {printsLabel}
+                {tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}
               </SmartLink>
+
+              {/* MENU-V2 : "Prints" = page prints CUSTOM (/services/prints, URL
+                  inchangee). Le hub prints d'artistes (/artistes) vit sous
+                  "Massive Collection". */}
+              <SmartLink
+                to="/services/prints"
+                onClick={navClick('/services/prints')}
+                className={`transition-colors duration-200 font-medium text-sm whitespace-nowrap ${isActive('/services/prints') ? 'text-accent' : 'nav-link'}`}
+              >
+                {tx({ fr: 'Prints', en: 'Prints', es: 'Prints' })}
+              </SmartLink>
+
+              {/* MENU-V2 : dropdown "Massive Collection" = les offres PRETES A
+                  L'ACHAT. Collection stickers 385 (/stickers, gated par le flag
+                  boutique) + hub prints d'artistes (/artistes). URLs inchangees. */}
+              <div
+                className="relative"
+                onMouseEnter={openCollection}
+                onMouseLeave={closeCollection}
+              >
+                <button
+                  type="button"
+                  onClick={() => setCollectionOpen(v => !v)}
+                  className={`flex items-center gap-1 transition-colors duration-200 font-medium text-sm whitespace-nowrap ${(isActive('/stickers') || isActive('/artistes') || isActive('/boutique')) ? 'text-accent' : 'nav-link'}`}
+                  aria-expanded={collectionOpen}
+                  aria-haspopup="true"
+                >
+                  {tx({ fr: 'Collection Massive', en: 'Massive Collection', es: 'Colección Massive' })}
+                  <ChevronDown size={14} className={`transition-transform ${collectionOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {collectionOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[320px] max-w-[92vw] rounded-2xl shadow-2xl shadow-black/40 p-3 z-50"
+                      style={{ backgroundColor: 'var(--bg-body, #3D0079)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    >
+                      <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-grey-muted">
+                        {tx({ fr: 'Prêt à coller, prêt à accrocher', en: 'Ready to stick, ready to hang', es: 'Listo para pegar y colgar' })}
+                      </p>
+                      <div className="grid gap-1.5">
+                        {STICKERS_SHOP_ENABLED && (
+                          <SmartLink
+                            to="/stickers"
+                            onClick={navClick('/stickers', () => setCollectionOpen(false))}
+                            className={`flex items-start gap-3 px-3 py-2.5 rounded-xl transition-colors ${isActive('/stickers') ? 'bg-accent/15 text-accent' : 'nav-link hover:bg-white/5'}`}
+                          >
+                            <span className="w-9 h-9 rounded-lg flex items-center justify-center bg-accent/10 flex-shrink-0">
+                              <Sticker size={17} className="text-accent" />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block font-semibold text-sm leading-tight">{tx({ fr: 'Stickers 3 $', en: 'Stickers $3', es: 'Stickers 3 $' })}</span>
+                              <span className="block text-xs mt-0.5 text-grey-muted leading-snug">{tx({ fr: 'La collection de designs originaux', en: 'Our original design collection', es: 'La colección de diseños originales' })}</span>
+                            </span>
+                          </SmartLink>
+                        )}
+                        <SmartLink
+                          to="/artistes"
+                          onClick={navClick('/artistes', () => setCollectionOpen(false))}
+                          className={`flex items-start gap-3 px-3 py-2.5 rounded-xl transition-colors ${(isActive('/artistes') || isActive('/boutique')) ? 'bg-accent/15 text-accent' : 'nav-link hover:bg-white/5'}`}
+                        >
+                          <span className="w-9 h-9 rounded-lg flex items-center justify-center bg-accent/10 flex-shrink-0">
+                            <Printer size={17} className="text-accent" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block font-semibold text-sm leading-tight">{tx({ fr: 'Prints d\'artistes', en: 'Artist prints', es: 'Prints de artistas' })}</span>
+                            <span className="block text-xs mt-0.5 text-grey-muted leading-snug">{tx({ fr: 'Tirages des artistes du collectif', en: 'Prints by our collective artists', es: 'Tirajes de los artistas del colectivo' })}</span>
+                          </span>
+                        </SmartLink>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Pilier Mini Massive (etiquettes enfants), gated. */}
               {ETIQUETTES_VISIBLE && (
@@ -366,9 +441,40 @@ function Header() {
 
               {/* Scrollable links */}
               <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 flex flex-col gap-0">
-                {/* SITE-ARCHI-02 : Boutique (produits) */}
+                {/* MENU-V2 : Personnalise = les configurateurs CUSTOM */}
                 <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1">
-                  {tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' })}
+                  {tx({ fr: 'Personnalisé', en: 'Custom', es: 'Personalizado' })}
+                </p>
+
+                <SmartLink
+                  to="/services/stickers"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/services/stickers') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  onClick={navClick('/services/stickers', close)}
+                >
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                    <Sticker size={14} className="text-accent" />
+                  </span>
+                  <span className="font-semibold text-[14px]">{tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}</span>
+                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                </SmartLink>
+
+                <SmartLink
+                  to="/services/prints"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl mobile-drawer-item group transition-colors ${isActive('/services/prints') ? 'bg-accent/15 text-accent' : 'nav-link'}`}
+                  onClick={navClick('/services/prints', close)}
+                >
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
+                    <Printer size={14} className="text-accent" />
+                  </span>
+                  <span className="font-semibold text-[14px]">{tx({ fr: 'Prints', en: 'Prints', es: 'Prints' })}</span>
+                  <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
+                </SmartLink>
+
+                <div className="h-px mobile-drawer-sep mx-2 my-1.5" />
+
+                {/* MENU-V2 : Massive Collection = pret a l'achat */}
+                <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1">
+                  {tx({ fr: 'Collection Massive', en: 'Massive Collection', es: 'Colección Massive' })}
                 </p>
 
                 {STICKERS_SHOP_ENABLED && (
@@ -380,7 +486,7 @@ function Header() {
                     <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
                       <Sticker size={14} className="text-accent" />
                     </span>
-                    <span className="font-semibold text-[14px]">{tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}</span>
+                    <span className="font-semibold text-[14px]">{tx({ fr: 'Stickers 3 $', en: 'Stickers $3', es: 'Stickers 3 $' })}</span>
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                   </SmartLink>
                 )}
@@ -393,9 +499,13 @@ function Header() {
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
                     <Printer size={14} className="text-accent" />
                   </span>
-                  <span className="font-semibold text-[14px]">{printsLabel}</span>
+                  <span className="font-semibold text-[14px]">{tx({ fr: 'Prints d\'artistes', en: 'Artist prints', es: 'Prints de artistas' })}</span>
                   <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                 </SmartLink>
+
+                {/* Mini Massive : pilier distinct (comme au desktop), separe de la
+                    Collection Massive. */}
+                {ETIQUETTES_VISIBLE && <div className="h-px mobile-drawer-sep mx-2 my-1.5" />}
 
                 {ETIQUETTES_VISIBLE && (
                   <SmartLink
