@@ -132,6 +132,69 @@ export function getStickerSizeTier(size: any): 'standard' | 'medium' | 'large' {
 export const STICKER_RETAIL_MAX_QTY = 500;
 
 /**
+ * RABAIS-FACTURE / RABAIS-CLIENT : calcul UNIQUE d'un rabais sur un sous-total
+ * (en dollars). Un seul comportement partout : commande manuelle (manualCreate)
+ * ET rabais personnel client (createCheckoutSession) ET affichage front (miroir
+ * dans pricingData.js). REGLE : % borne 0..100, $ borne 0..subtotal (le total
+ * ne devient jamais negatif). La LIVRAISON n'est jamais rabaissee et les TAXES
+ * portent sur le NET (subtotal - rabais) - ce calcul-ci ne rend QUE le rabais,
+ * l'appelant applique la base nette et recalcule les taxes.
+ *
+ * Retour : { discountAmount (dollars, arrondi cent), type, value } normalises.
+ * Rabais nul / type invalide -> { 0, null, 0 }.
+ */
+export function computeOrderDiscount(
+  subtotal: number,
+  discountType: any,
+  discountValue: any,
+): { discountAmount: number; type: 'percent' | 'fixed' | null; value: number } {
+  const sub = Number(subtotal);
+  const raw = typeof discountValue === 'string'
+    ? parseFloat(discountValue.replace(',', '.'))
+    : Number(discountValue);
+  const v = Number.isFinite(raw) ? raw : 0;
+  if (!(sub > 0) || !(v > 0) || (discountType !== 'percent' && discountType !== 'fixed')) {
+    return { discountAmount: 0, type: null, value: 0 };
+  }
+  let amount: number;
+  let value: number;
+  if (discountType === 'percent') {
+    value = Math.min(100, Math.max(0, v));
+    amount = sub * (value / 100);
+  } else {
+    value = Math.max(0, v);
+    amount = value;
+  }
+  amount = Math.round(Math.min(amount, sub) * 100) / 100;
+  return { discountAmount: amount, type: discountType, value };
+}
+
+/**
+ * RABAIS-CLIENT : extrait le rabais personnel ACTIF d'une fiche client, ou null.
+ * "Actif" = type valide (percent/fixed) ET valeur > 0 ET (pas d'expiration OU
+ * date d'expiration future). UNE seule definition de "actif", partagee par le
+ * checkout (order.ts) et l'endpoint /clients/me/discount (client.ts) pour que
+ * l'affichage compte/panier et l'application serveur ne divergent jamais.
+ *
+ * `now` injectable pour les tests ; defaut = Date.now(). Ne calcule PAS le
+ * montant (il depend du sous-total du panier) - juste les metadonnees du rabais.
+ */
+export function getActiveClientDiscount(
+  client: any,
+  now: number = Date.now(),
+): { type: 'percent' | 'fixed'; value: number; expiresAt: string | null; note: string | null } | null {
+  if (!client) return null;
+  const type = client.discountType;
+  const raw = typeof client.discountValue === 'string'
+    ? parseFloat(client.discountValue.replace(',', '.'))
+    : Number(client.discountValue);
+  const value = Number.isFinite(raw) ? raw : 0;
+  if ((type !== 'percent' && type !== 'fixed') || !(value > 0)) return null;
+  if (client.discountExpiresAt && new Date(client.discountExpiresAt).getTime() <= now) return null;
+  return { type, value, expiresAt: client.discountExpiresAt || null, note: client.discountNote || null };
+}
+
+/**
  * Grille { qty: price } pour une (taille, finish) donnee. Miroir EXACT de
  * getStickerGridForSize (frontend/pricingData.js). `finish` est un ID de
  * finition (matte / clear / holographic / matte-pro / ...), PAS un label.

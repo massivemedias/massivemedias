@@ -12,6 +12,8 @@ import AddressAutocomplete from '../components/AddressAutocomplete';
 import { calculateShipping as calcShipping } from '../utils/shipping';
 import { formatPrice } from '../utils/formatCurrency';
 import { collectionProgress } from '../utils/collectionCart';
+import { usePersonalDiscount } from '../hooks/usePersonalDiscount';
+import { resolvePersonalVsPromo } from '../utils/personalDiscount';
 
 const provinces = [
   { code: 'QC', fr: 'Quebec', en: 'Quebec', es: 'Quebec' },
@@ -77,9 +79,18 @@ function Checkout() {
       const lineTotal = i.unitPrice != null ? i.quantity * i.unitPrice : i.totalPrice;
       return sum + Math.round((lineTotal || 0) * ARTIST_DISCOUNT);
     }, 0);
-  // Promo code discount applied on full cart total
-  const promoDiscount = discountAmount || 0;
-  const subtotal = cartTotal - artistDiscountTotal - promoDiscount;
+  const subAfterArtist = cartTotal - artistDiscountTotal;
+
+  // RABAIS-CLIENT : rabais personnel du client connecte (affichage ; recalcule
+  // serveur au checkout). "Le meilleur gagne" vs code promo, base post-artiste.
+  // Sans rabais perso actif => resolved=null et le calcul promo existant est
+  // conserve a l'identique.
+  const { personal } = usePersonalDiscount();
+  const resolved = personal ? resolvePersonalVsPromo(subAfterArtist, personal, discountPercent) : null;
+  const personalLine = resolved?.winner === 'personal' ? resolved.personalDiscount : 0;
+  const promoDiscount = resolved ? (resolved.winner === 'promo' ? resolved.promoDiscount : 0) : (discountAmount || 0);
+  const promoSuperseded = resolved?.winner === 'personal' && !!promoCode;
+  const subtotal = +(subAfterArtist - personalLine - promoDiscount).toFixed(2);
 
   const { shippingCost: shippingCalc } = useMemo(() => calcShipping(formData.province, formData.codePostal, items), [formData.province, formData.codePostal, items]);
   const shipping = deliveryMethod === 'pickup' ? 0 : shippingCalc;
@@ -470,12 +481,21 @@ function Checkout() {
                   <div className="border-t pt-4 card-border space-y-2">
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-grey-muted">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
-                      <span className={`text-heading ${(artistDiscountTotal > 0 || promoDiscount > 0) ? 'line-through text-grey-muted' : ''}`}>{cartTotal.toFixed(2)}$</span>
+                      <span className={`text-heading ${(artistDiscountTotal > 0 || promoDiscount > 0 || personalLine > 0) ? 'line-through text-grey-muted' : ''}`}>{cartTotal.toFixed(2)}$</span>
                     </div>
                     {artistDiscountTotal > 0 && (
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-green-400">{tx({ fr: `Rabais artiste (-${Math.round(ARTIST_DISCOUNT * 100)}%)`, en: `Artist discount (-${Math.round(ARTIST_DISCOUNT * 100)}%)`, es: `Descuento artista (-${Math.round(ARTIST_DISCOUNT * 100)}%)` })}</span>
                         <span className="text-green-400">-{artistDiscountTotal.toFixed(2)}$</span>
+                      </div>
+                    )}
+                    {personalLine > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-green-400">
+                          {tx({ fr: 'Ton rabais personnel', en: 'Your personal discount', es: 'Tu descuento personal' })}
+                          {' '}({personal.type === 'percent' ? `-${Number(personal.value)}%` : `-${formatPrice(personal.value)}`})
+                        </span>
+                        <span className="text-green-400">-{personalLine.toFixed(2)}$</span>
                       </div>
                     )}
                     {promoDiscount > 0 && (
@@ -485,6 +505,15 @@ function Checkout() {
                         </span>
                         <span className="text-green-400">-{promoDiscount.toFixed(2)}$</span>
                       </div>
+                    )}
+                    {promoSuperseded && (
+                      <p className="text-grey-muted text-xs">
+                        {tx({
+                          fr: `Code ${promoCode} non applique : ton rabais personnel est plus avantageux.`,
+                          en: `Code ${promoCode} not applied: your personal discount is better.`,
+                          es: `Codigo ${promoCode} no aplicado: tu descuento personal es mejor.`,
+                        })}
+                      </p>
                     )}
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-grey-muted">

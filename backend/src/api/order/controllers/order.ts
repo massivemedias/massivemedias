@@ -55,11 +55,14 @@ import {
   STICKER_COLLECTION_UNIT_PRICE,
   STICKER_COLLECTION_MIN_UNITS,
   MYSTERY_PACK_PRICES,
+  // RABAIS-FACTURE / RABAIS-CLIENT : calcul de rabais partage (un seul comportement).
+  computeOrderDiscount,
+  getActiveClientDiscount,
 } from '../../../utils/pricing-config';
 // SEC-04 (8 juillet 2026) : registre central des familles de SKU. Whitelist
 // stricte des productId au checkout public, prix toujours force serveur.
 import { resolveSkuPrice, hashIpForLog } from '../../../utils/sku-registry';
-import { requireAdminAuth, requireUserAuth } from '../../../utils/auth';
+import { requireAdminAuth, requireUserAuth, getOptionalUser } from '../../../utils/auth';
 import { dispatchWebhook } from '../../../utils/webhook';
 import { nextInvoiceNumber } from '../../../utils/invoice-counter';
 import { withArtistLock } from '../../../utils/artist-lock';
@@ -661,19 +664,67 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       }
     }
 
-    // Appliquer le rabais artiste sur le subtotal
+    // Appliquer le rabais artiste sur le subtotal (mecanique a part : artiste
+    // achetant ses propres prints, hors de la comparaison "meilleur gagne").
     subtotal = subtotal - artistDiscountTotal;
 
-    // PROMO_CODES importe de src/utils/promo-codes.ts
+    // RABAIS-CLIENT : rabais personnel du client, applique SERVEUR depuis la
+    // SESSION AUTHENTIFIEE (getOptionalUser verifie le JWT, jamais le body -
+    // sinon on pourrait reclamer le rabais d'un autre). Lu sur la fiche client,
+    // actif = type + valeur>0 + (pas d'expiration OU future). Calcul via le
+    // helper PARTAGE (meme que RABAIS-FACTURE) sur le subtotal post-artiste.
+    let personalDiscount = 0;
+    let personalDiscType: 'percent' | 'fixed' | null = null;
+    let personalDiscValue = 0;
+    try {
+      const authed = await getOptionalUser(ctx);
+      if (authed) {
+        const clients = await strapi.documents('api::client.client').findMany({
+          filters: { $or: [{ supabaseUserId: authed.userId }, { email: { $eqi: authed.email } }] } as any,
+          limit: 1,
+        });
+        const c: any = clients && clients.length > 0 ? clients[0] : null;
+        const active = getActiveClientDiscount(c); // meme "actif" que /me/discount
+        if (active) {
+          const d = computeOrderDiscount(subtotal, active.type, active.value);
+          personalDiscount = d.discountAmount;
+          personalDiscType = d.type;
+          personalDiscValue = d.value;
+        }
+      }
+    } catch (e: any) {
+      strapi.log.warn(`[createCheckoutSession] lookup rabais client echoue: ${e?.message || e}`);
+    }
+
+    // Candidat PROMO (sur le subtotal post-artiste), pas encore applique.
     let promoDiscount = 0;
-    let appliedPromoCode = '';
     if (promoCode && typeof promoCode === 'string') {
       const promo = PROMO_CODES[promoCode.toUpperCase().trim()];
-      if (promo) {
-        promoDiscount = Math.round(subtotal * promo.discountPercent / 100);
-        appliedPromoCode = promoCode.toUpperCase().trim();
-        subtotal = subtotal - promoDiscount;
-      }
+      if (promo) promoDiscount = Math.round(subtotal * promo.discountPercent / 100 * 100) / 100;
+    }
+
+    // Sous-total AVANT le rabais gagnant (post-artiste). On le stocke tel quel
+    // dans order.subtotal pour que courriel/facture affichent "Sous-total X puis
+    // Rabais -Y" correctement (le net vit dans le champ `total`, calcule a part).
+    const subtotalBeforeBest = subtotal;
+
+    // "LE MEILLEUR GAGNE" (choix Mika) : rabais perso et promo ne CUMULENT PAS.
+    // On applique le PLUS AVANTAGEUX des deux, jamais les deux. Les champs
+    // discount* de la commande = le rabais PERSONNEL (courriel + facture le
+    // rendent) ; appliedPromoCode/promoDiscount = la voie promo existante.
+    let appliedPromoCode = '';
+    let orderDiscountType: 'percent' | 'fixed' | null = null;
+    let orderDiscountValue = 0;
+    let orderDiscountAmount = 0;
+    if (personalDiscount > 0 && personalDiscount >= promoDiscount) {
+      subtotal = Math.round((subtotal - personalDiscount) * 100) / 100;
+      orderDiscountType = personalDiscType;
+      orderDiscountValue = personalDiscValue;
+      orderDiscountAmount = personalDiscount;
+      promoDiscount = 0; // le promo est ecarte
+    } else if (promoDiscount > 0) {
+      subtotal = Math.round((subtotal - promoDiscount) * 100) / 100;
+      appliedPromoCode = promoCode.toUpperCase().trim();
     }
 
     const province = shippingAddress?.province || 'QC';
@@ -797,6 +848,11 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         shippingAddress: shippingAddress || null,
         promoCode: appliedPromoCode || null,
         promoDiscount: promoDiscount > 0 ? Math.round(promoDiscount * 100) : 0,
+        // RABAIS-CLIENT : rabais personnel gagnant (0 si promo a gagne ou aucun).
+        // Meme trio de champs que RABAIS-FACTURE -> courriel + facture le rendent.
+        discountType: orderDiscountAmount > 0 ? orderDiscountType : null,
+        discountValue: orderDiscountAmount > 0 ? orderDiscountValue : 0,
+        discountAmount: orderDiscountAmount > 0 ? Math.round(orderDiscountAmount * 100) : 0,
       };
       if (client) {
         orderData.client = { connect: [{ documentId: client.documentId }] };
@@ -1929,25 +1985,13 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
     subtotal = toNum(subtotal);
     const shippingNum = toNum(shipping);
 
-    // RABAIS-FACTURE : le rabais est calcule SERVEUR (jamais un montant envoye par
-    // le front). La livraison n'est PAS rabaissee ; les taxes portent sur le NET
-    // (subtotal - rabais). % borne a 0..100, $ borne a 0..subtotal -> le total ne
-    // devient jamais negatif. discountAmount stocke plus bas en cents (x100).
-    let discountAmount = 0;
-    let normDiscountType: 'percent' | 'fixed' | null = null;
-    let normDiscountValue = 0;
-    const rawDiscount = toNum(discountValue);
-    if (rawDiscount > 0 && (discountType === 'percent' || discountType === 'fixed')) {
-      normDiscountType = discountType;
-      if (discountType === 'percent') {
-        normDiscountValue = Math.min(100, Math.max(0, rawDiscount));
-        discountAmount = subtotal * (normDiscountValue / 100);
-      } else {
-        normDiscountValue = Math.max(0, rawDiscount);
-        discountAmount = normDiscountValue;
-      }
-      discountAmount = Math.round(Math.min(discountAmount, subtotal) * 100) / 100;
-    }
+    // RABAIS-FACTURE : rabais calcule SERVEUR via le helper PARTAGE (meme calcul
+    // que le rabais personnel client au checkout). Jamais un montant envoye par le
+    // front. Livraison non rabaissee ; taxes sur le NET (recalculees plus bas).
+    const disc = computeOrderDiscount(subtotal, discountType, discountValue);
+    const discountAmount = disc.discountAmount;
+    const normDiscountType = disc.type;
+    const normDiscountValue = disc.value;
 
     // Base taxable = subtotal APRES rabais. Taxes QC TOUJOURS recalculees serveur
     // (TPS 5%, TVQ 9.975%) : on ne fait PLUS confiance aux tps/tvq du front

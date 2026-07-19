@@ -14,6 +14,23 @@ export default {
       handler: 'client.updateMyFavoris',
       config: { auth: false },
     },
+    // RABAIS-CLIENT : rabais personnel du user connecte (user-self, garde par
+    // requireUserAuth dans le handler). AVANT /clients/:documentId sinon "me"
+    // serait capture comme documentId.
+    {
+      method: 'GET',
+      path: '/clients/me/discount',
+      handler: 'client.getMyDiscount',
+      config: { auth: false },
+    },
+    // RABAIS-CLIENT (admin) : upsert du rabais personnel par email. AVANT
+    // /clients/:documentId. Garde requireAdminAuth dans le handler.
+    {
+      method: 'PUT',
+      path: '/clients/admin/discount',
+      handler: 'client.adminSetDiscount',
+      config: { auth: false },
+    },
     {
       method: 'GET',
       path: '/clients',

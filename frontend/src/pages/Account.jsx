@@ -25,6 +25,7 @@ import artistsData from '../data/artistPricing';
 import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useArtists } from '../hooks/useArtists';
+import { usePersonalDiscount } from '../hooks/usePersonalDiscount';
 import FavoriteHeart from '../components/FavoriteHeart';
 import OrderTimeline from '../components/OrderTimeline';
 import { MASSIVE_STICKERS } from '../data/massiveStickers';
@@ -129,6 +130,8 @@ function Account() {
   const { addToCart } = useCart();
   const { favorites, favoritesPrints } = useFavorites();
   const { artists: cmsArtistsMap } = useArtists();
+  // RABAIS-CLIENT : rabais personnel actif du client, affiche en lecture seule.
+  const { personal: personalDiscount } = usePersonalDiscount();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const meta = user?.user_metadata || {};
@@ -365,6 +368,39 @@ function Account() {
   // --- Contenu partage: Profile, Address, Security ---
   const renderProfileContent = () => (
     <form onSubmit={handleProfileSave} className="rounded-2xl p-6 md:p-10 card-bg">
+      {/* RABAIS-CLIENT : rabais personnel actif (lecture seule ; assigne par
+          l'equipe Massive, applique automatiquement a tes commandes). */}
+      {personalDiscount && (
+        <div className="mb-8 p-5 rounded-xl bg-green-500/10 border border-green-500/20">
+          <div className="flex items-center gap-3">
+            <Gift size={22} className="text-green-400 flex-shrink-0" />
+            <div>
+              <p className="text-heading font-semibold text-sm">
+                {tx({ fr: 'Ton rabais personnel', en: 'Your personal discount', es: 'Tu descuento personal' })}
+                {' '}
+                <span className="text-green-400 font-bold">
+                  {personalDiscount.type === 'percent' ? `-${Number(personalDiscount.value)} %` : `-${Number(personalDiscount.value)} $`}
+                </span>
+              </p>
+              <p className="text-grey-muted text-xs mt-0.5">
+                {tx({
+                  fr: 'Applique automatiquement a tes commandes.',
+                  en: 'Applied automatically to your orders.',
+                  es: 'Aplicado automaticamente a tus pedidos.',
+                })}
+                {personalDiscount.expiresAt && (
+                  <>
+                    {' '}
+                    {tx({ fr: "Valable jusqu'au", en: 'Valid until', es: 'Valido hasta' })}
+                    {' '}
+                    {new Date(personalDiscount.expiresAt).toLocaleDateString(lang === 'en' ? 'en-CA' : lang === 'es' ? 'es-ES' : 'fr-CA')}.
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <h3 className="text-heading font-semibold text-lg mb-6 flex items-center gap-2">
         <User size={20} className="text-accent" />
         {tx({ fr: 'Informations personnelles', en: 'Personal information', es: 'Informacion personal' })}
