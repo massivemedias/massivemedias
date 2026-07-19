@@ -4,6 +4,7 @@ import { MERCH_HIDDEN } from '../config/merchStatus';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, MessageSquare, Camera, Store, LayoutGrid, Grid3x3, List, ChevronDown, Paintbrush, Aperture } from 'lucide-react';
 import CtaBanner from '../components/CtaBanner';
+import ArtistCover from '../components/ArtistCover';
 import SEO from '../components/SEO';
 import { useLang } from '../i18n/LanguageContext';
 import { useArtists } from '../hooks/useArtists';
@@ -539,9 +540,9 @@ function Artistes() {
                       to={creator.link}
                       className="group block relative overflow-hidden rounded-xl aspect-[4/5]"
                     >
-                      <img
+                      <ArtistCover
                         src={creator.heroImage || creator.avatar}
-                        alt={`${creator.name} - artiste Massive Medias`}
+                        name={creator.name}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         loading={index < 4 ? 'eager' : 'lazy'}
                       />
@@ -599,9 +600,9 @@ function Artistes() {
                     to={creator.link}
                     className="group block relative overflow-hidden rounded-lg aspect-square"
                   >
-                    <img
+                    <ArtistCover
                       src={creator.heroImage || creator.avatar}
-                      alt={creator.name}
+                      name={creator.name}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                       loading={index < 6 ? 'eager' : 'lazy'}
                     />
@@ -684,9 +685,9 @@ function Artistes() {
                             <div className="flex flex-col md:flex-row gap-6">
                               {/* Profile photo */}
                               <div className="shrink-0">
-                                <img loading="lazy"
+                                <ArtistCover
                                   src={creator.heroImage || creator.avatar}
-                                  alt={creator.name}
+                                  name={creator.name}
                                   className="w-28 h-28 md:w-36 md:h-36 rounded-xl object-cover border border-white/10"
                                 />
                               </div>
