@@ -1,43 +1,19 @@
-# ============================================================================
-# REDIRECTS — SOURCE UNIQUE VERSIONNEE (SEO-2026 volet 5, 20 juillet 2026).
-# Rapatries du dashboard Cloudflare (13 regles inventoriees par sondage prod) +
-# consolidations /boutique (volets 1 & 3). Cloudflare Pages traite ce fichier de
-# HAUT EN BAS, 1re correspondance gagne -> les 301 AVANT le catch-all SPA.
-#
-# >>> MIKA : des regles peuvent ENCORE exister dans le dashboard Cloudflare (elles
-# s'appliquent AVANT ce fichier). Avant d'en retirer une du dashboard, croise la
-# liste du dashboard avec CE fichier. J'ai inventorie 13 regles "contenu" ; si tu
-# en comptes 15, les ~2 restantes sont probablement infra (www->apex, http->https)
-# gerees par CF et qui n'ont PAS leur place ici. Ne retire du dashboard que ce qui
-# est couvert ci-dessous ; envoie-moi toute regle manquante, je l'ajoute. <<<
-# ============================================================================
-
-# --- Anciennes pages entierement retirees -> accueil ---
-/services            /                 301
-/tarifs              /                 301
-/portfolio           /                 301
-
-# --- Anciens slugs de services -> slugs canoniques actuels ---
-/services/impression-fine-art   /services/prints     301
-/services/flyers-cartes         /services/prints     301
-/services/stickers-custom       /services/stickers   301
-/services/sublimation-merch     /services/merch      301
-/services/design-graphique      /services/design     301
-/services/developpement-web     /services/web        301
-
-# --- Legacy /boutique/* -> equivalents /services actuels (volet 1 : fin de la
-#     migration commencee au dashboard CF ; tue le doublon de contenu) ---
-/boutique/stickers    /services/stickers   301
-/boutique/web         /services/web        301
-/boutique/design      /services/design     301
-/boutique/fine-art    /services/prints     301
-/boutique/flyers      /services/prints     301
-
-# --- Merch en pause (MERCH_PAUSED) -> accueil. Au relaunch, repointer ces 3
-#     lignes vers /services/merch (volet 3) ---
-/boutique/sublimation      /   301
-/boutique/merch-tshirt     /   301
-/boutique/merch/*          /   301
-
-# --- Fallback SPA (DOIT rester la DERNIERE ligne) ---
-/*   /index.html   200
+# SEO-2026 redirects (voir PR 149). Regles specifiques d'abord, SPA en dernier.
+/services / 301
+/tarifs / 301
+/portfolio / 301
+/services/impression-fine-art /services/prints 301
+/services/flyers-cartes /services/prints 301
+/services/stickers-custom /services/stickers 301
+/services/sublimation-merch /services/merch 301
+/services/design-graphique /services/design 301
+/services/developpement-web /services/web 301
+/boutique/stickers /services/stickers 301
+/boutique/web /services/web 301
+/boutique/design /services/design 301
+/boutique/fine-art /services/prints 301
+/boutique/flyers /services/prints 301
+/boutique/sublimation / 301
+/boutique/merch-tshirt / 301
+/boutique/merch/* / 301
+/* /index.html 200
