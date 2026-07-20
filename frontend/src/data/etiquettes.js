@@ -70,6 +70,31 @@ export const KIDS_SAFE = [
   'massive-mimi', 'massive-poskai', 'massive-pretty', 'massive-piraton',
 ]
 
+// KIDS-GRID (20 juillet 2026) : designs RETIRES DU CONFIGURATEUR ETIQUETTES car
+// illisibles a l'echelle etiquette (18mm de haut) - collages charges, texte dans
+// l'image, ornemental fin, mini-scenes, bas contraste, animaux realistes trop
+// detailles. Ils RESTENT dans KIDS_SAFE (catalogue stickers + magazine home, ou
+// ils s'affichent en grand) : le filtre ne s'applique QU'AU pool du configurateur.
+// Curation validee par Mika (35 "retirer" + 17 "doubteux" tranches retirer).
+export const ETIQUETTE_LOWRES_EXCLUDED = new Set([
+  // collages charges + texte + ornemental fin
+  'massive-animals-meeting', 'massive-animals', 'massive-hot-dogs-meeting', 'massive-chien-liseur', 'massive-mami-canard',
+  'massive-hotdog', 'massive-ramen', 'massive-woods', 'massive-pretty',
+  'massive-chameleon-bois', 'massive-dragon-firefly', 'massive-treasue-talker', 'massive-oiso-dessin',
+  'massive-dansing-frog', 'massive-cigogne', 'massive-chat-deco', 'massive-oeuvre-anabite', 'massive-chameleon-skate',
+  // terne / bas contraste
+  'massive-chame', 'massive-frog-tired', 'massive-lapin', 'massive-moino-cool', 'massive-poisson-chat',
+  'massive-elephant-ramen', 'massive-beau-oiseau', 'massive-loutre', 'massive-pigeon-gris',
+  // mini-scenes (elements minuscules)
+  'massive-chat-enlevement', 'massive-chat-roux-soucoupe', 'massive-soucoupe', 'massive-cake', 'massive-piraton',
+  'massive-oiseau-ruche', 'massive-poulpe', 'massive-tram',
+  // doubteux (animaux realistes detailles + scenes soucoupe) tranches "retirer"
+  'massive-bois-diplo', 'massive-grenouille-reel', 'massive-tiger', 'massive-velociraptor', 'massive-oiso2',
+  'massive-ver', 'massive-alien-calote', 'massive-alien-vert', 'massive-astronaute-spain', 'massive-chat-alien',
+  'massive-fee', 'massive-planche', 'massive-small-astronauts', 'massive-cameleon-chimie', 'massive-crocodile-dandy',
+  'massive-kouklikou', 'massive-meme',
+])
+
 /**
  * THEMES : chips de filtre du selecteur de designs (ETAPE 3, verdicts Mika actes).
  *
