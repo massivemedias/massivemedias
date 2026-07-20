@@ -1,7 +1,14 @@
 import { factories } from '@strapi/strapi';
-import { sendNewUserNotificationEmail } from '../../../utils/email';
+import { sendNewUserNotificationEmail, sendPersonalDiscountEmail } from '../../../utils/email';
 import { requireAdminAuth, requireUserAuth } from '../../../utils/auth'
-import { getActiveClientDiscount } from '../../../utils/pricing-config'
+import { getActiveClientDiscount, computeOrderDiscount } from '../../../utils/pricing-config'
+
+// RABAIS-CLIENT (courriel) : fenetre anti-spam. Une seule notification par client
+// par tranche de 10 min - absorbe les corrections rapides (ex : 15% -> 20% -> 25%
+// en 2 min = 1 seul courriel). Panier de reference pour comparer % vs $ ("le
+// client est-il mieux loti ?") : 100 $.
+const DISCOUNT_NOTIFY_DEBOUNCE_MS = 10 * 60 * 1000;
+const DISCOUNT_COMPARE_REF = 100;
 
 // Statuts de commande qui comptent comme "paye reellement"
 const PAID_STATUSES = ['paid', 'processing', 'ready', 'shipped', 'delivered'];
@@ -514,10 +521,33 @@ export default factories.createCoreController('api::client.client', ({ strapi })
     };
 
     const existing = await strapi.documents('api::client.client').findMany({ filters: { email }, limit: 1 });
-    let saved;
-    if (existing && existing[0]) {
+    const prev: any = existing && existing[0] ? existing[0] : null;
+
+    // ---- REGLE D'ENVOI DU COURRIEL (voir aussi DISCOUNT_NOTIFY_DEBOUNCE_MS) ----
+    // On notifie SEULEMENT quand le client est mieux loti qu'avant : nouveau
+    // rabais (creation) OU rabais augmente. JAMAIS sur retrait, baisse, ou
+    // simple correction (expiration/note). Comparaison % vs $ neutre : montant
+    // sur un panier de reference de 100 $. Anti-spam : pas 2 courriels en 10 min.
+    const notify = body.notify !== false; // case cochee par defaut
+    const lang: 'fr' | 'en' | 'es' = ['fr', 'en', 'es'].includes(body.lang) ? body.lang : 'fr';
+    let shouldEmail = false;
+    if (notify && !clearing) {
+      const oldActive = getActiveClientDiscount(prev); // null si aucun/expire
+      const oldAmount = oldActive ? computeOrderDiscount(DISCOUNT_COMPARE_REF, oldActive.type, oldActive.value).discountAmount : 0;
+      const newAmount = computeOrderDiscount(DISCOUNT_COMPARE_REF, rawType, normValue).discountAmount;
+      const isBetterOff = newAmount > oldAmount; // creation ou augmentation
+      const lastNotified = prev?.discountNotifiedAt ? new Date(prev.discountNotifiedAt).getTime() : 0;
+      const recentlyNotified = lastNotified > 0 && (Date.now() - lastNotified) < DISCOUNT_NOTIFY_DEBOUNCE_MS;
+      shouldEmail = isBetterOff && !recentlyNotified;
+    }
+    // Le timestamp anti-spam n'est ecrit QUE si on envoie (sinon on preserve la
+    // derniere date d'envoi pour que la fenetre de 10 min reste valable).
+    if (shouldEmail) discountData.discountNotifiedAt = new Date().toISOString();
+
+    let saved: any;
+    if (prev) {
       saved = await strapi.documents('api::client.client').update({
-        documentId: (existing[0] as any).documentId,
+        documentId: prev.documentId,
         data: discountData,
       });
     } else {
@@ -525,7 +555,22 @@ export default factories.createCoreController('api::client.client', ({ strapi })
         data: { email, name: body.name || email.split('@')[0], ...discountData } as any,
       });
     }
-    ctx.body = { data: saved };
+
+    // Envoi NON bloquant : un echec courriel ne doit jamais faire echouer
+    // l'enregistrement du rabais. La note interne n'est PAS passee (jamais dans
+    // le courriel). BCC admin gere par getSender().
+    if (shouldEmail) {
+      sendPersonalDiscountEmail({
+        email,
+        name: saved?.name || body.name || null,
+        discountType: rawType,
+        discountValue: Number(normValue),
+        discountExpiresAt: discountData.discountExpiresAt,
+        lang,
+      }).catch((e) => strapi.log.warn(`[adminSetDiscount] envoi courriel rabais echoue: ${e?.message || e}`));
+    }
+
+    ctx.body = { data: saved, emailed: shouldEmail };
   },
 
   // RABAIS-CLIENT : le client connecte lit SON rabais personnel actif (pour

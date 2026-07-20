@@ -30,6 +30,9 @@ function DiscountEditor({ email, client, onSaved }) {
   const [value, setValue] = useState(cur.discountValue != null && cur.discountValue !== '' ? String(cur.discountValue) : '');
   const [expires, setExpires] = useState(cur.discountExpiresAt ? String(cur.discountExpiresAt).slice(0, 10) : '');
   const [note, setNote] = useState(cur.discountNote || '');
+  // RABAIS-CLIENT (courriel) : case cochee par defaut + langue du courriel.
+  const [notify, setNotify] = useState(true);
+  const [notifyLang, setNotifyLang] = useState('fr');
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
 
@@ -41,7 +44,7 @@ function DiscountEditor({ email, client, onSaved }) {
     setSaving(true);
     setMsg('');
     try {
-      await api.put('/clients/admin/discount', {
+      const res = await api.put('/clients/admin/discount', {
         email,
         name: cur.name || undefined,
         discountType: clear ? '' : type,
@@ -49,9 +52,18 @@ function DiscountEditor({ email, client, onSaved }) {
         // Expiration = fin de la journee choisie (inclusive).
         discountExpiresAt: clear || !expires ? null : `${expires}T23:59:59`,
         discountNote: clear ? '' : note,
+        // Courriel : jamais au retrait ; le back decide de l'envoi reel
+        // (creation/augmentation + anti-spam). `emailed` renvoie la decision.
+        notify: clear ? false : notify,
+        lang: notifyLang,
       });
       if (clear) { setType(''); setValue(''); setExpires(''); setNote(''); }
-      setMsg(tx({ fr: 'Enregistre', en: 'Saved', es: 'Guardado' }));
+      const emailed = res?.data?.emailed;
+      setMsg(clear
+        ? tx({ fr: 'Rabais retire', en: 'Discount removed', es: 'Descuento quitado' })
+        : emailed
+          ? tx({ fr: 'Enregistre + courriel envoye', en: 'Saved + email sent', es: 'Guardado + correo enviado' })
+          : tx({ fr: 'Enregistre (pas de courriel)', en: 'Saved (no email)', es: 'Guardado (sin correo)' }));
       onSaved?.();
     } catch (e) {
       const m = e?.response?.data?.error?.message || '';
@@ -131,6 +143,35 @@ function DiscountEditor({ email, client, onSaved }) {
             className="input-field text-sm py-1.5 px-3 w-full disabled:opacity-40"
           />
         </div>
+      </div>
+
+      {/* Courriel de notification : coche par defaut, langue au choix. Le back
+          n'envoie que sur creation/augmentation + anti-spam (jamais au retrait). */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3">
+        <label className="flex items-center gap-2 text-xs text-heading cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={notify}
+            onChange={(e) => setNotify(e.target.checked)}
+            disabled={!type}
+            className="accent-accent w-3.5 h-3.5"
+          />
+          {tx({ fr: 'Notifier le client par courriel', en: 'Notify client by email', es: 'Notificar al cliente por correo' })}
+        </label>
+        {notify && type && (
+          <label className="flex items-center gap-1.5 text-[11px] text-grey-muted">
+            {tx({ fr: 'Langue', en: 'Language', es: 'Idioma' })}
+            <select
+              value={notifyLang}
+              onChange={(e) => setNotifyLang(e.target.value)}
+              className="input-field text-xs py-1 px-2"
+            >
+              <option value="fr">FR</option>
+              <option value="en">EN</option>
+              <option value="es">ES</option>
+            </select>
+          </label>
+        )}
       </div>
 
       <div className="flex items-center gap-3 mt-3">

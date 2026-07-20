@@ -40,6 +40,9 @@
     "discountNote": {
       "type": "text"
     },
+    "discountNotifiedAt": {
+      "type": "datetime"
+    },
     "notesFr": {
       "type": "text"
     },
