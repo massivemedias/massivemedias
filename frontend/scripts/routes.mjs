@@ -28,7 +28,10 @@ export const STATIC_ROUTES = [
   '/',
   '/a-propos',
   '/contact',
-  '/temoignage',
+  // SEO-2026 (voie rapide, GO Mika) : /temoignage RETIRE du sitemap + prerender.
+  // C'est une page utilitaire gated par token ; sa version crawlable (sans token)
+  // = "lien invalide". Route client conservee (les invites y accedent via leur
+  // lien), mais page en noindex (cf. Temoignage.jsx) et hors sitemap.
   // ALLUMAGE STICKERS (8 juillet 2026) : la collection est en vente,
   // la page entre au prerender + sitemap avec le flag STICKERS_SHOP_ENABLED.
   '/stickers',

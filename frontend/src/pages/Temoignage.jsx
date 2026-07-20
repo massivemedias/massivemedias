@@ -25,6 +25,7 @@ function Temoignage() {
     return (
       <>
         <SEO
+          noindex
           title={tx({ fr: 'Temoignage', en: 'Testimonial', es: 'Testimonio' })}
           description={tx({ fr: 'Partagez votre expérience avec Massive Medias', en: 'Share your experience with Massive Medias', es: 'Comparta su experiencia con Massive Medias' })}
         />
@@ -151,6 +152,7 @@ function Temoignage() {
   return (
     <>
       <SEO
+        noindex
         title={tx({ fr: 'Votre avis - Massive Medias', en: 'Your review - Massive Medias', es: 'Su opinion - Massive Medias' })}
         description={tx({ fr: 'Partagez votre expérience avec Massive Medias', en: 'Share your experience with Massive Medias', es: 'Comparta su experiencia con Massive Medias' })}
       />
