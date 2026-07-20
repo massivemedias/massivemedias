@@ -55,16 +55,12 @@ export const STATIC_ROUTES = [
   '/impression-flyers-montreal',
   // SEO-2026 : intention "etiquettes enfants" (Mini Massive vs Colle a moi, rentree)
   '/etiquettes-personnalisees-enfants-montreal',
-  // Boutique (9)
+  // Boutique : SEUL le hub reste au sitemap (SEO-2026 volet 2). Les 8 sous-pages
+  // /boutique/* etaient soit des 301 (web/flyers), soit des doublons de /services/*
+  // (design/fine-art), soit du merch cache redirige vers l'accueil -> toutes
+  // RETIREES du sitemap (un sitemap ne liste que des 200 canoniques). Elles
+  // redirigent en 301 via public/_redirects.
   '/boutique',
-  '/boutique/fine-art',
-  '/boutique/sublimation',
-  '/boutique/design',
-  '/boutique/web',
-  '/boutique/merch/tshirt',
-  '/boutique/merch/hoodie',
-  '/boutique/merch/longsleeve',
-  '/boutique/flyers',
   // Artistes (index, le detail est ajoute dynamiquement plus bas)
   '/artistes',
 ];

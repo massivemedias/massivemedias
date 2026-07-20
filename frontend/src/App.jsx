@@ -7,7 +7,6 @@ import { useLang } from './i18n/LanguageContext';
 import ScrollToTop from './components/ScrollToTop';
 import ScrollToTopButton from './components/ScrollToTopButton';
 import BackendHealthBanner from './components/BackendHealthBanner';
-import { MERCH_HIDDEN } from './config/merchStatus';
 import { STICKERS_SHOP_ENABLED } from './config/stickersShopStatus'
 import { ETIQUETTES_VISIBLE } from './config/etiquettesStatus'
 import { sendVisitorBeacon } from './utils/visitorBeacon';
@@ -36,11 +35,6 @@ const Contact = lazyWithRetry(() => import('./pages/Contact'));
 const Tracking = lazyWithRetry(() => import('./pages/Tracking'));
 const APropos = lazyWithRetry(() => import('./pages/APropos'));
 const Shop = lazyWithRetry(() => import('./pages/Shop'));
-const ServiceFineArt = lazyWithRetry(() => import('./pages/ServiceFineArt'));
-const ServiceMerch = lazyWithRetry(() => import('./pages/ServiceMerch'));
-const ServiceDesign = lazyWithRetry(() => import('./pages/ServiceDesign'));
-const ServiceWeb = lazyWithRetry(() => import('./pages/ServiceWeb'));
-const MerchDetail = lazyWithRetry(() => import('./pages/MerchDetail'));
 const Panier = lazyWithRetry(() => import('./pages/Panier'));
 const Login = lazyWithRetry(() => import('./pages/Login'));
 const Account = lazyWithRetry(() => import('./pages/Account'));
@@ -317,14 +311,19 @@ function App() {
 
             {/* Boutique */}
             <Route path="/boutique" element={<Shop />} />
+            {/* SEO-2026 : les sous-pages /boutique/* sont des REDIRECTIONS. En prod
+                c'est public/_redirects (301 serveur, source unique) qui agit ; ces
+                <Navigate> sont le repli local/SPA (dev vite n'a pas _redirects).
+                design/fine-art/web -> /services/* (fin de migration, tue le doublon) ;
+                sublimation/merch -> / (MERCH_PAUSED, repointer /services/merch au relaunch). */}
             <Route path="/boutique/stickers" element={<Navigate to="/services/stickers" replace />} />
-            <Route path="/boutique/fine-art" element={<ServiceFineArt />} />
-            <Route path="/boutique/sublimation" element={MERCH_HIDDEN ? <Navigate to="/" replace /> : <ServiceMerch />} />
-            <Route path="/boutique/flyers" element={<Navigate to="/boutique/fine-art" replace />} />
-            <Route path="/boutique/design" element={<ServiceDesign />} />
-            <Route path="/boutique/web" element={<ServiceWeb />} />
-            <Route path="/boutique/merch/:type" element={MERCH_HIDDEN ? <Navigate to="/" replace /> : <MerchDetail />} />
-            <Route path="/boutique/merch-tshirt" element={<Navigate to="/boutique/merch/tshirt" replace />} />
+            <Route path="/boutique/fine-art" element={<Navigate to="/services/prints" replace />} />
+            <Route path="/boutique/design" element={<Navigate to="/services/design" replace />} />
+            <Route path="/boutique/web" element={<Navigate to="/services/web" replace />} />
+            <Route path="/boutique/flyers" element={<Navigate to="/services/prints" replace />} />
+            <Route path="/boutique/sublimation" element={<Navigate to="/" replace />} />
+            <Route path="/boutique/merch/:type" element={<Navigate to="/" replace />} />
+            <Route path="/boutique/merch-tshirt" element={<Navigate to="/" replace />} />
             <Route path="/panier" element={<Panier />} />
 
             {/* Auth & Account */}
