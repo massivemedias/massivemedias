@@ -756,26 +756,25 @@ export default function Etiquettes() {
       </section>
 
 
-      {/* ============ EN SITUATION (mockups STATIQUES composes) ============
-          Round 2 (verdict Mika : "les stickers doivent s'adapter a la forme") :
-          l'etiquette exemple est CUITE dans la photo par
-          scripts/generate-etiquettes-mockups.mjs - vrai warp cylindrique
-          (Plane2Cylinder), shading des bords enroules, echelle reelle relative
-          a l'objet, ombre de contact. Ces cartes sont ILLUSTRATIVES : le
-          configurateur garde son apercu live a lui. Photos Pexels (licence
-          Pexels, commercial libre) : gourde 8611290 (RDNE Stock project),
-          verre 38380651 (Ann H), crayon 4237814, cahier 7054764. Etiquettes :
-          4 designs, prenom Emma. RELANCER le script apres tout changement.
+      {/* ============ EN SITUATION (mockups STATIQUES = vraies photos) ============
+          20 juillet 2026 : les mockups composes (ImageMagick) ont ete remplaces
+          par de VRAIES PHOTOS avec l'etiquette "Etienne" imprimee + collee,
+          fournies par Mika (le composite ne donnait pas un rendu credible a
+          cette echelle). Actuellement 2 cartes : gourde alu + boite b.box. Un 3e
+          objet NON-BRANDE (crayon) viendra completer la rangee - le marqueur
+          Sharpie a ete ecarte (marque tierce trop visible, regle client-facing).
+          Sources tracees : scripts/mockups-src/photo-*-real.webp (pour changer un
+          mockup, remplacer le .webp dans public/images/etiquettes/ ; plus de
+          script). Cartes ILLUSTRATIVES : le configurateur garde son apercu live.
           La ligne sous la section leve toute ambiguite : Massive vend LES
           ETIQUETTES, pas les objets. */}
       <section className="section-container">
         <h2 className="text-2xl md:text-3xl font-heading font-bold text-heading mb-8 text-center">
           {tx({ fr: 'En situation', en: 'In the wild', es: 'En situación' })}
         </h2>
-        <div className="grid sm:grid-cols-3 gap-4 max-w-5xl mx-auto">
+        <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
           {[
             { img: '/images/etiquettes/mockup-gourde.webp', legend: { fr: 'Sur sa gourde', en: 'On their bottle', es: 'En su botella' } },
-            { img: '/images/etiquettes/mockup-verre.webp', legend: { fr: 'Sur son verre', en: 'On their cup', es: 'En su vaso' } },
             { img: '/images/etiquettes/mockup-lunchbox.webp', legend: { fr: 'Sur sa boîte à lunch', en: 'On their lunch box', es: 'En su lonchera' } },
           ].map((m) => (
             <div key={m.img} className="surface-vitrine card-shadow rounded-2xl relative overflow-hidden aspect-[4/3] w-full max-w-[360px] mx-auto">
@@ -790,9 +789,9 @@ export default function Etiquettes() {
         </div>
         <p className="text-grey-muted text-xs text-center mt-4 max-w-xl mx-auto">
           {tx({
-            fr: 'Les objets sont montrés à titre d\u2019exemple seulement : Massive fournit les étiquettes, pas les gourdes, verres ou boîtes à lunch.',
-            en: 'Objects are shown as examples only: Massive supplies the labels, not the bottles, cups or lunch boxes.',
-            es: 'Los objetos se muestran solo como ejemplo: Massive suministra las etiquetas, no las botellas, vasos ni loncheras.',
+            fr: 'Les objets sont montrés à titre d\u2019exemple seulement : Massive fournit les étiquettes, pas les gourdes ou boîtes à lunch.',
+            en: 'Objects are shown as examples only: Massive supplies the labels, not the bottles or lunch boxes.',
+            es: 'Los objetos se muestran solo como ejemplo: Massive suministra las etiquetas, no las botellas ni loncheras.',
           })}
         </p>
       </section>

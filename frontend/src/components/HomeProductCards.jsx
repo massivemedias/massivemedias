@@ -13,7 +13,7 @@ import { ETIQUETTES_VISIBLE } from '../config/etiquettesStatus'
  *   - Stickers : eventail de 3 designs.
  *   - Prints   : une oeuvre d'artiste dans un CADRE (CSS : passe-partout blanc +
  *     bordure epaisse + ombre portee), legerement inclinee -> "print encadre".
- *   - Mini Massive : l'etiquette panda EN SITUATION (mockup boite a lunch).
+ *   - Mini Massive : une VRAIE boite a lunch avec etiquette collee (photo).
  * 3 colonnes desktop, empilees mobile. Images LAZY (sous le pli). FR/EN/ES.
  */
 
@@ -21,7 +21,7 @@ const STICKER_FAN = ['massive-dj-skull', 'massive-chameleon', 'massive-alien-hot
 const MINI = '/images/thumbs-mini/stickers-massive'
 // oeuvre vedette de la carte Prints (swappable). Thumb leger dedie.
 const PRINT_CARD = '/images/home/print-card.webp'
-// etiquette en situation (panda sur boite a lunch, deja composee).
+// etiquette en situation : VRAIE photo (boite b.box, etiquette "Etienne" collee).
 const ETI_MOCKUP = '/images/etiquettes/mockup-lunchbox.webp'
 
 function Card({ to, title, desc, cta, zoneClass = '', children }) {
