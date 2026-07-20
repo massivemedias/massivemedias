@@ -1,5 +1,6 @@
 // Calcul des frais de livraison par poids (miroir client)
 // Utilise pour l'affichage en temps reel - le backend recalcule de facon autoritaire
+import { STICKER_COLLECTION_UNIT_PRICE, MYSTERY_PACK_PRICES } from './pricingData';
 
 // --- Poids par produit (grammes) ---
 
@@ -111,6 +112,33 @@ export function calculateShipping(province, postalCode, items) {
   // Montreal (code postal H): toujours gratuit
   if (province === 'QC' && postalCode?.toUpperCase().startsWith('H')) {
     return { shippingCost: 0, totalWeight };
+  }
+
+  // STICKERS-SHOP-B : panier UNIQUEMENT collection (sticker-massive-* et/ou
+  // mystery-pack-*) -> tarif fixe, PAS les paliers poids. MIROIR EXACT du backend
+  // (backend/src/utils/shipping.ts, branche isCollectionOnly) : QC gratuit des
+  // 30 $ sinon 4 $, Canada 6 $. Montreal deja gratuit ci-dessus. Panier MIXTE
+  // (au moins un autre produit) -> paliers poids inchanges.
+  const isCollectionOnly = items.length > 0 && items.every((i) => {
+    const id = (i.productId || '').toLowerCase();
+    return id.startsWith('sticker-massive-') || id.startsWith('mystery-pack-');
+  });
+  if (isCollectionOnly) {
+    let collectionSubtotal = 0;
+    for (const i of items) {
+      const id = (i.productId || '').toLowerCase();
+      const qty = i.quantity || 1;
+      if (id.startsWith('sticker-massive-')) {
+        collectionSubtotal += STICKER_COLLECTION_UNIT_PRICE * qty;
+      } else {
+        const packSize = parseInt(id.replace('mystery-pack-', ''), 10);
+        collectionSubtotal += (MYSTERY_PACK_PRICES[packSize] || 0) * qty;
+      }
+    }
+    if (province === 'QC') {
+      return { shippingCost: collectionSubtotal >= 30 ? 0 : 4, totalWeight };
+    }
+    return { shippingCost: 6, totalWeight };
   }
 
   // Reste du Quebec

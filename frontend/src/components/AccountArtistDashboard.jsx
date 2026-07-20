@@ -22,20 +22,21 @@ import { useArtists } from '../hooks/useArtists';
 import { ARTIST_CONTRACT_TEXT, ARTIST_CONTRACT_TEXT_EN, ARTIST_CONTRACT_TEXT_ES, ARTIST_CONTRACT_VERSION, ARTIST_FAQ } from '../data/artistContract';
 import { HelpCircle } from 'lucide-react';
 import { generateContractPDF } from '../utils/generateContractPDF';
+import { ARTIST_PRINT_PRICES } from '../utils/pricingData';
 import { supabase } from '../lib/supabase';
 import TierExplainer from './TierExplainer';
 
-// Prix client et prix artiste (rabais 30% sur prix client)
+// Prix client (grille MARKETPLACE artiste) + prix artiste (rabais 25 % du prix
+// client). Grille CENTRALISEE en SSOT (utils/pricingData -> ARTIST_PRINT_PRICES)
+// : fini les copies divergentes. studio A2 = null (12 encres = musee only).
 const ARTIST_DISCOUNT = 0.25;
-const CLIENT_PRICES = {
-  studio: { postcard: 15, a4: 35, a3: 50, a3plus: 65, a2: 85 },
-  museum: { postcard: 25, a4: 75, a3: 120, a3plus: 160, a2: 190 },
-};
+const CLIENT_PRICES = ARTIST_PRINT_PRICES;
+const disc = (v) => (v == null ? null : Math.floor(v * (1 - ARTIST_DISCOUNT)));
 const ARTIST_DISCOUNT_PRICES = {
-  studio: { postcard: Math.floor(15 * (1 - ARTIST_DISCOUNT)), a4: Math.floor(35 * (1 - ARTIST_DISCOUNT)), a3: Math.floor(50 * (1 - ARTIST_DISCOUNT)), a3plus: Math.floor(65 * (1 - ARTIST_DISCOUNT)), a2: Math.floor(85 * (1 - ARTIST_DISCOUNT)) },
-  museum: { postcard: Math.floor(25 * (1 - ARTIST_DISCOUNT)), a4: Math.floor(75 * (1 - ARTIST_DISCOUNT)), a3: Math.floor(120 * (1 - ARTIST_DISCOUNT)), a3plus: Math.floor(160 * (1 - ARTIST_DISCOUNT)), a2: Math.floor(190 * (1 - ARTIST_DISCOUNT)) },
+  studio: Object.fromEntries(Object.entries(CLIENT_PRICES.studio).map(([k, v]) => [k, disc(v)])),
+  museum: Object.fromEntries(Object.entries(CLIENT_PRICES.museum).map(([k, v]) => [k, disc(v)])),
 };
-const FRAME_PRICES = { postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 };
+const FRAME_PRICES = ARTIST_PRINT_PRICES.framePriceByFormat;
 const PRODUCTION_COSTS = {
   studio: { postcard: 5, a4: 12, a3: 16, a3plus: 20, a2: 28 },
   museum: { postcard: 10, a4: 25, a3: 38, a3plus: 48, a2: 65 },
@@ -785,7 +786,8 @@ function AccountArtistDashboard({ section = 'dashboard' }) {
               </thead>
               <tbody>
                 <tr className="shadow-[0_1px_0_rgba(255,255,255,0.03)]"><td colSpan="6" className="pt-3 pb-1 text-accent font-semibold text-xs">{tx({ fr: 'Série Studio (4 encres pigmentées)', en: 'Studio Series (4 pigment inks)', es: 'Serie Studio (4 tintas pigmentadas)' })}</td></tr>
-                {[{ format: 'A6 (4x6")', key: 'postcard' }, { format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }, { format: 'A2 (18x24")', key: 'a2' }].map(({ format, key }) => {
+                {/* Pas de A2 en Studio (12 encres pigmentees = Musee seulement). */}
+                {[{ format: 'A6 (4x6")', key: 'postcard' }, { format: 'A4 (8.5x11")', key: 'a4' }, { format: 'A3 (11x17")', key: 'a3' }, { format: 'A3+ (13x19")', key: 'a3plus' }].map(({ format, key }) => {
                   const clientPrice = CLIENT_PRICES.studio[key];
                   const prodCost = PRODUCTION_COSTS.studio[key] || 0;
                   const netProfit = clientPrice - prodCost;

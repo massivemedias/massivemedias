@@ -11,7 +11,7 @@ import { useProductPricing } from '../hooks/useProductPricing';
 // les arrays. STICKER_GRID expose 3 paliers (standard/medium/large) - cette
 // page admin affiche le palier 'standard' par defaut + une note pour rappeler
 // l'existence des paliers Medium (+35%) et Large (+85%).
-import { STICKER_GRID, FINE_ART_GRID } from '../utils/pricingData';
+import { STICKER_GRID, FINE_ART_GRID, ARTIST_PRINT_PRICES } from '../utils/pricingData';
 import TierExplainer from '../components/TierExplainer';
 
 // =============================================
@@ -26,13 +26,22 @@ const SERVICE_PRICES = [
   { format: 'A2 (18×24")', studio: null, museum: 110, frame: 45, notes: { fr: '12 encres pigmentées seulement', en: '12 pigmented inks only', es: '12 tintas pigmentadas solamente' } },
 ];
 
+// Grille marketplace artiste DERIVEE de la SSOT (utils/pricingData ->
+// ARTIST_PRINT_PRICES) : fini la copie en dur. Shape inchangee {format, studio,
+// museum, frame} ; valeurs identiques (studio 25/35/50/65/null, musee 50/75/120/
+// 160/190, cadre 20/20/30/35/45). studio A2 = null -> N/A dans le tableau/PDF.
 const ARTIST_PRICES = [
-  { format: 'A6 (4×6") - Carte postale', studio: 25, museum: 50, frame: 20 },
-  { format: 'A4 (8.5×11")', studio: 35, museum: 75, frame: 20 },
-  { format: 'A3 (11×17")', studio: 50, museum: 120, frame: 30 },
-  { format: 'A3+ (13×19")', studio: 65, museum: 160, frame: 35 },
-  { format: 'A2 (18×24")', studio: null, museum: 190, frame: 45 },
-];
+  { key: 'postcard', format: 'A6 (4×6") - Carte postale' },
+  { key: 'a4', format: 'A4 (8.5×11")' },
+  { key: 'a3', format: 'A3 (11×17")' },
+  { key: 'a3plus', format: 'A3+ (13×19")' },
+  { key: 'a2', format: 'A2 (18×24")' },
+].map(({ key, format }) => ({
+  format,
+  studio: ARTIST_PRINT_PRICES.studio[key],
+  museum: ARTIST_PRINT_PRICES.museum[key],
+  frame: ARTIST_PRINT_PRICES.framePriceByFormat[key],
+}));
 
 // CLIENT-FINE-ART-SSOT (decouplage option B, juin 2026) : les affichages PRIX
 // CLIENT fine-art (PDF Tarifs-Complets section Impression Fine Art + tableau

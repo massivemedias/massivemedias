@@ -288,7 +288,7 @@ export const fineArtFaq = {
     { q: 'What is the difference between Studio and Museum Series?', a: TIER_EXPLAINER_LONG_FLAT.en },
     { q: 'What papers do you use?', a: 'We use premium professional fine art papers: cotton, alpha-cellulose, archival papers. Each paper is calibrated with a custom ICC profile for accurate colors.' },
     { q: 'What is the conservation lifespan?', a: 'Our fine art prints have a 100+ year conservation life thanks to pigmented inks and archival papers. This is the gallery and museum standard.' },
-    { q: 'Can I get my print framed?', a: 'Yes! We offer a black or white frame option for an additional $30. You can add it directly in the configurator.' },
+    { q: 'Can I get my print framed?', a: 'Yes! Black or white frame available: $20 for postcard and A4, $30 for A3, $35 for A3+ and $45 for A2. You can add it directly in the configurator.' },
     { q: 'What file should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum). We perform soft proofing (digital preview) before printing to validate colors with you.' },
     { q: 'Is delivery available?', a: 'Free pick-up in Plateau Mont-Royal by appointment only. Local delivery available in Montreal. Postal shipping with protective packaging for the rest of Canada.' },
   ],
@@ -296,7 +296,7 @@ export const fineArtFaq = {
     { q: '¿Cuál es la diferencia entre Serie Studio y Serie Museo?', a: TIER_EXPLAINER_LONG_FLAT.es },
     { q: '¿Qué papeles utilizan?', a: 'Utilizamos papeles fine art profesionales premium: algodón, alfa-celulosa, papeles de archivo. Cada papel está calibrado con un perfil ICC personalizado para colores fieles.' },
     { q: '¿Cuál es la duración de conservación?', a: 'Nuestras impresiones fine art tienen una duración de conservación de más de 100 años gracias a las tintas pigmentadas y papeles de archivo. Es el estándar de galerías y museos.' },
-    { q: '¿Puedo enmarcar mi impresión?', a: '¡Sí! Ofrecemos la opción de marco negro o blanco por $30 adicionales. Puedes agregarlo directamente en el configurador.' },
+    { q: '¿Puedo enmarcar mi impresión?', a: '¡Sí! Marco negro o blanco disponible: $20 para postal y A4, $30 para A3, $35 para A3+ y $45 para A2. Puedes agregarlo directamente en el configurador.' },
     { q: '¿Qué archivo debo proporcionar?', a: 'Idealmente un archivo de alta resolución (300 DPI mínimo). Realizamos un soft proofing (previsualización digital) antes de imprimir para validar los colores contigo.' },
     { q: '¿Hay entrega disponible?', a: 'Recogida gratuita en Plateau Mont-Royal con cita previa. Entrega local disponible en Montreal. Envío postal con embalaje protector para el resto de Canadá.' },
   ],
@@ -497,7 +497,7 @@ export const designServices = [
   { id: 'logo', labelFr: 'Création logo', labelEn: 'Logo design', labelEs: 'Creación de logo', priceRange: '300$ - 600$', timelineFr: '5-10 jours', timelineEn: '5-10 days', timelineEs: '5-10 días' },
   { id: 'identity', labelFr: 'Identité visuelle complète', labelEn: 'Complete visual identity', labelEs: 'Identidad visual completa', priceRange: '800$ - 1 500$', timelineFr: '2-3 semaines', timelineEn: '2-3 weeks', timelineEs: '2-3 semanas' },
   { id: 'poster', labelFr: 'Affiche / flyer événement', labelEn: 'Event poster / flyer', labelEs: 'Afiche / flyer de evento', priceRange: '150$ - 300$', timelineFr: '3-5 jours', timelineEn: '3-5 days', timelineEs: '3-5 días' },
-  { id: 'album', labelFr: 'Pochette album / single', labelEn: 'Album / single cover', labelEs: 'Portada de álbum / single', priceRange: '150$ - 350$', timelineFr: '5-7 jours', timelineEn: '5-7 days', timelineEs: '5-7 días' },
+  { id: 'album', labelFr: 'Pochette album / single', labelEn: 'Album / single cover', labelEs: 'Portada de álbum / single', priceRange: '200$ - 400$', timelineFr: '5-7 jours', timelineEn: '5-7 days', timelineEs: '5-7 días' },
   { id: 'retouching', labelFr: 'Retouche photo (par image)', labelEn: 'Photo retouching (per image)', labelEs: 'Retoque fotográfico (por imagen)', priceRange: '15$ - 50$', timelineFr: 'Variable', timelineEn: 'Variable', timelineEs: 'Variable' },
 ];
 

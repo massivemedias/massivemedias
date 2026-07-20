@@ -16,6 +16,7 @@ import { useArtists } from '../hooks/useArtists';
 import { mediaUrl } from '../utils/cms';
 import artistsData from '../data/artistPricing';
 import { toFull } from '../utils/paths';
+import { ARTIST_PRINT_PRICES } from '../utils/pricingData';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { trackArtworkView } from '../utils/analytics';
@@ -172,7 +173,7 @@ function buildArtistFromCMS(cms) {
       socials: (cms.socials && typeof cms.socials === 'object') ? cms.socials : {},
       pricing: (cms.pricing && typeof cms.pricing === 'object')
         ? cms.pricing
-        : { studio: { postcard: 25, a4: 35, a3: 50, a3plus: 65 }, museum: { postcard: 20, a4: 30, a3: 60, a3plus: 80, a2: 120 }, framePriceByFormat: { postcard: 30, a4: 30, a3: 30, a3plus: 30, a2: 45 } },
+        : ARTIST_PRINT_PRICES,
       prints: cmsPrints.map((p, i) => {
         const safeP = (p && typeof p === 'object') ? p : {};
         return {
