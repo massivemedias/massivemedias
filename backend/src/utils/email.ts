@@ -2238,6 +2238,169 @@ export async function sendArtistWelcomeEmail(data: ArtistWelcomeData): Promise<b
 }
 
 // -----------------------------------------------------------
+// RABAIS-CLIENT : courriel de notification de rabais personnel
+// -----------------------------------------------------------
+// Declenche quand un admin assigne (ou augmente) un rabais personnel a un
+// client, si la case "Notifier le client" est cochee. Trilingue selon la langue
+// choisie par l'admin (defaut FR). La NOTE INTERNE n'apparait JAMAIS ici -
+// buildPersonalDiscountHtml ne la recoit meme pas. Tous les champs dynamiques
+// passent par escapeHtml. Wrapper + expediteur (BCC admin massivemedias@gmail.com
+// via getSender) identiques aux autres courriels client.
+interface PersonalDiscountEmailData {
+  email: string;
+  name?: string | null;
+  discountType: 'percent' | 'fixed';
+  discountValue: number;
+  discountExpiresAt?: string | null;
+  lang?: 'fr' | 'en' | 'es';
+}
+
+const PERSONAL_DISCOUNT_I18N = {
+  fr: {
+    subject: "Un rabais personnel t'attend chez Massive Medias",
+    greetingNamed: (n: string) => `Salut ${n},`,
+    greeting: 'Salut,',
+    intro: "Bonne nouvelle : on t'a reserve un <strong style=\"color:#FF52A0;\">rabais personnel</strong>, juste pour toi.",
+    badgeLabel: 'Ton rabais',
+    auto: "Il s'applique <strong>automatiquement</strong> a ta prochaine commande, des que tu es connecte a ton compte. Rien a saisir, aucun code a retenir.",
+    expiry: (d: string) => `A utiliser avant le <strong>${d}</strong>.`,
+    cta: 'Magasiner maintenant',
+    ps: "Le rabais est lie a ton compte : connecte-toi avec ce courriel pour en profiter.",
+    signoff: "A bientot,<br><strong style=\"color:#222;\">L'equipe Massive Medias</strong>",
+    locale: 'fr-CA',
+  },
+  en: {
+    subject: 'A personal discount is waiting for you at Massive Medias',
+    greetingNamed: (n: string) => `Hi ${n},`,
+    greeting: 'Hi,',
+    intro: "Good news: we've set aside a <strong style=\"color:#FF52A0;\">personal discount</strong>, just for you.",
+    badgeLabel: 'Your discount',
+    auto: "It applies <strong>automatically</strong> to your next order, as soon as you're signed in to your account. Nothing to type, no code to remember.",
+    expiry: (d: string) => `Use it before <strong>${d}</strong>.`,
+    cta: 'Shop now',
+    ps: 'The discount is tied to your account: sign in with this email to use it.',
+    signoff: 'See you soon,<br><strong style="color:#222;">The Massive Medias team</strong>',
+    locale: 'en-CA',
+  },
+  es: {
+    subject: 'Un descuento personal te espera en Massive Medias',
+    greetingNamed: (n: string) => `Hola ${n},`,
+    greeting: 'Hola,',
+    intro: 'Buenas noticias: te reservamos un <strong style="color:#FF52A0;">descuento personal</strong>, solo para ti.',
+    badgeLabel: 'Tu descuento',
+    auto: 'Se aplica <strong>automaticamente</strong> a tu proximo pedido, en cuanto inicies sesion en tu cuenta. Nada que escribir, ningun codigo que recordar.',
+    expiry: (d: string) => `Usalo antes del <strong>${d}</strong>.`,
+    cta: 'Comprar ahora',
+    ps: 'El descuento esta vinculado a tu cuenta: inicia sesion con este correo para usarlo.',
+    signoff: 'Hasta pronto,<br><strong style="color:#222;">El equipo de Massive Medias</strong>',
+    locale: 'es-ES',
+  },
+} as const;
+
+function buildPersonalDiscountHtml(data: PersonalDiscountEmailData): string {
+  const lang = (data.lang && PERSONAL_DISCOUNT_I18N[data.lang]) ? data.lang : 'fr';
+  const t = PERSONAL_DISCOUNT_I18N[lang];
+  const baseUrl = process.env.SITE_URL || 'https://massivemedias.com';
+
+  const name = (data.name || '').trim();
+  const greeting = name ? t.greetingNamed(escapeHtml(name)) : t.greeting;
+  // Valeurs numeriques (pas d'injection possible), formatees selon le type.
+  const valueLabel = data.discountType === 'percent'
+    ? `-${Number(data.discountValue)} %`
+    : `-${Number(data.discountValue)} $`;
+  const expiryStr = data.discountExpiresAt
+    ? new Date(data.discountExpiresAt).toLocaleDateString(t.locale, { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+
+  return `
+    <h1 style="color:#222;font-size:24px;margin:0 0 16px;font-weight:700;">
+      ${greeting}
+    </h1>
+
+    <p style="color:#444;font-size:15px;line-height:1.6;margin:0 0 24px;">
+      ${t.intro}
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td align="center" style="padding:26px 16px;background:#faf5ff;border:2px dashed #FF52A0;border-radius:12px;">
+        <p style="margin:0 0 6px;color:#999;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;">
+          ${t.badgeLabel}
+        </p>
+        <p style="margin:0;color:#FF52A0;font-size:44px;line-height:1;font-weight:800;letter-spacing:-1px;">
+          ${valueLabel}
+        </p>
+      </td></tr>
+    </table>
+
+    <p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 18px;">
+      ${t.auto}
+    </p>
+
+    ${expiryStr ? `
+    <p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 18px;">
+      ${t.expiry(escapeHtml(expiryStr))}
+    </p>` : ''}
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0;">
+      <tr><td align="center">
+        <a href="${baseUrl}/boutique"
+           style="display:inline-block;padding:14px 34px;background:#FF52A0;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;letter-spacing:0.3px;">
+          ${t.cta}
+        </a>
+      </td></tr>
+    </table>
+
+    <p style="color:#888;font-size:12px;line-height:1.6;text-align:center;margin:8px 0 0;">
+      ${t.ps}
+    </p>
+
+    <p style="color:#666;font-size:13px;line-height:1.6;margin:32px 0 0;">
+      ${t.signoff}
+    </p>
+  `;
+}
+
+/**
+ * Rendu complet (wrapper inclus) du courriel de rabais personnel - EXPORTE
+ * uniquement pour l'apercu hors-ligne (aucun envoi). Le vrai envoi passe par
+ * sendPersonalDiscountEmail.
+ */
+export function renderPersonalDiscountEmailPreview(data: PersonalDiscountEmailData): { subject: string; html: string } {
+  const lang = (data.lang && PERSONAL_DISCOUNT_I18N[data.lang]) ? data.lang : 'fr';
+  return {
+    subject: PERSONAL_DISCOUNT_I18N[lang].subject,
+    html: massiveEmailWrapper(buildPersonalDiscountHtml(data)),
+  };
+}
+
+export async function sendPersonalDiscountEmail(data: PersonalDiscountEmailData): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('[email] Resend non configure, courriel rabais personnel non envoye');
+    return false;
+  }
+  if (!data.email) {
+    console.warn('[email] Email manquant, courriel rabais personnel annule');
+    return false;
+  }
+  const lang = (data.lang && PERSONAL_DISCOUNT_I18N[data.lang]) ? data.lang : 'fr';
+  const sender = getSender();
+  try {
+    await resend.emails.send({
+      ...sender,
+      to: data.email,
+      subject: PERSONAL_DISCOUNT_I18N[lang].subject,
+      html: massiveEmailWrapper(buildPersonalDiscountHtml(data)),
+    });
+    console.log(`[email] Rabais personnel envoye a ${data.email} (${lang})`);
+    return true;
+  } catch (err: any) {
+    console.error('[email] Erreur envoi rabais personnel:', err?.message || err);
+    return false;
+  }
+}
+
+// -----------------------------------------------------------
 // Rapport de statistiques QR (envoye a un client)
 // -----------------------------------------------------------
 // Reutilise le pattern standard du fichier : getResend (degrade si pas de cle),
