@@ -41,7 +41,7 @@ export const STATIC_ROUTES = [
   '/services/merch',
   '/services/design',
   '/services/web',
-  // Landings SEO locales (6)
+  // Landings SEO locales (7)
   // RESTORE-MILE-END (7 juillet 2026) : mile-end redevient une vraie page
   // (mode zone desservie), coexiste avec plateau-mont-royal.
   '/imprimeur-plateau-mont-royal',
@@ -50,6 +50,8 @@ export const STATIC_ROUTES = [
   '/print-fine-art-quebec',
   '/sublimation-textile-montreal',
   '/impression-flyers-montreal',
+  // SEO-2026 : intention "etiquettes enfants" (Mini Massive vs Colle a moi, rentree)
+  '/etiquettes-personnalisees-enfants-montreal',
   // Boutique (9)
   '/boutique',
   '/boutique/fine-art',

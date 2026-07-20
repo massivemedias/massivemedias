@@ -313,6 +313,7 @@ function App() {
             <Route path="/print-fine-art-quebec" element={<LandingLocal />} />
             <Route path="/sublimation-textile-montreal" element={<LandingLocal />} />
             <Route path="/impression-flyers-montreal" element={<LandingLocal />} />
+            <Route path="/etiquettes-personnalisees-enfants-montreal" element={<LandingLocal />} />
 
             {/* Boutique */}
             <Route path="/boutique" element={<Shop />} />

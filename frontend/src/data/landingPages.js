@@ -169,6 +169,54 @@ export const LANDING_PAGES = {
     heroImage: '/images/realisations/stickers/Stickers-Cosmovision.webp',
   },
 
+  'etiquettes-personnalisees-enfants-montreal': {
+    keyword: 'Étiquettes personnalisées enfants Montréal',
+    geo: 'Montréal, QC',
+    title: 'Étiquettes Personnalisées Enfants Montréal | École & Garderie | Massive',
+    description: 'Étiquettes personnalisées pour enfants à Montréal : le prénom + un vrai design d\'artiste, couleurs assorties, imperméables et résistantes aux UV. Prêtes pour la rentrée.',
+    h1: 'Étiquettes personnalisées pour enfants à Montréal',
+    intro: 'Chez Massive, l\'étiquette qui identifie les affaires de ton enfant n\'est pas un clipart générique : c\'est un vrai design de notre collection originale, avec son prénom, et des couleurs qui s\'assortissent automatiquement au dessin choisi. Imperméables, résistantes aux UV et découpées à la forme, elles tiennent le rythme d\'une année de garderie et d\'école. Imprimées à Montréal, prêtes pour la rentrée.',
+    sections: [
+      {
+        h2: 'Un design que ton enfant choisit, pas un autocollant générique',
+        body: 'Ton enfant pige dans la collection Massive (animaux mignons, créatures, motifs colorés) et son étiquette prend les couleurs du dessin toute seule : fond, contour et texte s\'assortissent, avec un contraste lisible garanti. Résultat, une étiquette qu\'il reconnaît d\'un coup d\'œil dans le bac de la garderie et qu\'il a hâte de coller.',
+      },
+      {
+        h2: 'Conçues pour survivre à une année d\'enfant',
+        body: 'Vinyle laminé premium, imperméable et résistant aux UV, découpe à la forme avec coins arrondis (rien qui accroche ni se décolle). Elles encaissent l\'eau, les frottements du sac à dos et les lavages à la main : sur la gourde, la boîte à lunch, les bottes de pluie ou l\'étui à crayons.',
+      },
+      {
+        h2: 'Trois formats pour tout étiqueter avant la rentrée',
+        body: 'Mini pour les crayons et ustensiles, moyenne pour les gourdes et boîtes à collation, grande pour les boîtes à lunch et vêtements. Tu configures tout en ligne en deux minutes (design, prénom, format, coins) et l\'aperçu est fidèle à ce que tu reçois. Livraison gratuite à Montréal.',
+      },
+    ],
+    faq: [
+      {
+        q: 'En quoi vos étiquettes sont différentes des étiquettes d\'école habituelles ?',
+        a: 'Au lieu d\'un motif générique, ton enfant choisit un vrai design de la collection Massive et les couleurs de l\'étiquette s\'assortissent automatiquement au dessin. Elles sont imprimées et découpées à Montréal, pas commandées en gros à l\'étranger.',
+      },
+      {
+        q: 'Est-ce que ça résiste à la gourde, au sac et aux lavages ?',
+        a: 'Oui : le vinyle est laminé, imperméable et résistant aux UV. Elles tiennent l\'eau, les frottements et les lavages à la main. On les recommande sur gourdes, boîtes à lunch, contenants, crayons et vêtements du quotidien.',
+      },
+      {
+        q: 'Je les reçois à temps pour la rentrée ?',
+        a: 'Production rapide et livraison gratuite à Montréal. Configure tes étiquettes quelques jours avant la rentrée : plus tu t\'y prends tôt, plus tu es certain d\'avoir tout étiqueté avant le premier jour.',
+      },
+      {
+        q: 'Combien d\'étiquettes je reçois et à quel prix ?',
+        a: 'Trois trousses selon les besoins, de l\'essentiel pour un enfant à la trousse complète pour la fratrie. Le nombre d\'étiquettes et le prix s\'affichent directement dans le configurateur avant de commander.',
+      },
+    ],
+    relatedServices: [
+      { slug: 'stickers', label: 'Stickers personnalisés' },
+      { slug: 'design', label: 'Design graphique sur mesure' },
+    ],
+    ctaPrimary: { href: '/etiquettes', label: { fr: 'Créer l\'étiquette de mon enfant', en: 'Create my kid\'s label', es: 'Crear la etiqueta de mi hijo' } },
+    ctaSecondary: { href: '/etiquettes', label: { fr: 'Voir les designs', en: 'See the designs', es: 'Ver los diseños' } },
+    heroImage: '/images/etiquettes/mockup-lunchbox.webp',
+  },
+
   'print-fine-art-quebec': {
     keyword: 'Print fine art Québec',
     geo: 'Province de Québec',

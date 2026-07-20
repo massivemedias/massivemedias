@@ -120,14 +120,15 @@ function LandingLocal() {
               {page.intro}
             </p>
 
-            {/* CTAs primaires */}
+            {/* CTAs primaires (overridables par landing via page.ctaPrimary /
+                page.ctaSecondary ; fallback = soumission + boutique). */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/contact" className="btn-primary">
-                {tx({ fr: 'Demander une soumission', en: 'Request a quote', es: 'Solicitar cotización' })}
+              <Link to={page.ctaPrimary?.href || '/contact'} className="btn-primary">
+                {page.ctaPrimary ? tx(page.ctaPrimary.label) : tx({ fr: 'Demander une soumission', en: 'Request a quote', es: 'Solicitar cotización' })}
                 <ArrowRight size={18} className="ml-2" />
               </Link>
-              <Link to="/boutique" className="btn-outline">
-                {tx({ fr: 'Voir la boutique', en: 'View the shop', es: 'Ver la tienda' })}
+              <Link to={page.ctaSecondary?.href || '/boutique'} className="btn-outline">
+                {page.ctaSecondary ? tx(page.ctaSecondary.label) : tx({ fr: 'Voir la boutique', en: 'View the shop', es: 'Ver la tienda' })}
               </Link>
             </div>
           </motion.div>
