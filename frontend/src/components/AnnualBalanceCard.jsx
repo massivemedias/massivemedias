@@ -309,7 +309,7 @@ function AnnualBalanceCard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="rounded-lg bg-green-500/8 border border-green-500/20 p-3">
               <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1">
-                {tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })}
+                {tx({ fr: 'Revenus (HT)', en: 'Revenue (pre-tax)', es: 'Ingresos (sin imp.)' })}
                 <InfoTooltip text="Ton chiffre d'affaires HT (hors taxes) : le total de tes ventes sans les TPS/TVQ. C'est la base de ton profit fiscal." />
               </p>
               <p className="text-xl font-heading font-bold text-green-400">{fmt(t.revenue)}$</p>

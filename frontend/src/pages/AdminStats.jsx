@@ -113,9 +113,9 @@ function AdminStats() {
   }
 
   const summaryCards = [
-    { label: tx({ fr: 'Revenus totaux', en: 'Total revenue', es: 'Ingresos totales' }), value: `${(stats.revenue?.totalDollars || 0).toFixed(2)}$`, icon: DollarSign, accent: 'text-green-400', tip: 'Somme des montants encaisses (total TTC : taxes et livraison inclus) sur les commandes payees. Different du « chiffre d\'affaires HT » du bilan annuel.' },
+    { label: tx({ fr: 'Revenus totaux (TTC)', en: 'Total revenue (incl. tax)', es: 'Ingresos totales (con imp.)' }), value: `${(stats.revenue?.totalDollars || 0).toFixed(2)}$`, icon: DollarSign, accent: 'text-green-400', tip: 'Somme des montants encaisses (total TTC : taxes et livraison inclus) sur les commandes payees. Different du « chiffre d\'affaires HT » du bilan annuel.' },
     { label: tx({ fr: 'Dépenses totales', en: 'Total expenses', es: 'Total gastos' }), value: `${(stats.expenses?.total || 0).toFixed(2)}$`, icon: Receipt, accent: 'text-red-400', tip: 'Total des achats fournisseurs saisis (montant TTC, toutes categories confondues).' },
-    { label: tx({ fr: 'Profit brut', en: 'Gross profit', es: 'Ganancia bruta' }), value: `${(stats.profit?.gross || 0).toFixed(2)}$`, icon: TrendingUp, accent: stats.profit?.gross >= 0 ? 'text-green-400' : 'text-red-400', tip: 'Revenus totaux moins Depenses totales. Vue simple. (Le « Bilan » du bilan annuel calcule autrement : revenus HT moins depenses deductibles.)' },
+    { label: tx({ fr: 'Profit brut (dépenses totales)', en: 'Gross profit (total expenses)', es: 'Ganancia bruta (gastos totales)' }), value: `${(stats.profit?.gross || 0).toFixed(2)}$`, icon: TrendingUp, accent: stats.profit?.gross >= 0 ? 'text-green-400' : 'text-red-400', tip: 'Revenus totaux moins Depenses totales. Vue simple. (Le « Bilan » du bilan annuel calcule autrement : revenus HT moins depenses deductibles.)' },
     { label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), value: stats.orderStats?.total || 0, icon: ShoppingBag, accent: 'text-accent', tip: 'Nombre TOTAL de commandes, tous statuts confondus (inclut en attente et annulees). A distinguer de « Ventes » du tableau de bord qui ne compte que les payees.' },
   ];
 
