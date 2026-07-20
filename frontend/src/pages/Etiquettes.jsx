@@ -10,7 +10,7 @@ import { useLang } from '../i18n/LanguageContext'
 import { useCart } from '../contexts/CartContext'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import {
-  KIDS_SAFE, ETIQUETTE_THEMES, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS, ETIQUETTE_FONTS_CSS_URL, FONT_TOO_THIN_NOTE,
+  KIDS_SAFE, ETIQUETTE_LOWRES_EXCLUDED, ETIQUETTE_THEMES, ETIQUETTE_FORMATS, ETIQUETTE_PACKS, ETIQUETTE_FONTS, ETIQUETTE_FONTS_CSS_URL, FONT_TOO_THIN_NOTE,
   DEFAULT_FONT_ID, googleFontHref,
   PAGE_NAME_OPTIONS, PAGE_NAME_CHOICE, PAGE_SEO_PRODUCT, ETIQUETTE_CLAIMS, ETIQUETTE_CLAIM_LAVE_VAISSELLE,
   formatDims, formatDimsShort, SAMPLE_NAMES, SAMPLE_NAME_POOL,
@@ -305,24 +305,6 @@ function ThemeChips({ themes, value, onChange, countBySlug, tx }) {
   )
 }
 
-function DesignCarousel({ slugs, current, onPick, labelBySlug }) {
-  const loop = [...slugs, ...slugs]
-  return (
-    <div className="eti-carou" aria-hidden="false">
-      <div className="eti-track">
-        {loop.map((s, i) => (
-          <button
-            key={i} type="button" onClick={() => onPick(s)} title={labelBySlug?.[s]?.fr || s} tabIndex={i < slugs.length ? 0 : -1}
-            className={`eti-dz shrink-0 rounded-xl p-1 bg-glass-alt transition-all ${current === s ? 'ring-2 ring-accent' : 'hover:brightness-110'}`}
-          >
-            <img src={`/images/thumbs-mini/stickers-massive/${s}.webp`} alt="" aria-hidden="true" loading="lazy" decoding="async" className="sticker-stroke w-14 h-14 object-contain" />
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 /* --------------------------------------------------------------------------
  * LE CONFIGURATEUR : design -> prenom -> FORMAT -> couleurs -> police -> coins
  * -> pack. Layout 2 colonnes : apercu vedette large sticky a GAUCHE, controles
@@ -338,24 +320,26 @@ function ConfigurateurEtiquettes() {
   const [fontId, setFontId] = useState(DEFAULT_FONT_ID)
   const [cornerId, setCornerId] = useState(ETIQUETTE_CORNERS[0].id)
   const [packId, setPackId] = useState(ETIQUETTE_PACKS.find((p) => p.populaire)?.id || ETIQUETTE_PACKS[0].id)
-  const [showAll, setShowAll] = useState(false)
   // ETAPE 3 : theme actif, persiste pendant toute la configuration
   const [theme, setTheme] = useState('tous')
-  const kidsSet = useMemo(() => new Set(KIDS_SAFE), [])
+  // KIDS-GRID : le pool du configurateur = KIDS_SAFE MOINS les designs illisibles
+  // a l'echelle etiquette (cf. ETIQUETTE_LOWRES_EXCLUDED). KIDS_SAFE reste intact
+  // ailleurs (magazine home, palettes, catalogue stickers).
+  const kidsSet = useMemo(() => new Set(KIDS_SAFE.filter((s) => !ETIQUETTE_LOWRES_EXCLUDED.has(s))), [])
   const chipThemes = useMemo(() => ([
     { id: 'tous', name: { fr: 'Tous', en: 'All', es: 'Todos' } },
     ...ETIQUETTE_THEMES.filter((t) => t.slugs.some((x) => kidsSet.has(x))),
   ]), [kidsSet])
   const countByTheme = useMemo(() => {
-    const o = { tous: KIDS_SAFE.length }
+    const o = { tous: kidsSet.size }
     ETIQUETTE_THEMES.forEach((t) => { o[t.id] = t.slugs.filter((x) => kidsSet.has(x)).length })
     return o
   }, [kidsSet])
-  // la liste filtree alimente le carrousel ET la grille (une seule source)
+  // liste des designs du configurateur = KIDS_SAFE curee via kidsSet (une source)
   const designs = useMemo(() => {
-    if (theme === 'tous') return KIDS_SAFE
+    if (theme === 'tous') return KIDS_SAFE.filter((x) => kidsSet.has(x))
     const t = ETIQUETTE_THEMES.find((x) => x.id === theme)
-    return t ? t.slugs.filter((x) => kidsSet.has(x)) : KIDS_SAFE
+    return t ? t.slugs.filter((x) => kidsSet.has(x)) : KIDS_SAFE.filter((x) => kidsSet.has(x))
   }, [theme, kidsSet])
   const [sampleName, setSampleName] = useState(pickSampleName)
   // prenom d'exemple : nouveau tirage a chaque changement de design
@@ -442,31 +426,25 @@ function ConfigurateurEtiquettes() {
         {/* ============ DROITE : CONTROLES (nouvel ordre design -> prenom ->
             FORMAT -> couleurs -> police -> coins -> pack) ============ */}
         <div className="order-2 space-y-5 min-w-0">
-          {/* 1. DESIGN : carrousel auto-defilant en tete + grille complete au clic */}
+          {/* 1. DESIGN : grille complete DEPLOYEE en tout temps (tout visible d'un
+              coup, scroll naturel de la page - plus de carrousel ni de zone a
+              scroll interne : le parent voit l'offre complete sans effort). */}
           <div>
             <p className="text-grey-muted text-[11px] font-bold uppercase tracking-wider mb-2.5">
               {tx({ fr: 'Choisis ton design', en: 'Pick your design', es: 'Elige tu diseño' })} ({designs.length})
             </p>
-            <ThemeChips themes={chipThemes} value={theme} onChange={(id) => { setTheme(id); setShowAll(false) }} countBySlug={countByTheme} tx={tx} />
-            <DesignCarousel slugs={designs.slice(0, 24)} current={slug} onPick={(s) => { setSlug(s); setComboIdx(0) }} labelBySlug={stickerBySlug} />
-            {!showAll ? (
-              <button type="button" onClick={() => setShowAll(true)} className="mt-3 w-full py-2.5 rounded-full text-sm font-semibold text-grey-light border border-white/10 hover:border-white/25 transition-colors inline-flex items-center justify-center gap-1.5">
-                {tx({ fr: `Voir les ${designs.length} designs`, en: `See all ${designs.length} designs`, es: `Ver los ${designs.length} diseños` })}
-                <ChevronDown size={15} />
-              </button>
-            ) : (
-              <div className="grid grid-cols-5 sm:grid-cols-6 gap-2 max-h-[300px] overflow-y-auto pr-1 mt-3">
-                {designs.map((s) => {
-                  const st = stickerBySlug[s]
-                  return (
-                    <button key={s} type="button" onClick={() => { setSlug(s); setComboIdx(0) }} title={st ? st.fr : s}
-                      className={`relative rounded-xl p-1.5 bg-glass-alt transition-all ${slug === s ? 'ring-2 ring-accent' : 'hover:brightness-110'}`}>
-                      <img src={`/images/thumbs-mini/stickers-massive/${s}.webp`} alt={st ? st.fr : s} loading="lazy" decoding="async" className="sticker-stroke w-full aspect-square object-contain" />
-                    </button>
-                  )
-                })}
-              </div>
-            )}
+            <ThemeChips themes={chipThemes} value={theme} onChange={setTheme} countBySlug={countByTheme} tx={tx} />
+            <div className="grid grid-cols-5 sm:grid-cols-6 gap-2 mt-3">
+              {designs.map((s) => {
+                const st = stickerBySlug[s]
+                return (
+                  <button key={s} type="button" onClick={() => { setSlug(s); setComboIdx(0) }} title={st ? st.fr : s}
+                    className={`relative rounded-xl p-1.5 bg-glass-alt transition-all ${slug === s ? 'ring-2 ring-accent' : 'hover:brightness-110'}`}>
+                    <img src={`/images/thumbs-mini/stickers-massive/${s}.webp`} alt={st ? st.fr : s} loading="lazy" decoding="async" className="sticker-stroke w-full aspect-square object-contain" />
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* 2. PRENOM + ligne 2 (touch targets >=44px) */}
