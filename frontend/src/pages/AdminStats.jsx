@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import { useLang } from '../i18n/LanguageContext';
 import { getOrderStats, getAnalytics } from '../services/adminService';
+import InfoTooltip from '../components/InfoTooltip';
 
 const CATEGORY_LABELS = {
   materials: { fr: 'Matériaux', en: 'Materials', es: 'Materiales' },
@@ -112,10 +113,10 @@ function AdminStats() {
   }
 
   const summaryCards = [
-    { label: tx({ fr: 'Revenus totaux', en: 'Total revenue', es: 'Ingresos totales' }), value: `${(stats.revenue?.totalDollars || 0).toFixed(2)}$`, icon: DollarSign, accent: 'text-green-400' },
-    { label: tx({ fr: 'Dépenses totales', en: 'Total expenses', es: 'Total gastos' }), value: `${(stats.expenses?.total || 0).toFixed(2)}$`, icon: Receipt, accent: 'text-red-400' },
-    { label: tx({ fr: 'Profit brut', en: 'Gross profit', es: 'Ganancia bruta' }), value: `${(stats.profit?.gross || 0).toFixed(2)}$`, icon: TrendingUp, accent: stats.profit?.gross >= 0 ? 'text-green-400' : 'text-red-400' },
-    { label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), value: stats.orderStats?.total || 0, icon: ShoppingBag, accent: 'text-accent' },
+    { label: tx({ fr: 'Revenus totaux', en: 'Total revenue', es: 'Ingresos totales' }), value: `${(stats.revenue?.totalDollars || 0).toFixed(2)}$`, icon: DollarSign, accent: 'text-green-400', tip: 'Somme des montants encaisses (total TTC : taxes et livraison inclus) sur les commandes payees. Different du « chiffre d\'affaires HT » du bilan annuel.' },
+    { label: tx({ fr: 'Dépenses totales', en: 'Total expenses', es: 'Total gastos' }), value: `${(stats.expenses?.total || 0).toFixed(2)}$`, icon: Receipt, accent: 'text-red-400', tip: 'Total des achats fournisseurs saisis (montant TTC, toutes categories confondues).' },
+    { label: tx({ fr: 'Profit brut', en: 'Gross profit', es: 'Ganancia bruta' }), value: `${(stats.profit?.gross || 0).toFixed(2)}$`, icon: TrendingUp, accent: stats.profit?.gross >= 0 ? 'text-green-400' : 'text-red-400', tip: 'Revenus totaux moins Depenses totales. Vue simple. (Le « Bilan » du bilan annuel calcule autrement : revenus HT moins depenses deductibles.)' },
+    { label: tx({ fr: 'Commandes', en: 'Orders', es: 'Pedidos' }), value: stats.orderStats?.total || 0, icon: ShoppingBag, accent: 'text-accent', tip: 'Nombre TOTAL de commandes, tous statuts confondus (inclut en attente et annulees). A distinguer de « Ventes » du tableau de bord qui ne compte que les payees.' },
   ];
 
   // Revenue area chart data
@@ -219,12 +220,12 @@ function AdminStats() {
               {/* Overview cards */}
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                 {[
-                  { label: tx({ fr: 'En ligne', en: 'Online now', es: 'En linea' }), value: analytics.realtimeUsers ?? '-', icon: Activity, accent: 'text-green-400', pulse: true },
-                  { label: tx({ fr: 'Visiteurs', en: 'Visitors', es: 'Visitantes' }), value: analytics.overview?.activeUsers || 0, icon: Users, accent: 'text-blue-400' },
-                  { label: tx({ fr: 'Visiteurs uniques', en: 'Unique visitors', es: 'Visitantes unicos' }), value: analytics.overview?.activeUsers || 0, icon: MousePointerClick, accent: 'text-purple-400' },
-                  { label: tx({ fr: 'Pages vues', en: 'Page views', es: 'Paginas vistas' }), value: analytics.overview?.pageViews || 0, icon: Eye, accent: 'text-cyan-400' },
-                  { label: tx({ fr: 'Nouveaux', en: 'New users', es: 'Nuevos' }), value: analytics.overview?.newUsers || 0, icon: ArrowUpRight, accent: 'text-emerald-400' },
-                  { label: tx({ fr: 'Taux rebond', en: 'Bounce rate', es: 'Tasa rebote' }), value: `${((analytics.overview?.bounceRate || 0) * 100).toFixed(1)}%`, icon: ArrowDownRight, accent: 'text-orange-400' },
+                  { label: tx({ fr: 'En ligne', en: 'Online now', es: 'En linea' }), value: analytics.realtimeUsers ?? '-', icon: Activity, accent: 'text-green-400', pulse: true, tip: 'Personnes actives sur le site a l\'instant meme (temps reel Google Analytics).' },
+                  { label: tx({ fr: 'Visiteurs', en: 'Visitors', es: 'Visitantes' }), value: analytics.overview?.activeUsers || 0, icon: Users, accent: 'text-blue-400', tip: 'Personnes actives ayant visite le site sur la periode choisie (Google Analytics, champ activeUsers).' },
+                  { label: tx({ fr: 'Visiteurs uniques', en: 'Unique visitors', es: 'Visitantes unicos' }), value: analytics.overview?.activeUsers || 0, icon: MousePointerClick, accent: 'text-purple-400', tip: 'Meme chiffre que « Visiteurs » (Google Analytics ne distingue pas les deux ici). A ne pas confondre avec le compteur maison « visiteurs uniques » en haut du tableau de bord.' },
+                  { label: tx({ fr: 'Pages vues', en: 'Page views', es: 'Paginas vistas' }), value: analytics.overview?.pageViews || 0, icon: Eye, accent: 'text-cyan-400', tip: 'Nombre total de pages affichees sur la periode (une personne peut en voir plusieurs).' },
+                  { label: tx({ fr: 'Nouveaux', en: 'New users', es: 'Nuevos' }), value: analytics.overview?.newUsers || 0, icon: ArrowUpRight, accent: 'text-emerald-400', tip: 'Visiteurs qui venaient sur le site pour la premiere fois sur la periode.' },
+                  { label: tx({ fr: 'Taux rebond', en: 'Bounce rate', es: 'Tasa rebote' }), value: `${((analytics.overview?.bounceRate || 0) * 100).toFixed(1)}%`, icon: ArrowDownRight, accent: 'text-orange-400', tip: 'Part des visites ou la personne repart sans interagir (une seule page, aucun clic). Plus c\'est bas, mieux c\'est.' },
                 ].map((card, i) => {
                   const Icon = card.icon;
                   return (
@@ -233,6 +234,7 @@ function AdminStats() {
                         <Icon size={14} className={card.accent} />
                         {card.pulse && <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />}
                         <span className="text-grey-muted text-[10px]">{card.label}</span>
+                        <InfoTooltip text={card.tip} label={card.label} className="ml-auto" side={i < 2 ? 'bottom' : 'top'} />
                       </div>
                       <span className="text-xl font-heading font-bold text-heading">{card.value}</span>
                     </motion.div>
@@ -246,6 +248,7 @@ function AdminStats() {
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <BarChart3 size={16} className="text-blue-400" />
                     {tx({ fr: 'Visiteurs quotidiens', en: 'Daily visitors', es: 'Visitantes diarios' })}
+                    <InfoTooltip side="bottom" text="Nombre de visiteurs (courbe bleue) et de pages vues (courbe cyan) jour par jour sur la periode. Source : Google Analytics." />
                   </h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <AreaChart data={analytics.daily || []} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -274,6 +277,7 @@ function AdminStats() {
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Eye size={16} className="text-cyan-400" />
                     {tx({ fr: 'Pages les plus visitées', en: 'Most visited pages', es: 'Paginas mas visitadas' })}
+                    <InfoTooltip side="bottom" text="Les pages du site qui ont recu le plus de visiteurs sur la periode. Le chiffre = nombre de visiteurs de la page." />
                   </h3>
                   <div className="space-y-2 max-h-[300px] overflow-y-auto">
                     {(analytics.pages || []).map((page, i) => {
@@ -298,6 +302,7 @@ function AdminStats() {
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Globe size={16} className="text-green-400" />
                     {tx({ fr: 'Sources de trafic', en: 'Traffic sources', es: 'Fuentes de trafico' })}
+                    <InfoTooltip side="bottom" text="D'ou viennent les visiteurs : recherche Google, reseaux sociaux, lien direct, etc. Le chiffre = visiteurs par source." />
                   </h3>
                   <div className="flex items-center gap-4">
                     <div className="w-36 h-36 flex-shrink-0">
@@ -330,6 +335,7 @@ function AdminStats() {
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Globe size={16} className="text-purple-400" />
                     {tx({ fr: 'Pays', en: 'Countries', es: 'Paises' })}
+                    <InfoTooltip side="bottom" text="Pays d'ou se connectent les visiteurs (selon Google Analytics). Le chiffre = visiteurs par pays." />
                   </h3>
                   <div className="space-y-2">
                     {(analytics.countries || []).map((c, i) => {
@@ -352,6 +358,7 @@ function AdminStats() {
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Monitor size={16} className="text-yellow-400" />
                     {tx({ fr: 'Appareils', en: 'Devices', es: 'Dispositivos' })}
+                    <InfoTooltip side="bottom" text="Repartition des visiteurs par type d'appareil : ordinateur, mobile, tablette." />
                   </h3>
                   <div className="space-y-3">
                     {(analytics.devices || []).map((d, i) => {
@@ -382,6 +389,7 @@ function AdminStats() {
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Users size={16} className="text-emerald-400" />
                     {tx({ fr: 'Âge des visiteurs', en: 'Visitor age', es: 'Edad de visitantes' })}
+                    <InfoTooltip side="bottom" text="Tranches d'age estimees des visiteurs (Google Analytics). Souvent « donnees insuffisantes » si le trafic est faible ou le consentement pub refuse." />
                   </h3>
                   {(analytics.ageGroups || []).length === 0 ? (
                     <p className="text-grey-muted text-xs">{tx({ fr: 'Données insuffisantes', en: 'Insufficient data', es: 'Datos insuficientes' })}</p>
@@ -406,6 +414,7 @@ function AdminStats() {
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <Globe size={16} className="text-orange-400" />
                     {tx({ fr: 'Navigateurs', en: 'Browsers', es: 'Navegadores' })}
+                    <InfoTooltip side="bottom" text="Navigateur web utilise par les visiteurs : Chrome, Safari, Firefox, etc. Le chiffre = visiteurs par navigateur." />
                   </h3>
                   <div className="space-y-2">
                     {(analytics.browsers || []).map((b, i) => {
@@ -428,6 +437,7 @@ function AdminStats() {
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <MapPin size={16} className="text-red-400" />
                     {tx({ fr: 'Villes', en: 'Cities', es: 'Ciudades' })}
+                    <InfoTooltip side="bottom" text="Villes d'ou se connectent les visiteurs (Google Analytics). Le chiffre = visiteurs par ville." />
                   </h3>
                   <div className="space-y-2 max-h-[240px] overflow-y-auto scrollbar-thin">
                     {(analytics.cities || []).filter(c => c.city !== '(not set)').map((c, i) => {
@@ -450,6 +460,7 @@ function AdminStats() {
                   <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
                     <ArrowDown size={16} className="text-teal-400" />
                     {tx({ fr: "Pages d'arrivee", en: 'Landing pages', es: 'Paginas de entrada' })}
+                    <InfoTooltip side="bottom" text="La toute premiere page par laquelle les visiteurs entrent sur le site (leur point d'atterrissage)." />
                   </h3>
                   <div className="space-y-2 max-h-[240px] overflow-y-auto scrollbar-thin">
                     {(analytics.landingPages || []).map((lp, i) => (
@@ -490,7 +501,7 @@ function AdminStats() {
           const Icon = card.icon;
           return (
             <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-xl p-4 card-bg shadow-lg shadow-black/20">
-              <div className="flex items-center gap-2 mb-2"><Icon size={16} className={card.accent} /><span className="text-grey-muted text-xs">{card.label}</span></div>
+              <div className="flex items-center gap-2 mb-2"><Icon size={16} className={card.accent} /><span className="text-grey-muted text-xs">{card.label}</span><InfoTooltip text={card.tip} label={card.label} className="ml-auto" side="bottom" /></div>
               <span className="text-2xl font-heading font-bold text-heading">{card.value}</span>
             </motion.div>
           );
@@ -548,6 +559,7 @@ function AdminStats() {
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <BarChart3 size={16} className="text-green-400" />
             {tx({ fr: 'Revenus mensuels', en: 'Monthly revenue', es: 'Ingresos mensuales' })}
+            <InfoTooltip side="bottom" text="Revenus encaisses (TTC) mois par mois sur les 12 derniers mois. Le petit chiffre sous chaque mois = nombre de commandes." />
           </h3>
           {monthlyRev.length === 0 ? (
             <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnée', en: 'No data', es: 'Sin datos' })}</p>
@@ -585,6 +597,7 @@ function AdminStats() {
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <Receipt size={16} className="text-red-400" />
             {tx({ fr: 'Dépenses par catégorie', en: 'Expenses by category', es: 'Gastos por categoria' })}
+            <InfoTooltip side="bottom" text="Repartition des depenses par type (materiaux, logiciel, marketing, loyer, etc.), du plus gros au plus petit." />
           </h3>
           {expenseData.length === 0 ? (
             <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnée', en: 'No data', es: 'Sin datos' })}</p>
@@ -606,6 +619,7 @@ function AdminStats() {
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <ShoppingBag size={16} className="text-accent" />
             {tx({ fr: 'Status des commandes', en: 'Order status', es: 'Estado de pedidos' })}
+            <InfoTooltip side="bottom" text="Repartition de toutes les commandes selon leur etape : en attente, payee, en production, prete, expediee, livree, annulee, remboursee." />
           </h3>
           <div className="flex items-center gap-4">
             <div className="w-40 h-40 flex-shrink-0">
@@ -646,6 +660,7 @@ function AdminStats() {
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <Percent size={16} className="text-purple-400" />
             {tx({ fr: 'Bilan taxes', en: 'Tax summary', es: 'Resumen impuestos' })}
+            <InfoTooltip side="bottom" text="Estimation des taxes. « Percue » = Revenus x 5% (TPS) et x 9,975% (TVQ), un calcul a plat (pas la taxe exacte facturee). Pour le chiffre exact a remettre, fie-toi au « Bilan annuel » qui somme les vraies taxes de chaque commande." />
           </h3>
           <div className="space-y-3">
             <div className="grid grid-cols-3 gap-2 text-sm">
@@ -685,17 +700,17 @@ function AdminStats() {
               const totalExp = stats.expenses?.total || 0;
               const margin = totalRev > 0 ? ((totalRev - totalExp) / totalRev * 100) : 0;
               return [
-                { label: tx({ fr: 'Panier moyen', en: 'Avg order value', es: 'Valor medio pedido' }), value: `${avgOrder.toFixed(2)}$`, good: true },
-                { label: tx({ fr: 'Marge nette', en: 'Net margin', es: 'Margen neto' }), value: `${margin.toFixed(1)}%`, good: margin > 0 },
+                { label: tx({ fr: 'Panier moyen', en: 'Avg order value', es: 'Valor medio pedido' }), value: `${avgOrder.toFixed(2)}$`, good: true, tip: 'Montant moyen depense par commande (Revenus totaux divises par le nombre total de commandes).' },
+                { label: tx({ fr: 'Marge nette', en: 'Net margin', es: 'Margen neto' }), value: `${margin.toFixed(1)}%`, good: margin > 0, tip: 'Part des revenus qui reste apres les depenses : (Revenus - Depenses) / Revenus. Plus c\'est haut, mieux c\'est.' },
                 { label: tx({ fr: 'Taux annulation', en: 'Cancel rate', es: 'Tasa cancelacion' }),
                   value: `${totalOrders2 > 0 ? (((byStatus.cancelled || 0) / totalOrders2) * 100).toFixed(1) : 0}%`,
-                  good: false, reverse: true },
+                  good: false, reverse: true, tip: 'Part des commandes annulees sur le total. Plus c\'est bas, mieux c\'est.' },
                 { label: tx({ fr: 'Taux remboursement', en: 'Refund rate', es: 'Tasa reembolso' }),
                   value: `${totalOrders2 > 0 ? (((byStatus.refunded || 0) / totalOrders2) * 100).toFixed(1) : 0}%`,
-                  good: false, reverse: true },
+                  good: false, reverse: true, tip: 'Part des commandes remboursees sur le total. Plus c\'est bas, mieux c\'est.' },
               ].map((kpi, i) => (
                 <div key={i} className="flex items-center justify-between">
-                  <span className="text-sm text-grey-muted">{kpi.label}</span>
+                  <span className="text-sm text-grey-muted flex items-center gap-1">{kpi.label}<InfoTooltip text={kpi.tip} label={kpi.label} /></span>
                   <div className="flex items-center gap-1.5">
                     <span className={`text-lg font-bold ${
                       kpi.reverse
@@ -718,6 +733,7 @@ function AdminStats() {
           <h3 className="text-sm font-heading font-bold text-heading mb-4 flex items-center gap-2">
             <Users size={16} className="text-accent" />
             {tx({ fr: 'Top 10 clients', en: 'Top 10 clients', es: 'Top 10 clientes' })}
+            <InfoTooltip side="bottom" text="Les 10 clients qui ont le plus depense (total cumule, commandes annulees et en attente exclues), avec leur nombre de commandes." />
           </h3>
           {(stats.topClients || []).length === 0 ? (
             <p className="text-grey-muted text-sm">{tx({ fr: 'Aucune donnée', en: 'No data', es: 'Sin datos' })}</p>

@@ -13,6 +13,7 @@ import { getOrders, getContactSubmissions, getExpenses, getAnalytics } from '../
 import api from '../services/api';
 import AnnualBalanceCard from '../components/AnnualBalanceCard';
 import ProductionQueue from '../components/ProductionQueue'
+import InfoTooltip from '../components/InfoTooltip';
 // HARDCODE-PROD (3 mai 2026) : URL prod en dur, voir api.js
 
 // FIX-NOTES-FETCH (23 avril 2026) : on abandonne le wrapper getAdminNotes
@@ -64,7 +65,7 @@ const dollars = (v) => `${((v || 0) / 100).toFixed(2)}$`;
 const AdminStats = lazy(() => import('./AdminStats'));
 
 // --- StatCard reutilisable (accepte maintenant un subValue optionnel) ---
-function StatCard({ icon: Icon, label, value, subValue, color, to, highlight }) {
+function StatCard({ icon: Icon, label, value, subValue, color, to, highlight, tooltip }) {
   const content = (
     <div className={`flex items-center gap-3 p-4 rounded-xl bg-black/20 hover:bg-black/25 transition-all group ${highlight ? 'ring-1 ring-accent/30' : ''}`}>
       <div className={`p-2.5 rounded-lg ${color}`}>
@@ -79,7 +80,10 @@ function StatCard({ icon: Icon, label, value, subValue, color, to, highlight }) 
             </span>
           )}
         </div>
-        <p className="text-xs text-grey-muted truncate">{label}</p>
+        <p className="text-xs text-grey-muted truncate flex items-center gap-1">
+          {label}
+          {tooltip && <InfoTooltip text={tooltip} label={label} side="bottom" />}
+        </p>
       </div>
       {to && <ArrowRight size={14} className="ml-auto text-grey-muted opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />}
     </div>
@@ -122,8 +126,9 @@ function VisitorsWidget() {
           <span className="text-xl font-bold text-heading leading-tight">
             {err ? '–' : (data ? data.uniqueVisitors : '…')}
           </span>
-          <span className="text-xs text-grey-muted">
+          <span className="text-xs text-grey-muted flex items-center gap-1">
             {tx({ fr: 'visiteurs uniques', en: 'unique visitors', es: 'visitantes unicos' })}
+            <InfoTooltip side="bottom" text="Compteur MAISON : personnes differentes ayant visite le site sur la fenetre choisie (1h/3h/24h), IP anonymisee (hachee), conforme Loi 25. C'est du temps reel, distinct des « Visiteurs uniques » de Google Analytics dans l'onglet Trafic." />
           </span>
         </div>
         <p className="text-xs text-grey-muted truncate">
@@ -512,6 +517,7 @@ function AdminDashboard() {
           value={revenue.orders || 0}
           color="bg-green-500/15 text-green-400"
           to="/admin/commandes"
+          tooltip="Nombre de commandes PAYEES (payee, en production, prete, expediee, livree). C'est un compte, pas un montant."
         />
         <StatCard
           icon={DollarSign}
@@ -519,6 +525,7 @@ function AdminDashboard() {
           value={`${(revenue.total || 0).toFixed(0)}$`}
           color="bg-accent/15 text-accent"
           to="/admin/commandes"
+          tooltip="Total encaisse (TTC : taxes et livraison inclus) sur les commandes payees. Different du chiffre d'affaires HT du bilan annuel."
         />
         <StatCard
           icon={Banknote}
@@ -526,6 +533,7 @@ function AdminDashboard() {
           value={`${(revenue.commissions || 0).toFixed(0)}$`}
           color="bg-blue-500/15 text-blue-400"
           to="/admin/artists"
+          tooltip="Total des commissions dues aux artistes sur les ventes de leurs prints (ce que tu leur reverses)."
         />
         <StatCard
           icon={Clock}
@@ -535,6 +543,7 @@ function AdminDashboard() {
           color="bg-yellow-500/15 text-yellow-400"
           to="/admin/commandes"
           highlight={kpis.pendingCount > 0}
+          tooltip="Commandes recues mais pas encore traitees (statut « en attente » ou « payee »). Le montant entre parentheses = leur total TTC."
         />
       </div>
 
