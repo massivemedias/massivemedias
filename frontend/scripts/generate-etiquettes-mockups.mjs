@@ -30,7 +30,7 @@
  * - photo-lunchbox.webp : Pexels 13048837 (boite a lunch bento, couvercle bleu
  *                         plat) - licence Pexels (commercial libre, modif OK)
  * - label-*.png : etiquettes exemple rendues du configurateur (Baloo 2, combos
- *   auto-assortis, prenom Emma), 3 designs differents.
+ *   auto-assortis, prenom Lise), 3 designs differents.
  *
  * Sortie : public/images/etiquettes/mockup-{gourde,verre,lunchbox}.webp
  * (800x600, q82). Relancer apres tout changement de source :
@@ -59,19 +59,24 @@ const magick = (args) => execFileSync('magick', args, { stdio: ['ignore', 'pipe'
  * - center : [x, y] du POINT DE POSE dans la photo.
  * - shade : force de l'assombrissement des bords enroules (0..1).
  */
+// MOCKUPS-CREDIBLES (19 juillet 2026) : echelles reduites (~1,6x plus petites)
+// pour du realiste. Une etiquette Mini Massive est PETITE. Voir doc en tete.
 const MOCKUPS = [
   {
+    // gourde ~7 cm : Moyenne ~1/4 de circonference. Plus petite + plus courbee.
     name: 'gourde', photo: 'photo-gourde.webp', label: 'label-gourde.png',
-    targetW: 185, fov: 60, axis: 'v', rotate: -2, center: [480, 350], shade: 0.30,
+    targetW: 118, fov: 70, axis: 'v', rotate: -2, center: [478, 360], shade: 0.36,
   },
   {
+    // gobelet enfant (plus petit objet) : ~40 % de la face visible.
     name: 'verre', photo: 'photo-verre.webp', label: 'label-verre.png',
-    targetW: 230, fov: 40, axis: 'v', rotate: 0.5, center: [385, 430], shade: 0.24,
+    targetW: 150, fov: 48, axis: 'v', rotate: 0.5, center: [388, 430], shade: 0.30,
   },
   {
-    // couvercle bleu plat de la boite a lunch, incline ~15deg vers la droite
+    // couvercle bleu plat de la boite a lunch, incline ~13deg. Grande ~40 % du
+    // couvercle. Leger shading + ombre de contact pour ancrer sur le plat.
     name: 'lunchbox', photo: 'photo-lunchbox.webp', label: 'label-lunchbox.png',
-    targetW: 300, fov: 0, axis: 'v', rotate: 13, center: [440, 158], shade: 0,
+    targetW: 188, fov: 0, axis: 'v', rotate: 13, center: [455, 150], shade: 0.05,
   },
 ]
 
