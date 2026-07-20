@@ -824,7 +824,7 @@ function Artistes() {
                   </p>
 
                   <div className="flex flex-wrap gap-3 mb-8">
-                    <Link to="/boutique/fine-art" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
+                    <Link to="/services/prints" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
                       {tx({ fr: 'Fine Art', en: 'Fine Art', es: 'Fine Art' })}
                     </Link>
                     <Link to="/services/stickers" className="text-sm px-4 py-2 rounded-full bg-bg-elevated text-grey-light hover:text-accent hover:border-accent/30 border border-white/5 transition-colors">
