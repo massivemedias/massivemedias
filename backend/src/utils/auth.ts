@@ -144,6 +144,36 @@ export async function requireUserAuth(ctx: Ctx): Promise<boolean> {
 }
 
 /**
+ * RABAIS-CLIENT : identite verifiee NON BLOQUANTE, pour un endpoint public
+ * (auth:false) qui doit se comporter differemment selon qu'un vrai user est
+ * connecte ou non - SANS jamais rejeter l'invite. Retourne { email, userId } si
+ * un JWT Supabase valide est present, sinon null. Ne pose JAMAIS de 401.
+ *
+ * Usage : createCheckoutSession lit le rabais personnel du client A PARTIR DE
+ * l'email/id RENVOYE ICI (verifie), jamais du body (qu'un attaquant pourrait
+ * forger pour reclamer le rabais d'un autre).
+ */
+export async function getOptionalUser(ctx: Ctx): Promise<{ email: string; userId: string } | null> {
+  const authHeader = (ctx.request.headers['authorization'] as string) || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  if (!token) return null;
+  try {
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.SUPABASE_API_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_API_KEY;
+    if (!supabaseUrl || !supabaseKey) return null;
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data, error } = await supabase.auth.getUser(token);
+    if (!error && data?.user?.email) {
+      return { email: String(data.user.email).toLowerCase(), userId: data.user.id };
+    }
+  } catch (e: any) {
+    (strapi as any)?.log?.warn?.('getOptionalUser: Supabase verification error', e?.message || e);
+  }
+  return null;
+}
+
+/**
  * Helper utilitaire: verifie que le user connecte est proprietaire d'une
  * ressource, soit via son email soit via le fait qu'il est admin.
  *

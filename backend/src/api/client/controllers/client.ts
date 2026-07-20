@@ -1,6 +1,7 @@
 import { factories } from '@strapi/strapi';
 import { sendNewUserNotificationEmail } from '../../../utils/email';
 import { requireAdminAuth, requireUserAuth } from '../../../utils/auth'
+import { getActiveClientDiscount } from '../../../utils/pricing-config'
 
 // Statuts de commande qui comptent comme "paye reellement"
 const PAID_STATUSES = ['paid', 'processing', 'ready', 'shipped', 'delivered'];
@@ -475,6 +476,73 @@ export default factories.createCoreController('api::client.client', ({ strapi })
     const client = await findClientForUser(strapi, userId, userEmail);
     // Toujours renvoyer la forme deux listes ; migration lue a la volee.
     ctx.body = { favoris: normalizeFavoris((client as any)?.favoris) };
+  },
+
+  // RABAIS-CLIENT (admin) : assigne / modifie / retire le rabais personnel d'un
+  // client, par EMAIL (upsert). Cree la fiche client si elle n'existe pas encore
+  // (ex : assigner un rabais a un inscrit avant sa 1re commande). Garde admin.
+  //
+  // Body : { email (requis), name?, discountType ('percent'|'fixed'|''),
+  //          discountValue, discountExpiresAt (ISO|null), discountNote }.
+  // discountType vide / valeur <= 0 => on EFFACE le rabais (remet tout a null/0).
+  async adminSetDiscount(ctx) {
+    if (!(await requireAdminAuth(ctx))) return;
+    const body = (ctx.request.body as any) || {};
+    const email = String(body.email || '').trim().toLowerCase();
+    if (!email) return ctx.badRequest('email requis');
+
+    const rawType = body.discountType;
+    const rawVal = typeof body.discountValue === 'string'
+      ? parseFloat(body.discountValue.replace(',', '.'))
+      : Number(body.discountValue);
+    const isValidType = rawType === 'percent' || rawType === 'fixed';
+    const val = Number.isFinite(rawVal) ? rawVal : 0;
+    const clearing = !isValidType || !(val > 0);
+
+    // Normalise : % borne 0..100, $ borne >= 0 (le montant final est reborne au
+    // sous-total cote checkout via computeOrderDiscount).
+    const normValue = clearing ? null : (rawType === 'percent' ? Math.min(100, Math.max(0, val)) : Math.max(0, val));
+    const expiresRaw = body.discountExpiresAt;
+    const expires = clearing || !expiresRaw ? null : new Date(expiresRaw);
+    const noteVal = clearing ? null : (body.discountNote ? String(body.discountNote).slice(0, 2000) : null);
+
+    const discountData: any = {
+      discountType: clearing ? null : rawType,
+      discountValue: normValue,
+      discountExpiresAt: expires && !isNaN(expires.getTime()) ? expires.toISOString() : null,
+      discountNote: noteVal,
+    };
+
+    const existing = await strapi.documents('api::client.client').findMany({ filters: { email }, limit: 1 });
+    let saved;
+    if (existing && existing[0]) {
+      saved = await strapi.documents('api::client.client').update({
+        documentId: (existing[0] as any).documentId,
+        data: discountData,
+      });
+    } else {
+      saved = await strapi.documents('api::client.client').create({
+        data: { email, name: body.name || email.split('@')[0], ...discountData } as any,
+      });
+    }
+    ctx.body = { data: saved };
+  },
+
+  // RABAIS-CLIENT : le client connecte lit SON rabais personnel actif (pour
+  // l'afficher dans /account et le panier). User-self : requireUserAuth + on ne
+  // lit QUE la fiche du user authentifie. Le montant final est TOUJOURS calcule
+  // serveur au checkout - ceci n'est qu'un affichage (type/valeur/expiration).
+  // Meme definition de "actif" que le checkout (getActiveClientDiscount partage).
+  async getMyDiscount(ctx) {
+    if (!(await requireUserAuth(ctx))) return;
+    const { userId, userEmail } = (ctx.state as any).user;
+    const client = await findClientForUser(strapi, userId, userEmail);
+    const active = getActiveClientDiscount(client);
+    // La `note` est INTERNE (admin) : ne jamais l'exposer au client. On ne
+    // renvoie que le type, la valeur et l'expiration (assez pour l'affichage).
+    ctx.body = {
+      discount: active ? { type: active.type, value: active.value, expiresAt: active.expiresAt } : null,
+    };
   },
 
   async updateMyFavoris(ctx) {

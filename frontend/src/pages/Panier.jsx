@@ -10,6 +10,8 @@ import { validatePromoCode } from '../services/orderService';
 import { getStickerPrice } from '../data/products';
 import { formatPrice } from '../utils/formatCurrency';
 import { collectionProgress } from '../utils/collectionCart';
+import { usePersonalDiscount } from '../hooks/usePersonalDiscount';
+import { resolvePersonalVsPromo } from '../utils/personalDiscount';
 
 const ARTIST_DISCOUNT = 0.25;
 // Produits a paliers fixes - pas de +/- libre
@@ -34,6 +36,18 @@ function Panier() {
       return sum + Math.round((lineTotal || 0) * ARTIST_DISCOUNT);
     }, 0);
   const adjustedTotal = cartTotal - artistDiscountTotal;
+
+  // RABAIS-CLIENT : rabais personnel du client connecte (affichage ; le montant
+  // facture est recalcule serveur). "Le meilleur gagne" contre le code promo,
+  // sur la base post-artiste. Sans rabais perso actif => resolved reste null et
+  // l'affichage promo existant ne bouge pas d'un pixel.
+  const { personal } = usePersonalDiscount();
+  const resolved = personal ? resolvePersonalVsPromo(adjustedTotal, personal, discountPercent) : null;
+  const personalLine = resolved?.winner === 'personal' ? resolved.personalDiscount : 0;
+  const promoLine = resolved ? (resolved.winner === 'promo' ? resolved.promoDiscount : 0) : discountAmount;
+  const finalTotal = Math.round((adjustedTotal - personalLine - promoLine) * 100) / 100;
+  const showBreakdown = hasArtistOwnPrints || promoLine > 0 || personalLine > 0;
+  const promoSuperseded = resolved?.winner === 'personal' && !!promoCode;
 
   // Empty cart
   if (items.length === 0) {
@@ -279,7 +293,7 @@ function Panier() {
 
         {/* Summary */}
         <div className="p-6 rounded-xl mb-8 highlight-bordered">
-          {(hasArtistOwnPrints || discountAmount > 0) ? (
+          {showBreakdown ? (
             <>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-grey-muted text-sm">{tx({ fr: 'Sous-total', en: 'Subtotal', es: 'Subtotal' })}</span>
@@ -291,17 +305,35 @@ function Panier() {
                   <span className="text-green-400 font-semibold">-{formatPrice(artistDiscountTotal)}</span>
                 </div>
               )}
-              {discountAmount > 0 && (
+              {personalLine > 0 && (
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-green-400 text-sm">
+                    {tx({ fr: 'Ton rabais personnel', en: 'Your personal discount', es: 'Tu descuento personal' })}
+                    {' '}({personal.type === 'percent' ? `-${Number(personal.value)}%` : `-${formatPrice(personal.value)}`})
+                  </span>
+                  <span className="text-green-400 font-semibold">-{formatPrice(personalLine)}</span>
+                </div>
+              )}
+              {promoLine > 0 && (
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-green-400 text-sm">
                     {tx({ fr: 'Rabais', en: 'Discount', es: 'Descuento' })} ({promoCode}, -{discountPercent}%)
                   </span>
-                  <span className="text-green-400 font-semibold">-{formatPrice(discountAmount)}</span>
+                  <span className="text-green-400 font-semibold">-{formatPrice(promoLine)}</span>
                 </div>
+              )}
+              {promoSuperseded && (
+                <p className="text-grey-muted text-xs mb-1">
+                  {tx({
+                    fr: `Le code ${promoCode} ne s'applique pas : ton rabais personnel est plus avantageux.`,
+                    en: `Code ${promoCode} not applied: your personal discount is better.`,
+                    es: `El codigo ${promoCode} no se aplica: tu descuento personal es mejor.`,
+                  })}
+                </p>
               )}
               <div className="flex justify-between items-center pt-2 border-t border-white/10">
                 <span className="text-heading font-semibold">{tx({ fr: 'Total', en: 'Total', es: 'Total' })}</span>
-                <span className="text-2xl font-heading font-bold text-heading">{formatPrice(adjustedTotal - discountAmount)}</span>
+                <span className="text-2xl font-heading font-bold text-heading">{formatPrice(finalTotal)}</span>
               </div>
             </>
           ) : (

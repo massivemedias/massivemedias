@@ -27,6 +27,19 @@
     "company": {
       "type": "string"
     },
+    "discountType": {
+      "type": "enumeration",
+      "enum": ["percent", "fixed"]
+    },
+    "discountValue": {
+      "type": "decimal"
+    },
+    "discountExpiresAt": {
+      "type": "datetime"
+    },
+    "discountNote": {
+      "type": "text"
+    },
     "notesFr": {
       "type": "text"
     },

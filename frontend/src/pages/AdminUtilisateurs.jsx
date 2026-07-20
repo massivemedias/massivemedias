@@ -16,6 +16,154 @@ import { useArtists } from '../hooks/useArtists';
 
 const GA_PROPERTY_ID = '525792501';
 
+/**
+ * RABAIS-CLIENT : editeur du rabais personnel d'un client (fiche depliee).
+ * Sauvegarde par email via PUT /clients/admin/discount (upsert cote back, garde
+ * requireAdminAuth). Etat local initialise depuis la fiche client Strapi
+ * (`client`). Le rabais est ensuite applique AUTOMATIQUEMENT et RECALCULE SERVEUR
+ * quand ce client passe une commande connecte - ici on ne fait que le definir.
+ */
+function DiscountEditor({ email, client, onSaved }) {
+  const { tx, lang } = useLang();
+  const cur = client || {};
+  const [type, setType] = useState(cur.discountType || '');
+  const [value, setValue] = useState(cur.discountValue != null && cur.discountValue !== '' ? String(cur.discountValue) : '');
+  const [expires, setExpires] = useState(cur.discountExpiresAt ? String(cur.discountExpiresAt).slice(0, 10) : '');
+  const [note, setNote] = useState(cur.discountNote || '');
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  const hasDiscount = !!cur.discountType && Number(cur.discountValue) > 0;
+  const isExpired = hasDiscount && cur.discountExpiresAt && new Date(cur.discountExpiresAt).getTime() <= Date.now();
+  const fmtDate = (d) => new Date(d).toLocaleDateString(lang === 'en' ? 'en-CA' : lang === 'es' ? 'es-ES' : 'fr-CA');
+
+  const submit = async (clear = false) => {
+    setSaving(true);
+    setMsg('');
+    try {
+      await api.put('/clients/admin/discount', {
+        email,
+        name: cur.name || undefined,
+        discountType: clear ? '' : type,
+        discountValue: clear ? 0 : value,
+        // Expiration = fin de la journee choisie (inclusive).
+        discountExpiresAt: clear || !expires ? null : `${expires}T23:59:59`,
+        discountNote: clear ? '' : note,
+      });
+      if (clear) { setType(''); setValue(''); setExpires(''); setNote(''); }
+      setMsg(tx({ fr: 'Enregistre', en: 'Saved', es: 'Guardado' }));
+      onSaved?.();
+    } catch (e) {
+      const m = e?.response?.data?.error?.message || '';
+      setMsg(tx({ fr: `Erreur${m ? ' : ' + m : ''}`, en: `Error${m ? ': ' + m : ''}`, es: `Error${m ? ': ' + m : ''}` }));
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMsg(''), 3500);
+    }
+  };
+
+  const canSave = type === 'percent' || type === 'fixed'
+    ? parseFloat(String(value).replace(',', '.')) > 0
+    : false;
+
+  return (
+    <div className="mt-4 rounded-lg bg-green-500/5 border border-green-500/15 p-4" onClick={(e) => e.stopPropagation()}>
+      <h4 className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <Gift size={12} />
+        {tx({ fr: 'Rabais personnel', en: 'Personal discount', es: 'Descuento personal' })}
+      </h4>
+
+      {/* Statut courant */}
+      <div className="mb-3 text-xs">
+        {hasDiscount ? (
+          <span className={isExpired ? 'text-yellow-400' : 'text-green-400'}>
+            {tx({ fr: 'Actuel', en: 'Current', es: 'Actual' })} :{' '}
+            <span className="font-bold">
+              {cur.discountType === 'percent' ? `-${Number(cur.discountValue)} %` : `-${Number(cur.discountValue)} $`}
+            </span>
+            {cur.discountExpiresAt && (
+              <> · {isExpired
+                ? tx({ fr: 'expire le', en: 'expired', es: 'expiro el' })
+                : tx({ fr: "jusqu'au", en: 'until', es: 'hasta el' })} {fmtDate(cur.discountExpiresAt)}</>
+            )}
+            {isExpired && <> ({tx({ fr: 'expire', en: 'expired', es: 'expirado' })})</>}
+          </span>
+        ) : (
+          <span className="text-grey-muted">{tx({ fr: 'Aucun rabais', en: 'No discount', es: 'Sin descuento' })}</span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-end gap-3">
+        <div>
+          <label className="block text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'Type', en: 'Type', es: 'Tipo' })}</label>
+          <select value={type} onChange={(e) => setType(e.target.value)} className="input-field text-sm py-1.5 px-3">
+            <option value="">{tx({ fr: '-- Aucun --', en: '-- None --', es: '-- Ninguno --' })}</option>
+            <option value="percent">{tx({ fr: 'Pourcentage (%)', en: 'Percentage (%)', es: 'Porcentaje (%)' })}</option>
+            <option value="fixed">{tx({ fr: 'Montant fixe ($)', en: 'Fixed amount ($)', es: 'Monto fijo ($)' })}</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'Valeur', en: 'Value', es: 'Valor' })}</label>
+          <input
+            type="number" min="0" step={type === 'percent' ? '1' : '0.01'} max={type === 'percent' ? '100' : undefined}
+            value={value} onChange={(e) => setValue(e.target.value)}
+            disabled={!type}
+            placeholder={type === 'percent' ? '15' : '10.00'}
+            className="input-field text-sm py-1.5 px-3 w-24 disabled:opacity-40"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1">
+            <Calendar size={10} /> {tx({ fr: 'Expiration (option.)', en: 'Expiry (optional)', es: 'Expiracion (opc.)' })}
+          </label>
+          <input
+            type="date" value={expires} onChange={(e) => setExpires(e.target.value)}
+            disabled={!type}
+            className="input-field text-sm py-1.5 px-3 disabled:opacity-40"
+          />
+        </div>
+        <div className="flex-grow min-w-[160px]">
+          <label className="block text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'Note interne', en: 'Internal note', es: 'Nota interna' })}</label>
+          <input
+            type="text" value={note} onChange={(e) => setNote(e.target.value)}
+            disabled={!type}
+            placeholder={tx({ fr: 'Ex : ami de la maison', en: 'e.g. friend of the shop', es: 'Ej: amigo de la casa' })}
+            className="input-field text-sm py-1.5 px-3 w-full disabled:opacity-40"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 mt-3">
+        <button
+          onClick={() => submit(false)}
+          disabled={saving || !canSave}
+          className="btn-primary text-xs py-1.5 px-4 disabled:opacity-50"
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+          <span className="ml-1">{tx({ fr: 'Enregistrer le rabais', en: 'Save discount', es: 'Guardar descuento' })}</span>
+        </button>
+        {hasDiscount && (
+          <button
+            onClick={() => submit(true)}
+            disabled={saving}
+            className="text-red-400/70 hover:text-red-400 text-xs transition-colors flex items-center gap-1 disabled:opacity-50"
+          >
+            <X size={12} /> {tx({ fr: 'Retirer le rabais', en: 'Remove discount', es: 'Quitar descuento' })}
+          </button>
+        )}
+        {msg && <span className="text-xs text-grey-muted">{msg}</span>}
+      </div>
+      <p className="text-grey-muted/60 text-[11px] mt-2">
+        {tx({
+          fr: 'Applique automatiquement au panier et au paiement quand ce client est connecte. Le montant est recalcule cote serveur.',
+          en: 'Applied automatically at cart and checkout when this client is logged in. Amount is recomputed server-side.',
+          es: 'Aplicado automaticamente en el carrito y el pago cuando este cliente inicia sesion. El monto se recalcula en el servidor.',
+        })}
+      </p>
+    </div>
+  );
+}
+
 function AdminUtilisateurs() {
   const { tx } = useLang();
   const { markUsersViewed } = useNotifications();
@@ -448,6 +596,9 @@ function AdminUtilisateurs() {
             const isEditing = editingUser === user.email;
             const isSaving = saving === (user.email || '').toLowerCase();
             const isExpanded = expandedId === user.id;
+            // RABAIS-CLIENT : fiche client Strapi liee (par email) - porte les
+            // champs discount* pour pre-remplir l'editeur de rabais personnel.
+            const clientRecord = buyerMap[(user.email || '').toLowerCase()] || null;
 
             return (
               <div key={user.id} className="">
@@ -773,6 +924,18 @@ function AdminUtilisateurs() {
                             </div>
                           </div>
                         </div>
+
+                        {/* RABAIS-CLIENT : rabais personnel assigne au client
+                            (applique automatiquement a ses commandes quand il est
+                            connecte). Cache pour les invites (jamais connectes) et
+                            pour la fiche admin. */}
+                        {role !== 'admin' && !user.isGuest && (
+                          <DiscountEditor
+                            email={user.email}
+                            client={clientRecord}
+                            onSaved={fetchAll}
+                          />
+                        )}
 
                         {/* Actions */}
                         {role !== 'admin' && !user.isGuest && (
