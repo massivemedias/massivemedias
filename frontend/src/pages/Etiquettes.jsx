@@ -17,6 +17,7 @@ import {
   ETIQUETTE_CORNERS, cornerFramePath,
 } from '../data/etiquettes'
 import { ETIQUETTES_PALETTES } from '../data/etiquettesPalettes'
+import { labelLineGapPx } from '../utils/etiquetteLayout'
 
 /**
  * ETIQUETTES (Phase 1, 14 juillet 2026) : etiquettes d'identification
@@ -118,13 +119,21 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr'
   // hauteur allouee a chaque ligne : les 2 lignes + l'ecart DOIVENT tenir dans
   // la hauteur du rectangle, sinon le texte deborde. Budgets serres (somme
   // ~0,66 h) et l'ecart est minimal -> l'ecriture reste centree, jamais coupee.
-  const line1MaxH = hasLine2 ? hPx * 0.38 : hPx * 0.62
-  const line2MaxH = hPx * 0.23
+  const line1MaxH = hasLine2 ? hPx * 0.33 : hPx * 0.62
+  const line2MaxH = hPx * 0.21
 
   const t1 = line1.trim() || placeholder || SAMPLE_NAMES[lang] || SAMPLE_NAMES.fr
   const t2 = line2.trim()
   const size1 = useAutoFit(t1, font.family, font.weight, textZoneW, line1MaxH)
   const size2 = useAutoFit(t2 || ' ', font.family, font.weight, textZoneW, line2MaxH)
+  // INTERLIGNE : regle UNIQUE mesuree (utils/etiquetteLayout) - la ligne 2 respire
+  // sous le bas REEL de la ligne 1 (descendantes incluses), jamais de chevauchement.
+  // Plafonnee a 0.18h pour ne pas deborder le cadre. Le rendu de production DOIT
+  // appeler labelLineGapPx() avec les memes tailles pour rester fidele a l'apercu.
+  const lineGapPx = useMemo(
+    () => labelLineGapPx({ line1: t1, line2: t2, family: font.family, weight: font.weight, size1, size2, maxGapPx: hPx * 0.18 }),
+    [t1, t2, font.family, font.weight, size1, size2, hPx],
+  )
 
   const sw = Math.max(2, hPx * 0.045)
   const framePath = cornerFramePath(wPx, hPx, corner, sw / 2)   // axe du trait
@@ -158,12 +167,12 @@ function EtiquettePreview({ slug, combo, format, font, line1, line2, lang = 'fr'
             {/* wrapper compact : les 2 lignes forment UN groupe (marge negative
                 calibree par police), recale verticalement (vNudge), et le
                 justify-center du parent centre ce groupe dans le rectangle. */}
-            <div className="flex flex-col items-center" style={{ transform: `translateY(${hPx * (font.vNudge || 0)}px)` }}>
+            <div className="flex flex-col items-center" style={{ transform: `translateY(${hPx * Math.max(-0.008, Math.min(0.02, font.vNudge || 0))}px)` }}>
               <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size1, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap' }}>
                 {t1}
               </div>
               {hasLine2 && (
-                <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size2, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap', opacity: 0.82, marginTop: size2 * (font.lineGap ?? -0.12) }}>
+                <div style={{ fontFamily: font.family, fontWeight: font.weight, fontSize: size2, lineHeight: 1, color: combo.text, whiteSpace: 'nowrap', opacity: 0.82, marginTop: lineGapPx }}>
                   {t2}
                 </div>
               )}
