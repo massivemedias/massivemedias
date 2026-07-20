@@ -113,7 +113,7 @@ const servicesDataEn = {
     faq: [
       { q: 'What is the difference between Studio and Museum Series?', a: 'The Studio Series uses a 4-color pigment printer, excellent for decoration and gifts. The Museum Series uses a 12-color pigment printer for gallery-grade fidelity and 100+ year longevity.' },
       { q: 'What file format should I provide?', a: 'Ideally a high-resolution file (300 DPI minimum) in TIFF, PNG or JPEG. We can also work from PSD or PDF files.' },
-      { q: 'Do you offer framing?', a: 'Yes, we offer framing on request starting at $30. Black, white or natural wood frames available.' },
+      { q: 'Do you offer framing?', a: 'Yes, we offer framing on request: $20 for A6 and A4, $30 for A3, $35 for A3+ and $45 for A2. Black or white frames available.' },
       { q: 'What is the production time?', a: 'Generally 24 to 48 hours for standard prints. Volume orders or large format may require 3 to 5 days.' },
       { q: 'Can I pick up in person?', a: 'Yes! Free pick-up in Plateau Mont-Royal by appointment only. We also offer local delivery in Montreal.' },
     ],

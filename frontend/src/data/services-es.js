@@ -113,7 +113,7 @@ const servicesDataEs = {
     faq: [
       { q: '¿Cuál es la diferencia entre Serie Studio y Serie Museo?', a: 'La Serie Studio utiliza una impresora de 4 tintas pigmentadas, excelente para decoración y regalos. La Serie Museo utiliza una impresora de 12 tintas pigmentadas para fidelidad de galería y longevidad de 100+ años.' },
       { q: '¿Qué formato de archivo debo proporcionar?', a: 'Idealmente un archivo de alta resolución (300 DPI mínimo) en TIFF, PNG o JPEG. También podemos trabajar con archivos PSD o PDF.' },
-      { q: '¿Ofrecen enmarcado?', a: '¡Sí, ofrecemos enmarcado bajo pedido a partir de $30. Marcos negros, blancos o madera natural disponibles.' },
+      { q: '¿Ofrecen enmarcado?', a: '¡Sí, ofrecemos enmarcado bajo pedido: $20 para A6 y A4, $30 para A3, $35 para A3+ y $45 para A2. Marcos negros o blancos disponibles.' },
       { q: '¿Cuál es el tiempo de producción?', a: 'Generalmente 24 a 48 horas para impresiones estándar. Pedidos en volumen o gran formato pueden requerir de 3 a 5 días.' },
       { q: '¿Se puede recoger en persona?', a: '¡Sí! Recogida gratuita en Plateau Mont-Royal con cita previa. También ofrecemos entrega local en Montreal.' },
     ],

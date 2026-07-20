@@ -146,6 +146,18 @@ export const FINE_ART_GRID = Object.freeze({
   sq12:     { studio: 15,   museum: 30,  frame: 35, label: '12x12"',       w: 12,  h: 12,  typeName: 'Carre',          shape: 'square' },
 });
 
+// SSOT — Grille MARKETPLACE ARTISTE (prix client d'un tirage d'artiste sur son
+// store). NE PAS confondre avec FINE_ART_GRID ci-dessus (impression self-serve,
+// moins chere) ni avec FINE_ART_STUDIO/MUSEUM_PRICES du backend (base de cout).
+// Canonique = ex-AdminTarifs ARTIST_PRICES. studio A2 = null (12 encres = musee
+// only). Consomme par : AdminTarifs (tableau + PDF), Artistes.jsx + ArtisteDetail
+// (fallback quand un artiste n'a pas de `pricing` CMS), AccountArtistDashboard.
+export const ARTIST_PRINT_PRICES = Object.freeze({
+  studio:             Object.freeze({ postcard: 25, a4: 35, a3: 50, a3plus: 65, a2: null }),
+  museum:             Object.freeze({ postcard: 50, a4: 75, a3: 120, a3plus: 160, a2: 190 }),
+  framePriceByFormat: Object.freeze({ postcard: 20, a4: 20, a3: 30, a3plus: 35, a2: 45 }),
+});
+
 // =======================================================
 // 3. FLYERS & CARTES (prix par qty, Recto vs Recto-Verso)
 // =======================================================
