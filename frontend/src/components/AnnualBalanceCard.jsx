@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart3, ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
-  Download, Loader2, Lightbulb, Info,
+  Download, Loader2, Lightbulb,
 } from 'lucide-react';
 import { useLang } from '../i18n/LanguageContext';
 import { getExpenseSummary } from '../services/adminService';
+import InfoTooltip from './InfoTooltip';
 
 /**
  * AnnualBalanceCard
@@ -307,20 +308,23 @@ function AnnualBalanceCard() {
           {/* ===== Cartes cles : Revenus / Depenses / Bilan ===== */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="rounded-lg bg-green-500/8 border border-green-500/20 p-3">
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1">
                 {tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })}
+                <InfoTooltip text="Ton chiffre d'affaires HT (hors taxes) : le total de tes ventes sans les TPS/TVQ. C'est la base de ton profit fiscal." />
               </p>
               <p className="text-xl font-heading font-bold text-green-400">{fmt(t.revenue)}$</p>
             </div>
             <div className="rounded-lg bg-red-500/8 border border-red-500/20 p-3">
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1">
                 {tx({ fr: 'Depenses', en: 'Expenses', es: 'Gastos' })}
+                <InfoTooltip text="Total de ce que l'entreprise a coute cette annee (materiel, logiciels, etc.), taxes incluses (TTC)." />
               </p>
               <p className="text-xl font-heading font-bold text-red-400">{fmt(t.expenses)}$</p>
             </div>
             <div className={`rounded-lg border p-3 ${bilan >= 0 ? 'bg-accent/8 border-accent/30' : 'bg-red-500/8 border-red-500/30'}`}>
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1">
                 {tx({ fr: 'Bilan (profit)', en: 'Balance (profit)', es: 'Balance (beneficio)' })}
+                <InfoTooltip text="Ton profit fiscal reel : Revenus HT moins Depenses DEDUCTIBLES (HT). Les TPS/TVQ payees sont exclues car recuperables. Ce n'est donc PAS simplement Revenus moins Depenses affichees ci-contre." />
               </p>
               <p className={`text-xl font-heading font-bold ${bilan >= 0 ? 'text-accent' : 'text-red-400'}`}>
                 {bilan >= 0 ? '+' : ''}{fmt(bilan)}$
@@ -331,19 +335,19 @@ function AnnualBalanceCard() {
           {/* ===== Cartes taxes ===== */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="rounded-lg bg-accent/5 p-3">
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS percue', en: 'GST collected', es: 'TPS cobrado' })}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1">{tx({ fr: 'TPS percue', en: 'GST collected', es: 'TPS cobrado' })}<InfoTooltip text="La TPS (5%) que tes clients t'ont versee sur leurs achats. Sommee sur les vraies commandes. Attention : cet argent ne t'appartient pas, tu le remets au gouvernement." /></p>
               <p className="text-sm font-bold text-green-400">{fmt(t.revenueTps)}$</p>
             </div>
             <div className="rounded-lg bg-accent/5 p-3">
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TPS payee', en: 'GST paid', es: 'TPS pagado' })}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1">{tx({ fr: 'TPS payee', en: 'GST paid', es: 'TPS pagado' })}<InfoTooltip text="La TPS que TU as payee sur tes achats fournisseurs. Le gouvernement te la rembourse (elle vient en deduction de ce que tu dois remettre)." /></p>
               <p className="text-sm font-bold text-red-400">{fmt(t.tps)}$</p>
             </div>
             <div className="rounded-lg bg-accent/5 p-3">
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ percue', en: 'QST collected', es: 'TVQ cobrado' })}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1">{tx({ fr: 'TVQ percue', en: 'QST collected', es: 'TVQ cobrado' })}<InfoTooltip text="La TVQ (9,975%) que tes clients quebecois t'ont versee. Sommee sur les vraies commandes. Cet argent ne t'appartient pas, tu le remets a Revenu Quebec." /></p>
               <p className="text-sm font-bold text-green-400">{fmt(t.revenueTvq)}$</p>
             </div>
             <div className="rounded-lg bg-accent/5 p-3">
-              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1">{tx({ fr: 'TVQ payee', en: 'QST paid', es: 'TVQ pagado' })}</p>
+              <p className="text-[10px] text-grey-muted uppercase tracking-wider mb-1 flex items-center gap-1">{tx({ fr: 'TVQ payee', en: 'QST paid', es: 'TVQ pagado' })}<InfoTooltip text="La TVQ que TU as payee sur tes achats. Recuperable : elle vient en deduction de ce que tu dois remettre." /></p>
               <p className="text-sm font-bold text-red-400">{fmt(t.tvq)}$</p>
             </div>
           </div>
@@ -353,25 +357,21 @@ function AnnualBalanceCard() {
             <div className="flex-1 rounded-lg bg-blue-500/5 border border-blue-500/15 p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'TPS nette a remettre', en: 'Net GST owing', es: 'TPS neto' })}</p>
-                <Info size={10} className="text-grey-muted/70" title="Percue - Payee" />
+                <InfoTooltip side="bottom" text="Le cheque de TPS que tu dois faire au gouvernement : TPS percue moins TPS payee. En rouge = tu dois payer ; en vert = le gouvernement te doit." />
               </div>
               <p className={`text-lg font-bold ${netTps >= 0 ? 'text-red-400' : 'text-green-400'}`}>{fmt(netTps)}$</p>
             </div>
             <div className="flex-1 rounded-lg bg-purple-500/5 border border-purple-500/15 p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'TVQ nette a remettre', en: 'Net QST owing', es: 'TVQ neto' })}</p>
-                <Info size={10} className="text-grey-muted/70" title="Percue - Payee" />
+                <InfoTooltip side="bottom" text="Le cheque de TVQ que tu dois faire a Revenu Quebec : TVQ percue moins TVQ payee. En rouge = tu dois payer ; en vert = on te doit." />
               </div>
               <p className={`text-lg font-bold ${netTvq >= 0 ? 'text-red-400' : 'text-green-400'}`}>{fmt(netTvq)}$</p>
             </div>
             <div className="flex-1 rounded-lg bg-accent/5 border border-accent/15 p-3">
               <div className="flex items-center gap-1.5 mb-1">
                 <p className="text-[10px] text-grey-muted uppercase tracking-wider">{tx({ fr: 'Depenses deductibles (HT)', en: 'Deductible expenses (before tax)', es: 'Gastos deducibles (HT)' })}</p>
-                <Info size={10} className="text-grey-muted/70" title={tx({
-                  fr: 'Total HT des depenses marquees deductibles. TPS/TVQ payees exclues car recuperables via CTI/RTI (ligne Net a remettre).',
-                  en: 'Pre-tax total of deductible expenses. GST/QST excluded (recovered via input tax credits).',
-                  es: 'Total HT de gastos deducibles. Impuestos recuperables excluidos.',
-                })} />
+                <InfoTooltip side="bottom" text="Total HT des depenses marquees « deductibles ». Les TPS/TVQ payees sont exclues car recuperables (elles vont dans la ligne « Net a remettre »). C'est ce montant qui reduit ton profit imposable." />
               </div>
               <p className="text-lg font-bold text-green-400">{fmt(t.deductible)}$</p>
             </div>
