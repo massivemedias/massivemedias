@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <!-- Genere automatiquement par frontend/scripts/generate-sitemap.mjs le 2026-07-20. -->
-  <!-- 29 URLs au total (19 statiques + 10 artistes). -->
+  <!-- 28 URLs au total (18 statiques + 10 artistes). -->
   <!-- Routes : voir frontend/scripts/routes.mjs (source unique). -->
   <url>
     <loc>https://massivemedias.com/</loc>
@@ -42,12 +42,6 @@
   </url>
   <url>
     <loc>https://massivemedias.com/services/stickers</loc>
-    <lastmod>2026-07-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://massivemedias.com/services/merch</loc>
     <lastmod>2026-07-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

@@ -38,10 +38,10 @@ export const STATIC_ROUTES = [
   // LANCEMENT MINI MASSIVE (15 juillet 2026) : etiquettes enfants, checkout
   // branche (SEC-04), flag ETIQUETTES_ENABLED=true.
   '/etiquettes',
-  // Pages services (5)
+  // Pages services (4 ; /services/merch RETIRE : merch en pause, cf
+  // HIDDEN_SERVICE_SLUGS. Route client conservee via /services/:slug, pas de 404.)
   '/services/prints',
   '/services/stickers',
-  '/services/merch',
   '/services/design',
   '/services/web',
   // Landings SEO locales (7)
