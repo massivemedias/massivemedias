@@ -68,19 +68,24 @@ export function getLocalBusinessSchema(lang) {
     paymentAccepted: 'Credit Card, Debit Card, Apple Pay, Google Pay',
     address: {
       '@type': 'PostalAddress',
-      // ADRESSE-PRIVEE (14 juillet 2026, incident walk-in) : l'adresse exacte
-      // ne se donne qu'au dernier moment (confirmation de commande, facture).
-      // Publiquement : le quartier seulement. Le code postal cible un pate de
-      // maisons -> retire aussi.
-      addressLocality: 'Plateau Mont-Royal, Montreal',
+      // SEO-2026 (20 juillet, decision Mika) : adresse canonique publique = le
+      // studio reel. REVIREMENT de la decision "adresse privee" du 14 juillet :
+      // l'atelier reste SUR RENDEZ-VOUS uniquement (publicAccess:false + horaires
+      // "sur rendez-vous" plus bas) pour eviter les walk-in a froid, mais l'adresse
+      // est desormais publique pour le NAP local. DOIT rester identique a la fiche
+      // GBP (nom + adresse + telephone).
+      streetAddress: '5338 rue Marquette',
+      addressLocality: 'Montreal',
       addressRegion: 'QC',
+      postalCode: 'H2J 3Z3',
       addressCountry: 'CA',
     },
     geo: {
       '@type': 'GeoCoordinates',
-      // ADRESSE-PRIVEE : coordonnees arrondies au quartier (~1 km), pas l'atelier.
-      latitude: 45.53,
-      longitude: -73.58,
+      // Coordonnees approximatives du secteur (a affiner avec le geocode exact du
+      // 5338 rue Marquette si un pin precis est souhaite).
+      latitude: 45.536,
+      longitude: -73.581,
     },
     hasMap: 'https://www.google.com/maps/place/Le+Plateau-Mont-Royal,+Montr%C3%A9al,+QC',
     areaServed: [

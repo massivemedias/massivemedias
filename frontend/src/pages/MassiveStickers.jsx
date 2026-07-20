@@ -857,6 +857,10 @@ function MassiveStickers() {
           en: `The Massive sticker collection: ${MASSIVE_STICKERS.length} original designs made in Montreal. Skulls, animals, aliens, manga, street art and more.`,
           es: `La coleccion de stickers Massive: ${MASSIVE_STICKERS.length} disenos originales hechos en Montreal.`,
         })}
+        breadcrumbs={[
+          { name: tx({ fr: 'Accueil', en: 'Home', es: 'Inicio' }), url: '/' },
+          { name: tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' }) },
+        ]}
       />
 
       {/* UI-07 : widget flottant (fixed), raccourci vers le tiroir panier */}
