@@ -153,24 +153,25 @@ function Header() {
                 {tx({ fr: 'Prints', en: 'Prints', es: 'Prints' })}
               </SmartLink>
 
-              {/* MENU-V2 : dropdown "Massive Collection" = les offres PRETES A
-                  L'ACHAT. Collection stickers 385 (/stickers, gated par le flag
-                  boutique) + hub prints d'artistes (/artistes). URLs inchangees. */}
+              {/* BOUTIQUE-V2 : pilier "Boutique" = LIEN vers la vitrine mixte
+                  /boutique (clic -> vitrine), et le SURVOL ouvre le menu des offres
+                  pretes a l'achat : Stickers 385 (/stickers) + Prints d'artistes
+                  (/artistes). URLs inchangees. (ex-"Collection Massive".) */}
               <div
                 className="relative"
                 onMouseEnter={openCollection}
                 onMouseLeave={closeCollection}
               >
-                <button
-                  type="button"
-                  onClick={() => setCollectionOpen(v => !v)}
+                <SmartLink
+                  to="/boutique"
+                  onClick={navClick('/boutique', () => setCollectionOpen(false))}
                   className={`flex items-center gap-1 transition-colors duration-200 font-medium text-sm whitespace-nowrap ${(isActive('/stickers') || isActive('/artistes') || isActive('/boutique')) ? 'text-accent' : 'nav-link'}`}
-                  aria-expanded={collectionOpen}
                   aria-haspopup="true"
+                  aria-expanded={collectionOpen}
                 >
-                  {tx({ fr: 'Collection Massive', en: 'Massive Collection', es: 'Colección Massive' })}
+                  {tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' })}
                   <ChevronDown size={14} className={`transition-transform ${collectionOpen ? 'rotate-180' : ''}`} />
-                </button>
+                </SmartLink>
                 <AnimatePresence>
                   {collectionOpen && (
                     <motion.div
@@ -472,10 +473,16 @@ function Header() {
 
                 <div className="h-px mobile-drawer-sep mx-2 my-1.5" />
 
-                {/* MENU-V2 : Massive Collection = pret a l'achat */}
-                <p className="mobile-drawer-label text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1">
-                  {tx({ fr: 'Collection Massive', en: 'Massive Collection', es: 'Colección Massive' })}
-                </p>
+                {/* BOUTIQUE-V2 : "Boutique" (ex-Collection Massive) = en-tete tappable
+                    vers la vitrine mixte /boutique ; les 2 offres pretes a l'achat
+                    (Stickers, Prints) restent listees en dessous. */}
+                <SmartLink
+                  to="/boutique"
+                  onClick={navClick('/boutique', close)}
+                  className={`mobile-drawer-label block text-[10px] font-bold uppercase tracking-[0.14em] px-3 mb-1 transition-colors ${isActive('/boutique') ? 'text-accent' : ''}`}
+                >
+                  {tx({ fr: 'Boutique', en: 'Shop', es: 'Tienda' })}
+                </SmartLink>
 
                 {STICKERS_SHOP_ENABLED && (
                   <SmartLink
