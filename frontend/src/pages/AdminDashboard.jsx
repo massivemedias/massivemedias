@@ -127,7 +127,7 @@ function VisitorsWidget() {
             {err ? '–' : (data ? data.uniqueVisitors : '…')}
           </span>
           <span className="text-xs text-grey-muted flex items-center gap-1">
-            {tx({ fr: 'visiteurs uniques', en: 'unique visitors', es: 'visitantes unicos' })}
+            {tx({ fr: 'visiteurs uniques (live)', en: 'unique visitors (live)', es: 'visitantes unicos (live)' })}
             <InfoTooltip side="bottom" text="Compteur MAISON : personnes differentes ayant visite le site sur la fenetre choisie (1h/3h/24h), IP anonymisee (hachee), conforme Loi 25. C'est du temps reel, distinct des « Visiteurs uniques » de Google Analytics dans l'onglet Trafic." />
           </span>
         </div>
@@ -513,7 +513,7 @@ function AdminDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard
           icon={ShoppingBag}
-          label={tx({ fr: 'Ventes', en: 'Sales', es: 'Ventas' })}
+          label={tx({ fr: 'Commandes payées', en: 'Paid orders', es: 'Pedidos pagados' })}
           value={revenue.orders || 0}
           color="bg-green-500/15 text-green-400"
           to="/admin/commandes"
@@ -521,7 +521,7 @@ function AdminDashboard() {
         />
         <StatCard
           icon={DollarSign}
-          label={tx({ fr: 'Revenus', en: 'Revenue', es: 'Ingresos' })}
+          label={tx({ fr: 'Revenus (TTC)', en: 'Revenue (incl. tax)', es: 'Ingresos (con imp.)' })}
           value={`${(revenue.total || 0).toFixed(0)}$`}
           color="bg-accent/15 text-accent"
           to="/admin/commandes"
