@@ -65,6 +65,32 @@ import {
 // SEC-04 (8 juillet 2026) : registre central des familles de SKU. Whitelist
 // stricte des productId au checkout public, prix toujours force serveur.
 import { resolveSkuPrice, hashIpForLog } from '../../../utils/sku-registry';
+
+/**
+ * ADMIN-STICKERS phase 2 : slugs masques DEPUIS LE PANNEAU ADMIN.
+ *
+ * S'ajoute a la liste statique hidden-stickers.ts (NSFW cures a la main). Sans
+ * ca, un design masque au panneau resterait achetable : la faille C5.
+ *
+ * Charge UNE fois par checkout, pas une requete par article du panier.
+ *
+ * En cas d'echec de lecture on retourne un Set vide : la liste STATIQUE
+ * continue de s'appliquer (donc les NSFW cures restent bloques), et on
+ * n'empeche pas tous les paiements a cause d'une requete qui tousse. L'erreur
+ * est loggee en error, pas en warn, pour rester visible.
+ */
+async function loadAdminHiddenSlugs(strapi: any): Promise<ReadonlySet<string>> {
+  try {
+    const rows = await strapi.documents('api::sticker-override.sticker-override' as any).findMany({
+      filters: { hidden: true },
+      limit: 1000,
+    } as any);
+    return new Set((rows || []).map((r: any) => r?.slug).filter(Boolean));
+  } catch (err: any) {
+    strapi.log?.error?.(`[sticker-override] masques admin illisibles au checkout : ${err?.message || err}`);
+    return new Set();
+  }
+}
 import { requireAdminAuth, requireUserAuth, getOptionalUser } from '../../../utils/auth';
 import { dispatchWebhook } from '../../../utils/webhook';
 import { nextInvoiceNumber } from '../../../utils/invoice-counter';
@@ -384,6 +410,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         return piCachedProducts[slug];
       },
       log: strapi.log,
+      extraHiddenSlugs: await loadAdminHiddenSlugs(strapi),
     };
 
     let subtotal = 0;
@@ -608,6 +635,7 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
         return csCachedProducts[slug];
       },
       log: strapi.log,
+      extraHiddenSlugs: await loadAdminHiddenSlugs(strapi),
     };
 
     // Verifier le slug artiste du user pour valider isArtistOwnPrint (securite)

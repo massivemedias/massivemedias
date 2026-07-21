@@ -64,6 +64,12 @@ export interface SkuDeps {
   // retourner null si introuvable, throw si le CMS est injoignable.
   getProductBySlug?: (slug: string) => Promise<any | null>
   log?: { info?: (msg: string) => void; warn?: (msg: string) => void }
+  // ADMIN-STICKERS phase 2 : slugs masques DEPUIS L'ADMIN (table
+  // sticker-override, hidden=true), en plus de la liste statique
+  // hidden-stickers.ts. Charge UNE fois par checkout par le controleur, pas
+  // une requete par article. Absent = seule la liste statique s'applique
+  // (comportement d'avant la phase 2, donc aucune regression).
+  extraHiddenSlugs?: ReadonlySet<string>
 }
 
 export interface SkuResolution {
@@ -188,7 +194,12 @@ export async function resolveSkuPrice(item: CartItemLike, deps: SkuDeps = {}): P
     // `lingerie` != `massive-lingerie` -> le masque ne matchait jamais (verifie
     // en prod : le design masque passait encore le checkout).
     const slug = 'massive-' + pid.slice('sticker-massive-'.length)
-    if (isHiddenStickerSlug(slug)) {
+    // Deux sources de masquage, toutes deux serveur :
+    //   1. la liste statique (NSFW cures a la main, verrouillee par test CI) ;
+    //   2. les masquages faits DEPUIS L'ADMIN (sticker-override.hidden=true),
+    //      injectes par le controleur. Sans ce 2e test, un design masque au
+    //      panneau admin resterait ACHETABLE : exactement la faille C5.
+    if (isHiddenStickerSlug(slug) || deps.extraHiddenSlugs?.has(slug)) {
       return rejectRes('sticker-massive', `Ce design n'est plus disponible a la vente.`)
     }
     return okRes('sticker-massive', qty * STICKER_COLLECTION_UNIT_PRICE)
