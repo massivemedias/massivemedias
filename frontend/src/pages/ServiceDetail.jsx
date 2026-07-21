@@ -25,6 +25,30 @@ const configuratorMap = {
   web: lazy(() => import('../components/configurators/ConfiguratorWeb')),
 };
 
+// COLLECTION-CTA (21 juillet 2026) : sur stickers et prints, le CTA principal
+// ne scrolle plus vers le configurateur (qui est juste dessous, donc le scroll
+// n'apportait rien) mais renvoie vers la collection / les prints d'artistes.
+// Les autres services gardent "Commander en ligne". Le configurateur et son
+// bouton sticky restent en place et inchanges.
+const collectionCta = {
+  stickers: {
+    to: '/stickers',
+    label: {
+      fr: 'Découvrir la Collection · stickers à 3 $',
+      en: 'Browse the Collection · stickers at $3',
+      es: 'Descubrir la Colección · stickers a 3 $',
+    },
+  },
+  'fine-art': {
+    to: '/artistes',
+    label: {
+      fr: "Voir les prints d'artistes",
+      en: 'See artist prints',
+      es: 'Ver los prints de artistas',
+    },
+  },
+};
+
 // SEO-LOCAL (28 avril 2026) : enrichissement du schema Service.org par slug.
 // Chaque entree fournit les mots-cles a haute intention d'achat locale, le
 // serviceType normalise, la categorie schema.org et la fourchette de prix
@@ -522,11 +546,19 @@ function ServiceDetail() {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 {service.boutiqueSlug && configuratorMap[service.boutiqueSlug] && (
-                  <button onClick={openConfigurator} className="btn-primary cursor-pointer">
-                    <ShoppingCart className="mr-2" size={20} />
-                    {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
-                    <ChevronDown className="ml-2" size={20} />
-                  </button>
+                  collectionCta[service.boutiqueSlug] ? (
+                    <Link to={collectionCta[service.boutiqueSlug].to} className="btn-primary">
+                      <ShoppingCart className="mr-2" size={20} />
+                      {tx(collectionCta[service.boutiqueSlug].label)}
+                      <ArrowRight className="ml-2" size={20} />
+                    </Link>
+                  ) : (
+                    <button onClick={openConfigurator} className="btn-primary cursor-pointer">
+                      <ShoppingCart className="mr-2" size={20} />
+                      {tx({ fr: 'Commander en ligne', en: 'Order online', es: 'Pedir en línea' })}
+                      <ChevronDown className="ml-2" size={20} />
+                    </button>
+                  )
                 )}
                 {/* QUOTE-CTA (3 mai 2026) : pour le service web, le bouton
                     scroll vers le formulaire #quote-form en bas de page
