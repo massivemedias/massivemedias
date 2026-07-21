@@ -729,12 +729,6 @@ select.input-field option {
   background: linear-gradient(to right, transparent, var(--header-border) 40%, var(--header-border) 60%, transparent);
 }
 
-/* Announcement bar */
-.announcement-bar {
-  background: var(--accent-color, #F00098);
-  color: white;
-}
-
 /* Mega-menu */
 .mega-menu-bg {
   background: var(--header-dropdown-bg, rgba(20, 10, 30, 0.98));
