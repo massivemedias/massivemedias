@@ -8,6 +8,10 @@ import {
 import { useLang } from '../i18n/LanguageContext';
 import SEO from '../components/SEO';
 import api from '../services/api';
+// Le montant de l'upsell vient de la grille, jamais d'un libelle fige : c'est
+// le backend qui facture (pricing-config.ts UPSELL_HOLO_PRICE), on se contente
+// d'afficher la meme valeur.
+import { UPSELL_HOLO_PRICE } from '../utils/pricingData';
 
 /**
  * Tracking.jsx - Portail public de suivi de commande.
@@ -634,9 +638,9 @@ function Tracking() {
                         </p>
                         <p className="text-grey-muted text-xs leading-relaxed">
                           {tx({
-                            fr: 'Obtenez 50 stickers holographiques premium (2x2 pouces) pour seulement 49$ supplémentaires. L\'ajout parfait pour faire briller votre marque.',
-                            en: 'Get 50 premium holographic stickers (2x2 inch) for only $49 extra. The perfect add-on to make your brand shine.',
-                            es: 'Obtén 50 stickers holográficos premium (2x2 pulgadas) por solo 49$ adicionales. El complemento perfecto para que tu marca brille.',
+                            fr: `Obtenez 50 stickers holographiques premium (2x2 pouces) pour seulement ${UPSELL_HOLO_PRICE}$ supplémentaires. L'ajout parfait pour faire briller votre marque.`,
+                            en: `Get 50 premium holographic stickers (2x2 inch) for only $${UPSELL_HOLO_PRICE} extra. The perfect add-on to make your brand shine.`,
+                            es: `Obtén 50 stickers holográficos premium (2x2 pulgadas) por solo ${UPSELL_HOLO_PRICE}$ adicionales. El complemento perfecto para que tu marca brille.`,
                           })}
                         </p>
                       </div>
@@ -668,9 +672,9 @@ function Tracking() {
                         <>
                           <Sparkles size={16} />
                           {tx({
-                            fr: 'Ajouter à ma commande (+49$)',
-                            en: 'Add to my order (+$49)',
-                            es: 'Añadir a mi pedido (+49$)',
+                            fr: `Ajouter à ma commande (+${UPSELL_HOLO_PRICE}$)`,
+                            en: `Add to my order (+$${UPSELL_HOLO_PRICE})`,
+                            es: `Añadir a mi pedido (+${UPSELL_HOLO_PRICE}$)`,
                           })}
                         </>
                       )}

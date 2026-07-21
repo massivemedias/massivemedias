@@ -40,11 +40,7 @@ const collectionCta = {
   },
   'fine-art': {
     to: '/artistes',
-    label: {
-      fr: "Voir les prints d'artistes",
-      en: 'See artist prints',
-      es: 'Ver los prints de artistas',
-    },
+    label: { fr: 'Boutique', en: 'Shop', es: 'Tienda' },
   },
 };
 

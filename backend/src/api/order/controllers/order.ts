@@ -55,6 +55,9 @@ import {
   STICKER_COLLECTION_UNIT_PRICE,
   STICKER_COLLECTION_MIN_UNITS,
   MYSTERY_PACK_PRICES,
+  // UPSELL /suivi : montant + libelle (ex-constantes en dur du handler).
+  UPSELL_HOLO_NAME,
+  UPSELL_HOLO_PRICE,
   // RABAIS-FACTURE / RABAIS-CLIENT : calcul de rabais partage (un seul comportement).
   computeOrderDiscount,
   getActiveClientDiscount,
@@ -2902,8 +2905,11 @@ export default factories.createCoreController('api::order.order', ({ strapi }) =
       return;
     }
 
-    const UPSELL_NAME = 'Upsell : 50 Stickers Holographiques Premium 2x2';
-    const UPSELL_PRICE_DOLLARS = 49.00;
+    // Montant et libelle remontes dans utils/pricing-config.ts (source unique,
+    // miroir du front pricingData.js). Alias locaux pour ne pas toucher au
+    // reste du handler.
+    const UPSELL_NAME = UPSELL_HOLO_NAME;
+    const UPSELL_PRICE_DOLLARS = UPSELL_HOLO_PRICE;
 
     try {
       // 1. Lookup via double cle (avec invoice populee).

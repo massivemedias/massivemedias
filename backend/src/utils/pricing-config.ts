@@ -104,6 +104,15 @@ export const STICKER_COLLECTION_UNIT_PRICE = 3
 export const STICKER_COLLECTION_MIN_UNITS = 5
 export const MYSTERY_PACK_PRICES: Record<number, number> = { 5: 8, 10: 14, 20: 25 }
 
+// UPSELL /suivi : offre "50 stickers holographiques 2x2" proposee une seule
+// fois sur une commande pending/draft (POST /orders/upsell). Le montant vivait
+// en dur dans le controleur ET dans les libelles du front : il remonte ici
+// pour avoir une seule source. MIROIR EXACT de pricingData.js
+// (UPSELL_HOLO_PRICE) - le front n'affiche QUE cette valeur, il ne la decide
+// jamais : c'est ce fichier qui fait foi au moment de facturer.
+export const UPSELL_HOLO_NAME = 'Upsell : 50 Stickers Holographiques Premium 2x2'
+export const UPSELL_HOLO_PRICE = 49.00
+
 // MINI MASSIVE (etiquettes enfants) : vendu en 3 packs a prix fixe. SKU
 // etiquette-pack-<id>. MIROIR EXACT de ETIQUETTE_PACKS (frontend
 // data/etiquettes.js) et de pricingData.js - sinon le checkout rejette.

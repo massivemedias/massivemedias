@@ -87,6 +87,12 @@ export const STICKER_COLLECTION_UNIT_PRICE = 3
 export const STICKER_COLLECTION_MIN_UNITS = 5
 export const MYSTERY_PACK_PRICES = Object.freeze({ 5: 8, 10: 14, 20: 25 })
 
+// UPSELL /suivi : offre "50 stickers holographiques 2x2" proposee sur une
+// commande pending/draft. AFFICHAGE SEULEMENT - c'est le backend qui facture
+// (POST /orders/upsell, pricing-config.ts UPSELL_HOLO_PRICE). MIROIR EXACT :
+// si les deux divergent, le client voit un montant et se fait debiter l'autre.
+export const UPSELL_HOLO_PRICE = 49
+
 // MINI MASSIVE (etiquettes enfants) : 3 packs a prix fixe. MIROIR EXACT du
 // backend pricing-config.ts ETIQUETTE_PACK_PRICES + de data/etiquettes.js
 // (ETIQUETTE_PACKS[].price) - sinon le checkout SEC-04 rejette au paiement.
