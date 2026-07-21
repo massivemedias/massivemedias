@@ -20,6 +20,7 @@ import {
   resolveStickerFinishId,
 } from './pricing-config'
 import { isHiddenStickerSlug } from './hidden-stickers'
+import { isKnownStickerSlug } from './sticker-catalog'
 import {
   STICKER_COLLECTION_UNIT_PRICE,
   MYSTERY_PACK_PRICES,
@@ -194,6 +195,20 @@ export async function resolveSkuPrice(item: CartItemLike, deps: SkuDeps = {}): P
     // `lingerie` != `massive-lingerie` -> le masque ne matchait jamais (verifie
     // en prod : le design masque passait encore le checkout).
     const slug = 'massive-' + pid.slice('sticker-massive-'.length)
+
+    // EXISTENCE D'ABORD (sonde prod 21 juillet 2026). La famille etait
+    // whitelistee mais le slug jamais verifie : `sticker-massive-nimporte-quoi`
+    // produisait une vraie session Stripe LIVE au prix de 3 $/unite. Deux
+    // consequences : des commandes pour des designs inexistants, et surtout un
+    // design EXCLU POUR RAISON D'IP (neverPublish.js) n'etant pas au catalogue,
+    // il n'etait jamais masque explicitement, donc son slug passait.
+    // Meme message client que pour un design masque : on ne donne pas de moyen
+    // d'enumerer ce qui existe.
+    if (!isKnownStickerSlug(slug)) {
+      deps.log?.warn?.(`[sku] slug sticker inconnu refuse : ${slug}`)
+      return rejectRes('sticker-massive', `Ce design n'est plus disponible a la vente.`)
+    }
+
     // Deux sources de masquage, toutes deux serveur :
     //   1. la liste statique (NSFW cures a la main, verrouillee par test CI) ;
     //   2. les masquages faits DEPUIS L'ADMIN (sticker-override.hidden=true),

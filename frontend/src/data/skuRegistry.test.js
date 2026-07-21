@@ -100,7 +100,7 @@ describe('familles legitimes : prix serveur exact', () => {
   it('sticker-massive : 3 $ x quantite', async () => {
     // slug VISIBLE obligatoire : adian-fumeuse est masque (HIDDEN) -> C5 le
     // rejette au checkout depuis #130 (reconstruction slug 'massive-'+rest).
-    const r = await resolve({ productId: 'sticker-massive-crocodile', quantity: 5, totalPrice: 15 })
+    const r = await resolve({ productId: 'sticker-massive-poussin', quantity: 5, totalPrice: 15 })
     expect(r).toMatchObject({ ok: true, price: 15 })
   })
   it('mystery packs : 8 / 14 / 25 $', async () => {
@@ -215,7 +215,7 @@ describe('familles legitimes : prix serveur exact', () => {
 
 describe('prix menteur : toujours ecrase par le serveur', () => {
   const CASES = [
-    [{ productId: 'sticker-massive-x', quantity: 5, totalPrice: 0.01 }, 15],
+    [{ productId: 'sticker-massive-poussin', quantity: 5, totalPrice: 0.01 }, 15],
     [{ productId: 'mystery-pack-20', quantity: 1, totalPrice: 0.01 }, 25],
     [{ productId: 'sticker-custom', quantity: 100, size: '2"', finish: 'matte', totalPrice: 0.01 }, STICKER_GRID.standard.matte[100]],
     [{ productId: 'business-card-premium', quantity: 500, totalPrice: 1 }, 250],
