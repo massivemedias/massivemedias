@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "sticker_overrides",
+  "info": {
+    "singularName": "sticker-override",
+    "pluralName": "sticker-overrides",
+    "displayName": "Sticker (override)",
+    "description": "Delta editable par slug sur le catalogue statique MASSIVE_STICKERS. Le fichier statique reste le catalogue de base ; cette table ne porte QUE ce que l'admin a modifie. Un slug absent d'ici = valeurs d'origine."
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "slug": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "nameFr": {
+      "type": "string"
+    },
+    "nameEn": {
+      "type": "string"
+    },
+    "nameEs": {
+      "type": "string"
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
