@@ -78,8 +78,13 @@ Le lire avant toute action. Aucune exception.
 
 - Tiers d'impression Fine Art : "Studio" (qualité premium accessible) et
   "Musée" (Fine Art 12 encres pigmentaires, papier archive, sans acide).
-- "Boutique" est BANNI du site, remplacé par "Artistes" (chantier rename en cours,
-  fichiers Boutique*.jsx morts à supprimer dans une session dédiée).
+- "Boutique" est le HUB CANONIQUE du site (décision actée au chantier BOUTIQUE-V2,
+  juillet 2026). `/boutique` est la vitrine mixte, l'entrée de menu s'appelle
+  "Boutique" (FR) / "Shop" (EN) / "Tienda" (ES), et les CTA principaux des pages
+  services pointent vers leurs cibles respectives (`/stickers`, `/artistes`).
+  ANCIENNE RÈGLE ANNULÉE : "Boutique banni, remplacé par Artistes" ne s'applique
+  plus. Les fichiers `Boutique*.jsx` restés morts sont à supprimer dans une
+  session dédiée, mais le MOT "Boutique" est autorisé et voulu.
 - Atelier sur rendez-vous uniquement : messaging systémique via WORKSHOP_NOTICE.
 - Affiches Standard : catégorie B2B, exclue du PDF Artiste et du bouton
   "Copier pour artiste" (incompatible avec le modèle de commission artiste).

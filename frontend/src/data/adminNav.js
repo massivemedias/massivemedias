@@ -20,6 +20,7 @@
 import {
   LayoutDashboard, Bot, StickyNote, ShoppingBag, Banknote, Package,
   MessageSquare, Users, FileText, Star, DollarSign, Tag, Palette, Receipt,
+  Sticker,
 } from 'lucide-react';
 
 const ADMIN_NAV_ITEMS = [
@@ -37,6 +38,9 @@ const ADMIN_NAV_ITEMS = [
   { to: '/admin/massive-ai', icon: Bot, fr: 'ai.massive', en: 'ai.massive', es: 'ai.massive', tooltip: { fr: 'Outils IA: chat, stickers, mockups', en: 'AI tools: chat, stickers, mockups', es: 'Herramientas IA: chat, stickers, mockups' } },
   { to: '/admin/notes', icon: StickyNote, fr: 'Notes', en: 'Notes', es: 'Notas', tooltip: { fr: 'Notes internes et rappels', en: 'Internal notes and reminders', es: 'Notas internas y recordatorios' } },
   { to: '/admin/inventaire', icon: Package, fr: 'Inventaire', en: 'Inventory', es: 'Inventario', tooltip: { fr: 'Gestion du stock (textiles, cadres, materiel)', en: 'Stock management (textiles, frames, equipment)', es: 'Gestion de stock' } },
+  // ADMIN-STICKERS phase 1 (21 juillet 2026) : liste du catalogue en lecture
+  // seule. Renommer / masquer / stroke / prix arrivent aux phases suivantes.
+  { to: '/admin/stickers', icon: Sticker, fr: 'Stickers', en: 'Stickers', es: 'Stickers', tooltip: { fr: 'Catalogue de la collection Massive (385 designs)', en: 'Massive collection catalogue (385 designs)', es: 'Catalogo de la coleccion Massive (385 disenos)' } },
   // Factures supprime (avril 2026) : workflow unifie dans /admin/commandes.
   // Les depenses (achats) ont leur propre onglet dedie ci-dessous.
   { to: '/admin/depenses', icon: FileText, fr: 'Depenses', en: 'Expenses', es: 'Gastos', tooltip: { fr: 'Factures d\'achat et depenses operationnelles', en: 'Purchase invoices and operating expenses', es: 'Facturas de compra y gastos' } },
