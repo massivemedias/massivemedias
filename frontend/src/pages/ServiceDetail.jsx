@@ -31,13 +31,12 @@ const configuratorMap = {
 // Les autres services gardent "Commander en ligne". Le configurateur et son
 // bouton sticky restent en place et inchanges.
 const collectionCta = {
+  // Libelle volontairement court et SANS prix : les prix vivent dans les
+  // grilles tarifaires, jamais dans un libelle de bouton (sinon ils derivent
+  // des la premiere revision de prix).
   stickers: {
     to: '/stickers',
-    label: {
-      fr: 'Découvrir la Collection · stickers à 3 $',
-      en: 'Browse the Collection · stickers at $3',
-      es: 'Descubrir la Colección · stickers a 3 $',
-    },
+    label: { fr: 'Boutique', en: 'Shop', es: 'Tienda' },
   },
   'fine-art': {
     to: '/artistes',

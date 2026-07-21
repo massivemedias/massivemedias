@@ -196,7 +196,7 @@ function Header() {
                               <Sticker size={17} className="text-accent" />
                             </span>
                             <span className="min-w-0">
-                              <span className="block font-semibold text-sm leading-tight">{tx({ fr: 'Stickers 3 $', en: 'Stickers $3', es: 'Stickers 3 $' })}</span>
+                              <span className="block font-semibold text-sm leading-tight">{tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}</span>
                               <span className="block text-xs mt-0.5 text-grey-muted leading-snug">{tx({ fr: 'La collection de designs originaux', en: 'Our original design collection', es: 'La colección de diseños originales' })}</span>
                             </span>
                           </SmartLink>
@@ -493,7 +493,7 @@ function Header() {
                     <span className="w-7 h-7 rounded-lg flex items-center justify-center mobile-icon-bg flex-shrink-0">
                       <Sticker size={14} className="text-accent" />
                     </span>
-                    <span className="font-semibold text-[14px]">{tx({ fr: 'Stickers 3 $', en: 'Stickers $3', es: 'Stickers 3 $' })}</span>
+                    <span className="font-semibold text-[14px]">{tx({ fr: 'Stickers', en: 'Stickers', es: 'Stickers' })}</span>
                     <ChevronRight size={14} className="ml-auto opacity-25 group-hover:opacity-50 transition-opacity" />
                   </SmartLink>
                 )}
