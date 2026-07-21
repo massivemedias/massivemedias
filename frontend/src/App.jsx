@@ -60,6 +60,7 @@ const MmAdmin = lazyWithRetry(() => import('./pages/MmAdmin'));
 import AdminLayout from './layouts/AdminLayout';
 const AdminOrders = lazyWithRetry(() => import('./pages/AdminOrders'));
 const AdminInventaire = lazyWithRetry(() => import('./pages/AdminInventaire'));
+const AdminStickers = lazyWithRetry(() => import('./pages/AdminStickers'));
 const AdminMessages = lazyWithRetry(() => import('./pages/AdminMessages'));
 // AdminArtistes removed - redirect to messages
 // AdminCommissions supprime (avril 2026) - fusionne dans AdminArtistManager (God Mode, tab Finances).
@@ -359,6 +360,7 @@ function App() {
               {/* /admin/commissions -> redirige vers le hub artistes (tab Finances) */}
               <Route path="commissions" element={<Navigate to="/admin/artists" replace />} />
               <Route path="inventaire" element={<AdminInventaire />} />
+              <Route path="stickers" element={<AdminStickers />} />
               <Route path="messages" element={<AdminMessages />} />
               <Route path="candidatures" element={<Navigate to="/admin/messages" replace />} />
               {/* /admin/artistes historique : redirige vers le nouveau hub artist-manager */}
