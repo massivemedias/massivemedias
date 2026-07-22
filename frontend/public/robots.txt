@@ -1,15 +1,24 @@
+# robots.txt - massivemedias.com
+#
+# NOTE PROD : en live, Cloudflare injecte AUTOMATIQUEMENT un bloc "Managed
+# Content" AVANT ce fichier (Content Signals + blocage des crawlers IA). Ce
+# bloc est gere dans le dashboard Cloudflare, il n'est PAS committe ici. En
+# production, voir DEUX groupes "User-agent: *" (le bloc CF puis celui-ci)
+# est donc normal et attendu.
+#
+# Pages privees / transactionnelles (/panier, /checkout*, /login, /account) :
+# elles ne sont PAS en Disallow ici. Elles portent un <meta robots noindex>
+# (composant frontend/src/components/SEO.jsx) : on laisse Google les crawler
+# pour qu'il LISE le noindex et les desindexe proprement. Un Disallow
+# empecherait Google de voir ce noindex (chantier SEO-04, Option A).
+#
+# Zones admin (/mm-admin, /admin) : Disallow assume - aucune valeur SEO, tout
+# est derriere authentification.
+
 User-agent: *
 Allow: /
 
-Disallow: /panier
-Disallow: /checkout
-Disallow: /checkout/success
-Disallow: /checkout/cancel
-Disallow: /login
-Disallow: /account
 Disallow: /mm-admin
+Disallow: /admin
 
 Sitemap: https://massivemedias.com/sitemap.xml
-
-# Massive Medias - Studio de production creative, Montreal
-# https://massivemedias.com
