@@ -16,7 +16,6 @@ import {
 } from '../data/products'
 import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb, img } from '../utils/paths'
-import { fetchStickerOverrides } from '../utils/stickerOverrides'
 import TumblerDesign from '../components/TumblerDesign'
 import FavoriteHeart from '../components/FavoriteHeart'
 import CtaBanner from '../components/CtaBanner'
@@ -588,7 +587,7 @@ function InfiniteGrid({ items, justAdded, cartQtyBySlug, onAdd, onOpen, tx }) {
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {items.slice(0, count).map((s) => (
-          <StickerCard key={s.slug} s={s} justAdded={justAdded} cartQty={cartQtyBySlug[s.slug] || 0} onAdd={onAdd} onOpen={onOpen} tx={tx} strokeW={strokeBySlug[s.slug]} />
+          <StickerCard key={s.slug} s={s} justAdded={justAdded} cartQty={cartQtyBySlug[s.slug] || 0} onAdd={onAdd} onOpen={onOpen} tx={tx} />
         ))}
       </div>
       {hasMore && (
@@ -753,20 +752,11 @@ function MassiveStickers() {
   //   - API muette ou lente -> le CSS garde sa valeur d'origine, rien ne bouge ;
   //   - aucun design sans override ne recoit d'attribut style.
   // Jamais pendant le prerender : le HTML capture doit rester le rendu par defaut.
-  const [strokeBySlug, setStrokeBySlug] = useState({})
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.__MASSIVE_PRERENDER__) return
-    let vivant = true
-    fetchStickerOverrides().then((rows) => {
-      if (!vivant) return
-      const map = {}
-      for (const o of rows) {
-        if (typeof o?.strokeWidth === 'number') map[o.slug] = o.strokeWidth
-      }
-      if (Object.keys(map).length) setStrokeBySlug(map)
-    })
-    return () => { vivant = false }
-  }, [])
+  // HOTFIX 22 juillet : le cablage public du stroke est RETIRE. L'etat vivait
+  // ici (composant page) mais la carte est rendue dans InfiniteGrid, un autre
+  // composant : `strokeBySlug` y etait hors portee -> ReferenceError a
+  // l'hydratation, /stickers entierement blanche. Le passage de la valeur sera
+  // refait proprement (via InfiniteGrid) dans une PR dediee.
 
   // STICKERS-HERO-PERF (PERF-01) : le design vedette est choisi AVANT le paint
   // par le mini-script inline de index.html (window.__HERO_IDX__ + <link preload>
