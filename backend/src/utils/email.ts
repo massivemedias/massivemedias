@@ -324,7 +324,7 @@ function buildContactReplyHtml(data: ContactReplyData): string {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
       <tr><td style="padding:14px 16px;background:#f7f7f7;border-radius:6px;border-left:3px solid #FF52A0;">
         <p style="margin:0 0 6px;color:#999;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Votre message original</p>
-        <p style="margin:0;color:#666;font-size:13px;line-height:1.5;white-space:pre-wrap;">${data.originalMessage}</p>
+        <p style="margin:0;color:#666;font-size:13px;line-height:1.5;white-space:pre-wrap;">${escapeHtml(String(data.originalMessage || ''))}</p>
       </td></tr>
     </table>
   `;
@@ -530,7 +530,7 @@ interface ContractEmailData {
 
 function buildContractSignedHtml(data: ContractEmailData, isForArtist: boolean): string {
   const date = new Date(data.signedAt).toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Toronto' });
-  const title = isForArtist ? 'Copie de ton contrat signe' : `Nouveau contrat signe - ${data.artistName}`;
+  const title = isForArtist ? 'Copie de ton contrat signe' : `Nouveau contrat signe - ${escapeHtml(String(data.artistName || ""))}`;
 
   const content = `
     <h2 style="color:#222;margin:0 0 16px;font-size:16px;">${title}</h2>
@@ -543,27 +543,27 @@ function buildContractSignedHtml(data: ContractEmailData, isForArtist: boolean):
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
       <tr>
         <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:140px;">Nom legal</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${data.artistName}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;font-weight:600;">${escapeHtml(String(data.artistName || ""))}</td>
       </tr>
       ${data.nomArtiste ? `<tr>
         <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Nom d'artiste</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#FF52A0;font-size:14px;font-weight:600;">${data.nomArtiste}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#FF52A0;font-size:14px;font-weight:600;">${escapeHtml(String(data.nomArtiste || ""))}</td>
       </tr>` : ''}
       <tr>
         <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Courriel</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${data.artistEmail}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${escapeHtml(String(data.artistEmail || ""))}</td>
       </tr>
       <tr>
         <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Telephone</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${data.telephone}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${escapeHtml(String(data.telephone || ""))}</td>
       </tr>
       <tr>
         <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Adresse</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${data.adresse}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:14px;">${escapeHtml(String(data.adresse || ""))}</td>
       </tr>
       <tr>
         <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Contrat</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#4ade80;font-size:14px;font-weight:700;">${data.contractVersion}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#4ade80;font-size:14px;font-weight:700;">${escapeHtml(String(data.contractVersion || ""))}</td>
       </tr>
       <tr>
         <td style="padding:10px 14px;color:#666;font-size:13px;">Date de signature</td>
@@ -585,7 +585,7 @@ function buildContractSignedHtml(data: ContractEmailData, isForArtist: boolean):
         </td>
         <td style="width:50%;padding:16px;background:#f7f7f7;border-radius:0 10px 10px 0;border:1px solid #eee;border-left:none;vertical-align:top;">
           <p style="margin:0 0 8px;color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">L'Artiste</p>
-          <p style="font-family:'Segoe Script','Comic Sans MS',cursive;color:#4ade80;font-size:16px;margin:0;">${data.artistName}</p>
+          <p style="font-family:'Segoe Script','Comic Sans MS',cursive;color:#4ade80;font-size:16px;margin:0;">${escapeHtml(String(data.artistName || ""))}</p>
           <p style="color:#666;font-size:11px;margin:6px 0 0;">${date}</p>
         </td>
       </tr>
@@ -1587,15 +1587,15 @@ export async function sendNewUserNotificationEmail(userName: string, userEmail: 
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;width:100px;">Nom</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:15px;font-weight:600;">${userName || 'Sans nom'}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:15px;font-weight:600;">${escapeHtml(String(userName || 'Sans nom'))}</td>
       </tr>
       <tr>
         <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Courriel</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:15px;">${userEmail}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#222;font-size:15px;">${escapeHtml(String(userEmail || ''))}</td>
       </tr>
       <tr>
         <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#666;font-size:13px;">Methode</td>
-        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#FF52A0;font-size:14px;font-weight:600;">${provider}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid #eee;color:#FF52A0;font-size:14px;font-weight:600;">${escapeHtml(String(provider || ''))}</td>
       </tr>
       <tr>
         <td style="padding:10px 14px;color:#666;font-size:13px;">Date</td>

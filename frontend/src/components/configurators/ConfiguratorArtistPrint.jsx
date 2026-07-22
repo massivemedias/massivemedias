@@ -116,6 +116,14 @@ function ConfiguratorArtistPrint({ artist, selectedPrint, savedConfigs = {}, onF
             })
           : null,
         size: isUnique ? tx({ fr: 'Pièce unique', en: 'Unique piece', es: 'Pieza unica' }) : formatLabel?.label,
+        // FIX-PRIX-PRINT (22 juillet 2026) : IDs MACHINE du choix reel. `finish`
+        // et `size` ci-dessus sont des libelles TRADUITS ; le serveur ne peut pas
+        // facturer sur eux sans casser des qu'on change de langue (c'est le bug
+        // qui avait sous-facture la finition fancy des stickers de 20 %). Le
+        // serveur lit tierId/formatId en priorite et ne garde le libelle que
+        // comme repli pour les paniers deja en localStorage.
+        tierId: tier,
+        formatId: format,
         quantity: effectiveQty,
         unitPrice: effectivePrice,
         totalPrice: effectivePrice * effectiveQty,

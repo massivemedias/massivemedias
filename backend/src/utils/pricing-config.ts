@@ -442,6 +442,64 @@ export const GIFT_CARD_MAX = 500
 // (divergence connue, resolution reportee a PRIX-02 Vague 3, ne PAS unifier
 // ici) : le registre SEC-04 valide contre ce que le client VOIT a l'ecran,
 // jamais plus cher.
+// ---------------------------------------------------------------------------
+// PRINTS ARTISTE : resolution du CHOIX REEL du client (FIX-PRIX-PRINT, 22 juillet 2026)
+//
+// LE BUG CORRIGE : le registre SKU lisait `print.fixedTier || 'studio'` et
+// `print.fixedFormat || 'a4'`, c'est-a-dire des champs de la FICHE CMS. Or 173
+// des 175 prints en prod n'ont aucun de ces deux champs. Resultat : le serveur
+// facturait TOUJOURS studio A4, quel que soit le choix du client. Sur la config
+// par defaut du configurateur (musee A4) le client payait 35 $ pour 30 $
+// affiches, et un A2 encadre etait sous-facture de 110 $.
+//
+// LE PIEGE A NE PAS REFAIRE : l'article du panier ne transporte que des
+// LIBELLES TRADUITS (`finish` = "Serie Musee"/"Museum Series"/"Serie Museo",
+// `size` = "A4 (8.5x11\")"). Resoudre sur le libelle seul casse des qu'on
+// change de langue, exactement le bug qui avait sous-facture la finition fancy
+// de 20 % sur les stickers. On applique donc le meme patron que
+// `resolveStickerFinishId` : l'ID machine prime, le libelle traduit n'est
+// qu'un REPLI pour les paniers deja en localStorage.
+const ARTIST_TIER_IDS = ['studio', 'museum'] as const
+const ARTIST_FORMAT_IDS = ['postcard', 'a4', 'a3', 'a3plus', 'a2'] as const
+
+const norm = (v: any) => String(v == null ? '' : v)
+  .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+
+// Libelles FR/EN/ES de artistPrinterTiers (frontend/src/data/artistPricing.js).
+const ARTIST_TIER_LABEL_TO_ID: Record<string, string> = {
+  'serie studio': 'studio', 'studio series': 'studio',
+  'serie musee': 'museum', 'museum series': 'museum', 'serie museo': 'museum',
+}
+
+// Libelles de artistFormats. On matche aussi le "short" (A6, A4...) et la
+// mention en pouces, qui est ce qui apparait dans `size`.
+const ARTIST_FORMAT_LABEL_TO_ID: Record<string, string> = {
+  'a6': 'postcard', 'a6 (4x6")': 'postcard', 'carte postale': 'postcard',
+  'a4': 'a4', 'a4 (8.5x11")': 'a4',
+  'a3': 'a3', 'a3 (11x17")': 'a3',
+  'a3+': 'a3plus', 'a3plus': 'a3plus', 'a3+ (13x19")': 'a3plus',
+  'a2': 'a2', 'a2 (18x24")': 'a2',
+}
+
+/** ID de serie. `null` si irresoluble : l'appelant DOIT alors refuser, pas deviner. */
+export function resolveArtistTier(idOrLabel: any): string | null {
+  const raw = norm(idOrLabel)
+  if (!raw) return null
+  if ((ARTIST_TIER_IDS as readonly string[]).includes(raw)) return raw
+  return ARTIST_TIER_LABEL_TO_ID[raw] || null
+}
+
+/** ID de format. `null` si irresoluble : l'appelant DOIT alors refuser, pas deviner. */
+export function resolveArtistFormat(idOrLabel: any): string | null {
+  const raw = norm(idOrLabel)
+  if (!raw) return null
+  if ((ARTIST_FORMAT_IDS as readonly string[]).includes(raw)) return raw
+  if (ARTIST_FORMAT_LABEL_TO_ID[raw]) return ARTIST_FORMAT_LABEL_TO_ID[raw]
+  // Repli tolerant : "A3+ (13x19\")" -> on isole le token de tete.
+  const tete = raw.split(/[\s(]/)[0]
+  return ARTIST_FORMAT_LABEL_TO_ID[tete] || null
+}
+
 export const FINE_ART_SALE_GRID: Record<string, { studio: number | null; museum: number; frame: number }> = {
   postcard: { studio: 8, museum: 15, frame: 20 },
   a4:       { studio: 10, museum: 20, frame: 20 },

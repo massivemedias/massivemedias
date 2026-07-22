@@ -18,6 +18,8 @@ import crypto from 'crypto'
 import {
   lookupStickerPriceCustomQty,
   resolveStickerFinishId,
+  resolveArtistTier,
+  resolveArtistFormat,
 } from './pricing-config'
 import { isHiddenStickerSlug } from './hidden-stickers'
 import { isKnownStickerSlug } from './sticker-catalog'
@@ -51,6 +53,10 @@ export interface CartItemLike {
   sizeId?: any
   finish?: any
   finishId?: any
+  // FIX-PRIX-PRINT : IDs machine du choix client (serie + format). Le libelle
+  // traduit (finish/size) ne sert plus que de repli pour les paniers legacy.
+  tierId?: any
+  formatId?: any
   sideId?: any
   shape?: any
   bringOwnGarment?: any
@@ -319,18 +325,46 @@ export async function resolveSkuPrice(item: CartItemLike, deps: SkuDeps = {}): P
         return rejectRes('artist-print', `Cette oeuvre est actuellement reservee par un autre client (dispo dans ${minsLeft} min si le paiement echoue).`)
       }
       const pricing = matchedArtist.pricing || {}
-      const tier = print.fixedTier || 'studio'
-      const format = print.fixedFormat || 'a4'
-      const tierPrices = tier === 'museum' ? (pricing.museum || {}) : (pricing.studio || {})
-      const basePrice = tierPrices[format] || 0
-      const frameMap = pricing.framePriceByFormat || {}
-      const expectedFramePrice = (print.withFrame || item.shape)
-        ? (frameMap[format] ?? FINE_ART_SALE_GRID[format]?.frame ?? 30)
-        : 0
       let expectedUnitPrice: number
+
       if (print.unique === true && typeof print.customPrice === 'number') {
+        // Piece unique / vente privee : prix fige sur la fiche, le configurateur
+        // est verrouille, le choix du client ne s'applique pas.
         expectedUnitPrice = print.customPrice
       } else {
+        // FIX-PRIX-PRINT (22 juillet 2026). AVANT : `print.fixedTier || 'studio'`
+        // et `print.fixedFormat || 'a4'`, donc le serveur facturait TOUJOURS
+        // studio A4 puisque 173 des 175 prints n'ont aucun de ces champs. Le
+        // client payait 35 $ pour 30 $ affiches sur la config par defaut, et un
+        // A2 encadre partait a 55 $ au lieu de 165 $.
+        //
+        // fixedTier/fixedFormat restent prioritaires : c'est une CONTRAINTE de
+        // la fiche (le tirage n'existe que dans cette config). Sinon on lit le
+        // CHOIX REEL du client. ID machine d'abord, libelle traduit en repli
+        // pour les paniers deja en localStorage (patron resolveStickerFinishId).
+        const tier = resolveArtistTier(print.fixedTier || item.tierId || item.finish)
+        const format = resolveArtistFormat(print.fixedFormat || item.formatId || item.size)
+
+        // Irresoluble = on REFUSE. Deviner est precisement ce qui a cree le bug.
+        if (!tier || !format) {
+          deps.log?.warn?.(`[artist-print] config illisible ${pid} tier=${item.tierId ?? item.finish} format=${item.formatId ?? item.size}`)
+          return rejectRes('artist-print', `La configuration de ce tirage n'a pas pu etre validee. Retire l'article du panier et rajoute-le.`)
+        }
+
+        const tierPrices = tier === 'museum' ? (pricing.museum || {}) : (pricing.studio || {})
+        const basePrice = tierPrices[format]
+
+        // Prix absent de la grille (ex. artiste sans `pricing`, ou studio A2 qui
+        // n'existe pas) : refus. L'ancien `|| 0` facturait 0 $ en silence.
+        if (typeof basePrice !== 'number' || !Number.isFinite(basePrice) || basePrice <= 0) {
+          deps.log?.warn?.(`[artist-print] prix absent ${pid} tier=${tier} format=${format}`)
+          return rejectRes('artist-print', `Ce format n'est pas disponible pour ce tirage.`)
+        }
+
+        const frameMap = pricing.framePriceByFormat || {}
+        const expectedFramePrice = (print.withFrame || item.shape)
+          ? (frameMap[format] ?? FINE_ART_SALE_GRID[format]?.frame ?? 30)
+          : 0
         expectedUnitPrice = basePrice + expectedFramePrice
       }
       if (print.onSale && typeof print.salePercent === 'number') {
