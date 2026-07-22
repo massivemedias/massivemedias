@@ -1300,9 +1300,15 @@ iframe.instagram-media-rendered + * {
    lignes noires transparentes sur fond fonce. 4 drop-shadows nets (blur 0)
    qui suivent l'alpha du webp. Variante 8 directions testee et rejetee :
    38 fps au scroll sur 285 images (celle-ci : 60 fps). */
+/* ADMIN-STICKERS phase 3 : l'epaisseur est reglable PAR DESIGN via la variable
+   --stk (posee en style inline depuis l'override admin). Defaut 1.5px = le
+   rendu historique, donc aucun design ne bouge tant que rien n'est edite.
+   TOUJOURS 4 ombres : la variante 8 directions reste rejetee (cf. ci-dessus),
+   on ne fait varier que la distance. */
 .sticker-stroke {
-  filter: drop-shadow(1.5px 0 0 white) drop-shadow(-1.5px 0 0 white)
-          drop-shadow(0 1.5px 0 white) drop-shadow(0 -1.5px 0 white);
+  --stk: 1.5px;
+  filter: drop-shadow(var(--stk) 0 0 white) drop-shadow(calc(-1 * var(--stk)) 0 0 white)
+          drop-shadow(0 var(--stk) 0 white) drop-shadow(0 calc(-1 * var(--stk)) 0 white);
 }
 
 /* STICKERS-UI-08 : cartes de familles premium, eventail qui s'ouvre au survol

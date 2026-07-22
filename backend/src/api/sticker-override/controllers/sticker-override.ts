@@ -30,6 +30,19 @@ function cleanName(v: unknown): string | null {
   return t.slice(0, NAME_MAX);
 }
 
+// Epaisseur du contour die-cut, en px. Bornee SERVEUR : au-dela de 6 px le
+// contour devient une tache blanche qui mange le design, et une valeur
+// negative casserait le filtre CSS. null = on revient au defaut du site.
+const STROKE_MIN = 0;
+const STROKE_MAX = 6;
+
+function cleanStroke(v: unknown): number | null {
+  if (v === null || v === '') return null;
+  const n = Number(v);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(STROKE_MAX, Math.max(STROKE_MIN, Math.round(n * 10) / 10));
+}
+
 export default factories.createCoreController(UID, ({ strapi }) => ({
 
   /**
@@ -46,6 +59,7 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
         nameEn: r.nameEn || null,
         nameEs: r.nameEs || null,
         hidden: !!r.hidden,
+        strokeWidth: r.strokeWidth ?? null,
       })),
     };
   },
@@ -72,6 +86,7 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
     if ('nameEn' in body) patch.nameEn = cleanName(body.nameEn);
     if ('nameEs' in body) patch.nameEs = cleanName(body.nameEs);
     if ('hidden' in body) patch.hidden = !!body.hidden;
+    if ('strokeWidth' in body) patch.strokeWidth = cleanStroke(body.strokeWidth);
 
     if (Object.keys(patch).length === 0) {
       ctx.status = 400;
@@ -95,6 +110,7 @@ export default factories.createCoreController(UID, ({ strapi }) => ({
         nameEn: row.nameEn || null,
         nameEs: row.nameEs || null,
         hidden: !!row.hidden,
+        strokeWidth: row.strokeWidth ?? null,
       },
     };
   },

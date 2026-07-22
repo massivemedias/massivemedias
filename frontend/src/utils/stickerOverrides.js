@@ -43,8 +43,20 @@ export function applyOverrides(list, overrides) {
       en: o.nameEn || s.en,
       es: o.nameEs || s.es,
       hiddenByAdmin: !!o.hidden,
+      // Phase 3 : epaisseur du contour die-cut. null/absent = defaut du site.
+      strokeWidth: (typeof o.strokeWidth === 'number' ? o.strokeWidth : undefined),
     };
   });
+}
+
+/**
+ * Style inline du contour pour un sticker. Retourne undefined quand rien n'est
+ * surcharge, pour ne poser AUCUN attribut style sur les 385 vignettes par
+ * defaut (le CSS garde alors sa valeur d'origine).
+ */
+export function strokeStyle(sticker) {
+  const w = sticker?.strokeWidth;
+  return (typeof w === 'number') ? { '--stk': `${w}px` } : undefined;
 }
 
 /** Slugs masques par l'admin (a cumuler avec HIDDEN_STICKERS statique). */
