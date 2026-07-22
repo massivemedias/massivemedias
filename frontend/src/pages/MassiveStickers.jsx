@@ -16,6 +16,7 @@ import {
 } from '../data/products'
 import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb, img } from '../utils/paths'
+import { fetchStickerOverrides } from '../utils/stickerOverrides'
 import TumblerDesign from '../components/TumblerDesign'
 import FavoriteHeart from '../components/FavoriteHeart'
 import CtaBanner from '../components/CtaBanner'
@@ -551,7 +552,7 @@ function StickerFiche({ s, catLabel, justAdded, cartQty, onAdd, onClose, onPrev,
 //
 // RESET : le parent passe une `key` (activeCat + query) ; un changement de
 // filtre/recherche remonte le composant et remet count a PAGE_SIZE.
-function InfiniteGrid({ items, justAdded, cartQtyBySlug, onAdd, onOpen, tx }) {
+function InfiniteGrid({ items, justAdded, cartQtyBySlug, onAdd, onOpen, tx, strokeBySlug = {} }) {
   const [count, setCount] = useState(PAGE_SIZE)
   const sentinelRef = useRef(null)
   // Guard anti double-chargement : bloque les fire multiples de l'IO entre
@@ -587,7 +588,7 @@ function InfiniteGrid({ items, justAdded, cartQtyBySlug, onAdd, onOpen, tx }) {
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {items.slice(0, count).map((s) => (
-          <StickerCard key={s.slug} s={s} justAdded={justAdded} cartQty={cartQtyBySlug[s.slug] || 0} onAdd={onAdd} onOpen={onOpen} tx={tx} />
+          <StickerCard key={s.slug} s={s} justAdded={justAdded} cartQty={cartQtyBySlug[s.slug] || 0} onAdd={onAdd} onOpen={onOpen} tx={tx} strokeW={strokeBySlug[s.slug]} />
         ))}
       </div>
       {hasMore && (
@@ -752,11 +753,31 @@ function MassiveStickers() {
   //   - API muette ou lente -> le CSS garde sa valeur d'origine, rien ne bouge ;
   //   - aucun design sans override ne recoit d'attribut style.
   // Jamais pendant le prerender : le HTML capture doit rester le rendu par defaut.
-  // HOTFIX 22 juillet : le cablage public du stroke est RETIRE. L'etat vivait
-  // ici (composant page) mais la carte est rendue dans InfiniteGrid, un autre
-  // composant : `strokeBySlug` y etait hors portee -> ReferenceError a
-  // l'hydratation, /stickers entierement blanche. Le passage de la valeur sera
-  // refait proprement (via InfiniteGrid) dans une PR dediee.
+  // ADMIN-STICKERS phase 3 : epaisseur du contour die-cut reglable par design.
+  //
+  // La valeur descend explicitement page -> InfiniteGrid -> StickerCard. C'est
+  // ce passage qui manquait le 22 juillet : l'etat vivait ici et la carte est
+  // rendue dans InfiniteGrid, un composant SEPARE -> ReferenceError a
+  // l'hydratation, /stickers blanche. Le test de montage (pagesRender.test.jsx)
+  // casse desormais si ce lien est rompu.
+  //
+  // Chargement isole : on ne touche ni a la liste, ni a l'ordre, ni au hero, ni
+  // au filtrage. API muette = le CSS garde sa valeur d'origine. Jamais pendant
+  // le prerender.
+  const [strokeBySlug, setStrokeBySlug] = useState({})
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.__MASSIVE_PRERENDER__) return
+    let vivant = true
+    fetchStickerOverrides().then((rows) => {
+      if (!vivant) return
+      const map = {}
+      for (const o of rows) {
+        if (typeof o?.strokeWidth === 'number') map[o.slug] = o.strokeWidth
+      }
+      if (Object.keys(map).length) setStrokeBySlug(map)
+    })
+    return () => { vivant = false }
+  }, [])
 
   // STICKERS-HERO-PERF (PERF-01) : le design vedette est choisi AVANT le paint
   // par le mini-script inline de index.html (window.__HERO_IDX__ + <link preload>
@@ -1112,6 +1133,7 @@ function MassiveStickers() {
             </p>
           ) : (
             <InfiniteGrid
+              strokeBySlug={strokeBySlug}
               key={`search|${query}`}
               items={visibles}
               cartQtyBySlug={cartQtyBySlug}
@@ -1148,6 +1170,7 @@ function MassiveStickers() {
               </span>
             </div>
             <InfiniteGrid
+              strokeBySlug={strokeBySlug}
               key="catalogue-all"
               items={catalogue}
               cartQtyBySlug={cartQtyBySlug}
@@ -1180,6 +1203,7 @@ function MassiveStickers() {
               </p>
             ) : (
               <InfiniteGrid
+              strokeBySlug={strokeBySlug}
                 key="favoris"
                 items={visibles}
                 cartQtyBySlug={cartQtyBySlug}
@@ -1215,6 +1239,7 @@ function MassiveStickers() {
               ))}
             </div>
             <InfiniteGrid
+              strokeBySlug={strokeBySlug}
               key={`famille|${activeCat}`}
               items={visibles}
               cartQtyBySlug={cartQtyBySlug}
