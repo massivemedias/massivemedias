@@ -16,7 +16,7 @@ import {
 } from '../data/products'
 import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb, img } from '../utils/paths'
-import { fetchStickerOverrides } from '../utils/stickerOverrides'
+import { fetchStickerOverrides, adminHiddenSlugs } from '../utils/stickerOverrides'
 import TumblerDesign from '../components/TumblerDesign'
 import FavoriteHeart from '../components/FavoriteHeart'
 import CtaBanner from '../components/CtaBanner'
@@ -725,6 +725,12 @@ function MassiveStickers() {
   // (Fisher-Yates). Le rendu initial (et donc le HTML prerendu) garde l'ordre
   // stable du manifest : le shuffle n'arrive qu'au runtime client, pas
   // pendant l'hydratation.
+  // FIX-MASQUAGE-VITRINE (22 juillet 2026) : les designs retires DEPUIS L'ADMIN.
+  // Jusqu'ici la vitrine ne lisait que strokeWidth des overrides : un design
+  // "retire de la vente" restait visible et ajoutable au panier, le client ne
+  // tapait le mur qu'au paiement. La modale admin promettait pourtant "retire
+  // des vues publiques ET refuse au paiement" : la premiere moitie etait fausse.
+  const [adminHidden, setAdminHidden] = useState(() => new Set())
   const [ordreAleatoire, setOrdreAleatoire] = useState(null)
   useEffect(() => {
     // STICKERS-NAMES : pas de shuffle pendant le prerender (flag pose par
@@ -742,7 +748,14 @@ function MassiveStickers() {
   }, [])
   // filterHidden aussi sur le fallback (rendu initial + prerender) -> jamais de
   // design masque, meme avant le shuffle client.
-  const catalogue = ordreAleatoire || filterHidden(MASSIVE_STICKERS)
+  const catalogueBrut = ordreAleatoire || filterHidden(MASSIVE_STICKERS)
+  // POST-filtre volontaire : on RETIRE les masques admin de la liste DEJA
+  // melangee. Re-melanger ferait sauter toute la grille sous les yeux du
+  // visiteur au moment ou l'API repond.
+  const catalogue = useMemo(
+    () => (adminHidden.size ? catalogueBrut.filter((d) => !adminHidden.has(d.slug)) : catalogueBrut),
+    [catalogueBrut, adminHidden],
+  )
 
   // ADMIN-STICKERS phase 3 : epaisseur du contour die-cut reglable par design.
   //
@@ -775,6 +788,8 @@ function MassiveStickers() {
         if (typeof o?.strokeWidth === 'number') map[o.slug] = o.strokeWidth
       }
       if (Object.keys(map).length) setStrokeBySlug(map)
+      const masques = adminHiddenSlugs(rows)
+      if (masques.size) setAdminHidden(masques)
     })
     return () => { vivant = false }
   }, [])
@@ -793,13 +808,13 @@ function MassiveStickers() {
     // idx module la longueur filtree pour rester valide. Fallback = 1er design
     // public (jamais masque).
     const rawPool = (typeof window !== 'undefined' && window.__HERO_POOL__) || null
-    const pool = rawPool ? filterHiddenSlugs(rawPool) : null
+    const pool = rawPool ? filterHiddenSlugs(rawPool).filter((sl) => !adminHidden.has(sl)) : null
     const idx = (typeof window !== 'undefined' && typeof window.__HERO_IDX__ === 'number') ? window.__HERO_IDX__ : 0
     const slug = (pool && pool.length) ? pool[idx % pool.length] : null
-    const safe = filterHidden(MASSIVE_STICKERS)
+    const safe = filterHidden(MASSIVE_STICKERS).filter((d) => !adminHidden.has(d.slug))
     const design = (slug && safe.find((s) => s.slug === slug)) || safe[0]
     setHeroSticker(design)
-  }, [])
+  }, [adminHidden])
 
   // CART-01 : quantite au panier par slug de design, pour le feedback
   // persistant "N au panier" sur le bouton de chaque carte. Le productId est
@@ -862,7 +877,7 @@ function MassiveStickers() {
     const q = normalizeSearchText(query).trim()
     // MODERATION : recherche + filtres categorie/favoris partent du catalogue
     // MODERE (sinon un design masque ressortait via une recherche ou une famille).
-    return filterHidden(MASSIVE_STICKERS).filter((s) => {
+    return filterHidden(MASSIVE_STICKERS).filter((d) => !adminHidden.has(d.slug)).filter((s) => {
       // STICKERS-FAV : le filtre favoris est un filtre DUR (s'applique meme
       // pendant une recherche -> la recherche est scopee aux favoris).
       if (activeCat === 'favoris' && !favSet.has(s.slug)) return false
@@ -872,7 +887,7 @@ function MassiveStickers() {
       if (activeCat !== 'all' && activeCat !== 'favoris' && s.cat !== activeCat) return false
       return true
     })
-  }, [activeCat, query, favSet])
+  }, [activeCat, query, favSet, adminHidden])
 
   // STICKERS-FAV : si on retire son dernier favori en etant sur la vue favoris,
   // revenir a l'accueil (le chip disparait aussi sous 1 favori).
@@ -881,10 +896,11 @@ function MassiveStickers() {
   }, [favorites.length, activeCat])
 
   const countByCat = useMemo(() => {
-    const counts = { all: MASSIVE_STICKERS.length }
-    for (const s of MASSIVE_STICKERS) counts[s.cat] = (counts[s.cat] || 0) + 1
+    const visibles = filterHidden(MASSIVE_STICKERS).filter((d) => !adminHidden.has(d.slug))
+    const counts = { all: visibles.length }
+    for (const s of visibles) counts[s.cat] = (counts[s.cat] || 0) + 1
     return counts
-  }, [])
+  }, [adminHidden])
 
   return (
     <div className="min-h-screen pt-24 pb-16 px-4 sm:px-6">
@@ -1254,7 +1270,7 @@ function MassiveStickers() {
 
       {/* UI-02 : fiche produit en modale */}
       {ficheSlug && (() => {
-        const s = MASSIVE_STICKERS.find((d) => d.slug === ficheSlug)
+        const s = MASSIVE_STICKERS.filter((d) => !adminHidden.has(d.slug)).find((d) => d.slug === ficheSlug)
         if (!s) return null
         const cat = MASSIVE_STICKER_CATEGORIES.find((c) => c.id === s.cat)
         // UI-06 : navigation fleches en BOUCLE sur la liste actuellement
