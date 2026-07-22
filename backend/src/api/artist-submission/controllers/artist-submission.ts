@@ -1,4 +1,5 @@
 import { factories } from '@strapi/strapi';
+import { hashIpForLog } from '../../../utils/sku-registry';
 import { sendContractSignedEmail } from '../../../utils/email';
 import { requireAdminAuth } from '../../../utils/auth';
 
@@ -98,6 +99,52 @@ export default factories.createCoreController('api::artist-submission.artist-sub
     }
     if (!contractAccepted) {
       return ctx.badRequest('Le contrat doit etre accepte');
+    }
+
+    // --- DURCISSEMENT (AUDIT 22 juillet 2026) --------------------------------
+    // Cet endpoint est PUBLIC et le restera : le formulaire vit sur /contact et
+    // un vrai candidat n'a pas encore de compte au moment ou il postule.
+    // Exiger une authentification casserait toutes les vraies candidatures.
+    //
+    // Le risque reel : `submit` declenche un courriel signe Massive Medias
+    // ENVOYE A UNE ADRESSE FOURNIE PAR LE FORMULAIRE (`to: email`). Sans garde,
+    // n'importe qui pouvait s'en servir comme relais. L'echappement HTML est
+    // pose cote email.ts ; ici on ferme le volume et la forme.
+    const propre = (v: any) => String(v == null ? '' : v).trim();
+    const MAX = { nomLegal: 120, nomArtiste: 120, adresse: 300, email: 160, telephone: 40, tpsTvq: 60, bio: 4000 };
+    for (const [champ, max] of Object.entries(MAX)) {
+      const valeur = propre((ctx.request.body as any)[champ]);
+      if (valeur.length > max) {
+        return ctx.badRequest(`Champ ${champ} trop long (max ${max} caracteres)`);
+      }
+    }
+    // Adresse de destination du courriel : elle doit ressembler a un courriel.
+    if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(propre(email))) {
+      return ctx.badRequest('Adresse courriel invalide');
+    }
+    // Un portfolio est une liste d'URL, pas un vecteur de volume.
+    if (portfolioUrls != null && (!Array.isArray(portfolioUrls) || portfolioUrls.length > 20)) {
+      return ctx.badRequest('Portfolio invalide');
+    }
+
+    // Limiteur par IP hachee (Loi 25 : jamais d'IP en clair). En memoire, donc
+    // remis a zero au redemarrage Render - assume : ca coupe l'abus automatise,
+    // pas un attaquant patient. Un throttle persistant existe deja pour les
+    // alertes webhook si on veut durcir davantage plus tard.
+    const ipHash = hashIpForLog(ctx.request.ip);
+    if (ipHash) {
+      const maintenant = Date.now();
+      const g: any = global as any;
+      g.__artistSubmitThrottle = g.__artistSubmitThrottle || new Map<string, number[]>();
+      const recentes = (g.__artistSubmitThrottle.get(ipHash) || []).filter((t: number) => maintenant - t < 3600_000);
+      if (recentes.length >= 3) {
+        strapi.log.warn(`[artist-submission] limite atteinte pour ip=${ipHash}`);
+        ctx.status = 429;
+        ctx.body = { error: { status: 429, name: 'TooManyRequests', message: 'Trop de candidatures envoyees. Reessaie dans une heure.' } };
+        return;
+      }
+      recentes.push(maintenant);
+      g.__artistSubmitThrottle.set(ipHash, recentes);
     }
 
     try {
