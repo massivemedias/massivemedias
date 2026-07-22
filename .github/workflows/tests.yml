@@ -1,0 +1,46 @@
+name: Tests
+
+# POURQUOI CE WORKFLOW EXISTE : jusqu'au 22 juillet 2026, AUCUN CI ne lancait
+# la suite de tests. Le seul workflow de deploiement est desactive (remplace
+# par l'auto-build Cloudflare Pages), et Cloudflare ne lance que `npm run build`
+# - qui ne lance pas vitest. Un test rouge ne bloquait donc strictement rien.
+#
+# Consequence vecue : /stickers est tombee en prod sur un ReferenceError, et
+# rien dans la chaine n'a rien vu.
+#
+# Ce workflow rend la suite bloquante sur les PR et sur main.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Une seule execution par branche : un nouveau push annule le run precedent.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vitest:
+    name: Suite de tests (frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # --legacy-peer-deps : react-helmet-async@2 declare un peer React <=18
+      # alors que le projet est en React 19. Conflit PREEXISTANT, deja
+      # contourne de la meme facon dans deploy.yml. A retirer le jour ou
+      # helmet-async supporte React 19.
+      - name: Install
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Tests
+        working-directory: frontend
+        run: npm test
