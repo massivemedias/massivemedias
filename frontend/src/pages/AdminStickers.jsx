@@ -8,7 +8,7 @@ import { MASSIVE_STICKERS, MASSIVE_STICKER_CATEGORIES } from '../data/massiveSti
 import { HIDDEN_STICKERS } from '../data/stickersModeration';
 import { KIDS_SAFE, ETIQUETTE_LOWRES_EXCLUDED } from '../data/etiquettes';
 import { STICKER_COLLECTION_UNIT_PRICE } from '../utils/pricingData';
-import { applyOverrides, fetchStickerOverrides, saveStickerOverride } from '../utils/stickerOverrides';
+import { applyOverrides, fetchStickerOverrides, saveStickerOverride, strokeStyle } from '../utils/stickerOverrides';
 
 /**
  * AdminStickers.jsx - ADMIN-STICKERS.
@@ -72,6 +72,7 @@ function AdminStickers() {
       kids: KIDS_SET.has(s.slug),
       excluded: ETIQUETTE_LOWRES_EXCLUDED.has(s.slug),
       price: STICKER_COLLECTION_UNIT_PRICE,
+      strokeWidth: s.strokeWidth,
     }));
   }, [overrides]);
 
@@ -229,7 +230,8 @@ function AdminStickers() {
                   src={`${MINI_DIR}/${s.slug}.webp`}
                   alt={s.fr}
                   loading="lazy"
-                  className={`w-full h-full object-contain p-1.5 ${s.hidden ? 'opacity-35 grayscale' : ''}`}
+                  style={strokeStyle(s)}
+                  className={`sticker-stroke w-full h-full object-contain p-1.5 ${s.hidden ? 'opacity-35 grayscale' : ''}`}
                 />
                 {s.hidden && (
                   <span className="absolute top-1.5 right-1.5 w-6 h-6 rounded-md bg-black/70 flex items-center justify-center">
@@ -336,12 +338,23 @@ function AdminStickers() {
 
 /* ------------------------------------------------------------------ */
 
+// Defaut du site (index.css .sticker-stroke). Sert de valeur de depart au
+// curseur ET de reference dans l'apercu "avant / apres".
+const STROKE_DEFAULT = 1.5;
+
 function EditModal({ sticker, saving, tx, onClose, onSave }) {
   const [fr, setFr] = useState(sticker.fr || '');
   const [en, setEn] = useState(sticker.en || '');
   const [es, setEs] = useState(sticker.es || '');
+  const [stroke, setStroke] = useState(
+    typeof sticker.strokeWidth === 'number' ? sticker.strokeWidth : STROKE_DEFAULT,
+  );
 
-  const dirty = fr !== sticker.fr || en !== sticker.en || es !== sticker.es;
+  const strokeChanged = typeof sticker.strokeWidth === 'number'
+    ? stroke !== sticker.strokeWidth
+    : stroke !== STROKE_DEFAULT;
+
+  const dirty = fr !== sticker.fr || en !== sticker.en || es !== sticker.es || strokeChanged;
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60" onClick={onClose}>
@@ -378,11 +391,52 @@ function EditModal({ sticker, saving, tx, onClose, onSave }) {
           </div>
         ))}
 
+        {/* ---- Contour die-cut, avec apercu avant / apres ---- */}
+        <div className="pt-1">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs text-grey-muted">
+              {tx({ fr: 'Contour die-cut', en: 'Die-cut outline', es: 'Contorno die-cut' })}
+            </label>
+            <span className="text-xs font-mono text-heading tabular-nums">{stroke.toFixed(1)} px</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            {[
+              { w: STROKE_DEFAULT, l: tx({ fr: 'Defaut du site', en: 'Site default', es: 'Por defecto' }) },
+              { w: stroke, l: tx({ fr: 'Apercu', en: 'Preview', es: 'Vista previa' }) },
+            ].map(({ w, l }, i) => (
+              <div key={i} className="rounded-lg bg-glass p-2 text-center">
+                <img
+                  src={`${MINI_DIR}/${sticker.slug}.webp`}
+                  alt=""
+                  style={{ '--stk': `${w}px` }}
+                  className="sticker-stroke w-full aspect-square object-contain"
+                />
+                <span className="text-[10px] text-grey-muted block mt-1">{l}</span>
+              </div>
+            ))}
+          </div>
+
+          <input
+            type="range"
+            min="0" max="6" step="0.5"
+            value={stroke}
+            onChange={(e) => setStroke(Number(e.target.value))}
+            className="w-full accent-accent"
+          />
+          <button
+            onClick={() => setStroke(STROKE_DEFAULT)}
+            className="text-[11px] text-grey-muted hover:text-accent mt-1"
+          >
+            {tx({ fr: 'Revenir au defaut', en: 'Back to default', es: 'Volver al valor por defecto' })}
+          </button>
+        </div>
+
         <p className="text-[11px] text-grey-muted leading-relaxed">
           {tx({
-            fr: 'Les URLs, le slug et les fichiers images ne changent jamais. Seul le nom affiche est modifie.',
-            en: 'URLs, slug and image files never change. Only the displayed name is modified.',
-            es: 'Las URLs, el slug y las imagenes nunca cambian. Solo cambia el nombre mostrado.',
+            fr: 'Les URLs, le slug et les fichiers images ne changent jamais. Seuls le nom affiche et le contour sont modifies.',
+            en: 'URLs, slug and image files never change. Only the displayed name and outline are modified.',
+            es: 'Las URLs, el slug y las imagenes nunca cambian. Solo el nombre y el contorno.',
           })}
         </p>
 
@@ -391,7 +445,7 @@ function EditModal({ sticker, saving, tx, onClose, onSave }) {
             {tx({ fr: 'Annuler', en: 'Cancel', es: 'Cancelar' })}
           </button>
           <button
-            onClick={() => onSave({ nameFr: fr, nameEn: en, nameEs: es })}
+            onClick={() => onSave({ nameFr: fr, nameEn: en, nameEs: es, strokeWidth: stroke })}
             disabled={saving || !dirty}
             className="flex-1 py-2.5 rounded-lg bg-accent text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5 disabled:opacity-40"
           >

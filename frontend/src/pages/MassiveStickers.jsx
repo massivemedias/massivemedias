@@ -16,6 +16,7 @@ import {
 } from '../data/products'
 import { normalizeSearchText } from '../utils/clientAccountSearch'
 import { thumb, img } from '../utils/paths'
+import { fetchStickerOverrides } from '../utils/stickerOverrides'
 import TumblerDesign from '../components/TumblerDesign'
 import FavoriteHeart from '../components/FavoriteHeart'
 import CtaBanner from '../components/CtaBanner'
@@ -88,7 +89,7 @@ const PACK_POS = [[-70, -8, -10], [-38, 10, 7], [0, -4, 6], [40, 8, -9], [72, -6
 // Carte d'un design : partagee entre toutes les grilles. Le clic sur le
 // visuel/nom ouvre la fiche produit (UI-02), le bouton +3 $ reste un ajout
 // direct au panier.
-function StickerCard({ s, justAdded, cartQty, onAdd, onOpen, tx }) {
+function StickerCard({ s, justAdded, cartQty, onAdd, onOpen, tx, strokeW }) {
   // UI-07 : etat SELECTIONNE persistant quand le design est au panier. Bordure
   // rose (ring) + leger fond rose + badge coin "✓ n" -> la carte reste
   // visiblement marquee partout (grille, famille, recherche) tant que l'item
@@ -122,6 +123,7 @@ function StickerCard({ s, justAdded, cartQty, onAdd, onOpen, tx }) {
         <LazyImg
           src={thumb(`${STICKER_DIR}/${s.slug}.webp`)}
           alt={`Sticker ${tx(s)} - collection Massive`}
+          style={typeof strokeW === 'number' ? { '--stk': `${strokeW}px` } : undefined}
           className="sticker-stroke w-full aspect-square object-contain group-hover:scale-105 transition-transform duration-200"
         />
         <p className="mt-2 text-xs text-grey-muted text-center truncate w-full" title={tx(s)}>
@@ -374,7 +376,7 @@ function ShowcaseBand({ tx, onOpenDesign }) {
 // retour de visibilite tout seul, src TOUJOURS present (jamais de page
 // vide). width/height explicites -> zero CLS. decoding async -> decodage
 // hors du main thread.
-function LazyImg({ src, alt, className, title }) {
+function LazyImg({ src, alt, className, title, style }) {
   return (
     <img
       loading="lazy"
@@ -384,6 +386,7 @@ function LazyImg({ src, alt, className, title }) {
       src={src}
       alt={alt}
       title={title}
+      style={style}
       className={className}
     />
   )
@@ -585,7 +588,7 @@ function InfiniteGrid({ items, justAdded, cartQtyBySlug, onAdd, onOpen, tx }) {
     <>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {items.slice(0, count).map((s) => (
-          <StickerCard key={s.slug} s={s} justAdded={justAdded} cartQty={cartQtyBySlug[s.slug] || 0} onAdd={onAdd} onOpen={onOpen} tx={tx} />
+          <StickerCard key={s.slug} s={s} justAdded={justAdded} cartQty={cartQtyBySlug[s.slug] || 0} onAdd={onAdd} onOpen={onOpen} tx={tx} strokeW={strokeBySlug[s.slug]} />
         ))}
       </div>
       {hasMore && (
@@ -740,6 +743,30 @@ function MassiveStickers() {
   // filterHidden aussi sur le fallback (rendu initial + prerender) -> jamais de
   // design masque, meme avant le shuffle client.
   const catalogue = ordreAleatoire || filterHidden(MASSIVE_STICKERS)
+
+  // ADMIN-STICKERS phase 3 : epaisseur du contour die-cut reglable par design.
+  //
+  // Chargement DELIBEREMENT isole : on ne touche ni a la liste, ni a l'ordre,
+  // ni au hero, ni au filtrage. On ne fait que poser une variable CSS inline
+  // sur les vignettes concernees. Consequences voulues :
+  //   - aucun risque de reshuffle ou de mismatch d'hydratation ;
+  //   - API muette ou lente -> le CSS garde sa valeur d'origine, rien ne bouge ;
+  //   - aucun design sans override ne recoit d'attribut style.
+  // Jamais pendant le prerender : le HTML capture doit rester le rendu par defaut.
+  const [strokeBySlug, setStrokeBySlug] = useState({})
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.__MASSIVE_PRERENDER__) return
+    let vivant = true
+    fetchStickerOverrides().then((rows) => {
+      if (!vivant) return
+      const map = {}
+      for (const o of rows) {
+        if (typeof o?.strokeWidth === 'number') map[o.slug] = o.strokeWidth
+      }
+      if (Object.keys(map).length) setStrokeBySlug(map)
+    })
+    return () => { vivant = false }
+  }, [])
 
   // STICKERS-HERO-PERF (PERF-01) : le design vedette est choisi AVANT le paint
   // par le mini-script inline de index.html (window.__HERO_IDX__ + <link preload>

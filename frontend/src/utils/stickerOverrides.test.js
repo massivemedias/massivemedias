@@ -6,7 +6,7 @@
  * par l'API ne doit pas vider le nom affiche des 385 fiches.
  */
 import { describe, it, expect } from 'vitest';
-import { applyOverrides, adminHiddenSlugs } from './stickerOverrides';
+import { applyOverrides, adminHiddenSlugs, strokeStyle } from './stickerOverrides';
 
 const BASE = [
   { slug: 'massive-a', fr: 'Alpha', en: 'Alpha EN', es: 'Alpha ES', cat: 'fun' },
@@ -66,5 +66,26 @@ describe('adminHiddenSlugs', () => {
 
   it('tolere une entree vide', () => {
     expect(adminHiddenSlugs(null).size).toBe(0);
+  });
+});
+
+describe('strokeStyle', () => {
+  it('ne pose AUCUN style quand rien n est surcharge', () => {
+    // Important : sans ca les 385 vignettes recevraient un attribut style inutile.
+    expect(strokeStyle({ slug: 'massive-a' })).toBeUndefined();
+    expect(strokeStyle(null)).toBeUndefined();
+  });
+
+  it('pose la variable CSS quand une epaisseur existe', () => {
+    expect(strokeStyle({ strokeWidth: 3 })).toEqual({ '--stk': '3px' });
+    expect(strokeStyle({ strokeWidth: 0 })).toEqual({ '--stk': '0px' });
+  });
+
+  it('porte strokeWidth a travers la fusion', () => {
+    const out = applyOverrides(
+      [{ slug: 'massive-a', fr: 'A', en: 'A', es: 'A' }],
+      [{ slug: 'massive-a', strokeWidth: 2.5 }],
+    );
+    expect(strokeStyle(out[0])).toEqual({ '--stk': '2.5px' });
   });
 });

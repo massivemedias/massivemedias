@@ -28,6 +28,11 @@
     "hidden": {
       "type": "boolean",
       "default": false
+    },
+    "strokeWidth": {
+      "type": "decimal",
+      "min": 0,
+      "max": 6
     }
   }
 }
