@@ -8,6 +8,7 @@ import { useArtists } from '../hooks/useArtists'
 import { useLang } from '../i18n/LanguageContext'
 import { MASSIVE_STICKERS } from '../data/massiveStickers'
 import { isHiddenSticker } from '../data/stickersModeration'
+import { fetchStickerOverrides, adminHiddenSlugs } from '../utils/stickerOverrides'
 import { getCollectionStickerPrice, STICKER_COLLECTION_MIN_UNITS } from '../data/products'
 import { thumb } from '../utils/paths'
 
@@ -134,11 +135,25 @@ export default function FavoritesDrawer() {
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
   }, [favDrawerOpen, closeFavDrawer, isDesktop])
 
+  // FIX-MASQUAGE-VITRINE : un design retire DEPUIS L'ADMIN doit disparaitre
+  // d'ici aussi. Sans ca il restait dans les favoris de qui l'avait mis avant
+  // le retrait, et le bouton "tout ajouter au panier" le reproposait.
+  const [adminHidden, setAdminHidden] = useState(() => new Set())
+  useEffect(() => {
+    let vivant = true
+    fetchStickerOverrides().then((rows) => {
+      if (!vivant) return
+      const masques = adminHiddenSlugs(rows)
+      if (masques.size) setAdminHidden(masques)
+    })
+    return () => { vivant = false }
+  }, [])
+
   // Resolution stickers (data locale) + prints (CMS, par print.id stable).
   const favStickers = favorites
     // C5 : un design masque (HIDDEN) ne doit plus reapparaitre chez qui l'avait
     // mis en favori avant le masquage (ni etre rajoutable au panier).
-    .filter((slug) => !isHiddenSticker(slug))
+    .filter((slug) => !isHiddenSticker(slug) && !adminHidden.has(slug))
     .map((slug) => MASSIVE_STICKERS.find((s) => s.slug === slug))
     .filter(Boolean)
   const printLookup = {}
